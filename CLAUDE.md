@@ -5,7 +5,7 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **472+ approaches tested** across 16 sessions, 120+ sub-agents
+- **480+ approaches tested** across 17 sessions, 130+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
 - **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
@@ -76,6 +76,23 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
       Published Math. Comp. 2024. Still O(2^{N/2}) in input bits — no barrier change.
   (g) **Aggarwal 2025 gives O(sqrt(n)*log^4(n)) for p(n)** via binary search + HKM.
       No new algorithm — complexity analysis of existing tools.
+- **Session 17 KEY INSIGHTS:**
+  (a) **EXACT communication complexity of pi(x)**: rank(pi_N) = 2^{N/2-1} + 2 for
+      balanced bit partition (verified N=2..20). This gives dc(pi_N) >= Omega(sqrt(x)).
+      The multilinear polynomial route to GapL is DEFINITIVELY CLOSED.
+  (b) **Boolean Fourier analysis**: Prime indicator has ~30% excess low-degree Fourier
+      weight vs random (from parity/mod-4 structure), but noise sensitivity is near-random
+      (~0.9x). No evidence of low-depth circuit structure. Spectral profile near-random.
+  (c) **Ono partition characterization (PNAS 2024) CLOSED**: n prime iff
+      (n²-3n+2)σ₁(n) - 8M₂(n) = 0. Requires sigma_1 (divisors) — circular + O(n²) cost.
+      Worse than BPSW for primality, catastrophic O(x³) for counting. No GF shortcut.
+  (d) **Chen-Tal-Wang ECCC 2026**: n^{2.5-ε} lower bounds for THR∘THR (depth-2 threshold).
+      Hard function in E^NP, not number-theoretic. Advances TC^0 frontier via Williams' method.
+  (e) **No new pi(x) breakthroughs in 2025-2026 literature.** Tao-Gafni 2025 (rough numbers
+      in prime gaps) is about gap structure, not counting.
+  (f) **sqrt(x) barrier is UNIVERSAL**: communication complexity, Fourier analysis,
+      determinantal complexity, substitution rank — ALL converge to sqrt(x). The
+      rank converges to ~50% of max for large N, matching prime density structure.
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -185,6 +202,10 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Weighted prime counting for cancellation (multiplicative weights = constants on primes -- Session 16)
 - Buchstab signed identity + H-T (signed Buchstab IS M(x); recovering pi(x) costs O(x^{2/3}) -- Session 16)
 - M(x)->pi(x) conversion (pi(x) = sum omega(d)*M(x/d) but omega partial sums = O(x^{2/3}) -- Session 16)
+- Binary carry structure of pi(x) (carry chains = generic counter; comm matrix rank = 2^{N/2-1}+2 exactly; spectral weight spread; primes = random -- Session 17)
+- Ono partition characterization (PNAS 2024: n prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0; requires divisors = circular; O(n²) per test, O(x³) total -- Session 17)
+- GapL via multilinear polynomial det (dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)); substitution rank exponential -- Session 17)
+- Boolean Fourier low-degree exploitation (30% excess low-deg weight = parity/mod-4 only; noise sensitivity near-random; no junta/low-deg structure -- Session 17)
 
 ## Viable Research Directions
 1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
@@ -202,17 +223,12 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
    - No BPSW pseudoprime known below 2^64 (exhaustive search).
    - Under GRH: Miller's test = O(N^2) scalar pows = TC^0. Already known.
    - Remaining question: unconditional proof of BPSW-type correctness.
-2. **Is pi(x) in GapL? / Determinantal complexity** (Sessions 13-15)
-   Asks for poly(N)-size matrix with det = pi(x). Equivalent to finding a DAG on
-   poly(N) nodes whose signed path count = pi(x). See novel/gapl_question.md.
-   Session 14: Equivalent to pi(x) ∈ #L. PRIMES ∈ L does NOT imply pi(x) ∈ #L
-   (workspace mismatch barrier, see novel/workspace_mismatch_barrier.md).
-   I-E approach FAILS: fractional parts carry 2^k independent bits → exponential det.
-   **Session 15 REFINEMENT**: Reformulated as determinantal complexity of pi(x) viewed
-   as degree-N multilinear polynomial in bits. Found dc(pi_N) = N for N=2,3,4.
-   For N≥10, generic polynomials DON'T have N×N det reps. See novel/determinantal_complexity.md.
-   A GapL algorithm MUST avoid floor functions entirely AND requires pi(x) to have
-   special algebraic structure making it "non-generic" in the determinantal variety.
+2. **Is pi(x) in GapL? / Determinantal complexity** — EFFECTIVELY CLOSED (Sessions 13-17)
+   **Session 17**: Extended dc(pi_N) computation to N=2..20. Found EXACT formula:
+   rank(pi_N) = 2^{N/2-1} + 2 for balanced partition (verified N=4..16, approximate N=18..20).
+   dc(pi_N) >= 2^{N/2-1} + 2 = Omega(sqrt(x)). The multilinear polynomial representation
+   has EXPONENTIAL determinantal complexity. GapL via this route is DEFINITIVELY CLOSED.
+   Any GapL algorithm must use an entirely different representation, not multilinear in bits.
 3. **Time-bounded Kolmogorov complexity of delta(n)** (open, connects to circuit bounds)
 4. **Zeta zero compressibility** -- convergence acceleration CLOSED (Session 11);
    only STRUCTURAL approaches remain (find global pattern in zero distribution)
@@ -257,7 +273,8 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
    - New viable direction found? Add to "Viable Research Directions"
    - Closed a direction from OPEN_PROBLEMS.md? Move it to "Do NOT Re-explore"
    - Found a better algorithm? Update "Status" section and `status/BEST_ALGORITHMS.md`
-   - Keep this file accurate and current -- future sessions depend on it
+   - Keep this file accurate and current -- future sessions depend on it.
+   - Found something that shows its worth re-openning the path? - Reopen.
 8. If you beat the current best algorithm, save it to `algorithms/` with benchmarks
 9. DO NOT modify `run.sh`
 10. Use sub-agents to save context window

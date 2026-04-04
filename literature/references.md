@@ -363,5 +363,17 @@ Reduces ideal primality testing to Sigma_3^p ∩ Pi_3^p (under GRH). About IDEAL
 
 ---
 
-Generated: 2026-04-04 (updated Session 14)
+**Craig, W.; van Ittersum, J.-W.; Ono, K.** "Integer partitions detect the primes." PNAS 121(39), 2024. arXiv:2405.06451.
+Proves primes are solutions to infinitely many Diophantine equations in MacMahon partition functions. n>=2 prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0. Runner-up 2025 Cozzarelli Prize. Beautiful but computationally worse than BPSW (requires divisor computation, O(n²) per test).
+
+**Gafni, A.; Tao, T.** "Rough numbers between consecutive primes." arXiv:2508.06463, August 2025.
+Almost all prime gaps contain a rough number with lpf ≥ gap length. Confirms Erdős conjecture (problem #682). Number of exceptions ≤ O(X/log² X). Gap structure, not counting.
+
+**Dey, A.; Guo, Z.** "Debordering Closure Results in Determinantal and Pfaffian Ideals." arXiv:2511.16492, ECCC TR25-189, November 2025.
+Deborders Andrews-Forbes STOC 2022 result: for f in determinantal ideal with poly degree, determinant is exactly (not approximately) computed by constant-depth f-oracle circuit. Advances algebraic complexity but doesn't apply to pi(x).
+
+**Vijayaraghavan, T. C.** "The Complexity of Logarithmic Space Bounded Counting Classes." arXiv:2507.23563, December 2025.
+Comprehensive textbook on GapL and related classes. Standard GapL theory. No new results on counting primes.
+
+Generated: 2026-04-04 (updated Session 17)
 Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md

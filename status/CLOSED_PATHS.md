@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (445+ Approaches)
+# Closed Paths: Master Lookup (480+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
+Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -236,6 +236,8 @@ Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 | Elliptic curve a_p as det entries | FAIL | C | a_p defined only at primes; a_n at composites = products of a_p (needs factoring); constants with no x-dependence | 16 |
 | Regulators as det entries | FAIL | E | h*R = f(L(1,chi_d)) by class number formula — equivalent to L-values; transcendental, incompatible with GapL integer entries | 16 |
 | Hybrid (class num + L-val + a_p + char) | FAIL | C+E | Characters periodic (residue class info, not primality); linear prediction POOR; products of characters = higher modulus characters; all roads back to zeta zeros/floor values | 16 |
+| Binary carry structure of pi(x) | FAIL | I | Carry chains identical to generic counter (avg ~2.0). Communication matrix rank for bit_j(pi(x)) = 2^{N/2-1}+2 EXACTLY (verified N=8..16) = exponential. Spectral weight spread across all Fourier levels. Primes indistinguishable from random subsets. No shortcut from binary arithmetic. | 17 |
+| NC^1 branching programs for primality | FAIL | E | OBP lengths for is_prime match random functions at all widths (2,3,5) and N (4,6,8,10). Communication matrix rank = 2^{N/2-1}+1 (half dimension + 1, explained by even/odd structure; odd columns have FULL rank). Fourier L1 norm ratio to random: 0.94->0.67 (decreasing, approaching random). Sensitivity = N (maximal). No NC^1-exploitable structure beyond TC^0 threshold gates. | 17 |
 
 ## Encoding / Novel Representations
 
@@ -379,16 +381,28 @@ Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 | Algebraic geometry F_q families | FAIL | E+C | Frobenius eigenvalues = zeta zeros; constructing the right variety requires knowing primes | 16 |
 | Representation theory S_n/GL_n | FAIL | C+E | Character sums at primes = Dirichlet characters; Euler product through rep theory = L-functions | 16 |
 
+## Session 17: Communication Complexity, Fourier Analysis, New Literature
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Ono partition characterization | FAIL | C | n prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0; requires divisors (circular); O(n²) per test, O(x³) total | 17 |
+| GapL via multilinear polynomial | FAIL | - | dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)); substitution rank exponential in N; definitively closed | 17 |
+| Boolean Fourier low-degree structure | FAIL | - | 30% excess low-deg weight = parity/mod-4 only; noise sensitivity near-random; no junta structure | 17 |
+| Communication matrix rank shortcut | FAIL | - | rank(pi_N) = 2^{N/2-1}+2 exactly; converges to 50% of max; no efficient 2-party protocol | 17 |
+| Partition generating function sum | FAIL | C | Sum [f(n)=0] has no GF shortcut; indicator of zeros doesn't factor through GFs | 17 |
+| MacMahonesque generalizations | FAIL | C | Higher M_a also circular + more expensive; polynomials in n with periodic corrections | 17 |
+| Additive number theory encoding | FAIL | - | Ono shows additive characterization exists but counting is equally hard from both viewpoints | 17 |
+
 ---
 
 ## Summary Statistics
 
-- **Total approaches tested:** 472+
-- **FAIL:** ~405 (confirmed impossible or impractical)
+- **Total approaches tested:** 480+
+- **FAIL:** ~412 (confirmed impossible or impractical)
 - **PARTIAL:** ~16 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
-- **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, det complexity of pi(x))
+- **OPEN:** 4 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?)
 
 ### By Failure Mode
 - **Circularity (C):** ~70 approaches

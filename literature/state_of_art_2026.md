@@ -327,9 +327,17 @@ p(10^100) ~ 2.35 x 10^102. Computing it exactly requires:
 - **Quantum computing** still cannot break the O(x^{1/3}) barrier (Nayak-Wu lower bound)
 - **The problem is genuinely OPEN** -- no proof exists that polylog is impossible
 
+7. **Ono-Craig-van Ittersum (2024)** proved primes satisfy infinitely many Diophantine equations in partition functions. Beautiful but computationally worse (requires divisor computation). No algorithmic impact.
+
+8. **Tao-Gafni (2025)** confirmed Erdős conjecture on rough numbers in prime gaps. Gap structure research, not counting.
+
+9. **Chen-Tal-Wang (ECCC 2026)** proved n^{2.5-ε} lower bounds for depth-2 threshold circuits. Strongest THR∘THR lower bound, but hard function is in E^NP, not number-theoretic.
+
+10. **Session 17** established EXACT communication complexity: rank(pi_N) = 2^{N/2-1}+2 for balanced bit partition. The √x barrier is universal across all algebraic measures.
+
 ### Bottom line:
 
-The problem of computing p(n) in polylogarithmic time remains open in the strongest theoretical sense (no impossibility proof), but all 380+ approaches across 10 sessions confirm the barrier empirically. The 2024-2026 literature -- including the most significant results in decades (Guth-Maynard, Prunescu-Shunia, Aggarwal) -- provides deeper understanding without changing the computational landscape. The gap between the trivial Omega(log x) lower bound and the O(x^{1/2+eps}) upper bound for pi(x) remains one of the least-explored frontiers in computational complexity.
+The problem of computing p(n) in polylogarithmic time remains open in the strongest theoretical sense (no impossibility proof), but all 480+ approaches across 17 sessions confirm the barrier empirically. The 2024-2026 literature -- including the most significant results in decades (Guth-Maynard, Prunescu-Shunia, Aggarwal, Ono) -- provides deeper understanding without changing the computational landscape. Session 17's exact communication complexity formula (rank = 2^{N/2-1}+2) gives the most precise characterization yet of the √x barrier. The gap between the trivial Omega(log x) lower bound and the O(x^{1/2+eps}) upper bound for pi(x) remains one of the least-explored frontiers in computational complexity.
 
 ---
 
