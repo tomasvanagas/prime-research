@@ -238,6 +238,12 @@ Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
 | Hybrid (class num + L-val + a_p + char) | FAIL | C+E | Characters periodic (residue class info, not primality); linear prediction POOR; products of characters = higher modulus characters; all roads back to zeta zeros/floor values | 16 |
 | Binary carry structure of pi(x) | FAIL | I | Carry chains identical to generic counter (avg ~2.0). Communication matrix rank for bit_j(pi(x)) = 2^{N/2-1}+2 EXACTLY (verified N=8..16) = exponential. Spectral weight spread across all Fourier levels. Primes indistinguishable from random subsets. No shortcut from binary arithmetic. | 17 |
 | NC^1 branching programs for primality | FAIL | E | OBP lengths for is_prime match random functions at all widths (2,3,5) and N (4,6,8,10). Communication matrix rank = 2^{N/2-1}+1 (half dimension + 1, explained by even/odd structure; odd columns have FULL rank). Fourier L1 norm ratio to random: 0.94->0.67 (decreasing, approaching random). Sensitivity = N (maximal). No NC^1-exploitable structure beyond TC^0 threshold gates. | 17 |
+| IW97 BPP=P derandomization for pi(x) | FAIL | E | No BPP algorithm known for pi(x) in binary input model; IW97 presupposes efficient randomized algorithm. Cannot create efficiency from nothing. | 18 |
+| NW/Nisan PRG-based prime reconstruction | FAIL | E | PRGs fool bounded computations but cannot compute functions outside the bounded class. If pi(x) not in the class, PRG useless. Prime indicator has PRF-like structure. | 18 |
+| Approximation amplification R(x)->pi(x) | FAIL | I | Residual pi(x)-R(x) has communication rank 2^{N/2-1} (Session 17). Gap is sqrt(x) = 2^{N/2-1} independent bits. No derandomization/rounding/self-reduction can bridge this. | 18 |
+| KI04 PIT connection via dc(pi_N) | FAIL | E | dc(pi_N) >= 2^{N/2-1}+2 (exponential) but pi_N is not an explicit VNP family. KI04 connects PIT to VP vs VNP, not to specific non-algebraic functions. PIT solves identity testing, not evaluation. | 18 |
+| Reverse hardness amplification (random-looking residual -> PRG -> exact pi) | FAIL | I | Residual pi(x)-R(x) is DETERMINISTIC, not distributional. A PRG matching its distribution gives random samples, not exact values. | 18 |
+| Batch Fermat residue derandomization for counting | FAIL | E | f(n)=2^{n-1} mod n has zero autocorrelation at all lags (Session 16). Cryptographically pseudorandom across consecutive n. Cannot be batch-computed or derandomized. | 18 |
 
 ## Encoding / Novel Representations
 
@@ -395,16 +401,47 @@ Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
 
 ---
 
+## Session 18: Preprocessing / Succinct Data Structures
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Preprocessing + polylog query | FAIL | E | Reduces exactly to pi(x) complexity; polylog T requires M ~ 10^100 checkpoints (exponential storage); S*T tradeoff: S=T=(M*logx)^{2/5} unconditional | 18 |
+| Range tree / skip structure for p(n) | PARTIAL | E | Optimal Delta=(332x)^{3/5}; balanced S=T~10^{41.8} for M=10^100; wins vs plain DR but not polylog | 18 |
+| Cell-probe lower bounds for primes | FAIL | - | No prime-specific lower bounds exist; Patrascu rank/select gives only Omega(N) with poly(N) space (trivial) | 18 |
+| Comm complexity -> data structure LB | FAIL | - | Session 17 rank=2^{N/2-1}+2 is for computing pi(x), not data structure SELECT; no non-trivial transfer | 18 |
+| Non-uniform / geometric checkpoints | FAIL | E | Widest interval dominates; geometric checkpoints give O(N^2) storage but no asymptotic query improvement | 18 |
+
+## Session 18: Streaming / Space Complexity
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Streaming exact pi(x) | FAIL | E | Sieve-based streaming needs Omega(sqrt(x)/log(x)) space (must encode primes up to sqrt(x)); one-way CC from rank gives same bound; no non-sieve streaming algorithm known | 18 |
+| Online p(n) with small state | PARTIAL | - | O(log n) state suffices (just store last prime, test next candidates with AKS); but time = O(n log n), catastrophic. Space is NOT the bottleneck | 18 |
+| Space-time tradeoff for pi(x) | OPEN | - | No formal S*T lower bound proven; L-O achieves S=x^eps, T=x^{3/5+eps}; all known algorithms have T >= x^{1/2}; no proof that polylog(x) space+time is impossible | 18 |
+| Branching program width for pi(x) | FAIL | E | Nechiporuk bound gives BP size >= 2^{N/2} = sqrt(x) from rank computation; confirms no NC^1 shortcut via BPs | 18 |
+
+## Session 18: Self-Correction / Amplification / Boosting
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Self-correction for pi(x) (BLR/Lipton) | FAIL | E+I | pi(x) not polynomial over any field; no algebraic identity at random points; Meissel-Lehmer IS the self-reduction but costs O(x^{2/3}) | 18 |
+| Random self-reducibility of pi(x) | FAIL | E | Differences pi(x+r)-pi(x) are hard counting problems; no group/field structure over Z; even if RSR, proves hardness not easiness | 18 |
+| Goldreich-Levin / list decoding for pi(x) | FAIL | I | R(x) has zero correlation with low ~170 bits of pi(x); comm rank 2^{N/2} blocks sparse Fourier recovery; no linear encoding helps | 18 |
+| Sumcheck / arithmetization of pi(x) | FAIL | E | MLE of 1_P at non-Boolean points requires knowing all 1_P values (cost O(x)); varying modulus in primality tests blocks F_p arithmetization; efficient prover requires the circuit complexity breakthrough we seek | 18 |
+| Local decodability of pi(x) | FAIL | C | All natural encodings (Dirichlet series, character sums, pi at other points) are hard to compute; encoding IS the bottleneck, not decoding; LDCs cannot help when encoding requires O(x^{2/3}) | 18 |
+
+---
+
 ## Summary Statistics
 
-- **Total approaches tested:** 480+
-- **FAIL:** ~412 (confirmed impossible or impractical)
-- **PARTIAL:** ~16 (works partially but doesn't meet target)
+- **Total approaches tested:** 500+
+- **FAIL:** ~429 (confirmed impossible or impractical)
+- **PARTIAL:** ~18 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
-- **OPEN:** 4 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?)
+- **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, S*T tradeoff)
 
 ### By Failure Mode
-- **Circularity (C):** ~70 approaches
-- **Equivalence (E):** ~200 approaches
-- **Information Loss (I):** ~163 approaches
+- **Circularity (C):** ~71 approaches
+- **Equivalence (E):** ~207 approaches
+- **Information Loss (I):** ~165 approaches

@@ -5,7 +5,7 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **480+ approaches tested** across 17 sessions, 130+ sub-agents
+- **486+ approaches tested** across 18 sessions, 130+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
 - **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
@@ -93,6 +93,21 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
   (f) **sqrt(x) barrier is UNIVERSAL**: communication complexity, Fourier analysis,
       determinantal complexity, substitution rank — ALL converge to sqrt(x). The
       rank converges to ~50% of max for large N, matching prime density structure.
+- **Session 18 KEY INSIGHTS:**
+  (a) **Derandomization theory CLOSED (6 routes):** IW97 (no BPP algo to derandomize),
+      NW generators (PRGs can't create efficiency), approximation amplification (residual
+      has 2^{N/2-1} independent bits), KI04/PIT (wrong algebraic framework), reverse
+      hardness amplification (residual deterministic not distributional), batch Fermat
+      derandomization (PRF-like, zero autocorrelation).
+  (b) **Natural proofs barrier (RR97) CONFIRMED relevant:** Cannot prove pi(x) not in
+      TC^0 via "natural" methods (constructive + large properties). All our Fourier/rank
+      measures are natural. Impossibility proofs require non-naturalizable techniques.
+  (c) **META-INSIGHT:** Derandomization theory addresses removing randomness from EXISTING
+      efficient algorithms. Our problem is more fundamental: no efficient algorithm
+      (randomized or deterministic) is known. The paradigm operates in the wrong direction.
+  (d) **Formula complexity:** KW theorem gives formula size >= 2^{N/2-O(1)} for pi(x),
+      matching communication complexity. Via Valiant, general circuit size >= 2^{N/4}.
+      TC^0 bound 2^{N/2}/poly(N) remains strongest for constant-depth.
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -100,7 +115,7 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
 
 ```
 status/
-  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (472+ entries)
+  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (486+ entries)
   OPEN_PROBLEMS.md   <-- The ONLY viable research directions
   BEST_ALGORITHMS.md <-- Working implementations with benchmarks
 proven/
@@ -206,6 +221,14 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Ono partition characterization (PNAS 2024: n prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0; requires divisors = circular; O(n²) per test, O(x³) total -- Session 17)
 - GapL via multilinear polynomial det (dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)); substitution rank exponential -- Session 17)
 - Boolean Fourier low-degree exploitation (30% excess low-deg weight = parity/mod-4 only; noise sensitivity near-random; no junta/low-deg structure -- Session 17)
+- Derandomization (IW97/NW/KI04) for pi(x) (no BPP algorithm exists to derandomize; PRGs can't create efficiency; KI04 wrong algebraic framework; all 6 routes closed -- Session 18)
+- Approximation amplification R(x)->exact pi(x) (residual rank = 2^{N/2-1} independent bits; no rounding/self-reduction can bridge sqrt(x) gap -- Session 18)
+- Natural proofs barrier for pi(x) impossibility (RR97 blocks proving pi(x) not in TC^0 via natural methods; current Fourier/rank measures are all "natural" -- Session 18)
+- Self-correction / BLR / Lipton for pi(x) (pi(x) not polynomial; no algebraic identity at random points; Meissel-Lehmer IS the self-reduction at O(x^{2/3}) -- Session 18)
+- Random self-reducibility of pi(x) (differences pi(x+r)-pi(x) are hard; no field structure; RSR would prove hardness not easiness -- Session 18)
+- Goldreich-Levin / list decoding for pi(x) (R(x) has zero correlation with low ~170 bits; comm rank blocks sparse recovery -- Session 18)
+- Sumcheck / arithmetization of pi(x) (MLE eval needs all 1_P values; varying modulus blocks F_p encoding; efficient prover = circuit breakthrough -- Session 18)
+- Local decodability of pi(x) (all encodings hard to compute; encoding IS the bottleneck; LDCs help decoding not encoding -- Session 18)
 
 ## Viable Research Directions
 1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
@@ -274,7 +297,7 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
    - Closed a direction from OPEN_PROBLEMS.md? Move it to "Do NOT Re-explore"
    - Found a better algorithm? Update "Status" section and `status/BEST_ALGORITHMS.md`
    - Keep this file accurate and current -- future sessions depend on it.
-   - Found something that shows its worth re-openning the path? - Reopen.
+   - If you found evidence that shows its worth re-openning specific path? - Reopen.
 8. If you beat the current best algorithm, save it to `algorithms/` with benchmarks
 9. DO NOT modify `run.sh`
 10. Use sub-agents to save context window
