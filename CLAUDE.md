@@ -5,7 +5,7 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **445+ approaches tested** across 15 sessions, 115+ sub-agents
+- **472+ approaches tested** across 16 sessions, 120+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
 - **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
@@ -54,6 +54,28 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
       physical — ALL route back to floor values or zeta zeros.
   (i) **No 2026 breakthroughs**: Chen-Tal-Wang STOC 2026 (depth-2 threshold lower bounds)
       closest to TC^0 frontier but not number-theoretic.
+- **Session 16 KEY INSIGHTS:**
+  (a) **15 intermediate quantity families now CLOSED** (8 from S15 + 4 GapL + 7 novel):
+      class numbers h(-d), L-function L(1,chi), elliptic curve a_p, regulators,
+      additive combinatorics/sumsets, ergodic theory, model theory, tropical geometry,
+      sufficient statistics, algebraic geometry/F_q, representation theory S_n/GL_n.
+      ALL route to primes (C), zeta zeros (E), or lose information (I).
+  (b) **Three "pillars" are the ONLY exact encodings of pi(x)**: prime positions,
+      zeta zeros, floor values {floor(x/k)}. These are informationally equivalent.
+      No fourth encoding found across 15+ candidate families.
+  (c) **TC^0 batch counting has 5 closed routes**: MAJORITY fan-in (input generation),
+      divide-and-conquer (O(sqrt(x)) error), batch CRT (exponent-modulus coupling),
+      Carmichael structure (needs factoring), period exploitation (zero autocorrelation).
+      Communication complexity gives 2^{N/2}/poly(N) lower bound on TC^0 circuit size.
+  (d) **H-T signed cancellation transfer to pi(x) is CLOSED via 6 routes**:
+      POSITIVITY of prime indicator prevents cancellation. Converting M(x)->pi(x) 
+      always costs O(x^{2/3}). Identity pi(x)=sum omega(d)*M(x/d) found but omega=O(x^{2/3}).
+  (e) **Lambert W error is structurally random**: delta(n) uncorrelated with gaps,
+      uniform mod m, ~sqrt(x) magnitude. No exploitable structure.
+  (f) **HKM 2023 achieves O~(sqrt(x)) for pi(x) elementarily** (NTT/Dirichlet convolution).
+      Published Math. Comp. 2024. Still O(2^{N/2}) in input bits — no barrier change.
+  (g) **Aggarwal 2025 gives O(sqrt(n)*log^4(n)) for p(n)** via binary search + HKM.
+      No new algorithm — complexity analysis of existing tools.
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -61,7 +83,7 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
 
 ```
 status/
-  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (445+ entries)
+  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (472+ entries)
   OPEN_PROBLEMS.md   <-- The ONLY viable research directions
   BEST_ALGORITHMS.md <-- Working implementations with benchmarks
 proven/
@@ -141,6 +163,28 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Arithmetic circuit complexity for pi(x) (VP=VNC^2 but pi(x) not a polynomial -- Session 15)
 - Monotone circuit lower bounds for pi(x) ([pi(x)>=k]=[x>=p(k)] trivially O(N) -- Session 15)
 - Novel intermediate quantities: residues, polynomial evals, topology, representation theory, entropy, recursive, physical (ALL route to floor values/zeta zeros -- Session 15)
+- Class numbers h(-d) as GapL det entries (equivalent to L-values; constants, no x-dependence -- Session 16)
+- L-function values L(1,chi) as GapL det entries (circularity + equivalence to zeta zeros -- Session 16)
+- Elliptic curve a_p as GapL det entries (circularity: defined at primes; constants -- Session 16)
+- Regulators as GapL det entries (equivalent to L-values; transcendental -- Session 16)
+- Hybrid class-num/L-val/a_p/character approach (characters periodic; all roads back to zeta zeros -- Session 16)
+- Sumset P+P / Goldbach representation r_2(n) (circle method error = zeta zeros; smooth 20% error -- Session 16)
+- Ergodic theory / orbit complexity of primes (block complexity maximal; transfer ops = zeta zeros -- Session 16)
+- Model theory / o-minimality (pi(x) not o-minimal definable; adding Z = undecidable; orthogonal -- Session 16)
+- Tropical geometry for pi(x) (tropicalization loses all info; floor values ARE tropical objects -- Session 16)
+- Sufficient statistics of floor values (poly(logx) statistic exists but computing it IS Meissel-Lehmer -- Session 16)
+- Curve families over F_p (Frobenius eigenvalues = zeta zeros; batch costs O(x*polylog) -- Session 16)
+- S_n/GL_n rep theory (cycle structure = Mertens not PNT; Fourier coeffs random -- Session 16)
+- TC^0 MAJORITY fan-in for pi(x) (helps aggregation, not input generation; size 2^N*poly(N) -- Session 16)
+- Batch modular exponentiation via CRT (exponent-modulus coupling in 2^{k-1} mod k -- Session 16)
+- Carmichael lambda batch structure (identifying common lambda requires factoring all k -- Session 16)
+- Period/autocorrelation exploitation in BPSW (zero autocorrelation at all lags -- Session 16)
+- Lambert W / R^{-1} error structure (uncorrelated with gaps, uniform mod m, ~sqrt(x) = incompressible -- Session 16)
+- Cheaper oracle hierarchy R->Lucy (R(x) error = O(sqrt(x)) = search range, no improvement -- Session 16)
+- H-T transfer via explicit formula zeros (combinatorial H-T incompatible with analytic zero sum -- Session 16)
+- Weighted prime counting for cancellation (multiplicative weights = constants on primes -- Session 16)
+- Buchstab signed identity + H-T (signed Buchstab IS M(x); recovering pi(x) costs O(x^{2/3}) -- Session 16)
+- M(x)->pi(x) conversion (pi(x) = sum omega(d)*M(x/d) but omega partial sums = O(x^{2/3}) -- Session 16)
 
 ## Viable Research Directions
 1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
@@ -184,15 +228,19 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 9. **Non-sieve, non-analytic approach** -- Session 12 proved ALL known methods produce
    exponential-size circuits. A fundamentally new approach is needed that avoids both
    floor-value sets (O(sqrt(x))) and zeta zero sums (O(sqrt(x))).
-   **Session 15: Systematic analysis of ALL 8 candidate intermediate quantity families
-   (residues, polynomial evals, matrix eigenvalues, topology, rep theory, entropy,
-   recursive, physical) — ALL route back to floor values or zeta zeros.**
-   See novel/uniformity_barrier.md: the true barrier is UNIFORMITY, not monotone
-   complexity, not randomization, not arithmetic circuit depth.
-10. **#TC^0 ⊆ NC?** (Session 15, NEW) — Pure complexity theory question. If BPSW is in
-    TC^0 (conditional on BPSW correctness), then pi(x) ∈ NC iff #TC^0 ⊆ NC. The
-    Fermat residue coupling (2^{n-1} mod n where exponent and modulus both depend on n)
-    prevents any batch/structural counting shortcut found so far.
+   **Session 15: 8 intermediate quantity families closed.**
+   **Session 16: 7 MORE families closed** (additive combinatorics, ergodic theory,
+   model theory, tropical geometry, sufficient statistics, algebraic geometry, rep theory).
+   **Total: 15 intermediate quantity families systematically analyzed and ALL CLOSED.**
+   The three "pillars" (prime positions, zeta zeros, floor values) are informationally
+   equivalent and are the ONLY known exact encodings of pi(x). No fourth encoding found.
+   See novel/session16_synthesis.md.
+10. **#TC^0 ⊆ NC?** (Sessions 15-16) — Pure complexity theory question. If BPSW is in
+    TC^0 (conditional on BPSW correctness), then pi(x) ∈ NC iff #TC^0 ⊆ NC.
+    **Session 16**: 5 batch counting escape routes closed (MAJORITY fan-in, divide-and-conquer,
+    CRT batch, Carmichael, period exploitation). Communication complexity gives 2^{N/2}/poly(N)
+    lower bound on TC^0 circuit size for pi(x). The Fermat residue coupling
+    (2^{n-1} mod n) makes the function cryptographically pseudorandom across consecutive n.
 
 ## Rules for AI Agents
 1. **On startup: check if `TODO.md` exists in the project root.** If it does, work

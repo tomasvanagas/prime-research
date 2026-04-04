@@ -225,8 +225,17 @@ Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 | Arithmetic circuit complexity path | FAIL | E | VP=VNC^2 (VSBR): depth is FREE in algebraic model. But pi(x) is NOT a polynomial over fields. Tau conjecture orthogonal. Does not offer new viable path | 15 |
 | Monotone complexity lower bounds | FAIL | - | [pi(x)>=k]=[x>=p(k)] has TRIVIAL O(N) monotone complexity. Individual bits of pi(x) NOT monotone. Approach doesn't capture hardness of pi(x) | 15 |
 | #TC^0 counting for BPSW | OPEN | E | If BPSW∈TC^0, pi(x)∈NC iff #TC^0⊆NC. Fermat residue coupling (2^{n-1} mod n) prevents batch counting. Equivalent difficulty to original problem | 15 |
+| TC^0 MAJORITY fan-in for pi(x) | FAIL | E | MAJORITY can aggregate x bits in O(1) depth, but generating x=2^N input bits costs 2^N*poly(N). Bottleneck is INPUT GENERATION not aggregation | 16 |
+| Batch modular exp via CRT | FAIL | E | f(k)=2^{k-1} mod k: CRT decomposition requires factoring all k (O(x log log x)); zero autocorrelation; decoupling exponent from modulus loses primality testing | 16 |
+| Algebraic batch via Carmichael lambda | FAIL | E | f(k)=2^{(k-1) mod lambda(k)} mod k; computing lambda(k) for all k requires complete factorization sieve O(x); no aggregation shortcut | 16 |
+| Period/Fourier exploitation of f(k) | FAIL | E | g_p(k)=2^{k-1} mod p has period lcm(ord_p(2),p), but k has varying factorization; mutual info between BPSW(n), BPSW(n+k) near zero for all lags | 16 |
 | Novel intermediate quantity families | FAIL | E | Systematic analysis of 8 families (residues, polynomial evals, matrix eigenvalues, topology, representation theory, entropy, recursive, physical). ALL route back to floor values or zeta zeros. Only #TC^0 counting not immediately closed | 15 |
 | Determinantal complexity of pi(x) | OPEN | - | pi(x) = degree-N multilinear polynomial in bits. Found N×N det reps for N=2,3,4. dc(pi_N)=poly(N) iff pi(x)∈GapL. For N>=10, generic polynomials DON'T have N×N det reps — pi(x) would need special structure | 15 |
+| Class numbers h(-d) as det entries | FAIL | E | h(-d) = (w*sqrt(d))/(2*pi)*L(1,chi_d) — equivalent to L-values; constants with no x-dependence; cannot be affine-linear matrix entries | 16 |
+| L-function values L(1,chi) as det entries | FAIL | C+E | Partial L-functions need primes (circularity); full values are global aggregates; inverting = explicit formula (equivalence to zeta zeros) | 16 |
+| Elliptic curve a_p as det entries | FAIL | C | a_p defined only at primes; a_n at composites = products of a_p (needs factoring); constants with no x-dependence | 16 |
+| Regulators as det entries | FAIL | E | h*R = f(L(1,chi_d)) by class number formula — equivalent to L-values; transcendental, incompatible with GapL integer entries | 16 |
+| Hybrid (class num + L-val + a_p + char) | FAIL | C+E | Characters periodic (residue class info, not primality); linear prediction POOR; products of characters = higher modulus characters; all roads back to zeta zeros/floor values | 16 |
 
 ## Encoding / Novel Representations
 
@@ -259,6 +268,13 @@ Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 | Ono-Craig partition detection | FAIL | E | O(n^2) per test -- worse than Miller-Rabin | 4 |
 | Partition-based (Ono-Craig) | FAIL | - | Detects primes but CANNOT be inverted | 6 |
 | Additive structure (7 methods) | FAIL | I | No exploitable structure | 9 |
+| Sumset P+P / representation r_2(n) | FAIL | E+C | r_2(n) defined in terms of primes; HL circle method error = zeta zeros; smooth sum gives 20% error | 16 |
+| Ergodic theory / orbit complexity | FAIL | E+C | Block complexity maximal; entropy 5.04 bits/prime irreducible; transfer ops = zeta zeros; Gauss map unrelated | 16 |
+| Model theory / o-minimality | FAIL | - | pi(x) not definable in o-minimal structures (step function); adding Z = undecidable; cell count O(N/lnN); orthogonal to computation | 16 |
+| Tropical geometry for pi(x) | FAIL | I+E | Tropicalization loses all info (min=smallest prime); floor values ARE tropical objects; no new content | 16 |
+| Sufficient statistics of floor values | FAIL | E | poly(logx)-bit statistic EXISTS but computing it from floor values IS the Meissel-Lehmer problem; no compression shortcut | 16 |
+| Curve families over F_p for pi(x) | FAIL | E+C | a_p encodes L(E,s) not pi(x); AKS variety costs O(x*polylog); Frobenius eigenvalues = zeta zeros | 16 |
+| S_n/GL_n representation theory | FAIL | C+E | Cycle structure gives sum 1/p ~ loglogn (Mertens, not pi); P(k) recovery cond~10^26; Fourier coeffs O(sqrt(pi(N))) random | 16 |
 
 ## Gap Prediction / Interpolation
 
@@ -341,19 +357,40 @@ Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 | Smooth/rough decomposition | FAIL | E | When B≥sqrt(x), rough numbers = primes (exact). But computing rough count IS the sieve. No shortcut | 14 |
 | QFT deterministic (Grantham) | OPEN | - | QFT IS in TC^0; 4 PSPs below 50000; error < 1/7710. Deterministic correctness unknown without GRH | 13 |
 | BPSW unconditional correctness | OPEN | - | BPSW IS in TC^0 as computation. No pseudoprime below 2^64. Proving correctness ⟺ PRIMES in TC^0 | 13 |
+| Class number h(-d) as det entry | FAIL | E | h(-d) = (w*sqrt(d))/(2pi) * L(1,chi_d); constants, no x-dependence; equivalent to L-values | 16 |
+| L-function L(1,chi) as det entry | FAIL | C+E | Partial L-functions need primes (C); full L-values global, no x-dependence; inversion = zeta zeros (E) | 16 |
+| Elliptic curve a_p as det entry | FAIL | C | a_p defined only at primes; a_n for composite needs factoring; #E(Z/nZ) multiplicative, doesn't encode pi(x) | 16 |
+| Number field regulators as det entry | FAIL | E | h*R = f(L(1,chi)) by class number formula; transcendental, incompatible with integer GapL entries | 16 |
+| TC^0 MAJORITY fan-in for pi(x) | FAIL | E | Inputs (BPSW(k)) must be computed first; MAJORITY helps aggregation, not generation; size 2^N * poly(N) | 16 |
+| Batch modular exp via CRT | FAIL | E | 2^{k-1} mod k: exponent-modulus coupling prevents batch. Fixed-base CRT computes different function | 16 |
+| Carmichael lambda batch structure | FAIL | C | Identifying common lambda(k) requires factoring all k; no batch shortcut | 16 |
+| Period exploitation in BPSW | FAIL | E | Autocorrelation of BPSW(n) ≈ 0 at all lags; no periodic structure | 16 |
+| Lambda W error structure exploitation | FAIL | I | delta(n) uncorrelated with gaps (r~0.01); uniform mod m; power law ~sqrt(x); incompressible | 16 |
+| Cheaper oracle hierarchy (R -> Lucy DP) | FAIL | I | R(x) error O(sqrt(x)) = same as search range; saves constants only, not asymptotics | 16 |
+| H-T transfer via explicit formula zeros | FAIL | E | H-T is combinatorial; zero sum is analytic; incompatible techniques | 16 |
+| Weighted prime counting for cancellation | FAIL | E | Multiplicative weights collapse to constants on primes; non-multiplicative lose sieve structure | 16 |
+| Buchstab signed identity + H-T | FAIL | E | Signed Buchstab IS M(x); recovering pi(x) needs A_3, A_5 terms at O(x^{2/3}). The conversion M(x) -> pi(x) costs O(x^{2/3}) minimum | 16 |
+| M(x) -> pi(x) conversion identity | FAIL | E | pi(x) = sum omega(d)*M(floor(x/d)); omega partial sums cost O(x^{2/3}). All conversion paths cost >= O(x^{2/3}) | 16 |
+| Additive combinatorics / sumsets | FAIL | E | r(n) representations via circle method = zeta zeros; Goldbach-type identities don't give pi(x) | 16 |
+| Ergodic theory / orbit complexity | FAIL | E+C | Transfer operators have spectral theory = zeta zeros; Furstenberg correspondence is circular | 16 |
+| Model theory / o-minimality | FAIL | - | o-minimal structures can't represent step functions like pi(x); definability orthogonal to computation | 16 |
+| Tropical geometry of P(s) | FAIL | I+E | Tropicalization loses all but smallest prime factor; tropical convolution = standard convolution | 16 |
+| Sufficient statistics of floor values | FAIL | I | Any T with |T|=poly(log x) determining pi(x) must encode O(N/2) bits; hashing loses exactness | 16 |
+| Algebraic geometry F_q families | FAIL | E+C | Frobenius eigenvalues = zeta zeros; constructing the right variety requires knowing primes | 16 |
+| Representation theory S_n/GL_n | FAIL | C+E | Character sums at primes = Dirichlet characters; Euler product through rep theory = L-functions | 16 |
 
 ---
 
 ## Summary Statistics
 
-- **Total approaches tested:** 445+
-- **FAIL:** ~385 (confirmed impossible or impractical)
+- **Total approaches tested:** 472+
+- **FAIL:** ~405 (confirmed impossible or impractical)
 - **PARTIAL:** ~16 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
 - **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, det complexity of pi(x))
 
 ### By Failure Mode
-- **Circularity (C):** ~65 approaches
-- **Equivalence (E):** ~190 approaches
-- **Information Loss (I):** ~160 approaches
+- **Circularity (C):** ~70 approaches
+- **Equivalence (E):** ~200 approaches
+- **Information Loss (I):** ~163 approaches

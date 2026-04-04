@@ -26,7 +26,33 @@ Last updated: 2026-04-04
 
 **Does it change the barrier?** No. Still O(x^{2/3}).
 
-### 1.2 Analytic Methods (Best Theoretical)
+### 1.2 Hirsch-Kessler-Mendlovic: Elementary O~(sqrt(N)) (2022/2024)
+
+**Source:** arXiv:2212.09857; Mathematics of Computation (2024, peer-reviewed)
+**Implementation:** https://github.com/PrimeCounting/PrimeCounting (C++ and Python)
+
+**The breakthrough:** First ELEMENTARY (non-analytic) algorithm matching the analytic
+O(x^{1/2+eps}) bound for pi(x). Uses Dirichlet convolutions via NTT (Number Theoretic
+Transform) to speed up the combinatorial approach from O(x^{2/3}) to O(sqrt(x) * log^{5/2} x).
+
+**Key features:**
+- No complex analysis, no zeta zeros, no arbitrary-precision complex arithmetic
+- Space-time tradeoff: O~(sqrt(N)) time/space, or O~(N^{1/3}) space with O~(N^{8/15}) time
+- Also improves: Mertens function to O~(sqrt(N)) (from O~(N^{0.6})), Euler totient sum, etc.
+
+**Benchmarks (single core, Intel i3-1005G1):**
+| N | Time |
+|---|------|
+| 10^10 | 1.23s |
+| 10^12 | 14.6s |
+| 10^14 | 127s |
+
+**Practical comparison:** ~400x slower than primecount at 10^14 despite better asymptotics.
+Crossover point likely around N ~ 10^{30}+, computationally unreachable for either method.
+
+**Does it change the barrier?** No. Still O(x^{1/2+eps}) = O(2^{N/2+eps}), exponential in input bits.
+
+### 1.3 Analytic Methods (Best Theoretical)
 
 **Current best asymptotic:** O(x^{1/2+eps}) -- Lagarias-Odlyzko (1987)
 
@@ -40,7 +66,7 @@ Last updated: 2026-04-04
 
 **Does it change the barrier?** No. O(x^{1/2+eps}) has stood since 1987.
 
-### 1.3 Aggarwal: Complexity of Computing p(n) (October 2025)
+### 1.4 Aggarwal: Complexity of Computing p(n) (October 2025)
 
 **Source:** arXiv:2510.16285
 

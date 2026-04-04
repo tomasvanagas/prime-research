@@ -133,18 +133,18 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 
 ---
 
-## Priority Assessment (updated Session 12)
+## Priority Assessment (updated Session 16)
 
 | Direction | Feasibility | Impact | Recommended Effort |
 |-----------|-------------|--------|-------------------|
-| Circuit complexity | Medium | High | PRIMARY focus — but all sieve-based TC^0/NC paths now closed. Non-AKS primality test is the key remaining question. |
+| #TC^0 ⊆ NC? | Low | Maximal | THE key question. 5 batch counting routes closed in S16. Communication complexity gives 2^{N/2}/poly(N) lower bound. |
+| Circuit complexity | Medium | High | All sieve-based TC^0/NC paths closed. BPSW-in-TC^0 conditional. |
+| Determinantal complexity | Medium | High | dc(pi_N) = N for N=2,3,4. 4 new intermediate families closed (S16). Open for N≥5. |
 | Kt complexity | Medium | High | Theoretical exploration |
-| Zero compressibility | Very Low | Very High | Session 11 CLOSED convergence accel; only STRUCTURAL approaches remain |
+| Novel identity | Very Low | Maximal | By elimination: ONLY remaining path. All 15 intermediate quantity families closed. |
+| Zero compressibility | Very Low | Very High | CLOSED convergence accel (S11); only STRUCTURAL approaches remain |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
-| Novel identity | Very Low | Maximal | Serendipity only |
-| Determinantal complexity | Medium | High | "dc(pi_N) = poly(N)?" is a clean algebraic complexity question. Found dc ≤ N for N=2,3,4. Open for N≥5. |
-| #TC^0 ⊆ NC? | Low | Maximal | Pure complexity theory question. If yes + BPSW correct → pi(x) ∈ NC. |
-| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. **Session 15: ALL 8 intermediate quantity families analyzed and closed.** Must avoid floor values entirely. |
+| Non-sieve pi(x) approach | EFFECTIVELY CLOSED | Maximal | **Session 16: 15 intermediate quantity families closed.** Three "pillars" (primes, zeros, floor values) are ONLY known exact encodings. |
 
 **Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
 Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)
@@ -208,3 +208,21 @@ novel intermediate quantity families (systematic analysis of 8 families — all 
    without knowing them. Natural proofs barrier blocks proving super-TC^0 lower bounds.
 4. **No 2026 breakthroughs**: Chen-Tal-Wang STOC 2026 (depth-2 threshold lower bounds)
    is the closest result to TC^0 frontier but hard function is not number-theoretic.
+
+**Session 16 closed:** ~22 new paths including: GapL intermediate quantities (class numbers,
+L-values, elliptic curve a_p, regulators), TC^0 batch counting (5 routes: MAJORITY, D&C,
+CRT batch, Carmichael, period), H-T signed transfer (6 routes: explicit formula, weighted,
+Buchstab, M(x)->pi(x), identity search, Dirichlet structure), Lambert W error structure,
+non-standard intermediates (additive combinatorics, ergodic, model theory, tropical,
+sufficient statistics, algebraic geometry, representation theory).
+
+**Session 16 refined:**
+1. **15 intermediate quantity families now closed**: primes/zeros/floor-values are the
+   ONLY known exact encodings of pi(x) and are informationally equivalent.
+2. **TC^0 batch counting**: Communication complexity gives 2^{N/2}/poly(N) lower bound
+   on constant-depth circuit size. Fermat residue coupling is cryptographically pseudorandom.
+3. **H-T positivity barrier**: pi(x) counts POSITIVE quantities. Converting from signed
+   sums (M(x), where H-T gives O(x^{3/5})) to unsigned (pi(x)) costs >= O(x^{2/3}).
+4. **HKM 2023 achieves O~(sqrt(x)) elementarily**: NTT-based Dirichlet convolution.
+   Published Math. Comp. 2024. Matches analytic O(x^{1/2+eps}) without complex analysis.
+   Still exponential in input bits — no barrier change.

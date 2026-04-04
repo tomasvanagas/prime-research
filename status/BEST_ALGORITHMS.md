@@ -81,6 +81,37 @@ One Lucy DP call + table lookup. Zero search. Simpler but slower for large n.
 
 ---
 
+## Comparison: Our v10 vs State-of-Art
+
+### Our v10 (Lucy DP) vs primecount (Gourdon) vs HKM (NTT)
+
+| Aspect | Our v10 | primecount (Gourdon) | HKM 2023 |
+|--------|---------|---------------------|----------|
+| Algorithm | Lucy_Hedgehog DP | Gourdon (Deleglise-Rivat variant) | NTT Dirichlet convolution |
+| Complexity | O(x^{2/3}) | O(x^{2/3}/log^2 x) | O(sqrt(x) * log^{5/2} x) |
+| p(10^9) | 0.175s | ~ms | ~0.35s |
+| p(10^12) | ~hours | ~seconds | ~14.6s |
+| p(10^14) | infeasible | ~minutes | ~127s |
+| Parallelism | None | OpenMP + SIMD/AVX512 | Possible via NTT |
+| Language | C (via ctypes) | C++ (highly optimized) | C++ |
+| Space | O(sqrt(x)) | O(x^{1/3}) | O(sqrt(x)) or O(x^{1/3}) |
+
+### Why primecount is 100-1000x faster than our v10:
+1. **Algorithm:** Gourdon's variant vs basic Lucy DP — different handling of "special leaves"
+2. **Segmented sieve:** primecount uses cache-friendly segmented sieve for hard special leaves
+3. **SIMD acceleration:** AVX512/POPCNT for bit-level sieve operations
+4. **OpenMP:** Parallel computation across CPU cores
+5. **Memory optimization:** Compressed lookup tables, cache-line alignment
+6. **Lucy DP is naive:** Our v10 does ALL floor values sequentially; Gourdon decomposes
+   the computation into ordinary/easy/hard leaves with different optimization strategies
+
+### Key insight for our project:
+All three methods are O(2^{Theta(N)}) in input bits N = log x. Engineering optimizations
+(primecount) give 100-1000x constant-factor speedup. Asymptotic improvement (HKM) gives
+better exponent (N/2 vs 2N/3) but worse constants. NEITHER approaches poly(N).
+
+---
+
 ## For p(10^100) Specifically
 
 Best known result: R^{-1}(10^100) gives ~50/103 correct digits in 0.32s.

@@ -39,8 +39,11 @@ Rigorous interval-arithmetic implementation of analytic pi(x). Computed pi(10^25
 **Walisch, K.** primecount library. [GitHub](https://github.com/kimwalisch/primecount)
 State-of-art implementation of Deleglise-Rivat and Gourdon algorithms. Parallelized, computes pi(10^25) in 330 CPU core hours. Versions 8.0-8.4 (2025-2026) added 128-bit API, SIMD Gourdon D formula, AVX512/ARM SVE support.
 
+**Hirsch, D.; Kessler, I.; Mendlovic, U.** "Computing pi(N): An elementary approach in O~(sqrt(N)) time." arXiv:2212.09857, December 2022; Mathematics of Computation (published November 2024). [arXiv](https://arxiv.org/abs/2212.09857) [AMS](https://www.ams.org/journals/mcom/0000-000-00/S0025-5718-2024-04039-5/) [GitHub](https://github.com/PrimeCounting/PrimeCounting)
+First elementary (non-analytic) algorithm achieving O(sqrt(N) * (log N)^{5/2}) for pi(N), matching Lagarias-Odlyzko asymptotics without complex analysis. Uses NTT-based Dirichlet convolutions extending the hyperbola method. Space-time tradeoff: O(N^{8/15}) time with O(N^{1/3}) space. Also improves Mertens function, totient sum, square-free counting. In practice ~400x slower than primecount at N=10^{14} due to constants. Peer-reviewed (Math. Comp.).
+
 **Aggarwal, A.** "A Note on Algorithms for Computing p_n." arXiv:2510.16285, October 2025. [arXiv](https://arxiv.org/abs/2510.16285)
-Proves p(n) computable in O(sqrt(n) * (log n)^4) via binary search on pi(x). Conditional: O(sqrt(n) * (log n)^{7/2} * log log n) under RH + Cramer. Proves sieve-based methods cannot beat binary-search-on-pi(x) asymptotically.
+Proves p(n) computable in O(sqrt(n) * (log n)^4) via binary search on pi(x) using HKM algorithm. Conditional: O(sqrt(n) * (log n)^{7/2} * log log n) under RH + Cramer. Proves sieve-based methods cannot beat binary-search-on-pi(x) asymptotically: sublinear sieve is worse by factor ~sqrt(n).
 
 ---
 
