@@ -96,3 +96,28 @@ see the Status section of CLAUDE.md.
 (d) **Formula complexity:** KW theorem gives formula size >= 2^{N/2-O(1)} for pi(x).
     Via Valiant, general circuit size >= 2^{N/4}.
     TC^0 bound 2^{N/2}/poly(N) remains strongest for constant-depth.
+
+## Session 19
+(a) **Unbalanced communication complexity UNIVERSAL FORMULA:** rank(k) = 2^{min(k,N-k)-1}+2
+    for ALL bit partitions with min(k,N-k) >= 3 (verified N=4..20, all k). For fixed k,
+    rank stabilizes once N >= 2k. No polynomial-rank partition exists.
+(b) **SVD spectral decay is POWER-LAW:** S_osc ~ i^{-1} (not geometric). 90% of osc
+    variance in ~20 SVs (seemingly bounded), but 99% needs ~30% of all SVs (exponential).
+    Max osc SV scales as x^{0.66}. Power-law means better-than-R^{-1} approx but never exact.
+(c) **SVD IS the explicit formula:** Top osc SVs correspond to first zeta zeros (corr 0.95
+    for gamma_1 at N=20). Zeta basis explains only 0.12% of variance at N=20. The
+    communication complexity barrier prevents efficient extraction.
+(d) **3-party NOF:** Balanced (N/3)^3 split gives cut rank 2^{N/3}, consistent with TC^0.
+    Best (1,1,N-2) split gives trivial rank 4. Insufficient for ACC^0/TC^0 separation.
+(e) **PSLQ/LLL identity search EXHAUSTIVE NEGATIVE:** All 6 relation types (linear,
+    polynomial, recurrence, modular, functional, discrete derivative) fail for f(x)=pi(x)-R(x).
+    Cross-validation proves all single-point relations are spurious.
+(f) **NFS-type L[1/3] for pi(x) CLOSED:** 4 sub-approaches (norm sieve, Chebotarev, class
+    groups, Artin L-functions) all fail. NFS exploits multiplicative structure; prime counting
+    is additive-global with no analog.
+(g) **Gap predictability CLOSED:** AR models give no improvement, MI(g_n;g_{n+1})=0.38 bits
+    (10.3%), gaps 9% more compressible than i.i.d. Near Cramér random model.
+(h) **Kt complexity of delta(n):** |delta(n)|~n^{0.57}, bit ratio=0.52, AR(1) R²=0.996 
+    but RMSE=10.5 (innovations random). Sign runs mean length 38.5 (zeta oscillation).
+    Uniform mod m. 18% compressible. NO exploitable structure beyond local smoothness.
+(i) **Total approaches: ~520+.** sqrt(x) barrier remains universal across ALL known measures.

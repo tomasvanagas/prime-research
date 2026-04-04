@@ -1,6 +1,6 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-04 (Session 17)
+Last updated: 2026-04-04 (Session 19)
 
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (430+ approaches across 14 sessions) and confirmed to hit one of three
@@ -133,7 +133,7 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 
 ---
 
-## Priority Assessment (updated Session 17)
+## Priority Assessment (updated Session 19)
 
 | Direction | Feasibility | Impact | Recommended Effort |
 |-----------|-------------|--------|-------------------|
@@ -244,3 +244,17 @@ generating function shortcut. ~8 new closed paths.
    Chen-Tal-Wang (THR∘THR lower bounds) — none change the pi(x) barrier.
 5. **The sqrt(x) barrier is universal**: communication complexity, Fourier analysis,
    determinantal complexity, substitution rank ALL converge to sqrt(x).
+
+**Session 19 closed:** Unbalanced communication (ALL partitions), PSLQ/LLL identity search
+(6 relation types), NFS-type L[1/3] (4 sub-approaches), gap predictability (AR/MI),
+SVD spectral approximation. ~7 new closed paths.
+
+**Session 19 refined:**
+1. **UNIVERSAL rank formula**: rank = 2^{min(k,N-k)-1}+2 for ALL bit partitions, not just balanced.
+   No polynomial-rank partition exists. Barrier is intrinsic to pi(x) in binary.
+2. **SVD spectral decay is power-law**: S_osc ~ i^{-1}. NOT geometric (can't exploit via
+   truncated SVD for exact results). 90% of osc variance in ~20 SVs; 99% needs ~30%.
+3. **SVD IS the explicit formula**: Top osc SVs correspond to first zeta zeros (corr=0.95).
+4. **3-party NOF consistent with TC^0**: Balanced cut rank = 2^{N/3}. Doesn't separate.
+5. **No elementary identity for pi(x)-R(x)**: PSLQ rules out linear, polynomial, recurrence,
+   modular, functional, and differential relations with elementary functions.

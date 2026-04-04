@@ -258,9 +258,20 @@ NUM_FOCUS_TASKS=4
 
 
 # ============================================================
+# STATE PERSISTENCE
+# ============================================================
+STATE_FILE="./.run_state"
+if [ -f "$STATE_FILE" ]; then
+    RUN=$(cat "$STATE_FILE")
+    echo "Resuming from run #$RUN (loaded from $STATE_FILE)"
+else
+    RUN=1
+fi
+
+
+# ============================================================
 # MAIN LOOP
 # ============================================================
-RUN=1
 while true; do
     MODE_IDX=$(( (RUN - 1) % ${#MODES[@]} ))
     MODE=${MODES[$MODE_IDX]}
@@ -395,6 +406,7 @@ assist_f.close()
     fi
 
     RUN=$((RUN + 1))
+    echo "$RUN" > "$STATE_FILE"
     echo "Sleeping 600 seconds before next run..." | tee -a "$LOGFILE"
     sleep 600
 done

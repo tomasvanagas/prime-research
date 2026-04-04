@@ -2,7 +2,7 @@
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
+Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -66,10 +66,12 @@ Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
 | Geometric Langlands | FAIL | E | Same complexity as explicit formula | 9 |
 | Motivic integration | FAIL | E | Structural obstruction | 9 |
 | Number field algebraic decomposition | FAIL | E | Splitting doesn't reduce total cost | 7 |
+| PSLQ/LLL exhaustive identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) tested x=2..10000; all single-point PSLQ relations spurious (cross-validation residuals ~10^4); no recurrence (rms~0.31); Fourier confirms zeta-zero dominance | 18 |
 | Iwasawa theory | FAIL | I | lambda,mu invariants give no shortcut | 7 |
 | Cloitre analytic recurrence (2025) | EXISTS | E | Exact but uses zeta evaluation, not competitive | lit |
 | Farey fractions | FAIL | C | Require phi(k) -> factoring | 8 |
 | Arithmetic derivative | FAIL | C | Requires factoring, O(n^{1/4}) | 8 |
+| NFS-type L[1/3] for pi(x) (4 sub-approaches) | FAIL | E+C | Norm sieve = residue class counting (E); Chebotarev = circular + O(x^{1/2}) error (C+I); class groups = Euler products (E); Artin L-fns = explicit formula (E). NFS exploits multiplicative structure of single N; pi(x) is additive-global with no analog. See experiments/algebraic/lthird_analysis.md | 19 |
 
 ## Sieve / Combinatorial / Counting
 
@@ -432,16 +434,31 @@ Last updated: 2026-04-04 (Sessions 1-17, 130+ sub-agents)
 
 ---
 
+## Session 19: Communication Complexity, SVD Spectral, Identity Search
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Unbalanced communication complexity | FAIL | - | rank = 2^{min(k,N-k)-1}+2 for ALL bit partitions k=1..N-1 (verified N=4..20). No polynomial-rank partition exists. Barrier is intrinsic. | 19 |
+| 3-party NOF communication complexity | PARTIAL | - | Balanced (N/3,N/3,N/3): max cut rank = 2^{N/3}, NOF = N/3. Best (1,1,N-2): rank = 4 (trivial). Consistent with TC^0 but insufficient to prove/disprove. | 19 |
+| SVD spectral decay of oscillatory part | FAIL | I | Power-law S~i^{-1} (not geometric). 90% osc variance in ~20 SVs but 99% needs ~30% of total. Max osc SV scales as x^{0.66}. Insufficient for exact computation. | 19 |
+| SVD ↔ zeta zero correspondence | CONFIRMED | E | Top osc SVs match zeta zeros (corr 0.95 at N=20 for gamma_1). Zeta basis explains 0.12% of variance at N=20 (need more zeros for larger N). SVD IS explicit formula decomposition. | 19 |
+| PSLQ/LLL identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types tested (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) x=2..10000. All single-point PSLQ relations spurious (cross-validation residuals ~10^4). Fourier confirms zeta-zero dominance. | 19 |
+| NFS-type L[1/3] for pi(x) (4 sub-approaches) | FAIL | E+C | Norm sieve = residue class counting (E); Chebotarev = circular + O(x^{1/2}) error (C+I); class groups = Euler products (E); Artin L-fns = explicit formula (E). NFS exploits multiplicative structure; pi(x) is additive-global. | 19 |
+| Gap-based predictability for pi(x) | FAIL | I | AR(1..50) gives NO improvement over baseline. MI(g_n;g_{n+1})=0.38 bits (10.3%). Gaps 9% more compressible than i.i.d. Near Cramér random model. | 19 |
+| Kt complexity of delta(n) empirical | FAIL | I | |delta|~n^{0.57}; bit ratio 0.52; AR(1) R²=0.996 but RMSE=10.5 (innovations random); uniform mod m; 18% compressible; sign run length 38.5 (zeta oscillation); no exploitable structure beyond smoothness | 19 |
+
+---
+
 ## Summary Statistics
 
-- **Total approaches tested:** 500+
-- **FAIL:** ~429 (confirmed impossible or impractical)
-- **PARTIAL:** ~18 (works partially but doesn't meet target)
+- **Total approaches tested:** 525+
+- **FAIL:** ~437 (confirmed impossible or impractical)
+- **PARTIAL:** ~19 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
 - **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, S*T tradeoff)
 
 ### By Failure Mode
-- **Circularity (C):** ~71 approaches
-- **Equivalence (E):** ~207 approaches
-- **Information Loss (I):** ~165 approaches
+- **Circularity (C):** ~72 approaches
+- **Equivalence (E):** ~212 approaches
+- **Information Loss (I):** ~170 approaches
