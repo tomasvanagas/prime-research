@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# claude --resume 4ef55ac8-8adc-420c-8054-4fb0f1f39c8d 
-
 
 PROMPT='
 # MISSION

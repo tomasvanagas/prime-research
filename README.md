@@ -1,7 +1,9 @@
-# Prime Research: Exact nth Prime Without Bruteforcing
+# Prime Research
 
 Autonomous AI research project to find an O(polylog) algorithm for computing
 the nth prime number p(n) exactly. Target: p(10^100) in <1 second.
+
+<br/>
 
 ## Status
 
@@ -10,6 +12,8 @@ All known paths are closed, but no proof of impossibility exists.
 The problem remains genuinely open.
 
 **Best result:** `algorithms/v10_c_accelerated.py` -- p(10^9) in 0.175s, 100% exact, O(x^{2/3}).
+
+<br/>
 
 ## Running
 
@@ -20,6 +24,8 @@ The problem remains genuinely open.
 Launches an autonomous loop: Claude reads CLAUDE.md, explores open problems,
 spins sub-agents, saves results, and restarts when context runs out.
 Logs go to `archive/CLAUDE_OUTPUTS/`.
+
+<br/>
 
 ## Project Structure
 
@@ -49,11 +55,15 @@ experiments/           -- Past experiments by topic
 archive/               -- Session history (read-only)
 ```
 
+<br/>
+
 ## Key Insight
 
 The correction delta(n) = p(n) - R^{-1}(n) has only O(log n) bits of information,
 but extracting those bits requires O(x^{2/3}) computation. No unconditional lower
 bound beyond Omega(log x) exists. The circuit complexity of pi(x) is unstudied.
+
+<br/>
 
 ## References
 
