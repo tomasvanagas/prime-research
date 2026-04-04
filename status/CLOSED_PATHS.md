@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (390+ Approaches)
+# Closed Paths: Master Lookup (430+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-13, 105+ sub-agents)
+Last updated: 2026-04-04 (Sessions 1-14, 110+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -98,6 +98,12 @@ Last updated: 2026-04-04 (Sessions 1-13, 105+ sub-agents)
 | Recursive identity (8 methods) | FAIL | E | All reduce to Meissel-Lehmer or explicit formula | 9 |
 | GCD/coprimality matrix | FAIL | I | Eigenvalues != primes | 8 |
 | Newton's identities (power sums) | WORKS | E | O(x^{2/3}) per sum, unstable deg>50 | 7 |
+| Nonlinear sieve: floor products | FAIL | E | delta(a,b,x) doesn't separate primes; polynomial fits overfit catastrophically; K^d >= sqrt(x) required | 14 |
+| Nonlinear sieve: comparisons/thresholds | FAIL | E | Parity of floor(x/k) uncorrelated with primality; gap function misses 96%+ of primes; mod/XOR no signal | 14 |
+| Nonlinear sieve: multiplicative structure | FAIL | E | GCD, collisions, quadratic-sieve analog all fail; M(x/k) products: max_err=44 on test set | 14 |
+| Nonlinear sieve: bitwise/TC^0 | FAIL | E | Bit features + AND: 85% exact but no generalization; degree d in K values needs K >= x^{1/(2d)} | 14 |
+| Nonlinear sieve: parity barrier bypass | FAIL | E | Nonlinear ops CAN distinguish primes from semiprimes but cost O(x^{3/2}) -- worse than Meissel-Lehmer | 14 |
+| Nonlinear sieve: floor identities | FAIL | E | No exact polynomial identity; recursive pi(x/k) formulas have O(1) residual; overfitting scales with degree | 14 |
 
 ## Machine Learning / Statistical / Fitting
 
@@ -311,6 +317,18 @@ Last updated: 2026-04-04 (Sessions 1-13, 105+ sub-agents)
 | Prime zeta P(s) Perron extraction | FAIL | E | P(s) = sum mu(k)/k * ln(zeta(ks)); Perron integral has poles at rho, rho/2, rho/3,... MORE terms than standard explicit formula | 13 |
 | GF(2) algebraic shortcuts for primes | FAIL | I | Prime indicator ANF degree = Theta(N), 50% sparsity, indistinguishable from random over GF(2). Consistent with PRIMES ∉ AC^0[2] | 13 |
 | Algebraic geometry point counting for pi(x) | FAIL | C+E | Genus must be Omega(x/ln(x)) to encode pi(x); H^1_et(Spec(Z)) infinite-dim; Weil duality = explicit formula; F_q[T] works only because genus=0 and zeta rational | 13 |
+| Lucy DP matrix displacement rank | FAIL | E | Matrices are unipotent (all eigenvals=1), displacement rank 50-60% of dimension (NOT structured), product is full-rank with no low-rank approximation. No Toeplitz/Cauchy structure | 14 |
+| Matrix power encoding of pi(x) | FAIL | E | pi(x) mod m NOT an LRS for any m=2..16; 2x2 matrix search gives only constant outputs; confirms Mauduit-Rivat | 14 |
+| Polynomial in floor values | FAIL | I | Degree-2 poly in 20 floor values: 98% train exact but 16% test; catastrophic overfitting. Residual is smooth (autocorr 0.97) = zeta zero contribution | 14 |
+| #L chain: PRIMES ∈ L → pi(x) ∈ NC^2 | FAIL | E | Chain breaks: NL machine needs O(N) workspace for candidate n but #L allows only O(log N). Work space mismatch is fundamental. PRIMES ∈ L and pi(x) ∈ NC are INDEPENDENT | 14 |
+| Small matrix det = pi(x) search | FAIL | E | Redheffer full-rank, Lucy DP product dense. I-E fractional parts carry O(2^k) independent bits → no det smaller than 2^{sqrt(x)/2logx}. Must avoid floor functions entirely | 14 |
+| LGV/DAG path count compression | FAIL | E | Sieve DAG has 2^k paths (exponential); recursive DAG has O(sqrt(x)) nodes; matrix product full-rank throughout. Floor-value set is IRREDUCIBLE state space | 14 |
+| Residue class decomposition | FAIL | I | Primes equidistribute mod q (Dirichlet). Each L(s,chi) has own zeros, making problem HARDER. Character sums tautological for exact counting | 14 |
+| Selberg sieve exact counting | FAIL | E | Upper bound only (3.7x actual). Parity barrier for linear weights. Nonlinear weights break parity but don't reduce cost | 14 |
+| Batched primality for pi(x) | FAIL | E | No shared structure in 2^{n-1} mod n for consecutive n. Fermat count ≈ pi(x) (rare pseudoprimes) but computing it costs O(x) | 14 |
+| Algebraic variety F_q point count (Session 14) | FAIL | E | Low-dim: too few points. High-dim (d≈N): Kedlaya O(N^3 * 2^N) = same as sieve. Frobenius eigenvalues = zeta zeros (same info). Constructing variety circular | 14 |
+| Companion matrix / LRS fitting | FAIL | I | Order-20 recurrence: 27% test exact, errors grow with extrapolation. pi(x) fundamentally non-recurrent | 14 |
+| Smooth/rough decomposition | FAIL | E | When B≥sqrt(x), rough numbers = primes (exact). But computing rough count IS the sieve. No shortcut | 14 |
 | QFT deterministic (Grantham) | OPEN | - | QFT IS in TC^0; 4 PSPs below 50000; error < 1/7710. Deterministic correctness unknown without GRH | 13 |
 | BPSW unconditional correctness | OPEN | - | BPSW IS in TC^0 as computation. No pseudoprime below 2^64. Proving correctness ⟺ PRIMES in TC^0 | 13 |
 

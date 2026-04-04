@@ -165,6 +165,28 @@ A polylog(x) algorithm must avoid:
 
 No mathematical framework is currently known that could achieve this.
 
+### Session 14: Workspace Mismatch Barrier
+
+**PRIMES ∈ L and pi(x) ∈ NC are INDEPENDENT questions.**
+
+The natural chain PRIMES ∈ L → pi(x) ∈ #L → pi(x) ∈ NC^2 BREAKS at step 2:
+- An NL machine for pi(x) would nondeterministically guess n (N bits) and
+  test primality. But #L allows only O(log N) work space.
+- Storing candidate n requires O(N) bits, exceeding workspace by factor N/log N.
+- The NL machine cannot test primality of n when n is only available through
+  nondeterministic path history (not on input tape).
+- Therefore: pi(x) ∈ #SPACE(N) (exponential configurations) but NOT
+  necessarily pi(x) ∈ #SPACE(log N) = #L (polynomial configurations).
+
+**Information barrier for GapL:** The Legendre sieve I-E formula has 2^k terms
+(k = pi(sqrt(x))). The fractional parts {x/d} for 2^k squarefree d carry
+O(2^k) independent bits. No matrix smaller than O(2^{k/2}) × O(2^{k/2})
+can encode this information → any floor-function-based determinant needs
+exponential size. A GapL algorithm MUST use a fundamentally different set
+of intermediate quantities.
+
+Source: Session 14 analysis, novel/workspace_mismatch_barrier.md
+
 ---
 
 ## Related Summatory Functions

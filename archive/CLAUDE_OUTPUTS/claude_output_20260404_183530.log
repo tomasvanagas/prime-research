@@ -1,0 +1,191 @@
+=== Run #1 — Sat Apr  4 18:35:30 UTC 2026 ===
+Starting Session 15. Let me read the current state and last session's output.
+  [Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    # Open Problems: Viable Research Directions
+    
+    Last updated: 2026-04-04 (Session 14)
+    
+    These are the ONLY directions not yet proven closed. Everything else has been
+    tested (430+ approaches across 14 sessions) and confirmed to hit one of three
+    failure modes: Circularity, Equivalence, or Information Loss.
+    
+    ---
+    
+    ## 1. Circuit Complexity of pi(x) [MOST PROMISING]
+    
+    **Question:** What is the circuit complexity of the prime-counting function?
+    
+    **What's known:**
+    - PRIMES (decision) is NOT in AC^0, NOT in AC^0[p] (Allender-Saks-Shparlinski 2001)
+    - PRIMES is in P (AKS 2002), but NOT known to be in NC, TC^0, or L
+    - pi(x) (counting) has NO circuit lower bounds beyond trivial Omega(log x)
+    - Division and iterated multiplication ARE in uniform TC^0 (Hesse-Allender-Barrington 2002)
+    
+    **Why it matters:** If pi(x) is computable by polylog-depth, poly-size circuits,
+    then polylog time is possible (with parallelism). If not, it proves impossibility.
+    This is genuinely unstudied territory.
+    
+    **The gap:** Omega(log x) proven lower bound vs O(x^{1/2+epsilon}) best upper bound.
+    This is "one of the least-explored gaps in complexity theory" for a natural problem.
+    
+    **Approach:** Try to show pi(x) mod 2 requires super-constant depth, or conversely
+    find a TC^0 reduction from pi(x) to known TC^0-computable functions.
+    
+    ... (159 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [Read] /apps/aplikacijos/prime-research/proven/complexity.md
+    # Complexity Bounds for Prime Counting and nth Prime
+    
+    ---
+    
+    ## Upper Bounds: Algorithms for pi(x)
+    
+    ### Combinatorial Methods
+    
+    | Algorithm | Time | Space | Year |
+    |-----------|------|-------|------|
+    | Sieve of Eratosthenes | O(x log log x) | O(x) | Ancient |
+    | Legendre | O(x) | O(sqrt(x)) | 1808 |
+    | Meissel | O(x/(log x)^3) | -- | 1870 |
+    | Meissel-Lehmer | O(x/(log x)^4) | O(x^{1/3}/log x) | 1959 |
+    | LMO (Lagarias-Miller-Odlyzko) | O(x^{2/3}/log x) | O(x^{1/3}) | 1985 |
+    | Deleglise-Rivat | O(x^{2/3}/log^2 x) | O(x^{1/3} log^3 x) | 1996 |
+    | Gourdon | O(x^{2/3}/log^2 x) | O(x^{2/3} log^3 x) | 2001 |
+    | Lucy Hedgehog DP | O(x^{3/4}) basic, O(x^{2/3}) with Fenwick | O(sqrt(x)) | 2013 |
+    
+    ### Analytic Methods
+    
+    | Algorithm | Time | Space | Year |
+    |-----------|------|-------|------|
+    | Lagarias-Odlyzko | O(x^{1/2+epsilon}) | O(x^{1/4+epsilon}) | 1987 |
+    | Lagarias-Odlyzko (space-efficient) | O(x^{3/5+epsilon}) | O(x^epsilon) | 1987 |
+    
+    ### For p(n) Specifically (Aggarwal 2025)
+    
+    | Method | Complexity |
+    |--------|-----------|
+    ... (195 more lines)
+    Error: File content (10649 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/archive/session14_summary.md
+    # Session 14 Summary
+    
+    **Date:** 2026-04-04
+    **Focus:** Counting complexity connections, GapL/determinant approach, nonlinear sieves, algebraic structure analysis
+    
+    ## Key Results
+    
+    ### 1. Workspace Mismatch Barrier (NOVEL)
+    The chain PRIMES ∈ L → pi(x) ∈ #L → pi(x) ∈ NC^2 **BREAKS** at step 2.
+    An NL machine for pi(x) needs O(N) workspace for candidate n, but #L allows only O(log N).
+    This proves PRIMES ∈ L and pi(x) ∈ NC are **INDEPENDENT** questions.
+    Documented in novel/workspace_mismatch_barrier.md.
+    
+    ### 2. Information Barrier for GapL
+    The I-E (Legendre) formula's fractional parts {x/d} for 2^k squarefree d
+    carry O(2^k) independent bits. No determinant of size less than 2^{Theta(sqrt(x)/log(x))}
+    can encode the sieve. A GapL algorithm **MUST avoid floor functions entirely**.
+    
+    ### 3. Lucy DP Matrix Structure
+    - All transition matrices are **unipotent** (eigenvalues all = 1)
+    - Displacement rank is 50-60% of dimension (NOT structured)
+    - Product is **full-rank** with no compressible structure
+    - No Toeplitz, Cauchy, or Vandermonde structure
+    
+    ### 4. pi(x) is NOT a Linear Recurrence Sequence
+    - pi(x) mod m is NOT LRS for any modulus m = 2, ..., 16
+    - No fixed-size matrix A can encode pi(x) as (A^x)_{ij}
+    - Companion matrix fitting: order 20 gets only 27% test exact matches
+    
+    ### 5. Nonlinear Sieve: Parity Broken but Not Efficiency
+    ... (58 more lines)
+  [Read] /apps/aplikacijos/prime-research/novel/workspace_mismatch_barrier.md
+    # Novel Insight: The Work Space Mismatch Barrier
+    
+    **Status:** Novel analysis. The specific failure of the #L chain for pi(x)
+    does not appear explicitly analyzed in the literature.
+    
+    **Date:** 2026-04-04 (Session 14)
+    
+    ---
+    
+    ## The Claimed Chain
+    
+    ```
+    BPSW correct → PRIMES ∈ TC^0 → PRIMES ∈ L → pi(x) ∈ #L → pi(x) ∈ GapL → pi(x) ∈ NC^2
+    ```
+    
+    If this chain held, it would give a poly(N)-size, O(log^2 N)-depth circuit
+    for pi(x), solving our problem conditionally on BPSW correctness.
+    
+    ## Where It Breaks
+    
+    **Step 3 fails: PRIMES ∈ L does NOT imply pi(x) ∈ #L (binary input model).**
+    
+    The work space mismatch:
+    - PRIMES ∈ L: primality test for n uses O(log |n|) = O(log N) work space,
+      where n is on the READ-ONLY INPUT TAPE (all N bits accessible).
+    - For pi(x) ∈ #L: the NL machine has input x (N bits) and O(log N) work space.
+      To count primes, it must process candidate numbers n, which are N bits each.
+      But n is NOT on the input tape — it must be generated nondeterministically.
+      Storing n requires O(N) bits, exceeding the O(log N) workspace by a factor
+      of N/log N.
+    ... (55 more lines)
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    # State of the Art: Prime Computation (2024-2026)
+    
+    Consolidated survey of all developments relevant to computing p(n) exactly.
+    Deduplicated from 6 overlapping source files.
+    
+    Last updated: 2026-04-04
+    
+    ---
+    
+    ## 1. Prime Counting Algorithms
+    
+    ### 1.1 Combinatorial Methods (Best Practical)
+    
+    **Current best asymptotic:** O(x^{2/3} / log^2 x) -- Deleglise-Rivat / Gourdon (1996/2001)
+    
+    **Best implementation:** Kim Walisch's primecount library
+    - Version 8.4 released 2026-04-01
+    - Implements Gourdon's algorithm with SIMD acceleration (AVX512, ARM SVE)
+    - primecount 8.3 (March 2026): bidirectional clustered easy leaves, faster compression
+    - primecount 8.1 (January 2026): 15% faster AC.cpp
+    - primecount 8.0 (December 2025): new 128-bit API
+    - pi(10^25) computed in 330 CPU core hours on AMD EPYC Zen4
+    - The SIMD-accelerated Gourdon D formula in v8.4 vectorizes the hard special leaves bottleneck, estimated 2-4x speedup on modern CPUs
+    
+    **Relevance to project:** This is the engine behind our best practical approach (binary search on pi(x)). Constant-factor improvements continue but no asymptotic breakthrough.
+    
+    **Does it change the barrier?** No. Still O(x^{2/3}).
+    
+    ### 1.2 Analytic Methods (Best Theoretical)
+    
+    ... (282 more lines)
+Session 15 starting. I've read all key files. The state after 14 sessions: 430+ approaches closed, all known methods produce exponential-size circuits, "Is pi(x) in NC?" is equivalent to our target. Session 14's key insight: floor values carry independent bits making floor-based determinants exponential, and the #L chain breaks due to workspace mismatch.
+
+**Session 15 Focus:** Three underexplored angles:
+1. **Lower bounds** - can we prove pi(x) requires superpolynomial circuits?
+2. **Arithmetic circuit complexity** (distinct from Boolean) - less studied for pi(x)
+3. **Fresh literature search** for March-April 2026 breakthroughs
+4. **Novel intermediate quantities** - what CAN replace floor values/zeta zeros?
+
+Let me launch parallel research agents.
+  [Agent] 
+  [Agent] 
+  [Agent] 
+  [Agent] 
+
+
+Four research agents launched in parallel:
+1. **Literature search** - March-April 2026 breakthroughs
+2. **Arithmetic circuit complexity** - algebraic complexity theory angle
+3. **Communication complexity lower bounds** - proving impossibility
+4. **Novel intermediate quantities** - what can replace floor values/zeta zeros?
+
+While those run, let me pursue a concrete experimental direction myself: **the divide-and-conquer structure of pi(x)**.
+
+The key insight I want to test: pi(x) = pi(x/2) + pi(x, x/2) where pi(x, x/2) counts primes in (x/2, x]. If this "half-interval" count has a cheaper representation than full pi(x), we could recurse and get O(log x) = O(N) levels of recursion.
+  [ToolSearch] 
+  [TodoWrite] 
+Let me explore the divide-and-conquer angle experimentally. The idea: if pi(x) has a recursive structure with polylog overhead per level, O(N) levels gives O(N * polylog) = polylog total.

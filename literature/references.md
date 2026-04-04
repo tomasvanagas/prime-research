@@ -333,5 +333,17 @@ Reduces ideal primality testing to Sigma_3^p ∩ Pi_3^p (under GRH). About IDEAL
 
 ---
 
-Generated: 2026-04-04 (updated Session 13)
+**arXiv:2602.20917** (February 2026). Primes in arithmetic progressions to large moduli via refinements of Harman's sieve. Bilinear to x^{9/17}, trilinear to x^{17/32}. New sieve equidistribution bounds but does NOT change computational barrier for pi(x).
+
+**Chiari (Jalali et al.)** "Feasibility of Primality in Bounded Arithmetic." arXiv:2504.17041, April 2025 (revised January 2026). Proves AKS correctness is formalizable in VTC^0_2. Does NOT place PRIMES in TC^0; shows the proof is TC^0-level reasoning.
+
+**arXiv:2505.00730** (April 2025). Circulant matrix primality test. n is prime iff C_n has exactly two irreducible factors over Q. AI-assisted, no complexity analysis, unlikely competitive.
+
+**ECCC TR26-038** (March 2026). Hardness Amplification for Counting over Finite Fields. Extends XOR lemma to sums over F_p. Not about number-theoretic counting.
+
+**ECCC TR26-039** (March 2026). Super-Quadratic THR-of-THR Lower Bounds. Function in E^NP requiring n^{2.5-eps} depth-2 threshold circuits. Strongest known for this model.
+
+---
+
+Generated: 2026-04-04 (updated Session 14)
 Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md

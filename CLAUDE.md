@@ -5,7 +5,7 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **420+ approaches tested** across 13 sessions, 105+ sub-agents
+- **430+ approaches tested** across 14 sessions, 110+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
 - **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
@@ -19,6 +19,21 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
   (c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
   (d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
   (e) No new algorithmic breakthroughs in 2025-2026 literature.
+- **Session 14 KEY INSIGHTS:**
+  (a) **PRIMES ∈ L and pi(x) ∈ NC are INDEPENDENT questions.** The chain
+      PRIMES ∈ L → pi(x) ∈ #L → pi(x) ∈ NC^2 BREAKS due to workspace mismatch:
+      NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+  (b) **I-E fractional parts carry O(2^k) independent bits** → no determinant
+      smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+      A GapL algorithm MUST avoid floor functions entirely.
+  (c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+      rank 50-60% of dimension, full-rank product. No compression possible.
+  (d) **Nonlinear sieve breaks parity in theory but NOT in efficiency**: nonlinear
+      ops on floor values CAN distinguish primes from semiprimes but cost ≥ O(x^{2/3}).
+  (e) **All algebraic variety approaches fail**: low-dim can't encode pi(x),
+      high-dim has slow point counting, Frobenius eigenvalues = zeta zeros.
+  (f) **pi(x) mod m is NOT a linear recurrence** for any m — confirms no
+      fixed-size matrix power can encode pi(x) (Mauduit-Rivat consequence).
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -26,7 +41,7 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
 
 ```
 status/
-  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (380+ entries)
+  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (430+ entries)
   OPEN_PROBLEMS.md   <-- The ONLY viable research directions
   BEST_ALGORITHMS.md <-- Working implementations with benchmarks
 proven/
@@ -88,6 +103,17 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Optimized li-basis (Riemann R(x) is essentially optimal for li-basis; error O(x^{0.3}) -- Session 13)
 - Generating function P(s) extraction (more poles than explicit formula, worse -- Session 13)
 - GF(2) algebraic shortcuts (ANF degree = N, sparsity 50%, random-like -- Session 13)
+- Nonlinear sieves: products/comparisons/bitwise of floor values (break parity but NOT efficiency; K^d >= sqrt(x) for exact polynomial; overfit catastrophically -- Session 14)
+- Matrix power / LRS encoding of pi(x) (pi(x) mod m NOT LRS for any m; Mauduit-Rivat -- Session 14)
+- Lucy DP matrix structure (no displacement rank, no Toeplitz/Cauchy structure, full-rank product -- Session 14)
+- Small det = pi(x) via floor values (I-E fractional parts carry 2^k independent bits; need 2^{sqrt(x)/2logx} matrix -- Session 14)
+- #L chain PRIMES∈L→pi(x)∈NC^2 (BREAKS: workspace mismatch O(N) vs O(logN) -- Session 14)
+- DAG path count compression (sieve DAG exponential; floor-value set is irreducible -- Session 14)
+- Algebraic variety point counting (low-dim insufficient, high-dim=sieve, Frobenius=zeta -- Session 14)
+- Polynomial regression on floor values (overfitting, residual = zeta zero contribution -- Session 14)
+- Residue class / character sum exact counting (equidistributed, L-functions make harder -- Session 14)
+- Selberg sieve exact counting (parity barrier, 3.7x overshoot -- Session 14)
+- Batched Fermat/MR for pi(x) (no shared structure in 2^{n-1} mod n for consecutive n -- Session 14)
 
 ## Viable Research Directions
 1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
@@ -105,9 +131,14 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
    - No BPSW pseudoprime known below 2^64 (exhaustive search).
    - Under GRH: Miller's test = O(N^2) scalar pows = TC^0. Already known.
    - Remaining question: unconditional proof of BPSW-type correctness.
-2. **Is pi(x) in GapL?** (Session 13 novel framing) -- sharper than NC question.
+2. **Is pi(x) in GapL?** (Session 13 novel framing, refined Session 14)
    Asks for poly(N)-size matrix with det = pi(x). Equivalent to finding a DAG on
    poly(N) nodes whose signed path count = pi(x). See novel/gapl_question.md.
+   Session 14: Equivalent to pi(x) ∈ #L. PRIMES ∈ L does NOT imply pi(x) ∈ #L
+   (workspace mismatch barrier, see novel/workspace_mismatch_barrier.md).
+   I-E approach FAILS: fractional parts carry 2^k independent bits → exponential det.
+   A GapL algorithm MUST avoid floor functions entirely — needs completely new
+   intermediate quantities (not floor values, not zeta zeros).
 3. **Time-bounded Kolmogorov complexity of delta(n)** (open, connects to circuit bounds)
 4. **Zeta zero compressibility** -- convergence acceleration CLOSED (Session 11);
    only STRUCTURAL approaches remain (find global pattern in zero distribution)
@@ -115,9 +146,11 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 6. **Novel number-theoretic identity** relating sum_rho R(x^rho) to computable function
 7. **Combinatorial pi(x) in O(x^{3/5})?** -- H-T achieved this for M(x) in 2021,
    but pi(x) lacks signed cancellation. Open whether transfer is possible.
-8. **Nonlinear sieve** -- Selberg parity barrier rules out ALL linear sieve truncations
-   (Session 13). Nonlinear sieves (products/comparisons of floor values) are NOT ruled
-   out. No candidate exists but not proven impossible.
+8. **Nonlinear sieve** -- CLOSED (Session 14). Nonlinear operations (products, bitwise,
+   thresholds on floor values) break parity barrier but NOT efficiency barrier.
+   Polynomial of degree d in K floor values needs K >= x^{1/(2d)} for exactness.
+   All polynomial fits overfit catastrophically. Nonlinear primality testing per
+   number costs O(x^{3/2}) total -- worse than Meissel-Lehmer.
 9. **Non-sieve, non-analytic approach** -- Session 12 proved ALL known methods produce
    exponential-size circuits. A fundamentally new approach is needed that avoids both
    floor-value sets (O(sqrt(x))) and zeta zero sums (O(sqrt(x))).

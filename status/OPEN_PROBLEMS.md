@@ -1,9 +1,9 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-04 (Session 13)
+Last updated: 2026-04-04 (Session 14)
 
 These are the ONLY directions not yet proven closed. Everything else has been
-tested (390+ approaches across 11 sessions) and confirmed to hit one of three
+tested (430+ approaches across 14 sessions) and confirmed to hit one of three
 failure modes: Circularity, Equivalence, or Information Loss.
 
 ---
@@ -142,7 +142,7 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 | Zero compressibility | Very Low | Very High | Session 11 CLOSED convergence accel; only STRUCTURAL approaches remain |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
 | Novel identity | Very Low | Maximal | Serendipity only |
-| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. A fundamentally new approach would be needed. |
+| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. A fundamentally new approach would be needed. **Session 14: Must avoid floor values entirely.** |
 
 **Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
 Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)
@@ -171,3 +171,18 @@ spectral, CRT reconstruction, recursive identity, prime zeta P(s), GF(2) algebra
 Strong Lucas=2x2 MPOW, Jacobi=GCD=TC^0). "PRIMES in TC^0" ⟺ "BPSW correct."
 PRIMES is in NONUNIFORM TC^0 unconditionally. ANF degree = Θ(N) over GF(2),
 50% sparsity. No new 2026 breakthroughs in literature.
+
+**Session 14 closed:** Nonlinear sieve (6 experiments — products, comparisons, bitwise,
+identities all fail to improve on O(x^{2/3})). Lucy DP matrix structure (unipotent,
+no displacement rank, full-rank product). Matrix power/LRS encoding (NOT LRS for any
+modulus). Small det = pi(x) (I-E fractional parts independent, need exponential det).
+#L chain PRIMES∈L→pi(x)∈NC^2 (breaks: workspace mismatch). DAG compression (floor-value
+set irreducible). Algebraic variety point counting (low-dim insufficient, high-dim = sieve).
+Polynomial regression (catastrophic overfitting). Character sums (equidistributed, harder).
+Selberg exact counting (parity barrier). Batched primality (no shared structure).
+~15 new closed paths.
+
+**Session 14 refined:** PRIMES ∈ L and pi(x) ∈ NC are INDEPENDENT questions (workspace
+mismatch). GapL algorithm MUST avoid floor functions entirely. Floor-value set is the
+IRREDUCIBLE state space of ALL known sieve computations. The problem requires
+fundamentally new intermediate quantities — not floor values, not zeta zeros.
