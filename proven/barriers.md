@@ -163,10 +163,55 @@ fails (error -22 at N=300 for x=10^6).
 
 ---
 
+## 12. Convergence Acceleration Cannot Beat Zero-Sum Barrier (CONFIRMED numerically, Session 11)
+
+**Statement:** No linear convergence acceleration method (Richardson of any order,
+Levin u/t, Weniger delta, smoothed explicit formulas) can reduce the number of
+zeta zeros needed from O(sqrt(x)) to subpolynomial.
+
+**Quantitative:**
+- Error structure is oscillatory, NOT clean 1/N expansion (alpha varies: -1.6 to 2.9)
+- Levin transforms are WORSE than plain summation for large x
+- Richardson order >2 diverges due to condition number explosion (10^{3k})
+- Minimum zeros scale as N_min ~ C * x^alpha with alpha = 0.25--0.37 (power law)
+- Smoothed formula (psi/ln x) catastrophic: 10% error from prime power terms
+
+**Implication:** The explicit formula truncation error encodes GUE-random phases
+of the next zeta zeros beyond the truncation point. No linear combination of
+partial sums can predict these phases. The barrier is informational, not technical.
+
+**Source in project:** session11, experiments/analytic/advanced_convergence.py, zero_scaling.py
+
+---
+
+## 13. Helfgott-Thompson Does Not Transfer to pi(x) (CONFIRMED numerically, Session 11)
+
+**Statement:** H-T's O(x^{3/5}) method for M(x) = sum mu(n) exploits the signed
+cancellation in (-1)^{omega(n)}. Since pi(x) is a positive counting function
+(1-almost-primes), no analogous cancellation exists.
+
+**Specifics:**
+- pi(x) = pi(z) + A_1(x, z) where A_1 counts primes > z
+- A_1 is irreducible: it IS the prime counting problem
+- The Meissel-Lehmer decomposition pi(x) = Phi - A_0 - A_2 - A_3 - A_4
+  IS the analog of H-T for pi(x), and costs O(x^{2/3})
+- Converting M(x) → pi(x) requires the explicit formula (O(x^{1/2+eps}))
+
+**Source in project:** session11, experiments/sieve/ht_transfer_attempt.py
+
+---
+
 ## What Is NOT Proven
 
 - No unconditional lower bound beyond Omega(log x) for pi(x) computation
 - No proof that pi(x) cannot be computed in polylog(x) time
 - PRIMES is not known to be in or outside NC, TC^0, or L
-- Circuit complexity of pi(x) is completely unstudied
+- **NEW (Session 11):** AKS path to PRIMES in TC^0 requires GROWING-dim (k=polylog(n))
+  matrix powering. Fixed-k MPOW IS in TC^0 (RAIRO 2000). IMP_k (k≥3, different
+  matrices) NOT in TC^0 unless TC^0=NC^1. Growing-dim MPOW is GENUINELY OPEN —
+  sits precisely at the TC^0/NC^1 boundary. Healy-Viola 2006: F_{2^n} exponentiation
+  IS in TC^0 via Frobenius, but doesn't work over Z_n.
+- Circuit complexity of pi(x): all direct TC^0 paths closed (Session 11),
+  but no impossibility proof exists
 - No proof that O(x^{1/2}) is a barrier (only empirical for known methods)
+- Combinatorial pi(x) in O(x^{3/5})? (H-T achieved for M(x) but transfer FAILS)

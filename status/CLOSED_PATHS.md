@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (380+ Approaches)
+# Closed Paths: Master Lookup (390+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
+Last updated: 2026-04-04 (Sessions 1-13, 105+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -40,6 +40,11 @@ Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
 | Analytic continuation (7 methods) | FAIL | E | Natural boundary at Re=0 | 8 |
 | LLL/PSLQ integer relations | FAIL | I | Coefficients grow as O(n^{1/3}) | 6 |
 | Selberg deconvolution | FAIL | E | 7-64% error, = Legendre sieve | 9 |
+| Higher-order Richardson (orders 2-10) | FAIL | E | Error oscillatory not smooth; condition number explodes; diverges at high orders | 11 |
+| Levin u/t-transform on zero sum | FAIL | E | WORSE than plain for large x; error not alternating | 11 |
+| Weniger delta transform on zero sum | FAIL | E | Same failure; oscillatory error defeats all transforms | 11 |
+| Smoothed explicit formula (psi_k/ln) | FAIL | I | psi(x)/ln(x) loses prime power corrections; error ~10% | 11 |
+| Zero-count scaling analysis | CLOSED | E | N_min scales as x^{0.25-0.37} (power law), not polylog | 11 |
 
 ## Algebraic / Number Theory / p-adic
 
@@ -74,8 +79,19 @@ Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
 | Redheffer/Mertens matrix | FAIL | E | O(x^{2/3}) same as pi(x) | 8 |
 | Wheel factorization | PARTIAL | - | Constant factor only, NOT complexity class | 8 |
 | Hierarchical decomposition | FAIL | E | Legendre tree depth = pi(sqrt(x)) | 7 |
-| Mertens function shortcuts | FAIL | E | O(x^{2/3}) -- same as pi(x) | 6 |
+| Buchstab tree pruning/memo | FAIL | E | Memoized Buchstab IS Lucy DP; O(x^{3/4}) distinct args, O(x^{2/3}) with DR | 11 |
+| Vaughan identity exact computation | FAIL | E | Type I/II/bilinear all O(x^{2/3}) individually; designed for bounds not computation | 11 |
+| Legendre sieve FFT/NTT | FAIL | E | floor(x/d) breaks multiplicativity; cannot use convolution acceleration | 11 |
+| Alternative DP formulations (4 variants) | FAIL | E | Largest/smallest prime factor DP, P_k DP, Mobius DP all reduce to O(x^{2/3}) | 11 |
+| Dirichlet series extrapolation to s=0 | FAIL | E | Pole at s=1 makes extrapolation unstable; IS Lagarias-Odlyzko method | 11 |
+| Double hyperbola decomposition | FAIL | E | No way to split pi(x) into two independently O(x^{1/2})-computable pieces | 11 |
+| Mertens function shortcuts | FAIL | E | O(x^{2/3}) -- same as pi(x); H-T gives O(x^{3/5}) for M(x) but doesn't transfer to pi(x) | 6,11 |
+| M(x) hyperbola factorization | FAIL | E | No mu=f*g with both partial sums easy; self-referential structure fundamental | 11 |
+| M(x)->pi(x) transfer | FAIL | E | H-T O(x^{3/5}) for M(x) exploits signed cancellation; pi(x) is positive count, no analog | 11 |
 | Dirichlet series / prime zeta | FAIL | E | Perron integral = explicit formula | 6 |
+| Prime zeta P(s) Mobius extraction | FAIL | E | P(s) poles at rho, rho/2, rho/3... MORE terms than explicit formula; Vandermonde recovery cond~10^26 | 13 |
+| CRT reconstruction of pi(x) | FAIL | E | pi(x) mod q costs same O(x^{2/3}) as pi(x); CRT multiplies cost by k moduli; entropy ratio ~1.0 | 13 |
+| Recursive pi(x/d) identity search | FAIL | E | Best: pi(x)=pi(x/3)+pi(x/5)+2*pi(x/7)+g(x), but g(x) grows as x^{0.22}; correction encodes primes in interval | 13 |
 | Smooth number elimination | FAIL | I | 12% reduction, insufficient | 5 |
 | Bit-by-bit construction | WORKS | E | log2(p(n)) pi(x) calls, each O(x^{2/3}) | 5 |
 | Recursive pi(x) via pi(x/2) | FAIL | I | Error O(sqrt(x)/ln^2(x)), too large | 7 |
@@ -171,7 +187,30 @@ Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
 | One-way function connection | FAIL | - | Both directions equally hard | 10 |
 | Expander graphs | FAIL | C | Need primes to build the graph | 10 |
 | Derandomization (NW/IW) | FAIL | E | R(n) is deterministic, not random | 9 |
+| TC^0 via Legendre sieve | FAIL | E | 2^{pi(sqrt(x))} terms, super-polynomial | 11 |
+| TC^0 via Meissel-Lehmer | FAIL | E | Super-polynomial special leaves | 11 |
+| TC^0 via Lucy DP | FAIL | E | Sequential depth O(sqrt(x)/ln(x)), not constant | 11 |
+| TC^0 via Möbius function | FAIL | C | Requires factoring, not known in TC^0 | 11 |
+| TC^0 via partial sieve (constant primes) | FAIL | I | Error Theta(x/ln(x)), same order as pi(x) | 11 |
+| AKS in TC^0 via matrix powering | OPEN | - | Fixed-k MPOW IS in TC^0 (RAIRO 2000), but AKS needs k=polylog(n) GROWING; combination step needs depth O(log log n). IMP_k (k≥3) NOT in TC^0 unless TC^0=NC^1. Growing-dim MPOW is genuinely open at TC^0/NC^1 boundary | 11 |
+| pi(x) mod 2 shortcut | FAIL | E | Parity as hard as full problem; pseudo-random, no pattern | 11 |
 | Compressed pi(x) | PARTIAL | I | 5 bits/prime irreducible entropy | 8 |
+| Lucy DP parallel depth | CLOSED | E | DAG depth = pi(sqrt(x)) exactly; fundamentally sequential for S(x). Telescoped (Meissel-Lehmer) gives depth pi(x^{1/3}) but both exponential in N=log(x) | 12 |
+| Lucy DP floor-value mapping commutativity | FAIL | E | Mapping matrices NON-commutative (0 commuting pairs); cannot reorder sieve steps | 12 |
+| pi(x) mod m shortcut (m>2) | FAIL | E | Conditional entropy H(Y|X) = 0.537 bits INVARIANT across all moduli m; no modular shortcut | 12 |
+| Floor-value linear algebra | FAIL | E | Transformation is full-rank (~80% nonzero coeffs), massive cancellation (|coeffs| >> pi(x)); no compression | 12 |
+| Meissel-Lehmer as NC circuit | FAIL | E | Depth O(log log x) = O(log N) but width O(x^{2/3}) = O(2^{2N/3}); exponential size in input | 12 |
+| TG kernel for exact pi(x) | FAIL | I | arXiv:2506.22634 DEBUNKED: violates uncertainty principle, omits x^{1/2} factor, kernel too wide to resolve primes. AI-generated paper with errors. | 12 |
+| Andrews-Wigderson for pi(x) | FAIL | E | FOCS 2024 constant-depth arithmetic circuits: wrong model (fields not rings), wrong bottleneck (GCD not matrix powering), wrong circuit model (arithmetic not Boolean) | 12 |
+| Succinct/lattice point counting | FAIL | E | Barvinok requires fixed dim; encoding coprimality needs dim ~ sqrt(x)/log(x), exponential in N | 12 |
+| Permanent/determinant encoding | FAIL | E | Would resolve NC question; no natural matching interpretation for primes; circular (matrix entries encode primes) | 12 |
+| H-T cancellation transfer quantified | CONFIRMED | E | M(x) cancels 99.9+% of terms (|M(x)|~sqrt(x) vs 0.6x nonzero); pi(x) has ZERO cancellation (all +1). Definitive. | 12 |
+| Wilson's theorem in TC^0 | FAIL | E | (n-1)! mod n requires 2^N multiplications; Shamir's GapL gives NC^2 not TC^0 | 13 |
+| Sum-of-two-squares primality in TC^0 | FAIL | C | Counting reps needs factoring; Cornacchia has O(log n) sequential depth; only handles p≡1(4) | 13 |
+| BPSW in TC^0 (computation) | WORKS | - | BPSW IS computable in TC^0: MR(2) = scalar pow, strong Lucas = 2x2 MPOW (Mereghetti-Palano), Jacobi = TC^0 via GCD. Correctness for all n conditional on BPSW conjecture (verified to 2^64) | 13 |
+| QFT (Grantham) in TC^0 | WORKS | - | Quadratic Frobenius test IS in TC^0: operates in 2D algebra = 2x2 MPOW. Error < 1/7710 per param. Deterministic only with GRH. 4 QFT pseudoprimes below 50000 | 13 |
+| Strong Lucas standalone | PARTIAL | - | 12 pseudoprimes below 100000 (all caught by second param set). No unconditional correctness proof | 13 |
+| Miller-Rabin fixed bases in TC^0 | WORKS | - | MR({2,3,...,37}) deterministic for n<3.317×10^24 (Sorenson-Webster 2016). Each base = scalar pow → TC^0. Gives nonuniform TC^0 for any fixed input length | 13 |
 
 ## Encoding / Novel Representations
 
@@ -235,6 +274,7 @@ Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
 | Compressed sensing on K zeros | PARTIAL | I | Lucky cancellations small x, doesn't scale | 7 |
 | Matching pursuit (K zeros) | PARTIAL | I | K=2 error<0.5 at x=1000, fails large x | 7 |
 | RMT/GUE approximation | FAIL | I | Correct statistics, wrong values | 8,10 |
+| Cayley graph / Ihara zeta / spectral graph | FAIL | C+E | Cayley(Z/xZ, primes): circular (lambda_0=pi(x)); Ihara zeta = Selberg trace analog; GCD graph: eigenvalues = Ramanujan sums c_q(n), same ingredients as Meissel-Lehmer O(x^{2/3}); expander mixing error >> 1 | 13 |
 
 ## Other / Miscellaneous
 
@@ -257,20 +297,35 @@ Last updated: 2026-04-04 (Sessions 1-10, 89+ sub-agents)
 | Information-theoretic shortcut | FAIL | E | Zero sum is O(N), no FMM | 9 |
 | Novel exact formulas (7 methods) | FAIL | E | All confirm barrier | 9 |
 | Radical bypass (5 methods) | FAIL | - | Three failure modes identified | 9 |
-| Internet search 2024-2026 | - | - | No new algorithms found | 5,8,9,10 |
+| Internet search 2024-2026 | - | - | No new algorithms found | 5,8,9,10,13 |
+| Wilson's theorem in TC^0 | FAIL | - | (n-1)! mod n needs 2^N mults, not poly(N). Shamir GapL only gives NC^2 | 13 |
+| Sum-of-two-squares primality | FAIL | C | 173 composite counterexamples below 10000; needs factoring | 13 |
+| Optimized li(x^{1/k}) coefficients | FAIL | I | Optimal coeffs overfit (test err 2000+); Riemann R(x) is essentially optimal; error grows as x^{0.3} | 13 |
+| Zeta zero reordering/weighting | FAIL | E | K_min ~ 0.35 * x^{0.27} (power law). Greedy-optimal ordering varies by x; no universal shortcut below O(x^{1/4}) terms | 13 |
+| Cayley graph spectral approach | FAIL | C | Graph requires knowing primes; lambda_0 = pi(x) trivially; eigenvalues = exponential sums over primes | 13 |
+| Ihara zeta function of graphs | FAIL | E | For Cayley graph, Ihara zeta factors via character sums = discrete FT of prime indicator ≡ explicit formula | 13 |
+| GCD/coprimality graph spectrum | FAIL | E | Constructible without primes BUT eigenvalues = Ramanujan sums c_q(n) involving μ and floor(x/d); same as Meissel-Lehmer O(x^{2/3}) | 13 |
+| Expander mixing lemma for primes | FAIL | C+E | Either need primes to build graph (C) or GCD graph gives Meissel-Lehmer equivalence (E) | 13 |
+| CRT reconstruction of pi(x) | FAIL | E | Each pi(x) mod q costs same O(x^{2/3}) as pi(x); k moduli needed → k × worse. Entropy invariant 0.537 bits confirmed | 13 |
+| Recursive identity pi(x) via pi(x/d) | FAIL | E | For ANY fixed divisors d_1,...,d_k: correction function encodes primes in (x/max(d_i), x], as hard as pi(x). Tree of O(x^{1/3}) subproblems but correction is hard | 13 |
+| Prime zeta P(s) Perron extraction | FAIL | E | P(s) = sum mu(k)/k * ln(zeta(ks)); Perron integral has poles at rho, rho/2, rho/3,... MORE terms than standard explicit formula | 13 |
+| GF(2) algebraic shortcuts for primes | FAIL | I | Prime indicator ANF degree = Theta(N), 50% sparsity, indistinguishable from random over GF(2). Consistent with PRIMES ∉ AC^0[2] | 13 |
+| Algebraic geometry point counting for pi(x) | FAIL | C+E | Genus must be Omega(x/ln(x)) to encode pi(x); H^1_et(Spec(Z)) infinite-dim; Weil duality = explicit formula; F_q[T] works only because genus=0 and zeta rational | 13 |
+| QFT deterministic (Grantham) | OPEN | - | QFT IS in TC^0; 4 PSPs below 50000; error < 1/7710. Deterministic correctness unknown without GRH | 13 |
+| BPSW unconditional correctness | OPEN | - | BPSW IS in TC^0 as computation. No pseudoprime below 2^64. Proving correctness ⟺ PRIMES in TC^0 | 13 |
 
 ---
 
 ## Summary Statistics
 
-- **Total approaches tested:** 380+
-- **FAIL:** ~350 (confirmed impossible or impractical)
-- **PARTIAL:** ~15 (works partially but doesn't meet target)
-- **WORKS:** ~5 (correct but O(x^{2/3}) or worse)
+- **Total approaches tested:** 420+
+- **FAIL:** ~370 (confirmed impossible or impractical)
+- **PARTIAL:** ~16 (works partially but doesn't meet target)
+- **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
-- **OPEN:** 1 (circuit complexity -- TC^0/NC^1 status unknown)
+- **OPEN:** 3 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic)
 
 ### By Failure Mode
-- **Circularity (C):** ~60 approaches
-- **Equivalence (E):** ~160 approaches
-- **Information Loss (I):** ~150 approaches
+- **Circularity (C):** ~65 approaches
+- **Equivalence (E):** ~175 approaches
+- **Information Loss (I):** ~155 approaches

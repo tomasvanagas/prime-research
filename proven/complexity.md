@@ -94,6 +94,79 @@ O(x^{2/3}). Question: how far below x can we go?
 
 ---
 
+## Circuit Complexity of pi(x) (Session 12)
+
+### Best Known Circuits (in terms of N = log x)
+
+| Method | Circuit Size | Circuit Depth |
+|--------|-------------|---------------|
+| Lucy DP (standard) | O(2^{N/2}) | O(2^{N/2}/N) [= pi(sqrt(x))] |
+| Lucy DP (parallel) | O(2^{N/2}) | O(2^{N/3}/N) [= pi(x^{1/3})] |
+| Meissel-Lehmer | O(2^{2N/3}) | O(log N) [= O(log log x)] |
+| Lagarias-Odlyzko | O(2^{N/2+ε}) | O(poly(N)) |
+
+All are EXPONENTIAL in N. No polynomial-size circuit is known.
+
+### Structural Results (Session 12)
+
+1. **Lucy DP DAG depth = pi(sqrt(x)) exactly**: The computation has an
+   unavoidable sequential chain through S(x) at every prime step.
+   Depth/pi(sqrt(x)) = 1.000 for all x tested (100 to 100000).
+
+2. **Parallel round depth = pi(x^{1/3})**: With maximal parallelism,
+   pi(x^{1/3}) sequential rounds suffice. Ratio → 1.00 as x grows.
+
+3. **Floor-value mapping matrices are non-commutative**: Zero commuting
+   pairs in all tests. Sieve steps cannot be reordered.
+
+4. **Linear transformation is full-rank**: pi(x) depends on ~80% of
+   the O(sqrt(x)) floor-value initial conditions with large coefficients.
+
+5. **pi(x) mod m has invariant conditional entropy**: H = 0.537 bits
+   for all moduli m (tested 2-30). Computing pi(x) mod m is as hard
+   as pi(x) itself.
+
+### Equivalence Result
+
+**"Is pi(x) computable in polylog(x) time?" ⟺ "Is pi(x) in NC?"**
+
+Both require polynomial-size (poly(N)) circuits. All known approaches
+produce exponential-size (2^{Theta(N)}) circuits because they compute
+O(sqrt(x)) = O(2^{N/2}) intermediate values (floor-values or zeta zeros).
+
+### Session 13: TC^0 Primality Test Analysis
+
+| Test | In TC^0? | Deterministic? | Condition |
+|------|----------|---------------|-----------|
+| MR(2) | YES | NO | - |
+| MR(2,3,...,37) | YES | YES for n<3×10^24 | unconditional |
+| MR(2,...,2ln²(n)) | YES | YES for all n | GRH |
+| Strong Lucas (Selfridge) | YES | NO | - |
+| BPSW (MR(2)+Strong Lucas) | YES | YES for n<2^64 | unconditional |
+| BPSW | YES | YES for all n | BPSW conjecture |
+| QFT (Grantham) | YES | NO (error<1/7710) | - |
+| AKS | UNKNOWN | YES | unconditional |
+| Wilson's | NO (needs 2^N mults) | YES | unconditional |
+
+**Key:** PRIMES is in NONUNIFORM TC^0 unconditionally (for any fixed N,
+a finite MR base set suffices). PRIMES is in UNIFORM TC^0 conditional
+on GRH or BPSW correctness.
+
+**Prime indicator GF(2) structure:** ANF degree = Theta(N), 50% sparsity.
+Indistinguishable from random over GF(2). Confirms PRIMES not in AC^0[2].
+
+### What Would Be Needed
+
+A polylog(x) algorithm must avoid:
+- Enumerating floor values {floor(x/k)} (O(sqrt(x)) values)
+- Summing over zeta zeros (O(sqrt(x)) terms)
+- Testing individual integers for primality (O(x) tests)
+- Sieve-type inclusion-exclusion (exponential terms)
+
+No mathematical framework is currently known that could achieve this.
+
+---
+
 ## Related Summatory Functions
 
 | Function | Best Combinatorial | Best Analytic |

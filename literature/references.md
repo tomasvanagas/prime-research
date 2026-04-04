@@ -58,6 +58,33 @@ Division and iterated multiplication in uniform TC^0. Context for circuit comple
 **Agrawal, M.; Allender, E. et al.** "On TC0, AC0, and Arithmetic Circuits." [PDF](https://people.cs.rutgers.edu/~allender/papers/arithmetic.pdf)
 Framework for understanding arithmetic circuit complexity. Relevant to whether pi(x) can be parallelized (NC question).
 
+**Barrington, D.A.M.** "Bounded-width polynomial-size branching programs recognize exactly those languages in NC^1." JCSS 38(1), 1989. [ScienceDirect](https://www.sciencedirect.com/science/article/pii/0022000089900378)
+NC^1 = width-5 polynomial-size branching programs. Foundation for matrix powering in NC^1.
+
+**Barrington, D.A.M.; Therien, D.** "Finite monoids and the fine structure of NC^1." JACM 35(4), 1988. [ACM](https://dl.acm.org/doi/10.1145/48014.63138)
+Algebraic characterization of TC^0: word problem over monoid M is in TC^0 iff every simple group dividing M is abelian (solvable).
+
+**Immerman, N.; Landau, S.** "The complexity of iterated multiplication." Information and Computation 116(1), 1995. [PDF](https://people.cs.umass.edu/~immerman/pub/mult.pdf)
+Iterated multiplication of n integers is in TC^0 via Chinese Remainder Representation.
+
+**Mereghetti, C.; Palano, B.** "Threshold circuits for iterated matrix product and powering." RAIRO-ITA 34(1), 39-46, 2000. [NUMDAM](https://www.numdam.org/article/ITA_2000__34_1_39_0.pdf)
+MPOW_k (M^n for fixed k x k matrix) IS in TC^0 for any fixed k. IMP_k (product of N given k x k matrices) NOT in TC^0 for k >= 3 unless TC^0 = NC^1. Critical for our matrix powering reduction.
+
+**Healy, A.; Viola, E.** "Constant-Depth Circuits for Arithmetic in Finite Fields of Characteristic Two." STACS 2006. [PDF](https://www.ccs.neu.edu/home/viola/papers/FieldOps.pdf)
+Exponentiation alpha^k in F_{2^n} is in TC^0 for specific irreducible polynomials. Shows polynomial-ring powering CAN be in TC^0 over F_2 even with growing dimension.
+
+**Andrews, R.; Wigderson, A.** "Constant-Depth Arithmetic Circuits for Linear Algebra Problems." FOCS 2024. [arXiv](https://arxiv.org/abs/2404.10839)
+Polynomial GCD, discriminant, resultant, Bezout coefficients in constant-depth arithmetic circuits. Does not include matrix powering.
+
+**Krebs, A.; Lange, K.-J.; Reifferscheid, S.** "Characterizing TC^0 in Terms of Infinite Groups." STACS 2005. [Springer](https://link.springer.com/chapter/10.1007/978-3-540-31856-9_41)
+Extended algebraic characterization of TC^0 to infinite groups via typed monoids.
+
+**Gesmundo, F.; Ikenmeyer, C.** "Geometric complexity theory and matrix powering." Differential Geometry and its Applications 55, 2017. [arXiv](https://arxiv.org/abs/1611.00827) [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0926224517300876)
+Replaced determinant with trace of variable matrix power in GCT. No-go result for orbit occurrence obstructions.
+
+**Galby, E.; Ouaknine, J.; Worrell, J.** "On Matrix Powering in Low Dimensions." STACS 2015. [Dagstuhl](https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.STACS.2015.329)
+Matrix powering positivity problem decidable in polynomial time for fixed dimensions 2 and 3 via Baker's theorem.
+
 **Mauduit, C.; Rivat, J.** "Sur un probleme de Gelfond: la somme des chiffres des nombres premiers." Annals of Mathematics 171, 2010.
 Proved primes are NOT k-automatic for any k. Rules out finite-automaton-based approaches.
 
@@ -280,5 +307,31 @@ Practical techniques for summatory functions using Dirichlet hyperbola method.
 
 ---
 
-Generated: 2026-04-04
+**Dawar, A.; Evans, A. T.** "Characterizing NC1 with Typed Monoids." arXiv:2508.11019, August 2025. FSTTCS 2025.
+Extends Krebs et al.'s algebraic characterization of TC^0 via typed monoids to NC^1. Proves higher-dimensional monoid quantifiers collapse to unary. New algebraic tools at TC^0/NC^1 boundary but does NOT separate TC^0 from NC^1.
+
+**Hu, J.; Manor, Y.; Oliveira, I.** "Failure of Symmetry of Information for Randomized Computations." ECCC TR26-021, 2026.
+Proves unconditionally that Symmetry of Information fails for rKt complexity. First unconditional result for randomized time-bounded Kolmogorov complexity. Relevant to Kt complexity direction.
+
+**Green, B.; Sawhney, M.** "New Way to Count Primes." 2024.
+Proved Friedlander-Iwaniec conjecture: infinitely many primes of form p^2 + 4q^2 with p, q prime. Used Gowers norms. Structural result, does not help with computing pi(x).
+
+**Bhattacharjee et al.** "Constant-depth circuits for polynomial GCD over any characteristic." arXiv:2506.23220, June 2025.
+Extends Andrews-Wigderson to fields of any sufficiently large characteristic. Still over fields, not applicable to Z_n.
+
+**Tao, T.; Trudgian, T.; Yang, A.** "New exponent pairs, zero density estimates, and zero additive energy estimates: a systematic approach." arXiv:2501.16779, January 2025.
+Builds on Guth-Maynard. Creates ANTEDB database (teorth.github.io/expdb/). Obtains 4 new exponent pairs and new zero-density estimates via computational optimization. Significant infrastructure for analytic number theory but does not change pi(x) computational barrier.
+
+**Chiari, M.** "Feasibility of Primality in Bounded Arithmetic." arXiv:2504.17041, April 2025/2026.
+Proves AKS correctness in the bounded arithmetic theory VTC^0_2 (= first-order theory of TC^0 with smash function). Shows the PROOF of primality testing is formalizable in TC^0-level reasoning. Does not put PRIMES in TC^0 as a computational class.
+
+**Semenov, S.** "A Smooth Analytical Approximation of the Prime Characteristic Function." arXiv:2504.14414, April 2025.
+Constructs smooth P(n) via triple integral with periodic kernel. P(n)→1 for prime n, P(n)<1 for composite. Computationally O(n^2) or worse — no algorithmic value.
+
+**Garg, A.; Oliveira, R.; Saxena, N.** "Primes via Zeros: Interactive Proofs for Testing Primality of Natural Classes of Ideals." arXiv:2503.20071, STOC 2025.
+Reduces ideal primality testing to Sigma_3^p ∩ Pi_3^p (under GRH). About IDEALS in polynomial rings, not integer primes. Not relevant to pi(x).
+
+---
+
+Generated: 2026-04-04 (updated Session 13)
 Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md

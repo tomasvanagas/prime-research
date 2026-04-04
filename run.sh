@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-PROMPT='
+PROMPT="""
 # MISSION
 Make a breakthrough in computing the nth prime p(n) EXACTLY without bruteforcing/sieving/enumeration.
 Target: p(10^100) in <1 second, 100% accurate. Current best is O(x^{2/3}) -- you need O(polylog).
@@ -19,16 +19,18 @@ closed paths, open problems, and rules. Do NOT skip this.
 - algorithms/             -- Working, tested code only.
 - literature/             -- All references and 2026 state of the art.
 - experiments/<topic>/    -- Past experiments organized by math topic.
-- archive/                -- Old session dumps (read-only reference).
+- data/                   -- Zeta zeros (200/300/500/1000) for explicit formula work.
+- archive/                -- Session logs and visualizations.
 
 # HOW TO WORK
 1. Read CLAUDE.md and status/OPEN_PROBLEMS.md
-2. Pick a direction from OPEN_PROBLEMS.md (or propose a genuinely new one)
-3. Check status/CLOSED_PATHS.md to confirm it is not already tried
-4. Spin sub-agents to explore in parallel (save context!)
-5. Save experiments to experiments/<topic>/ with descriptive filenames
-6. Update status/CLOSED_PATHS.md when you close an approach (add a row)
-7. Novel findings go to novel/ with evidence and verification
+2. Read last session's archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.log and determine if the session was completed successfully.
+3. Pick a direction from OPEN_PROBLEMS.md (or propose a genuinely new one)
+4. Check status/CLOSED_PATHS.md to confirm it is not already tried
+5. Spin sub-agents to explore in parallel (save context!)
+6. Save experiments to experiments/<topic>/ with descriptive filenames
+7. Update status/CLOSED_PATHS.md when you close an approach (add a row)
+8. Novel findings go to novel/ with evidence and verification
 
 # SEARCHING THE INTERNET
 Search for new papers, algorithms, breakthroughs. Save findings to literature/.
@@ -43,7 +45,7 @@ Check literature/state_of_art_2026.md first to avoid duplicate searches.
 - Use sub-agents to save context window
 - When you run out of context, just stop -- the system will restart you
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
-'
+"""
 
 
 
@@ -54,7 +56,8 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOGFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.log"
 JSONFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.json"
 TMPFILE=$(mktemp)
-trap 'rm -f "$TMPFILE"' EXIT
+ASSISTFILE=$(mktemp)
+trap 'rm -f "$TMPFILE" "$ASSISTFILE"' EXIT
 
 echo "Human-readable log: $LOGFILE"
 echo "Raw JSON log:       $JSONFILE"
@@ -64,6 +67,7 @@ while true; do
     echo "=== Run #$RUN — $(date) ===" | tee -a "$LOGFILE"
     echo '{"run":'"$RUN"',"timestamp":"'"$(date -Iseconds)"'"}' >> "$JSONFILE"
     : > "$TMPFILE"
+    : > "$ASSISTFILE"
 
     claude -p "$PROMPT" --output-format stream-json --verbose 2>&1 \
         | python3 -u -c "
@@ -72,6 +76,7 @@ import sys, json
 json_f = open(sys.argv[1], 'a')
 log_f  = open(sys.argv[2], 'a')
 tmp_f  = open(sys.argv[3], 'w')
+assist_f = open(sys.argv[4], 'w')
 
 def out(text):
     print(text, flush=True)
@@ -104,6 +109,8 @@ while True:
                     continue
                 if block.get('type') == 'text':
                     out(block['text'])
+                    assist_f.write(block['text'] + '\n')
+                    assist_f.flush()
                 elif block.get('type') == 'tool_use':
                     name = block.get('name', '')
                     inp = block.get('input', {})
@@ -137,9 +144,10 @@ while True:
 json_f.close()
 log_f.close()
 tmp_f.close()
-" "$JSONFILE" "$LOGFILE" "$TMPFILE"
+assist_f.close()
+" "$JSONFILE" "$LOGFILE" "$TMPFILE" "$ASSISTFILE"
 
-    if grep -qF 'I FOUND IT!!!' "$TMPFILE"; then
+    if grep -qF 'I FOUND IT!!!' "$ASSISTFILE"; then
         echo "Detected 'I FOUND IT!!!' — stopping." | tee -a "$LOGFILE"
         break
     fi

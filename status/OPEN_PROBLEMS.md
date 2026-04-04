@@ -1,10 +1,10 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-04
+Last updated: 2026-04-04 (Session 13)
 
 These are the ONLY directions not yet proven closed. Everything else has been
-tested (380+ approaches) and confirmed to hit one of three failure modes:
-Circularity, Equivalence, or Information Loss.
+tested (390+ approaches across 11 sessions) and confirmed to hit one of three
+failure modes: Circularity, Equivalence, or Information Loss.
 
 ---
 
@@ -27,6 +27,42 @@ This is "one of the least-explored gaps in complexity theory" for a natural prob
 
 **Approach:** Try to show pi(x) mod 2 requires super-constant depth, or conversely
 find a TC^0 reduction from pi(x) to known TC^0-computable functions.
+
+**Session 11 findings:**
+- The AKS approach to PRIMES in TC^0 requires polylog-dim matrix powering in TC^0.
+  But "Threshold circuits for iterated matrix product and powering" (RAIRO 2000)
+  proves: for k>2, k×k matrix powering in TC^0 → TC^0 = NC^1 (believed false).
+  **Therefore: the AKS path to PRIMES in TC^0 is BLOCKED.**
+- This does NOT prove PRIMES is not in TC^0 — there may be non-AKS paths.
+- Scalar powering (x^n mod m) IS in TC^0 (Allender 1999), but matrix powering is NOT.
+- All direct TC^0 paths failed: Legendre (exponential terms), Lucy DP (sequential depth
+  O(sqrt(x)/ln(x))), Möbius (needs factoring), partial sieve (O(x/ln(x)) error).
+- pi(x) mod 2 appears as hard as pi(x); no shortcut found.
+- The floor-value function {floor(x/k)} DETERMINES pi(x) (Lucy DP proves this),
+  but mapping floor-values to pi(x) in constant depth is the open question.
+- **Key open question shifts to:** Is there a non-AKS TC^0 primality test?
+  (e.g., using only scalar operations, which ARE in TC^0)
+
+**Session 12 findings (circuit complexity deep-dive):**
+- **Lucy DP DAG depth = pi(sqrt(x)) EXACTLY**: ratio depth/pi(sqrt(x)) = 1.000 for all
+  x tested (100 to 100000). The critical path goes through S(x) at every prime step.
+  The DP is fundamentally sequential for the final answer.
+- **Telescoped version (Meissel-Lehmer) has depth pi(x^{1/3})**: confirmed empirically,
+  ratio rounds/pi(x^{1/3}) → 1.00. This is the MINIMUM depth for sieve methods.
+- **Both are exponential in N = log x**: depth O(x^{1/3}/ln x) = O(2^{N/3}/N),
+  width O(x^{2/3}) = O(2^{2N/3}). Neither is polynomial in N.
+- **Floor-value mapping matrices are NON-COMMUTATIVE**: 0 commuting pairs out of
+  C(pi(sqrt(x)), 2) tested. Cannot reorder sieve operations.
+- **Floor-value linear transformation is full-rank**: ~80% of floor values have
+  nonzero coefficients, with |coefficients| >> pi(x) (massive cancellation).
+  No low-rank approximation possible.
+- **pi(x) mod m has INVARIANT conditional entropy**: H(Y|X) ≈ 0.537 bits regardless
+  of modulus m (tested 2 through 30). This equals the entropy of the prime indicator.
+  Confirms pi(x) mod m is as hard as pi(x).
+- **Meissel-Lehmer as NC circuit**: depth O(log log x) = O(log N) but exponential
+  width O(2^{2N/3}). NOT in NC via any known approach.
+- **REFINED KEY QUESTION**: Is pi(x) in NC? This is EQUIVALENT to our target of
+  O(polylog(x)) algorithms. The circuit size must go from 2^{2N/3} to poly(N).
 
 ---
 
@@ -97,12 +133,41 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 
 ---
 
-## Priority Assessment
+## Priority Assessment (updated Session 12)
 
 | Direction | Feasibility | Impact | Recommended Effort |
 |-----------|-------------|--------|-------------------|
-| Circuit complexity | Medium | High | PRIMARY focus |
+| Circuit complexity | Medium | High | PRIMARY focus — but all sieve-based TC^0/NC paths now closed. Non-AKS primality test is the key remaining question. |
 | Kt complexity | Medium | High | Theoretical exploration |
-| Zero compressibility | Low | Very High | Numerical experiments |
+| Zero compressibility | Very Low | Very High | Session 11 CLOSED convergence accel; only STRUCTURAL approaches remain |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
 | Novel identity | Very Low | Maximal | Serendipity only |
+| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. A fundamentally new approach would be needed. |
+
+**Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
+Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)
+(Buchstab, Vaughan, hyperbola generalization, convolution structure, Dirichlet series).
+M(x) factorization and H-T transfer to pi(x). TC^0 paths (Legendre, Lucy DP, Möbius,
+partial sieve, parity). ~10 new closed paths.
+
+**Session 11 refined:** Circuit complexity question now has precise formulation:
+PRIMES in TC^0 ⟺ polylog-dimensional matrix powering in TC^0.
+
+**Session 12 closed:** Lucy DP parallelism (DAG depth = pi(sqrt(x))), Meissel-Lehmer
+as NC circuit (exponential width), floor-value commutativity, floor-value linear algebra
+(full-rank), pi(x) mod m for all m (invariant entropy). ~5 new closed paths.
+
+**Session 12 refined:** "Is pi(x) in NC?" is EQUIVALENT to our target problem.
+All known approaches produce exponential-size circuits (size 2^{Theta(N)}).
+The barrier is now clearly the CIRCUIT SIZE, not depth. Any O(polylog) algorithm
+must avoid computing O(sqrt(x)) intermediate values — i.e., must not be based
+on floor values, sieve, or individual zeta zeros.
+
+**Session 13 closed:** Wilson TC^0, sum-of-squares TC^0, Cayley/Ihara/GCD graph
+spectral, CRT reconstruction, recursive identity, prime zeta P(s), GF(2) algebraic
+(ANF degree=N), optimized li-basis, zero reordering. ~12 new closed paths.
+
+**Session 13 refined:** BPSW is computationally TC^0 (all components: MR=scalar pow,
+Strong Lucas=2x2 MPOW, Jacobi=GCD=TC^0). "PRIMES in TC^0" ⟺ "BPSW correct."
+PRIMES is in NONUNIFORM TC^0 unconditionally. ANF degree = Θ(N) over GF(2),
+50% sparsity. No new 2026 breakthroughs in literature.

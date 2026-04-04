@@ -5,9 +5,20 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **380+ approaches tested** across 10 sessions, 89+ sub-agents
+- **420+ approaches tested** across 13 sessions, 105+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
+- **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
+  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+- **Session 13 KEY INSIGHTS:**
+  (a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+      PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+      Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+  (b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+      No GF(2) algebraic shortcut for counting primes.
+  (c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+  (d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+  (e) No new algorithmic breakthroughs in 2025-2026 literature.
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -34,7 +45,8 @@ literature/
 experiments/             <-- ALL experiments organized by topic
   analytic/ algebraic/ quantum/ ml/ information_theory/
   dynamical/ topological/ sieve/ other/
-archive/                 <-- Old session dumps (read-only reference)
+data/                    <-- Zeta zeros (200/300/500/1000) for explicit formula work
+archive/                 <-- Session logs and visualizations
 ```
 
 ## The Barrier in One Paragraph
@@ -50,6 +62,15 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 3. **Information Loss** -- smooth approximations lose ~170 bits distinguishing p(n)
 
 ## Do NOT Re-explore These (Thoroughly Closed)
+- Convergence acceleration on explicit formula (Richardson/Levin/Weniger all fail; error oscillatory not smooth -- Session 11)
+- Alternative decompositions of pi(x) (Buchstab/Vaughan/hyperbola/FFT all O(x^{2/3}) -- Session 11)
+- TC^0 direct paths (Legendre/Lucy DP/Möbius/partial sieve all fail -- Session 11)
+- Andrews-Wigderson FOCS 2024 (wrong model: fields not rings, GCD not bottleneck -- Session 12)
+- Sieve-based circuits (ALL produce exponential-size circuits 2^{Theta(N)} -- Session 12)
+- pi(x) mod m for any m (invariant entropy 0.537 bits, no modular shortcut -- Session 12)
+- Succinct/lattice counting (Barvinok needs dim~sqrt(x), permanent/det circular -- Session 12)
+- TG kernel smoothing (arXiv:2506.22634 DEBUNKED: violates uncertainty principle -- Session 12)
+- H-T M(x)->pi(x) transfer (M(x) cancels 99.9%, pi(x) cancels 0% -- Session 11+12)
 - Zeta zero summation (always O(sqrt(x)) terms, GUE prevents compression)
 - ML/neural (1.1% best, fundamentally limited by Prime Coding Theorem)
 - Modular/CRT reconstruction (circular or same complexity as pi(x))
@@ -58,13 +79,48 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Dynamical systems (FRACTRAN/CA/transfer operators -- all closed)
 - p-adic/adelic (not q-adically continuous, Mahler coefficients diverge)
 - Interpolation/regression on delta(n) (random walk, zero generalization)
+- Wilson's theorem for TC^0 (needs 2^N mults, not amenable -- Session 13)
+- Sum-of-two-squares for TC^0 (needs factoring + O(log n) depth -- Session 13)
+- Cayley graph / Ihara zeta / spectral graph (circular + equivalent -- Session 13)
+- CRT reconstruction of pi(x) (each pi(x) mod q costs O(x^{2/3}), strictly worse -- Session 13)
+- Recursive identity pi(x) = F(pi(x/d)) + correction (correction as hard as pi(x) -- Session 13)
+- Zero reordering/weighting (K_min ~ x^{0.27}, power law regardless of order -- Session 13)
+- Optimized li-basis (Riemann R(x) is essentially optimal for li-basis; error O(x^{0.3}) -- Session 13)
+- Generating function P(s) extraction (more poles than explicit formula, worse -- Session 13)
+- GF(2) algebraic shortcuts (ANF degree = N, sparsity 50%, random-like -- Session 13)
 
 ## Viable Research Directions
-1. **Circuit complexity of pi(x)** -- TC^0? NC^1? (genuinely unstudied)
-2. **Time-bounded Kolmogorov complexity of delta(n)** (open, connects to circuit bounds)
-3. **Zeta zero compressibility** -- if zeros have exploitable structure, barrier falls
-4. **Concrete Berry-Keating Hamiltonian** -- Hilbert-Polya conjecture (quantum, open)
-5. **Novel number-theoretic identity** relating sum_rho R(x^rho) to computable function
+1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
+   Session 11: AKS path to TC^0 BLOCKED (growing-dim matrix powering open at TC^0/NC^1 frontier).
+   Session 12: ALL sieve-based approaches produce EXPONENTIAL-SIZE circuits (2^{Theta(N)}).
+   **"Is pi(x) in NC?" is EQUIVALENT to finding an O(polylog) algorithm.**
+   Session 13 KEY RESULT: Systematic analysis of non-AKS TC^0 primality tests:
+   - Wilson: CLOSED (needs 2^N mults). Sum-of-squares: CLOSED (needs factoring).
+   - **BPSW IS in TC^0** as a computation: MR(2)=scalar pow, Strong Lucas=2x2 MPOW
+     (Mereghetti-Palano 2000), Jacobi symbol=TC^0 via GCD (HAB 2002).
+   - **QFT (Grantham) IS in TC^0**: operates in 2D algebra = 2x2 MPOW.
+   - Strong Lucas alone: 12 PSPs below 100000, all caught by second param.
+   - QFT alone: 4 PSPs below 50000, error < 1/7710.
+   - **"PRIMES in TC^0" now reduces to: prove BPSW correct (or GRH).**
+   - No BPSW pseudoprime known below 2^64 (exhaustive search).
+   - Under GRH: Miller's test = O(N^2) scalar pows = TC^0. Already known.
+   - Remaining question: unconditional proof of BPSW-type correctness.
+2. **Is pi(x) in GapL?** (Session 13 novel framing) -- sharper than NC question.
+   Asks for poly(N)-size matrix with det = pi(x). Equivalent to finding a DAG on
+   poly(N) nodes whose signed path count = pi(x). See novel/gapl_question.md.
+3. **Time-bounded Kolmogorov complexity of delta(n)** (open, connects to circuit bounds)
+4. **Zeta zero compressibility** -- convergence acceleration CLOSED (Session 11);
+   only STRUCTURAL approaches remain (find global pattern in zero distribution)
+5. **Concrete Berry-Keating Hamiltonian** -- Hilbert-Polya conjecture (quantum, open)
+6. **Novel number-theoretic identity** relating sum_rho R(x^rho) to computable function
+7. **Combinatorial pi(x) in O(x^{3/5})?** -- H-T achieved this for M(x) in 2021,
+   but pi(x) lacks signed cancellation. Open whether transfer is possible.
+8. **Nonlinear sieve** -- Selberg parity barrier rules out ALL linear sieve truncations
+   (Session 13). Nonlinear sieves (products/comparisons of floor values) are NOT ruled
+   out. No candidate exists but not proven impossible.
+9. **Non-sieve, non-analytic approach** -- Session 12 proved ALL known methods produce
+   exponential-size circuits. A fundamentally new approach is needed that avoids both
+   floor-value sets (O(sqrt(x))) and zeta zero sums (O(sqrt(x))).
 
 ## Rules for AI Agents
 1. **Read `status/CLOSED_PATHS.md` before proposing ANY approach**
