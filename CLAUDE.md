@@ -5,7 +5,7 @@ Find an efficient algorithm to compute the nth prime number p(n) without
 enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact.
 
 ## Status (April 2026)
-- **430+ approaches tested** across 14 sessions, 110+ sub-agents
+- **445+ approaches tested** across 15 sessions, 115+ sub-agents
 - **ALL KNOWN PATHS CLOSED** but no proof that polylog is impossible
 - **Problem is GENUINELY OPEN** -- no unconditional lower bound beyond Omega(log x)
 - **Session 12 KEY INSIGHT:** "Is pi(x) in NC?" is EQUIVALENT to our target.
@@ -34,6 +34,26 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
       high-dim has slow point counting, Frobenius eigenvalues = zeta zeros.
   (f) **pi(x) mod m is NOT a linear recurrence** for any m — confirms no
       fixed-size matrix power can encode pi(x) (Mauduit-Rivat consequence).
+- **Session 15 KEY INSIGHTS:**
+  (a) **Determinantal complexity connection**: pi(x) as degree-N multilinear polynomial
+      in bits. Found N×N det representations for N=2,3,4. "Is pi(x) in GapL?" ⟺
+      "polynomial determinantal complexity?" For N≥10, GENERIC polynomials don't fit.
+  (b) **#TC^0 ⊆ NC? is THE complexity question**: If BPSW ∈ TC^0 (conditional),
+      pi(x) ∈ NC iff #TC^0 ⊆ NC. Fermat residue coupling prevents batch counting.
+  (c) **Uniformity is the true barrier**: Nonuniform circuits trivially poly(N).
+      Hard part = UNIFORM construction. Natural proofs barrier blocks lower bounds.
+  (d) **ALL randomized approaches fail**: zeta zero sampling (100% needed), probabilistic
+      sieve (10^6x worse), hash counting, quantum counting — all rigorously excluded.
+  (e) **Divide-and-conquer fails**: error accumulates O(sqrt(x)) regardless of depth.
+  (f) **Monotone complexity inapplicable**: [pi(x)>=k] = [x>=p(k)] trivially O(N).
+      Individual bits of pi(x) NOT monotone.
+  (g) **Arithmetic circuits don't help**: VP=VNC^2 (depth free), but pi(x) not a
+      polynomial over fields. Tau conjecture orthogonal.
+  (h) **Systematic analysis of 8 intermediate quantity families**: residues, polynomial
+      evals, matrix eigenvalues, topology, representation theory, entropy, recursive,
+      physical — ALL route back to floor values or zeta zeros.
+  (i) **No 2026 breakthroughs**: Chen-Tal-Wang STOC 2026 (depth-2 threshold lower bounds)
+      closest to TC^0 frontier but not number-theoretic.
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~47% digits correct
 
@@ -41,7 +61,7 @@ enumeration, sieving, or brute force. Target: p(10^100) in <1 second, 100% exact
 
 ```
 status/
-  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (430+ entries)
+  CLOSED_PATHS.md    <-- SEARCH HERE before proposing ANY approach (445+ entries)
   OPEN_PROBLEMS.md   <-- The ONLY viable research directions
   BEST_ALGORITHMS.md <-- Working implementations with benchmarks
 proven/
@@ -114,6 +134,13 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 - Residue class / character sum exact counting (equidistributed, L-functions make harder -- Session 14)
 - Selberg sieve exact counting (parity barrier, 3.7x overshoot -- Session 14)
 - Batched Fermat/MR for pi(x) (no shared structure in 2^{n-1} mod n for consecutive n -- Session 14)
+- Divide-and-conquer pi(x) (error O(sqrt(x)) at each level, accumulates to O(sqrt(x)) -- Session 15)
+- Randomized zeta zero sampling (must use 100% of zeros; variance prohibitive -- Session 15)
+- Probabilistic sieve / I-E sampling (10^6-10^9x worse than exhaustive -- Session 15)
+- Hash-based prime counting (exact sketch needs O(x^2) bits -- Session 15)
+- Arithmetic circuit complexity for pi(x) (VP=VNC^2 but pi(x) not a polynomial -- Session 15)
+- Monotone circuit lower bounds for pi(x) ([pi(x)>=k]=[x>=p(k)] trivially O(N) -- Session 15)
+- Novel intermediate quantities: residues, polynomial evals, topology, representation theory, entropy, recursive, physical (ALL route to floor values/zeta zeros -- Session 15)
 
 ## Viable Research Directions
 1. **Circuit complexity of pi(x)** -- TC^0? NC^1? NC?
@@ -131,14 +158,17 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
    - No BPSW pseudoprime known below 2^64 (exhaustive search).
    - Under GRH: Miller's test = O(N^2) scalar pows = TC^0. Already known.
    - Remaining question: unconditional proof of BPSW-type correctness.
-2. **Is pi(x) in GapL?** (Session 13 novel framing, refined Session 14)
+2. **Is pi(x) in GapL? / Determinantal complexity** (Sessions 13-15)
    Asks for poly(N)-size matrix with det = pi(x). Equivalent to finding a DAG on
    poly(N) nodes whose signed path count = pi(x). See novel/gapl_question.md.
    Session 14: Equivalent to pi(x) ∈ #L. PRIMES ∈ L does NOT imply pi(x) ∈ #L
    (workspace mismatch barrier, see novel/workspace_mismatch_barrier.md).
    I-E approach FAILS: fractional parts carry 2^k independent bits → exponential det.
-   A GapL algorithm MUST avoid floor functions entirely — needs completely new
-   intermediate quantities (not floor values, not zeta zeros).
+   **Session 15 REFINEMENT**: Reformulated as determinantal complexity of pi(x) viewed
+   as degree-N multilinear polynomial in bits. Found dc(pi_N) = N for N=2,3,4.
+   For N≥10, generic polynomials DON'T have N×N det reps. See novel/determinantal_complexity.md.
+   A GapL algorithm MUST avoid floor functions entirely AND requires pi(x) to have
+   special algebraic structure making it "non-generic" in the determinantal variety.
 3. **Time-bounded Kolmogorov complexity of delta(n)** (open, connects to circuit bounds)
 4. **Zeta zero compressibility** -- convergence acceleration CLOSED (Session 11);
    only STRUCTURAL approaches remain (find global pattern in zero distribution)
@@ -154,21 +184,37 @@ minimum ~10^49 operations. At 10^15 ops/sec = 10^34 seconds = 10^26 years.
 9. **Non-sieve, non-analytic approach** -- Session 12 proved ALL known methods produce
    exponential-size circuits. A fundamentally new approach is needed that avoids both
    floor-value sets (O(sqrt(x))) and zeta zero sums (O(sqrt(x))).
+   **Session 15: Systematic analysis of ALL 8 candidate intermediate quantity families
+   (residues, polynomial evals, matrix eigenvalues, topology, rep theory, entropy,
+   recursive, physical) — ALL route back to floor values or zeta zeros.**
+   See novel/uniformity_barrier.md: the true barrier is UNIFORMITY, not monotone
+   complexity, not randomization, not arithmetic circuit depth.
+10. **#TC^0 ⊆ NC?** (Session 15, NEW) — Pure complexity theory question. If BPSW is in
+    TC^0 (conditional on BPSW correctness), then pi(x) ∈ NC iff #TC^0 ⊆ NC. The
+    Fermat residue coupling (2^{n-1} mod n where exponent and modulus both depend on n)
+    prevents any batch/structural counting shortcut found so far.
 
 ## Rules for AI Agents
-1. **Read `status/CLOSED_PATHS.md` before proposing ANY approach**
-2. Save experiments to `experiments/<topic>/` with descriptive filenames
-3. Update `status/CLOSED_PATHS.md` when closing an approach (add a row)
-4. Genuinely novel findings go to `novel/` with evidence
-5. New literature goes to `literature/`
-6. **UPDATE this CLAUDE.md** when you discover something that changes the picture:
+1. **On startup: check if `TODO.md` exists in the project root.** If it does, work
+   through its uncompleted items IN ORDER using sub-agents. Check off items as you
+   complete them. When ALL items are done, DELETE `TODO.md` and note completion in
+   the Status section of this file. If no TODO.md exists, proceed with normal research.
+2. **Read `status/CLOSED_PATHS.md` before proposing ANY approach**
+3. Save experiments to `experiments/<topic>/` with descriptive filenames
+4. Update `status/CLOSED_PATHS.md` when closing an approach (add a row)
+5. Genuinely novel findings go to `novel/` with evidence
+6. New literature goes to `literature/`
+7. **UPDATE this CLAUDE.md** when you discover something that changes the picture:
    - New barrier proven? Update "The Barrier" and "Do NOT Re-explore" sections
    - New viable direction found? Add to "Viable Research Directions"
    - Closed a direction from OPEN_PROBLEMS.md? Move it to "Do NOT Re-explore"
    - Found a better algorithm? Update "Status" section and `status/BEST_ALGORITHMS.md`
    - Keep this file accurate and current -- future sessions depend on it
-7. If you beat the current best algorithm, save it to `algorithms/` with benchmarks
-8. DO NOT modify `run.sh`
-9. Use sub-agents to save context window
-10. When you run out of context, just stop -- the system will restart you
-11. If you find the breakthrough, respond with exactly: I FOUND IT!!!
+8. If you beat the current best algorithm, save it to `algorithms/` with benchmarks
+9. DO NOT modify `run.sh`
+10. Use sub-agents to save context window
+11. **Context management:** When context is filling up (you notice compression warnings
+    or are past ~70% of your work), STOP research immediately. Write all remaining
+    uncompleted work, partial findings, and new sub-questions to `TODO.md` so the next
+    session can continue seamlessly. Then halt.
+12. If you find the breakthrough, respond with exactly: I FOUND IT!!!

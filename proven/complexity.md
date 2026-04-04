@@ -187,6 +187,40 @@ of intermediate quantities.
 
 Source: Session 14 analysis, novel/workspace_mismatch_barrier.md
 
+### Session 15: Determinantal Complexity and Uniformity Barrier
+
+**Determinantal complexity reformulation:**
+pi(x) viewed as a multilinear polynomial in N = log2(x) bits has degree exactly N
+(confirmed N=3 through N=10). The question "Is pi(x) in GapL?" is equivalent to:
+"Does pi(x) have polynomial determinantal complexity?"
+
+Found N×N determinantal representations for N=2,3,4 via numerical optimization.
+For N≥10, the determinantal parameter space (N^3 + 1 effective params) is smaller
+than the full polynomial space (2^N), meaning generic degree-N polynomials do NOT
+have N×N determinantal representations. pi(x) would need special structure.
+
+**Uniformity is the true barrier:**
+- Nonuniform poly(N)-size circuits for pi(x) exist trivially (hardcode primes as advice)
+- The hard part is UNIFORM construction (generating primes without knowing them)
+- The natural proofs barrier (Razborov-Rudich) blocks proving pi(x) ∉ TC^0 via
+  "natural" methods — any proof must be non-naturalizable or break crypto assumptions
+- Approximate degree of PRIMES: between Omega(N^{1/2}) and O(N)
+
+**#TC^0 ⊆ NC? as the key question:**
+If BPSW is unconditionally correct, PRIMES ∈ TC^0. Then pi(x) ∈ NC iff #TC^0 ⊆ NC.
+This is a pure complexity theory question. #AC^0 ⊆ TC^0 is known (Allender-Gore 1993),
+but #TC^0 ⊆ NC is wide open.
+
+**Closed approaches (Session 15):**
+- Randomized algorithms: zeta zero sampling (100% needed), probabilistic sieve (10^6x worse),
+  hash counting (O(x^2) bits), quantum counting (structure-dependent gap)
+- Divide-and-conquer: error accumulates O(sqrt(x)) regardless
+- Arithmetic circuits: VP=VNC^2 but pi(x) not polynomial over fields
+- Monotone complexity: [pi(x)>=k] trivially O(N); individual bits not monotone
+- All 8 intermediate quantity families: route back to floor values or zeta zeros
+
+Source: Session 15 analysis, novel/determinantal_complexity.md, novel/uniformity_barrier.md
+
 ---
 
 ## Related Summatory Functions

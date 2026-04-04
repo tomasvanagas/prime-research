@@ -1,6 +1,6 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-04 (Session 14)
+Last updated: 2026-04-04 (Session 15)
 
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (430+ approaches across 14 sessions) and confirmed to hit one of three
@@ -142,7 +142,9 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 | Zero compressibility | Very Low | Very High | Session 11 CLOSED convergence accel; only STRUCTURAL approaches remain |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
 | Novel identity | Very Low | Maximal | Serendipity only |
-| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. A fundamentally new approach would be needed. **Session 14: Must avoid floor values entirely.** |
+| Determinantal complexity | Medium | High | "dc(pi_N) = poly(N)?" is a clean algebraic complexity question. Found dc ≤ N for N=2,3,4. Open for N≥5. |
+| #TC^0 ⊆ NC? | Low | Maximal | Pure complexity theory question. If yes + BPSW correct → pi(x) ∈ NC. |
+| Non-sieve pi(x) approach | Unknown | Maximal | All sieve/combinatorial/analytic methods give exponential-size circuits. **Session 15: ALL 8 intermediate quantity families analyzed and closed.** Must avoid floor values entirely. |
 
 **Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
 Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)
@@ -186,3 +188,23 @@ Selberg exact counting (parity barrier). Batched primality (no shared structure)
 mismatch). GapL algorithm MUST avoid floor functions entirely. Floor-value set is the
 IRREDUCIBLE state space of ALL known sieve computations. The problem requires
 fundamentally new intermediate quantities — not floor values, not zeta zeros.
+
+**Session 15 closed:** Divide-and-conquer (error accumulates O(sqrt(x))), all randomized
+methods (zeta sampling, probabilistic sieve, hash counting), arithmetic circuit complexity
+(VP=VNC^2 but pi(x) not a polynomial), monotone complexity (trivial O(N) for thresholds),
+novel intermediate quantity families (systematic analysis of 8 families — all fail).
+~12 new closed paths.
+
+**Session 15 refined:**
+1. **Determinantal complexity connection**: "Is pi(x) in GapL?" ⟺ "Does the degree-N
+   multilinear polynomial pi(bits) have polynomial determinantal complexity?" Found N×N
+   det representations for N=2,3,4. For N≥10, generic polynomials DON'T fit — pi(x)
+   would need special structure from number theory.
+2. **#TC^0 ⊆ NC? as THE question**: If BPSW ∈ TC^0 (conditional), then pi(x) ∈ NC iff
+   #TC^0 ⊆ NC. The Fermat residue coupling (exponent and modulus both depend on n)
+   prevents batch counting.
+3. **Uniformity is the true barrier**: Nonuniform poly-size circuits exist trivially
+   (hardcode primes as advice). The hard part is UNIFORM construction — generating primes
+   without knowing them. Natural proofs barrier blocks proving super-TC^0 lower bounds.
+4. **No 2026 breakthroughs**: Chen-Tal-Wang STOC 2026 (depth-2 threshold lower bounds)
+   is the closest result to TC^0 frontier but hard function is not number-theoretic.

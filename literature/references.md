@@ -245,6 +245,21 @@ Explicit quantitative relationship between zero density estimates and exceptiona
 **Le Duc Hieu.** "Arithmetic progressions of primes in short intervals beyond 17/30." arXiv:2509.04883, September 2025. [arXiv](https://arxiv.org/abs/2509.04883)
 Combines uniform short-interval PNT at theta > 17/30 with Green-Tao transference principle.
 
+**Chen, L.; Tal, A.; Wang, Y.** "Superquadratic Lower Bounds for Depth-2 Linear Threshold Circuits." STOC 2026; ECCC TR26-039. [ECCC](https://eccc.weizmann.ac.il/report/2026/039/)
+Breaks decade-old quadratic barrier for depth-2 THR-of-THR circuits: proves n^{2.5-eps} size lower bound. Closest result to TC^0 frontier but hard function is in E^NP, not number-theoretic.
+
+**Raz, R.** "Natural Proofs for Super-Linear Lower Bounds for Linear Functions." ECCC TR26-008, Jan 2026. [ECCC](https://eccc.weizmann.ac.il/report/2026/008/)
+Natural proofs barrier extends to linear functions under crypto assumptions. Relevant barrier for proving pi(x) hard.
+
+**Andrews, R.; Garg, A.; Schost, E.** "Hilbert's Nullstellensatz is in the Counting Hierarchy." ECCC TR26-024 / arXiv:2602.17904, Feb 2026.
+Constant-depth arithmetic circuits for multivariate resultant. Places Nullstellensatz in CH (previously only PSPACE).
+
+**Aravind et al.** "Learning Read-Once Determinants and the Principal Minor Assignment Problem." ECCC TR26-035, 2026.
+First poly-time algorithm for learning ROD polynomials; first NC algorithm for principal minor equivalence. Relevant to GapL/determinantal complexity question.
+
+**Pain, J.-C.** "Three expressions of the n-th prime number." arXiv:2601.18816, Jan 2026.
+Formal/exact expressions via Mobius, von Mangoldt, survival dynamics. NOT computational algorithms.
+
 ---
 
 ## 7. Quantum Computing

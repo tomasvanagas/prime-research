@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (430+ Approaches)
+# Closed Paths: Master Lookup (445+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-14, 110+ sub-agents)
+Last updated: 2026-04-04 (Sessions 1-15, 115+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -217,6 +217,16 @@ Last updated: 2026-04-04 (Sessions 1-14, 110+ sub-agents)
 | QFT (Grantham) in TC^0 | WORKS | - | Quadratic Frobenius test IS in TC^0: operates in 2D algebra = 2x2 MPOW. Error < 1/7710 per param. Deterministic only with GRH. 4 QFT pseudoprimes below 50000 | 13 |
 | Strong Lucas standalone | PARTIAL | - | 12 pseudoprimes below 100000 (all caught by second param set). No unconditional correctness proof | 13 |
 | Miller-Rabin fixed bases in TC^0 | WORKS | - | MR({2,3,...,37}) deterministic for n<3.317×10^24 (Sorenson-Webster 2016). Each base = scalar pow → TC^0. Gives nonuniform TC^0 for any fixed input length | 13 |
+| Divide-and-conquer pi(x) | FAIL | E | pi(x)=pi(x/2)+delta: error in each interval O(sqrt(x_level)), accumulates to O(sqrt(x)). Buchstab tree has O(x^{2/3+eps}) nodes. No recursion gives sublinear error accumulation | 15 |
+| Randomized zeta zero sampling | FAIL | E | Must use 100% of zeros (variance analysis); no sampling gain possible | 15 |
+| Probabilistic sieve (I-E sampling) | FAIL | E | Variance 10^6-10^9x WORSE than exhaustive due to massive cancellation in I-E | 15 |
+| Hash-based prime counting sketch | FAIL | I | Exact sketch needs O(x^2/ln^2(x)) bits — worse than storing all primes | 15 |
+| Quantum counting (structured) | OPEN | E | Black-box: O(sqrt(x)). Lower bound: Omega(sqrt(ln x)). Gap requires exploiting PRIMES structure = original problem | 15 |
+| Arithmetic circuit complexity path | FAIL | E | VP=VNC^2 (VSBR): depth is FREE in algebraic model. But pi(x) is NOT a polynomial over fields. Tau conjecture orthogonal. Does not offer new viable path | 15 |
+| Monotone complexity lower bounds | FAIL | - | [pi(x)>=k]=[x>=p(k)] has TRIVIAL O(N) monotone complexity. Individual bits of pi(x) NOT monotone. Approach doesn't capture hardness of pi(x) | 15 |
+| #TC^0 counting for BPSW | OPEN | E | If BPSW∈TC^0, pi(x)∈NC iff #TC^0⊆NC. Fermat residue coupling (2^{n-1} mod n) prevents batch counting. Equivalent difficulty to original problem | 15 |
+| Novel intermediate quantity families | FAIL | E | Systematic analysis of 8 families (residues, polynomial evals, matrix eigenvalues, topology, representation theory, entropy, recursive, physical). ALL route back to floor values or zeta zeros. Only #TC^0 counting not immediately closed | 15 |
+| Determinantal complexity of pi(x) | OPEN | - | pi(x) = degree-N multilinear polynomial in bits. Found N×N det reps for N=2,3,4. dc(pi_N)=poly(N) iff pi(x)∈GapL. For N>=10, generic polynomials DON'T have N×N det reps — pi(x) would need special structure | 15 |
 
 ## Encoding / Novel Representations
 
@@ -336,14 +346,14 @@ Last updated: 2026-04-04 (Sessions 1-14, 110+ sub-agents)
 
 ## Summary Statistics
 
-- **Total approaches tested:** 420+
-- **FAIL:** ~370 (confirmed impossible or impractical)
+- **Total approaches tested:** 445+
+- **FAIL:** ~385 (confirmed impossible or impractical)
 - **PARTIAL:** ~16 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
-- **OPEN:** 3 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic)
+- **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, det complexity of pi(x))
 
 ### By Failure Mode
 - **Circularity (C):** ~65 approaches
-- **Equivalence (E):** ~175 approaches
-- **Information Loss (I):** ~155 approaches
+- **Equivalence (E):** ~190 approaches
+- **Information Loss (I):** ~160 approaches
