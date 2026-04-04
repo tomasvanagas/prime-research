@@ -7,7 +7,7 @@ the nth prime number p(n) exactly. Target: p(10^100) in <1 second.
 
 ## Status
 
-**380+ approaches tested** across 10 sessions with 89+ AI sub-agents.
+**500+ approaches tested** across 18 sessions with 130+ AI sub-agents.
 All known paths are closed, but no proof of impossibility exists.
 The problem remains genuinely open.
 
@@ -21,21 +21,23 @@ The problem remains genuinely open.
 ./run.sh
 ```
 
-Launches an autonomous loop: Claude reads CLAUDE.md, explores open problems,
-spins sub-agents, saves results, and restarts when context runs out.
-Logs go to `archive/CLAUDE_OUTPUTS/`.
+Launches a mode-rotating autonomous loop that cycles through 5 research strategies:
+normal exploration, wildcard (fresh thinking), focused deep-dives, proposal generation,
+and adversarial critique. Logs go to `archive/CLAUDE_OUTPUTS/`.
 
 <br/>
 
 ## Project Structure
 
 ```
-CLAUDE.md              -- AI agent entry point (read this first)
-run.sh                 -- Autonomous research loop
+CLAUDE.md              -- AI agent entry point (concise, read this first)
+FOCUS_QUEUE.md         -- Deep-dive tasks for focused research sessions
+run.sh                 -- Mode-rotating autonomous research loop
 status/
-  CLOSED_PATHS.md      -- 380+ tested approaches (searchable lookup table)
+  CLOSED_PATHS.md      -- 500+ tested approaches (searchable lookup table)
   OPEN_PROBLEMS.md     -- Viable research directions
   BEST_ALGORITHMS.md   -- Working implementations with benchmarks
+  SESSION_INSIGHTS.md  -- Per-session detailed findings (Sessions 12-18)
 proven/
   barriers.md          -- Proven impossibility results
   complexity.md        -- Upper/lower bounds, circuit complexity
@@ -43,16 +45,19 @@ proven/
   quantum.md           -- Why quantum doesn't help
 novel/
   info_computation_gap.md  -- Best original insight
-  entropy_measurements.md  -- Empirical measurements
   failure_taxonomy.md      -- Three failure modes classification
+  session16_synthesis.md   -- 15 families closed, three "pillars"
+  session17_synthesis.md   -- Exact communication rank formula
 algorithms/            -- Working, tested code only
 literature/
   references.md        -- All citations
   state_of_art_2026.md -- Latest published results
 experiments/           -- Past experiments by topic
   analytic/ algebraic/ quantum/ ml/ information_theory/
-  dynamical/ topological/ sieve/ other/
-archive/               -- Session history (read-only)
+  dynamical/ topological/ sieve/ circuit_complexity/ other/
+  wildcard/ proposals/
+data/                  -- Zeta zeros (200/300/500/1000)
+archive/               -- Session logs and visualizations
 ```
 
 <br/>
