@@ -1,0 +1,428 @@
+=== Run #1 — Sat Apr  4 01:29:39 UTC 2026 ===
+Let me check the current state of the project directory and any existing work.
+  [Bash] ls -la /apps/aplikacijos/prime-research/
+    total 160
+    drwxr-xr-x  6 root root  4096 Apr  4 01:19 .
+    drwxr-xr-x 18 root root  4096 Apr  4 01:11 ..
+    drwxr-xr-x  2 root root  4096 Apr  3 20:03 .claude
+    drwxr-xr-x  5 root root  4096 Apr  4 01:15 ARCHIVE
+    -rw-r--r--  1 root root  3342 Apr  3 20:11 FINDINGS.md
+    -rw-r--r--  1 root root  6120 Apr  4 00:17 FORMULA.md
+    drwxr-xr-x  2 root root  4096 Apr  4 01:14 INTERESTING
+    -rw-r--r--  1 root root  1099 Apr  3 20:07 README.md
+    -rw-r--r--  1 root root  5857 Apr  4 01:07 THEOREM.md
+    drwxr-xr-x  3 root root  4096 Apr  4 01:15 UNCOMPLETED
+    -rw-r--r--  1 root root  6403 Apr  3 20:07 meissel_lehmer.py
+    -rw-r--r--  1 root root 13207 Apr  3 20:15 nth_prime.py
+    -rw-r--r--  1 root root 14491 Apr  3 23:19 nth_prime_v2.py
+    -rw-r--r--  1 root root 32247 Apr  4 00:17 prime_formula.py
+    -rw-r--r--  1 root root 13031 Apr  4 01:07 prime_formula_final.py
+    -rw-r--r--  1 root root 16180 Apr  4 01:19 riemann_exact.py
+    -rwxr-xr-x  1 root root  4361 Apr  4 01:29 run.sh
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/project_prime_research.md
+    ---
+    name: Prime research project status
+    description: Status of nth prime research — Padé Lambert W formula discovered, best published closed-form approximation
+    type: project
+    ---
+    
+    Nth prime research at `/apps/aplikacijos/prime-research/`.
+    
+    **Status:** Padé Lambert W Prime Formula discovered and validated. Best published closed-form approximation for p(n).
+    
+    **The Best Formula (Padé [2,2]):**
+      p(n) = n·W(n)·(1.0297·W² + 13.978·W − 0.9337) / (W² + 7.4267·W + 0.3036)
+    - 0.019% mean relative error for n > 50,000
+    - 11× more accurate than Cipolla (1902), 15× better than li⁻¹
+    - 5 parameters, closed-form, instant evaluation
+    
+    **Prior art:** Visser (2013) noted Lambert W captures first 2 Cipolla terms but did NOT develop a series or Padé. Our Padé resummation is genuinely novel.
+    
+    **Theory agent proved:** True coefficients are polynomials in L = ln(W(n)), not constants. Constant-coefficient version is an approximation. c₀ = 1 exactly.
+    
+    **Hierarchy of methods (by accuracy):**
+    1. Padé [2,2] in W: 0.019% (closed-form, 5 params)
+    2. Linear regression + zeta features: 0.022% (23 params)
+    3. Lambert W polynomial K=3: 0.028% (closed-form, 4 params)
+    4. Cipolla 4-term: 0.21% (closed-form)
+    5. li⁻¹(n): 0.28% (iterative)
+    6. R⁻¹(n): 0.003% (iterative)
+    
+    **~0.02% appears to be the fundamental error floor** for any finite closed-form formula without zeta zeros.
+    
+    ... (2 more lines)
+  [Read] /apps/aplikacijos/prime-research/THEOREM.md
+    # The Lambert W Prime Theorem
+    
+    ## Discovery Date: 2026-04-03/04
+    
+    ## Statement
+    
+    **Theorem.** The nth prime number p(n) admits a closed-form approximation
+    via the Lambert W function that outperforms all previously published
+    closed-form formulas.
+    
+    ### Form 1: Polynomial (simpler, 0.028% error)
+    
+        p(n) ≈ n · W(n) · (c₀ + c₁/W(n) + c₂/W(n)² + c₃/W(n)³)
+    
+        c₀ = 1.011421,  c₁ = 5.886407,  c₂ = -26.506067,  c₃ = 49.157482
+    
+    ### Form 2: Padé Rational (better, 0.019% error)
+    
+        p(n) ≈ n · W(n) · (1.029731·W² + 13.978003·W - 0.933732) / (W² + 7.426692·W + 0.303565)
+    
+    where W = W(n) is the Lambert W function (principal branch: W(x)·e^{W(x)} = x).
+    
+    ### Form 3: L-Dependent Theoretical (exact structure)
+    
+        p(n) ≈ n · W(n) · Σ_{k=0}^{K} c_k(L) / W(n)^k
+    
+    where L = ln(W(n)) and the coefficients are polynomials in L:
+    
+        c₀(L) = 1
+        c₁(L) = 2L - 1
+    ... (116 more lines)
+  [Read] /apps/aplikacijos/prime-research/FINDINGS.md
+    # Prime Number Research — Key Findings
+    
+    ## Final Solution: `nth_prime.py`
+    
+    A hybrid program that selects the optimal algorithm based on input size:
+    
+    ### Algorithm Selection
+    | Range | Method | Complexity |
+    |-------|--------|------------|
+    | n < 100,000 | Odds-only Eratosthenes sieve + Dusart upper bound | O(p_n log log p_n) time, O(p_n/2) space |
+    | n >= 100,000 | Lucy_Hedgehog pi(x) + binary search | O(p_n^(2/3) log p_n) time, O(p_n^(1/2)) space |
+    
+    ### Performance (pure Python, single-threaded)
+    
+    | n | p(n) | Time |
+    |---|------|------|
+    | 1,000 | 7,919 | 0.0002s |
+    | 10,000 | 104,729 | 0.003s |
+    | 100,000 | 1,299,709 | 0.058s |
+    | 1,000,000 | 15,485,863 | 0.41s |
+    | 10,000,000 | 179,424,673 | 2.9s |
+    | 100,000,000 | 2,038,074,743 | 17.4s |
+    
+    ### pi(x) Performance (Lucy_Hedgehog alone)
+    
+    | x | pi(x) | Time |
+    |---|-------|------|
+    | 10^6 | 78,498 | 0.003s |
+    | 10^7 | 664,579 | 0.014s |
+    | 10^8 | 5,761,455 | 0.075s |
+    ... (47 more lines)
+  [Bash] ls -la /apps/aplikacijos/prime-research/UNCOMPLETED/ /apps/aplikacijos/prime-research/INTERESTING/ /apps/aplikacijos/prime-research/ARCHIVE/
+    /apps/aplikacijos/prime-research/ARCHIVE/:
+    total 20
+    drwxr-xr-x 5 root root 4096 Apr  4 01:15 .
+    drwxr-xr-x 6 root root 4096 Apr  4 01:19 ..
+    drwxr-xr-x 2 root root 4096 Apr  4 01:29 CLAUDE_OUTPUTS
+    drwxr-xr-x 2 root root 4096 Apr  4 00:17 __pycache__
+    drwxr-xr-x 2 root root 4096 Apr  4 01:15 previous_approaches
+    
+    /apps/aplikacijos/prime-research/INTERESTING/:
+    total 8
+    drwxr-xr-x 2 root root 4096 Apr  4 01:14 .
+    drwxr-xr-x 6 root root 4096 Apr  4 01:19 ..
+    
+    /apps/aplikacijos/prime-research/UNCOMPLETED/:
+    total 12
+    drwxr-xr-x 3 root root 4096 Apr  4 01:15 .
+    drwxr-xr-x 6 root root 4096 Apr  4 01:19 ..
+    drwxr-xr-x 2 root root 4096 Apr  4 01:15 v1_pade_approximation
+Good — significant prior work exists. The best so far is a 0.019% approximation. The goal is **100% exact, zero bruteforce**. Let me review the latest code, then launch parallel research agents.
+  [Read] /apps/aplikacijos/prime-research/riemann_exact.py
+    """
+    Riemann Explicit Formula: Exact Prime Recovery via Zeta Zeros
+    =============================================================
+    
+    Tests whether pi(x) computed via the Riemann explicit formula, when combined
+    with enough non-trivial zeta zeros, can give EXACT values of p(n) when rounded.
+    
+    The explicit formula:
+        pi(x) = R(x) - sum_{rho} R(x^rho) - 1/ln(2) + integral_x^inf dt/(t(t^2-1) ln t)
+    
+    where R(x) = sum_{k=1}^inf mu(k)/k * li(x^{1/k})  (Riemann R function)
+    and the sum is over all non-trivial zeros rho = 1/2 + i*gamma of zeta(s).
+    
+    Strategy for finding p(n):
+        1. Compute x_est = R^{-1}(n) as initial estimate
+        2. Evaluate pi(x_est) via explicit formula with N zeros
+        3. If pi(x_est) == n, then x_est is near p(n); search locally
+        4. More directly: evaluate pi(p) for candidate primes near x_est
+    
+    Key question: How many zeros N are needed for round(pi(x)) to be exact
+    for all x = p(n), n = 1..K?
+    
+    Usage:
+        python riemann_exact.py [--max-n 1000] [--max-zeros 200]
+    """
+    
+    import mpmath
+    import math
+    import time
+    import sys
+    ... (445 more lines)
+  [Read] /apps/aplikacijos/prime-research/prime_formula_final.py
+    """
+    The Lambert W Prime Theorem — Implementation
+    ==============================================
+    
+    A direct closed-form formula for the nth prime number:
+    
+        p(n) = n * W(n) * SUM_{k=0}^{3} c_k / W(n)^k
+    
+    where W is the Lambert W function (W(x) * e^W(x) = x).
+    
+    This is a NEW theorem: expanding p(n) in the basis {n*W(n)/W(n)^k}
+    converges faster than the classical Cipolla (1902) double-log expansion,
+    because W(n) naturally absorbs the log-log interaction.
+    
+    The series is asymptotic (divergent) — K=3 is the optimal truncation,
+    analogous to Stirling's approximation for factorials.
+    
+    For the exact nth prime (using Riemann zeta zeros), see prime_exact().
+    
+    Discovered 2026-04-03. See THEOREM.md for the mathematical statement.
+    
+    Usage:
+        python prime_formula_final.py 1000
+        python prime_formula_final.py --bench
+    """
+    
+    import math
+    import sys
+    import time
+    
+    ... (389 more lines)
+Current state: Best approximation is 0.019% error (Padé Lambert W). We need **exact 100%** with **zero bruteforce**. Let me launch parallel research agents to explore radically different approaches.
+  [Agent] 
+  [Agent] 
+  [Agent] 
+  [Agent] 
+
+
+4 research agents launched in parallel:
+
+1. **Wilson/Willans exact formula** — researching known exact prime formulas based on Wilson's theorem
+2. **Riemann zeta zeros** — determining how many zeros needed for exact π(x) recovery
+3. **Novel pattern discovery** — exploring modular wheels, prime gaps, CRT, and other creative approaches
+4. **Recursive/constructive formulas** — Legendre's formula, Meissel's formula, and other non-sieve exact methods
+
+Each agent is searching the internet, implementing code, and testing ideas independently. I'll analyze their results as they complete and synthesize the most promising directions.
+
+Waiting for agents to report back...
+
+
+Good, the patterns agent found something interesting: **wheel-aware gap prediction** — within mod 30 residue transitions, 97-100% of gaps equal the minimum possible. Let me check the details while waiting for other agents.
+  [Read] /apps/aplikacijos/prime-research/INTERESTING/novel_patterns.md
+    Minimum gaps for each transition:
+      1->7: min_gap=6, at_minimum=68/68 (100.0%)
+      1->11: min_gap=10, at_minimum=38/38 (100.0%)
+      1->13: min_gap=12, at_minimum=20/20 (100.0%)
+      1->17: min_gap=16, at_minimum=13/13 (100.0%)
+      7->11: min_gap=4, at_minimum=68/70 (97.1%)
+      7->13: min_gap=6, at_minimum=37/37 (100.0%)
+      7->17: min_gap=10, at_minimum=21/21 (100.0%)
+      7->19: min_gap=12, at_minimum=11/11 (100.0%)
+      11->13: min_gap=2, at_minimum=67/68 (98.5%)
+      11->17: min_gap=6, at_minimum=40/41 (97.6%)
+      11->19: min_gap=8, at_minimum=25/25 (100.0%)
+      11->23: min_gap=12, at_minimum=14/14 (100.0%)
+      13->17: min_gap=4, at_minimum=70/70 (100.0%)
+      13->19: min_gap=6, at_minimum=38/38 (100.0%)
+      13->23: min_gap=10, at_minimum=23/23 (100.0%)
+      13->29: min_gap=16, at_minimum=14/14 (100.0%)
+      17->1: min_gap=14, at_minimum=15/15 (100.0%)
+      17->19: min_gap=2, at_minimum=64/64 (100.0%)
+      17->23: min_gap=6, at_minimum=44/44 (100.0%)
+      17->29: min_gap=12, at_minimum=18/18 (100.0%)
+      19->1: min_gap=12, at_minimum=19/19 (100.0%)
+      19->7: min_gap=18, at_minimum=13/13 (100.0%)
+      19->23: min_gap=4, at_minimum=64/64 (100.0%)
+      19->29: min_gap=10, at_minimum=37/37 (100.0%)
+      23->1: min_gap=8, at_minimum=37/37 (100.0%)
+      23->7: min_gap=14, at_minimum=25/25 (100.0%)
+      23->29: min_gap=6, at_minimum=72/72 (100.0%)
+      29->1: min_gap=2, at_minimum=72/72 (100.0%)
+      29->7: min_gap=8, at_minimum=39/39 (100.0%)
+    ... (84 more lines)
+Interesting patterns but not yet a breakthrough for exact prediction. The wheel approach shows strong structure but not 100% determinism. Let me check the other agents' progress.
+  [Bash] wc -l /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/ae910433aa94fab7e.output /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/a325db98a195719b4.output /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/accd5ca169aa9e8d9.output 2>/dev/null
+        46 /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/ae910433aa94fab7e.output
+        64 /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/a325db98a195719b4.output
+        32 /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/accd5ca169aa9e8d9.output
+       142 total
+Agents still working. While I wait, let me think about a radical new direction and set up tracking.
+  [ToolSearch] 
+  [TodoWrite] 
+While waiting for agents, let me explore a radical idea myself — a **formula-only approach** using the Möbius function and inclusion-exclusion to compute π(x) without knowing any primes in advance.
+  [Agent] 
+5th agent launched: **arithmetic-only π(x) formula** — exploring whether we can count primes using only +, -, *, /, floor without ever needing to know primes.
+
+Waiting for the remaining agents...
+
+
+Excellent results from the recursive agent! Key finding: **π(x) CAN be computed exactly using only floor division** — no primes needed. And **Meissel's recursion** gives O(x^{2/3}) performance without any sieve array.
+
+Let me read the implementation details.
+  [Read] /apps/aplikacijos/prime-research/recursive_prime.py
+    """
+    Recursive/Constructive Formulas for the nth Prime
+    ===================================================
+    Formulas that compute primes WITHOUT sieving or brute-force primality testing.
+    
+    Approaches implemented:
+      1. Legendre's formula for pi(x) using Mobius function + inclusion-exclusion
+      2. Meissel's recursive formula for pi(x)
+      3. Constructive formula: trial division by known primes only
+      4. Wilson's theorem formula (pure arithmetic, no prime knowledge needed)
+      5. Mills' constant approach (existence proof, not practical)
+      6. Willans' formula (exact, uses only arithmetic + floor)
+    
+    Each is tested for p(1)..p(50) and timed.
+    """
+    
+    import math
+    import time
+    from functools import lru_cache
+    
+    
+    # ============================================================
+    # Reference primes for verification (first 100 primes)
+    # ============================================================
+    KNOWN_PRIMES = [
+        2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+        31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+        73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+        127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+        179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/INTERESTING/recursive_formulas.md
+    # Recursive & Constructive Formulas for the nth Prime
+    
+    ## Goal
+    Compute p(n) WITHOUT sieving or brute-force primality testing, using only
+    recursive formulas, floor division, and basic arithmetic.
+    
+    ## Key Finding
+    
+    **YES, pi(x) can be computed exactly using only arithmetic operations
+    (+, -, *, floor(a/b)) applied to x, without knowing any primes in advance.**
+    
+    Two proven approaches:
+    1. **Divisor-count formula**: `is_prime(n) = [sum_{k=1}^{n} (floor(n/k) - floor((n-1)/k)) == 2]`
+    2. **Wilson's theorem**: `is_prime(j) = floor(((j-1)! mod j) / (j-1))`
+    
+    Both yield exact formulas for pi(x) and hence p(n), using only basic arithmetic.
+    
+    ---
+    
+    ## Approaches Implemented & Tested
+    
+    All code in `recursive_prime.py`. Every approach was verified for p(1) through p(50) minimum.
+    
+    ### 1. Legendre's Inclusion-Exclusion Formula
+    
+    **Formula:**
+    ```
+    pi(x) = |{m in [1,x] : gcd(m, P) = 1}| + pi(sqrt(x)) - 1
+    ```
+    where `P = product of primes <= sqrt(x)`, and the coprime count is computed via:
+    ... (50 more lines)
+Now let me read the Meissel implementation and the divisor-count approach — these are the most important pieces.
+  [Read] /apps/aplikacijos/prime-research/recursive_prime.py
+                break
+            # Subtract the count that ARE divisible by p (and recursively handle rest)
+            total -= _inclusion_exclusion(x // p, primes, i + 1)
+        return total
+    
+    
+    @lru_cache(maxsize=None)
+    def _get_primes_up_to(n):
+        """
+        Return tuple of primes up to n, found recursively using legendre_pi.
+        This is the bootstrapping mechanism.
+        """
+        if n < 2:
+            return ()
+        primes = []
+        for candidate in range(2, n + 1):
+            if _is_prime_by_known(candidate, primes):
+                primes.append(candidate)
+        return tuple(primes)
+    
+    
+    def _is_prime_by_known(x, known_primes):
+        """Check if x is prime using only the known primes (trial division up to sqrt(x))."""
+        if x < 2:
+            return False
+        sqrtx = int(math.isqrt(x))
+        for p in known_primes:
+            if p > sqrtx:
+                break
+            if x % p == 0:
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/recursive_prime.py
+        ln_n = math.log(n)
+        ln_ln_n = math.log(ln_n)
+        lo = int(n * (ln_n + ln_ln_n - 1.5))
+        hi = int(n * (ln_n + ln_ln_n + 1.0))
+    
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if _meissel.pi(mid) >= n:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo
+    
+    
+    # ============================================================
+    # APPROACH 3: Constructive Formula (Known-Prime Trial Division)
+    # ============================================================
+    # Given p(1), ..., p(n-1), compute p(n) as:
+    #   p(n) = smallest x > p(n-1) s.t. for all p(k) <= sqrt(x): x mod p(k) != 0
+    #
+    # This is a "formula" in the sense that each new prime is determined by
+    # a finite computation involving only previously known primes.
+    # No sieve array is created; no primality test beyond trial division by known primes.
+    
+    def nth_prime_constructive(n):
+        """
+        Build primes constructively: each p(n) is found by testing candidates
+        against only the previously found primes up to sqrt(candidate).
+    
+        This is the most direct "formula": p(n) = f(p(1), ..., p(n-1)).
+    ... (120 more lines)
+Good. Now I have a clear picture of all the approaches. Let me think about the **breakthrough strategy** while the remaining agents finish. The key insight is combining:
+
+1. **Meissel's formula** — exact π(x) in O(x^{2/3}), no sieve
+2. **R⁻¹(n)** — extremely accurate starting estimate (0.003% error)
+3. A **single-shot correction** using the Riemann explicit formula with zeta zeros
+
+The "breakthrough" concept: if R⁻¹(n) gives us an estimate within ~30 of the true p(n) for n up to 10^6, and the Riemann zeta zero correction can reduce this to within ±0.5, then **round(corrected_estimate) = p(n) exactly** — a direct formula with no search.
+
+Let me start building this while waiting for the last 2 agents.
+  [Agent] 
+
+
+6th agent launched: **Direct Prime Formula Builder** — implementing the Riemann explicit formula approach as a single-shot formula: `p(n) = round(R⁻¹(n + zeta_correction))`.
+
+Current status:
+- **Patterns agent**: Done — found wheel structure but no exact formula
+- **Recursive agent**: Done — proved π(x) computable with pure arithmetic, Meissel O(x^{2/3})
+- **Willans agent**: Still running
+- **Riemann agent**: Still running  
+- **Arithmetic π(x) agent**: Still running
+- **Formula builder**: Just launched — building the main deliverable
+
+Waiting for remaining agents...
+Willans agent complete. Key insight: **all known exact formulas are fundamentally O(p(n)²) or worse** — they hide "infinite computation" inside factorials or unknowable constants. No post-2020 breakthroughs exist.
+
+Let me check remaining agents' progress.
+  [Bash] tail -5 /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/a325db98a195719b4.output /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/ac0215fd5e6978af2.output /tmp/claude-0/-apps-aplikacijos-prime-research/5376fa74-7e7a-410c-89e6-ba727a7fa99b/tasks/a042e4835840f1ade.output 2>/dev/null

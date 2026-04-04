@@ -1,0 +1,284 @@
+# Consolidated Reference List
+
+All references from the prime-research project, deduplicated and organized by category.
+Each entry includes author(s), title, year, source, and relevance to the project.
+
+Last updated: 2026-04-04
+
+---
+
+## 1. Algorithms for pi(x) and p(n)
+
+**Legendre, A.-M.** "Essai sur la theorie des nombres." 1808.
+Recursive inclusion-exclusion formula for pi(x), O(x^{3/4}). Foundation of all combinatorial pi(x) methods.
+
+**Meissel, E.** Combinatorial decomposition for pi(x). 1870-1885.
+Split contributions by number of prime factors, achieving O(x/(log x)^3). First sublinear pi(x) method.
+
+**Lehmer, D. H.** Extension of Meissel's method with P3 term. 1959.
+Improved to O(x/(log x)^4). Basis of all modern combinatorial pi(x) implementations.
+
+**Lagarias, J.; Miller, V.; Odlyzko, A.** "Computing pi(x): The Meissel-Lehmer Method." 1985.
+Achieved O(x^{2/3}/log x) via improved combinatorial identities.
+
+**Lagarias, J.; Odlyzko, A.** "Computing pi(x): An Analytic Method." J. reine angew. Math. 387, 1987. [PDF](https://www-users.cse.umn.edu/~odlyzko/doc/arch/analytic.pi.of.x.pdf)
+First O(x^{1/2+eps}) algorithm for pi(x) using Perron's formula and zeta zeros. Theoretical best upper bound; never implemented by its authors due to large constants.
+
+**Deleglise, M.; Rivat, J.** "Computing pi(x): The Meissel, Lehmer, Lagarias, Miller, Odlyzko method." Math. Comp. 65, 1996. [PDF](https://cr.yp.to/bib/1996/deleglise.pdf)
+Refined combinatorial method to O(x^{2/3}/log^2 x). Current best practical asymptotic for combinatorial pi(x).
+
+**Gourdon, X.** Implementation of an improved Deleglise-Rivat variant. 2001.
+O(x^{2/3}/log^2 x) with different space tradeoffs. Used in primecount library.
+
+**Lucy_Hedgehog.** Iterative DP algorithm for pi(x). 2012 (Project Euler community). [Analysis](https://gbroxey.github.io/blog/2023/04/09/lucy-fenwick.html)
+O(x^{2/3}) time, O(x^{1/2}) space, ~15 lines of code. Exploits that floor(x/k) takes O(sqrt(x)) distinct values. Widely used in competitive programming.
+
+**Platt, D.; Trudgian, T.** "Computing pi(x) Analytically." 2012. [arXiv:1203.5712](https://arxiv.org/abs/1203.5712)
+Rigorous interval-arithmetic implementation of analytic pi(x). Computed pi(10^25) unconditionally.
+
+**Walisch, K.** primecount library. [GitHub](https://github.com/kimwalisch/primecount)
+State-of-art implementation of Deleglise-Rivat and Gourdon algorithms. Parallelized, computes pi(10^25) in 330 CPU core hours. Versions 8.0-8.4 (2025-2026) added 128-bit API, SIMD Gourdon D formula, AVX512/ARM SVE support.
+
+**Aggarwal, A.** "A Note on Algorithms for Computing p_n." arXiv:2510.16285, October 2025. [arXiv](https://arxiv.org/abs/2510.16285)
+Proves p(n) computable in O(sqrt(n) * (log n)^4) via binary search on pi(x). Conditional: O(sqrt(n) * (log n)^{7/2} * log log n) under RH + Cramer. Proves sieve-based methods cannot beat binary-search-on-pi(x) asymptotically.
+
+---
+
+## 2. Complexity Theory and Lower Bounds
+
+**Agrawal, N.; Kayal, N.; Saxena, N.** "PRIMES is in P." Annals of Mathematics 160, 2002. [PDF](https://www.cse.iitk.ac.in/users/manindra/algebra/primality_v6.pdf)
+AKS deterministic primality test in O~(log^6 n). Proved PRIMES is in P, but does not help with counting primes.
+
+**Allender, E.; Saks, M.; Shparlinski, I.** "A Lower Bound for Primality." J. Comput. Sys. Sci. 62, 2001. [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0022000000917252)
+PRIMES is NOT in AC^0[p] for any prime p. Best known unconditional circuit lower bound for primality.
+
+**Hesse, W.; Allender, E.; Barrington, D.** "Division is in Uniform TC^0." J. Comput. Sys. Sci. 65, 2002. [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0022000002000259)
+Division and iterated multiplication in uniform TC^0. Context for circuit complexity of arithmetic primitives.
+
+**Agrawal, M.; Allender, E. et al.** "On TC0, AC0, and Arithmetic Circuits." [PDF](https://people.cs.rutgers.edu/~allender/papers/arithmetic.pdf)
+Framework for understanding arithmetic circuit complexity. Relevant to whether pi(x) can be parallelized (NC question).
+
+**Mauduit, C.; Rivat, J.** "Sur un probleme de Gelfond: la somme des chiffres des nombres premiers." Annals of Mathematics 171, 2010.
+Proved primes are NOT k-automatic for any k. Rules out finite-automaton-based approaches.
+
+**Raz, R.** "Natural Proofs for Super-Linear Lower Bounds on Linear Functions." ECCC TR26-008, January 2026. [ECCC](https://eccc.weizmann.ac.il/report/2026/008/)
+First formalization of natural proof barriers for linear circuit complexity. Shows what approaches cannot work for proving super-linear lower bounds on linear functions over finite fields.
+
+**Chen, L.; Tal, A.; Wang, Y.** "Super-Quadratic Lower Bounds for Depth-2 Linear Threshold Circuits." ECCC TR26-039, March 2026. [ECCC](https://eccc.weizmann.ac.il/report/2026/039/)
+Function in E^NP requiring n^{2.5-eps}-size THR-of-THR circuits. Strongest known lower bound for depth-2 linear threshold model.
+
+---
+
+## 3. Exact Formulas for Primes
+
+**Mills, W. H.** "A Prime-Representing Function." Bull. Amer. Math. Soc. 53, 604, 1947.
+floor(A^{3^n}) is prime for all n. Circular: constant A encodes the primes.
+
+**Wright, E. M.** "A Prime-Representing Function." Amer. Math. Monthly 58, 616-618, 1951.
+Iterated-exponential prime formula. Same circularity as Mills.
+
+**Robinson, J.** Arithmetic terms for number-theoretic functions. 1952.
+Showed binomial coefficients have arithmetic term representations: C(a,b) = floor((2^a+1)^a / 2^(ab)) mod 2^a. Foundation for Prunescu-Shunia.
+
+**Willans, C. P.** "A Formula for the Nth Prime Number." Math. Gaz. 48, 413-415, 1964.
+Wilson-based formula. O(4^n * n!) -- computationally useless beyond p(6), but proves a formula exists.
+
+**Gandhi, J. M.** "Formulae for the Nth Prime." Proc. Washington State Univ. Conf. Number Theory, 96-106, 1971.
+Primorial recurrence using Mobius function. Exact but exponential in primorial; infeasible beyond p(8).
+
+**Jones, J. P.** "Formula for the Nth Prime Number." Canad. Math. Bull. 18, 433-434, 1975.
+Compact Wilson variant using monus operator and Bertrand's postulate bound n^2.
+
+**Jones, J. P.; Sato, D.; Wada, H.; Wiens, D.** "Diophantine Representation of the Set of Prime Numbers." Amer. Math. Monthly 83, 449-464, 1976.
+Polynomial of degree 25 in 26 variables whose positive values are exactly the primes. Solutions involve numbers ~10^{10^52}; computationally impossible.
+
+**Golomb, S. W.** Zeta-based recurrence for primes. 1976.
+Requires knowing prior primes; non-constructive limit.
+
+**Conway, J. H.** "FRACTRAN: A Simple Universal Programming Language for Arithmetic." Open Problems in Communication and Computation, Springer, 1987. [OEIS](https://oeis.org/wiki/Conway's_PRIMEGAME)
+14-fraction program producing primes. Turing-complete but O(p^2) per prime.
+
+**Mazzanti, S.** "Plain Bases for Classes of Primitive Recursive Functions." Math. Logic Quarterly 48, 2002.
+Proved all Kalmar elementary functions have arithmetic term representations (non-constructive). Theoretical basis for Prunescu-Shunia.
+
+**Rowland, E. S.** "A Natural Prime-Generating Recurrence." J. Integer Seq. 11, 2008.
+GCD recurrence a(n) = a(n-1) + gcd(n, a(n-1)). Produces only primes but misses many; 18 distinct primes in 100,000 terms.
+
+**Plouffe, S.** "A formula for primes." arXiv:1901.01849, 2018 (revised 2022). [PDF](http://plouffe.fr/articles/Formula%20for%20primes.pdf)
+Exponential formulas {a_0 * r^n} with r=5/4 producing 50 probable primes. Conjectured, not proven. Constant-dependent.
+
+**Fridman, D.; Garbulsky, J.; Glecer, B.; Grime, J.** "A Prime-Representing Constant." Amer. Math. Monthly 126, 70-73, 2019.
+Elegant fractional expansion revealing successive primes. Circular: computing the constant requires knowing primes.
+
+**Elsholtz, C.** "Unconditional Prime-Representing Functions." Bull. London Math. Soc. 52, 2020.
+Mills-type formula proved without RH. Same constant-dependency problem.
+
+**Prunescu, M.; Sauras-Altuzarra, L.** "An Arithmetic Term for the Factorial Function." J. Integer Seq., 2024. [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S2666657X24000028)
+First explicit arithmetic term for n!. Building block for the prime formula.
+
+**Prunescu, M.; Shunia, J. M.** "On arithmetic terms expressing the prime-counting function and the n-th prime." arXiv:2412.14594, December 2024; J. Integer Seq. 28, Article 25.5.3, 2025. [arXiv](https://arxiv.org/abs/2412.14594) [JIS](https://cs.uwaterloo.ca/journals/JIS/VOL28/Prunescu/prunescu3.pdf)
+First explicit fixed-length arithmetic terms for pi(n) and p(n) using only +, -, *, div, exp. Tower-of-exponentials intermediate values make evaluation impossible for any non-trivial input.
+
+**Prunescu, M.; Shunia, J. M.** "Computational considerations on arithmetic terms for number-theoretic functions." J. Logic & Computation 35(3), April 2025. [Oxford](https://academic.oup.com/logcom/article-abstract/35/3/exaf012/8071363)
+Arithmetic terms for tau(n), sigma(n), phi(n), modular inverse, integer root, discrete logarithm.
+
+**Prunescu, M.; Shunia, J. M.** "Elementary closed-forms for non-trivial divisors." arXiv:2510.26939, October 2025.
+Arithmetic terms for smallest/largest prime divisor. O(1) operations but O(2^n) time due to intermediate values.
+
+**Prunescu, M.; Shunia, J. M.** "On the representation of number-theoretic functions by arithmetic terms." arXiv:2407.12928, July 2024. [arXiv](https://arxiv.org/abs/2407.12928)
+Arithmetic terms for GCD function.
+
+**Prunescu, M.** "Arithmetic closed forms count the Mersenne primes, the Fermat primes and the twin-prime pairs." arXiv:2512.01680, December 2025. [arXiv](https://arxiv.org/abs/2512.01680)
+Extended arithmetic term framework to special prime classes using Lucas-Lehmer, Pepin, Clement tests.
+
+**Semenov, S.** "Smooth Analytical Approximation of Prime Characteristic Function." arXiv:2504.14414, April 2025. [arXiv](https://arxiv.org/abs/2504.14414)
+Smooth function P(n) via triple integral with periodic kernel: P(n) -> 1 for primes, P(n) < 1 for composites. Not a finite closed-form; evaluation cost at least as expensive as trial division.
+
+---
+
+## 4. Sieve Methods and Prime Distribution
+
+**Maynard, J.; Tao, T.** Bounded gaps between primes. 2013-2014.
+Infinitely many prime pairs with gap <= 246. Sieve-based (weighted Selberg sieve).
+
+**Craig, W.; Ono, K.; van Ittersum, J.-W.** "Integer partitions detect the primes." PNAS, September 2024. arXiv:2405.06451. [arXiv](https://arxiv.org/abs/2405.06451) [PNAS](https://www.pnas.org/doi/10.1073/pnas.2409417121)
+Primes are solutions to Diophantine equations in MacMahon partition functions. Infinitely many new prime characterizations. Structural, not computational.
+
+**Lichtman, J. D.** "A modified linear sieve." Algebra & Number Theory 19(1), 2025. arXiv:2109.02851. [ANT](https://msp.org/ant/2025/19-1/ant-v19-n1-p01-p.pdf)
+Equidistributes primes in arithmetic progressions to moduli up to x^{10/17}, surpassing the x^{7/12} barrier. Largest improvement to twin prime upper bound since 1986.
+
+**Pascadi, A.** "Primes and smooth numbers to x^{5/8}." arXiv:2505.00653, May 2025. [arXiv](https://arxiv.org/abs/2505.00653)
+Equidistribution to moduli x^{5/8} without Selberg eigenvalue conjecture. Uses triply-well-factorable weights.
+
+**Bouras, M.** "A new primes-generating sequence." arXiv:2509.09745, 2025. [arXiv](https://arxiv.org/abs/2509.09745)
+GCD-based recurrence producing only 1s and primes. Improvement over Rowland but still incomplete.
+
+**Tao, T.; Teravainen, J.** "Quantitative Correlations on Prime Factors of Consecutive Integers." arXiv:2512.01739, December 2025. [arXiv](https://arxiv.org/abs/2512.01739)
+Resolves multiple Erdos conjectures: omega(n+k) <= k infinitely often, irrationality of sum omega(n)/2^n, asymptotic for consecutive integers with equal prime divisor counts.
+
+**Volfson, V.** "Generalization of Hardy-Littlewood Conjecture to Almost-Prime Tuples." arXiv:2603.13416, March 2026. [arXiv](https://arxiv.org/abs/2603.13416)
+Extends Hardy-Littlewood k-tuple conjecture to almost-primes with Selberg constant correction factors.
+
+**Hakobyan, T.** "Almost Prime Numbers." arXiv:2603.00679, February 2026. [arXiv](https://arxiv.org/abs/2603.00679)
+New generalization of primality; shows composite almost-primes must be Carmichael numbers.
+
+**Li, R.** "Prime-Producing Sieves and Distribution of alpha*p - beta mod 1." arXiv:2504.13195, April 2025. [arXiv](https://arxiv.org/abs/2504.13195)
+Infinitely many primes p with ||alpha*p - beta|| < p^{-28/87}. Sharpens Jia (2000) using minimal Type-II information.
+
+**Gensel, B.** "The Prime Number Formula of Gandhi." arXiv:1910.08362, 2019.
+Exposition and simplification of Gandhi's primorial formula.
+
+**Jakimczuk, R.** "Generalizations of the Gandhi Formula." 2024.
+Extensions of the Gandhi primorial recurrence.
+
+---
+
+## 5. Analytic Number Theory and Zeta Function
+
+**Cloitre, B.** "An effective analytic recurrence for prime numbers." arXiv:2508.02690, 2025. [arXiv](https://arxiv.org/abs/2508.02690)
+First proven effective analytic recurrence: p(n+1) via zeta evaluation and Euler product over prior primes. Exact for all n but requires extreme-precision arithmetic.
+
+**Saito, K.** "Mills' constant is irrational." arXiv:2404.19461, April 2024; Mathematika 71(3), 2025. [arXiv](https://arxiv.org/abs/2404.19461)
+Resolved a long-standing open problem. Partial transcendence results obtained.
+
+**Visser, M.** "The nth Prime Exponentially." Mathematics (MDPI) 13(11), 1844, 2025. [MDPI](https://www.mdpi.com/2227-7390/13/11/1844)
+Exponentially tight explicit bounds on p(n) location. Useful for narrowing binary search.
+
+**Visser, M.** "Effective exponential bounds on the prime gaps." International Mathematical Forum, 2025. [PDF](https://www.m-hikari.com/imf/imf-2025/1-4-2025/p/visserIMF1-4-2025.pdf)
+Explicit bounds on g(n) = p(n+1) - p(n) with exponential factors and proven validity ranges.
+
+**Visser, M.** "Behaviour of the sequence theta_n = theta(p_n)." arXiv:2507.14410, July 2025.
+Analysis of Chebyshev's theta function at primes.
+
+**Explicit formula for zeta zeros via Hermite polynomials.** arXiv:2312.00108; Ramanujan Journal, 2025. [Springer](https://link.springer.com/article/10.1007/s11139-025-01297-y)
+Claims primes determine zero distribution and zeros can be computed without using zeta directly. Could simplify analytic pi(x) pipeline.
+
+**Connes, A.** "The Riemann Hypothesis: Past, Present and a Letter Through Time." arXiv:2602.04022, February 2026. [arXiv](https://arxiv.org/abs/2602.04022)
+42-page survey. Novel: approximates first 50 zeta zeros from primes < 13 to 10^{-55} accuracy using Weil quadratic form. Does not provide computational speedup for pi(x).
+
+**Bailleul, A.; Hayani, M.; Untrau, T.** "Wasserstein Approach to Generalized Skewes Numbers." arXiv:2603.20093, March 2026. [arXiv](https://arxiv.org/abs/2603.20093)
+Unconditionally disproves Fiorilli conjecture. Conditional upper bounds for generalized Skewes numbers using quantitative Kronecker-Weyl theorem in 1-Wasserstein metric.
+
+**Vartziotis, D.** "Fourier Series from Additive Prime Factor Functions." arXiv:2602.13342, February 2026. [arXiv](https://arxiv.org/abs/2602.13342)
+Sparse prime-indexed Fourier series from sopfr(n). Exact decomposition of summatory function B(n) ~ pi^2 x^2/(12 log x). See also companion: arXiv:2602.21270.
+
+**Li, Z.** "Deterministic Fractal Set from Prime Number Sequence." arXiv:2603.00658, February 2026. [arXiv](https://arxiv.org/abs/2603.00658)
+Cantor-like fractal from primes mod 16 with universal Hausdorff dimension 1/4, independent of specific prime residue sequence.
+
+---
+
+## 6. 2024-2026 Breakthroughs
+
+**Guth, L.; Maynard, J.** "New large value estimates for Dirichlet polynomials." arXiv:2405.20552, May 2024; Annals of Mathematics, 2025. [arXiv](https://arxiv.org/abs/2405.20552) [Annals](https://annals.math.princeton.edu/articles/22049)
+Improved Ingham zero-density bound from 3/5 to 13/25 -- first improvement in 80+ years. PNT in short intervals [x, x+x^{17/30}]. Most significant advance in analytic number theory in 2024.
+
+**Gafni, A.; Tao, T.** "Exceptional intervals for the prime number theorem in short intervals." arXiv:2505.24017, May 2025. [arXiv](https://arxiv.org/abs/2505.24017)
+Explicit quantitative relationship between zero density estimates and exceptional PNT failures. Uses Guth-Maynard estimates.
+
+**Le Duc Hieu.** "Arithmetic progressions of primes in short intervals beyond 17/30." arXiv:2509.04883, September 2025. [arXiv](https://arxiv.org/abs/2509.04883)
+Combines uniform short-interval PNT at theta > 17/30 with Green-Tao transference principle.
+
+---
+
+## 7. Quantum Computing
+
+**Nayak, A.; Wu, F.** Quantum lower bound: Omega(sqrt(x)) queries for functions with prime structure.
+Proves quantum speedup is at most quadratic over classical for counting-type problems.
+
+**Berry-Keating conjecture.** Hypothetical Hamiltonian whose eigenvalues are zeta zeros.
+Even if it exists, would need ~10^51 eigenvalues for p(10^100). No efficient quantum simulation known.
+
+---
+
+## 8. Information Theory and ML
+
+**Prime Coding Theorem.** arXiv:2308.10817, 2023.
+Information content of prime sequence exceeds any learnable pattern. Explains why ML cannot discover a prime formula.
+
+**Prime classification with sparse encoding.** arXiv:2402.03363, 2024 (WITHDRAWN).
+ResNet + Transformer for prime/non-prime classification. ~99% recall, never 100%. Withdrawn by authors.
+
+**AI in Number Theory: LLMs for Algorithm Generation.** arXiv:2504.19451, April 2025. [arXiv](https://arxiv.org/abs/2504.19451)
+Qwen2.5-Math-7B achieves >= 0.95 accuracy on algorithmic number theory tasks with optimal hints. LightGBM classifier achieves >= 93.9% accuracy identifying Dirichlet character modulus from L-function zeros.
+
+**Google DeepMind.** "AlphaEvolve: A Gemini-Powered Coding Agent for Designing Advanced Algorithms." arXiv:2506.13131, 2025. [arXiv](https://arxiv.org/abs/2506.13131)
+Evolutionary algorithm discovery: 4x4 matrix multiplication in 48 scalar ops (breaking Strassen), improved solutions on 50+ open problems. Not yet applied to prime computation.
+
+---
+
+## 9. Summatory Functions and Related
+
+**Computation of Totient Summatory Function.** arXiv:2506.07386.
+Related O(x^{2/3}) method for Euler totient sum. Same barrier as pi(x).
+
+**Griff's blog on summing multiplicative functions.** [Blog](https://gbroxey.github.io/blog/2023/04/30/mult-sum-1.html)
+Practical techniques for summatory functions using Dirichlet hyperbola method.
+
+---
+
+## 10. General References and Surveys
+
+- [Prime-counting function (Wikipedia)](https://en.wikipedia.org/wiki/Prime-counting_function)
+- [Formula for primes (Wikipedia)](https://en.wikipedia.org/wiki/Formula_for_primes)
+- [Primality test (Wikipedia)](https://en.wikipedia.org/wiki/Primality_test)
+- [NC complexity (Wikipedia)](https://en.wikipedia.org/wiki/NC_(complexity))
+- [FRACTRAN (Wikipedia)](https://en.wikipedia.org/wiki/FRACTRAN)
+- [Mills' constant (Wikipedia)](https://en.wikipedia.org/wiki/Mills'_constant)
+- [Meissel-Lehmer algorithm (Wikipedia)](https://en.wikipedia.org/wiki/Meissel%E2%80%93Lehmer_algorithm)
+- [Analytic Computation of pi(x) (Uni Bonn)](https://www.math.uni-bonn.de/people/jbuethe/topics/AnalyticPiX.html)
+- [Wolfram MathWorld: Prime Formulas](https://mathworld.wolfram.com/PrimeFormulas.html)
+- [Wolfram MathWorld: Prime Diophantine Equations](https://mathworld.wolfram.com/PrimeDiophantineEquations.html)
+- [Willans' Formula (MathWorld)](https://mathworld.wolfram.com/WillansFormula.html)
+- [FAQ: Is there a formula for the nth prime?](https://t5k.org/notes/faq/p_n.html)
+- [Quanta: Sensational proof delivers new insights into prime numbers (2024)](https://www.quantamagazine.org/sensational-proof-delivers-new-insights-into-prime-numbers-20240715/)
+- [Quanta: Mathematicians uncover a new way to count prime numbers (2024)](https://www.quantamagazine.org/mathematicians-uncover-a-new-way-to-count-prime-numbers-20241211/)
+- [Scientific American: Top 10 Math Discoveries of 2025](https://www.scientificamerican.com/article/the-top-10-math-discoveries-of-2025/)
+- [AMS Notices on partition primes (June 2025)](https://www.ams.org/journals/notices/202506/noti3198/noti3198.html)
+- [Modern Breakthroughs in Prime Gaps (2025, Mathematics Magazine)](https://www.tandfonline.com/doi/full/10.1080/0025570X.2025.2481010)
+- [Shunia's blog on prime formula](https://www.josephshunia.com/2024/08/10/an-easy-formula-for-prime-numbers/)
+- [Shunia's GitHub](https://github.com/jshunia)
+
+---
+
+Generated: 2026-04-04
+Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md
