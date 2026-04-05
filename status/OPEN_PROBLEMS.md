@@ -1,9 +1,9 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-04 (Session 19)
+Last updated: 2026-04-05 (Session 29)
 
 These are the ONLY directions not yet proven closed. Everything else has been
-tested (430+ approaches across 14 sessions) and confirmed to hit one of three
+tested (591+ approaches across 27 sessions) and confirmed to hit one of three
 failure modes: Circularity, Equivalence, or Information Loss.
 
 ---
@@ -100,6 +100,23 @@ the barrier collapses.
 
 **Status:** R(n) is 24% more compressible than random, but residual incompressible.
 
+**Session 24 update:** Fresh experiments show δ(n) is 5x more compressible than random
+(compression ratio 0.049 vs 0.256) and compression improves with length (1.56 bits/symbol
+at N=10000). DCT captures 99% of energy in 10.4% of coefficients. But the critical 5%
+needed for exact rounding is dense in ALL standard bases (DCT, Fourier, Haar). The zero
+sum partial sums behave as weakly correlated random walks with GUE statistics (lag-2
+autocorrelation -0.345). FRI analysis shows sampling density → 100% at scale.
+
+**Session 25 update (STRUCTURAL PATTERNS CLOSED):** Comprehensive 7-experiment investigation:
+- No rational relations in pairwise ratios (499,500 tested, GUE repulsion)
+- No integer linear relations (PSLQ, 13,000+ tests at 60-digit precision)
+- DFT matches GUE with correlation 0.9999; only faint p=2 signal
+- No recurrence in explicit formula partial sums (linear, nonlinear, difference)
+- Equidistributed mod ALL 10 constants tested (1, π, log(2π), e, log primes)
+- Sparse matrix model uses O(N) free parameters = no compression
+Zeros are GUE-random in every algebraic, spectral, arithmetic, and structural sense tested.
+**All structural approaches to zero compressibility are now CLOSED.**
+
 ---
 
 ## 4. Berry-Keating / Hilbert-Polya Hamiltonian
@@ -118,7 +135,7 @@ would reduce the problem to quantum eigenvalue estimation.
 
 ---
 
-## 5. Novel Number-Theoretic Identity
+## 5. Novel Number-Theoretic Identity [CLOSED - Session 29]
 
 **Question:** Is there an identity that relates sum_rho R(x^rho) to a
 computable function of x and n, without enumerating zeros?
@@ -131,20 +148,32 @@ computable function of x and n, without enumerating zeros?
 **Why it matters:** This would be the most direct path -- a formula that bypasses
 the zero sum entirely. The least likely to succeed but highest impact if found.
 
+**Session 29 CLOSED (comprehensive identity search, 7 experiments):**
+- Extended PSLQ (14-element basis, x up to 100000): 15/15 relations fail cross-validation
+- Wilf-Zeilberger: higher-order differences GROW (ratio->2.0=white noise), no certificate
+- Bernoulli/zeta/L-value/modular form relations: zero correlation (PSLQ x-dependent only)
+- LLL minimal polynomials: different at every x (algebraically independent transcendentals)
+- ODE search (order<=3, poly degree<=3): residuals match random noise
+- Volterra integral equations: no kernel works beyond trivial local averaging
+- Chebyshev psi(x)/log(x) captures 91% of f(x) but costs O(x) -- not a shortcut
+**f(x) = pi(x) - R(x) has no computable identity in any tested basis.**
+
 ---
 
-## Priority Assessment (updated Session 19)
+## Priority Assessment (updated Session 31)
 
 | Direction | Feasibility | Impact | Recommended Effort |
 |-----------|-------------|--------|-------------------|
-| #TC^0 ⊆ NC? | Low | Maximal | THE key question. 5 batch counting routes closed (S16). Comm complexity gives EXACT 2^{N/2-1}+2 lower bound (S17). |
-| Circuit complexity | Medium | High | All sieve-based TC^0/NC paths closed. BPSW-in-TC^0 conditional. |
-| Determinantal complexity | CLOSED | High | **S17: dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)). Exponential. Multilinear route closed.** |
+| #TC^0 ⊆ NC? | Low | Maximal | THE key question. **S31: tensor rank, discrepancy, gamma-2, BDD, F_2 correlation ALL computed.** Tensor rank ~ 2^{N/2} (same as comm rank). Discrepancy HIGH (no lower bound). All 15+ measures confirm N/2 universality. **All "natural" combinatorial measures now exhausted.** Need non-natural methods or conditional lower bounds (Brandt MKtP framework). |
+| Circuit complexity | Low | High | All sieve-based TC^0/NC paths closed. BPSW-in-TC^0 conditional. S31 closes discrepancy, gamma-2, BDD, sign-rank approaches. |
+| Determinantal complexity | CLOSED | High | **S17: dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)). Exponential.** |
+| Space-time tradeoff | CLOSED (as impossibility route) | High | **S23: Comm complexity can NEVER give super-polylog. General lower bounds face Natural Proofs barrier.** |
 | Kt complexity | Medium | High | Theoretical exploration |
-| Novel identity | Very Low | Maximal | By elimination: ONLY remaining path. All 15 intermediate quantity families closed. |
-| Zero compressibility | Very Low | Very High | CLOSED convergence accel (S11); only STRUCTURAL approaches remain |
+| Novel identity | **CLOSED** | Maximal | **S29: 7 experiments (PSLQ, WZ, algebraic constants, LLL, ODE, Volterra). f(x) algebraically independent of all tested bases. No computable identity.** |
+| Zero compressibility | Very Low | Very High | **S25: ALL structural approaches CLOSED** (ratios, PSLQ, DFT, recurrence, mod-constants, sparse matrix). Zeros are GUE-random in every sense tested. |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
-| Non-sieve pi(x) approach | CLOSED | Maximal | **S16: 15 families closed. S17: Fourier analysis near-random. No fourth encoding.** |
+| Non-sieve pi(x) approach | CLOSED | Maximal | **S16: 15 families closed. S17: Fourier analysis near-random. S23: Not holonomic.** |
+| Proving impossibility | BLOCKED | Maximal | **S23: Proving T >= x^{Omega(1)} is as hard as P != NP (Natural Proofs barrier). Not achievable with current techniques.** |
 
 **Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
 Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)
@@ -155,6 +184,13 @@ partial sieve, parity). ~10 new closed paths.
 **Session 11 refined:** Circuit complexity question now has precise formulation:
 PRIMES in TC^0 ⟺ polylog-dimensional matrix powering in TC^0.
 
+**Session 24 update (fresh perspective 2):** 11 new independent approaches tested, all 16 new
+paths closed. Strongest new evidence: prime indicator has **linear complexity L/N = 0.5000 over
+all finite fields GF(2) through GF(23)** (maximally random) and is **not k-automatic** for any k
+(2-kernel has 38+ growing sequences). Combined with Session 23's full tensor rank: the prime
+indicator carries near-maximal information density in every algebraic sense tested. The failure
+taxonomy (Circularity/Equivalence/Info Loss) is empirically confirmed exhaustive across 575+ approaches.
+
 **Session 12 closed:** Lucy DP parallelism (DAG depth = pi(sqrt(x))), Meissel-Lehmer
 as NC circuit (exponential width), floor-value commutativity, floor-value linear algebra
 (full-rank), pi(x) mod m for all m (invariant entropy). ~5 new closed paths.
@@ -164,6 +200,18 @@ All known approaches produce exponential-size circuits (size 2^{Theta(N)}).
 The barrier is now clearly the CIRCUIT SIZE, not depth. Any O(polylog) algorithm
 must avoid computing O(sqrt(x)) intermediate values — i.e., must not be based
 on floor values, sieve, or individual zeta zeros.
+
+**Session 28 findings (novel):**
+- **Approximate degree = ceil(N/2)** at rounding threshold epsilon=0.49, for BOTH
+  chi_P and pi(x) mod 2. The counting step adds no difficulty. Quantum query lower
+  bound Omega(N/4), STILL polylog. Does NOT rule out polylog circuits.
+- **Per-bit influence gradient:** LSB-half influence ~2x MSB-half, growing with N.
+  Bit 0 (parity) has influence ~N/2. All CONSISTENT with poly(N) circuits.
+- **"N/2" universality:** ALL complexity measures converge at N/2: approximate degree,
+  communication rank deficiency, oscillatory bit count, per-bit influence crossover,
+  LFSR complexity. The smooth/oscillatory boundary at N/2 is universal.
+- **Multiplicative structure:** I-E full rank, carry chains match random, partition
+  number 2^{0.76*N} exceeds rank 2^{0.41*N}. Three independent exponential barriers.
 
 **Session 13 closed:** Wilson TC^0, sum-of-squares TC^0, Cayley/Ihara/GCD graph
 spectral, CRT reconstruction, recursive identity, prime zeta P(s), GF(2) algebraic
@@ -258,3 +306,38 @@ SVD spectral approximation. ~7 new closed paths.
 4. **3-party NOF consistent with TC^0**: Balanced cut rank = 2^{N/3}. Doesn't separate.
 5. **No elementary identity for pi(x)-R(x)**: PSLQ rules out linear, polynomial, recurrence,
    modular, functional, and differential relations with elementary functions.
+
+**Session 22 closed (critique):** Prime race pi(x;q,a) shortcut for CRT (errors 2x rougher,
+L-function zeros same barrier, Chebyshev bias = O(1) bits), L-function convergence advantage
+(per-character fewer modes but phi(q) characters multiply total). ~2 new closed paths.
+All 8 Session 21 proposals confirmed DUPLICATE against prior closed paths.
+
+**Session 20 closed (space-time tradeoff):** Four approaches to formal S*T lower bounds:
+1. Communication complexity -> T*S >= Omega(N^2) = Omega(log^2 x). Too weak (polylog).
+   Fundamental limit: D(f) <= N for N-bit inputs, so comm complexity CANNOT give
+   super-poly(N) bounds.
+2. Nechiporuk formula bound -> L(pi) >= Omega(N). Trivially weak. Method limited to O(N^2).
+3. OBDD size ~ 2^{0.79*N} empirically; OBDD width >= 2^{N/2-1} from rank. But OBDD != BP.
+4. M-L DAG pebbling -> T*S >= Omega(x^{5/6}/ln x), algorithm-specific only.
+**Verdict:** Proving T >= x^{Omega(1)} for general algorithms requires circuit lower bounds,
+which is at least as hard as P != NP (Natural Proofs barrier). Problem remains OPEN.
+
+**Session 23 closed:** k-party NOF (mode-unfolding rank full for k≥3), communication complexity
+as impossibility route (bounded by input length), OBDD growth analysis, M-L pebbling (algorithm-
+specific), holonomic recurrence test (pi(n) NOT D-finite up to order 20), Ono partition p-adic
+lift (O(n^2) per evaluation, computationally inferior), short-interval explicit formula iteration
+(each round needs same zero count). ~9 new closed paths.
+
+**Session 23 refined:**
+1. **k-party NOF full rank for k≥3**: Mode-unfolding rank = 2^{ceil(N/k)} exactly, matching
+   random functions. Mode-unfolding rank is TOO COARSE for ACC^0/TC^0 separation. Only k=2
+   shows anomalous sub-maximal rank (2^{N/2-1}+2). Need stronger measures (true tensor rank,
+   discrepancy, polynomial method) for any separation result.
+2. **Space-time route CLOSED**: Communication complexity bounded by N = log(x) bits. This
+   FUNDAMENTALLY cannot give super-polylog lower bounds. General circuit lower bounds face
+   Natural Proofs barrier.
+3. **pi(n) is NOT holonomic**: Stronger than "not LRS" — even polynomial coefficients in
+   the recurrence don't help. Test/random ratio ~1.0-1.7 for all tested parameters.
+4. **Barriers understood at 4 levels**: Analytic (sqrt(x) zeros), algebraic (not holonomic),
+   combinatorial (full tensor rank), complexity-theoretic (Natural Proofs).
+5. **Total approaches: ~590+.** No genuinely new viable direction found. Problem OPEN.

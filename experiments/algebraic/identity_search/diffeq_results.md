@@ -1,0 +1,110 @@
+# Differential Equation Search for f(x) = pi(x) - R(x)
+
+**Date:** 2026-04-05  
+**Data:** x in [2, 100000], f(x) = pi(x) - R(x), 99999 points  
+**Method:** Gaussian smoothing + SVD-based ODE search + nonlinear fits + Volterra integrals  
+**Script:** `diffeq_search.py`
+
+## Summary of Findings
+
+**f(x) = pi(x) - R(x) does NOT satisfy any simple differential equation or integral equation.**
+
+All five search methods returned negative results:
+
+| Method | Best rel. residual | Verdict |
+|--------|-------------------|---------|
+| Linear ODE (SVD) | 4.29e-08 (r=3,d=3,sigma=50) | **SPURIOUS** -- random noise gives same |
+| Euler-type ODE | 0.994 | Total failure |
+| Non-linear ODE | 0.9998 | Total failure |
+| Volterra K=1/(x-t+1) | 0.017 | Mild, but just integral averaging |
+| Volterra K=1/log(t), 1/t | ~0.99 | Total failure |
+
+## 1. Smoothed f(x) and Derivatives
+
+Gaussian smoothing with sigma = 5, 10, 20, 50 applied to f(x).
+
+| sigma | f range | |f'| max | |f''| max |
+|-------|---------|---------|----------|
+| 5 | [-13.8, 15.4] | 0.2146 | 0.0275 |
+| 10 | [-13.5, 15.3] | 0.1515 | 0.0104 |
+| 20 | [-13.0, 15.1] | 0.0879 | 0.00377 |
+| 50 | [-12.2, 14.6] | 0.0460 | 0.000763 |
+
+Derivatives computed with 8th-order central finite difference stencils. 30 points trimmed from each edge.
+
+## 2. Linear ODE Search (SVD)
+
+Searched for: sum_{j=0}^{r} P_j(x) * f^{(j)}(x) = 0, with P_j polynomial degree <= d.
+
+**Method:** Build overdetermined linear system, compute SVD, check if smallest singular value is near zero relative to largest.
+
+Best results (sorted by rel_residual):
+
+| sigma | r | d | n_unknowns | rel_residual | sigma_ratio |
+|-------|---|---|-----------|-------------|-------------|
+| 50 | 3 | 3 | 16 | 4.29e-08 | 7.78e-09 |
+| 50 | 3 | 2 | 12 | 2.25e-07 | 4.27e-08 |
+| 20 | 3 | 3 | 16 | 4.60e-07 | 8.21e-08 |
+| 50 | 3 | 1 | 8 | 1.15e-06 | 2.37e-07 |
+
+**CRITICAL: These are SPURIOUS.** Control test with random Gaussian noise:
+
+| Signal | sigma | r=3,d=3 rel_resid | r=1,d=0 rel_resid |
+|--------|-------|-------------------|--------------------|
+| REAL f(x) | 50 | 4.29e-08 | 1.34e-02 |
+| RANDOM noise | 50 | 2.51e-07 | 4.61e-03 |
+| TREND+noise | 50 | 9.73e-08 | 4.89e-03 |
+| REAL f(x) | 10 | 2.82e-06 | 3.62e-02 |
+| RANDOM noise | 10 | 6.06e-06 | 5.00e-02 |
+
+Random noise achieves residuals within 1 order of magnitude of f(x) for (r=3, d=3). The small residuals are an artifact of:
+- Heavy Gaussian smoothing making higher derivatives vanishingly small
+- 16 free parameters fitting ~2000 points in a nearly degenerate system
+- The SVD null space reflects numerical rank deficiency, not algebraic structure
+
+**For low-parameter models (r=1, d=0):** f(x) gives rel_residual = 1.3-5.5%, meaning f'/f is NOT approximately constant. No simple first-order ODE.
+
+## 3. Euler-type ODE
+
+Tested:
+- 1st order: x*f'(x) + a*f(x) + b = 0
+- 2nd order: x^2*f''(x) + a*x*f'(x) + b*f(x) + c = 0
+
+**All residuals ~0.99** (essentially zero explanatory power).
+
+The fitted coefficients are enormous and unstable across smoothing levels, confirming no Euler-type structure. f(x) is not a power-law-type function.
+
+## 4. Non-linear ODE Search
+
+Tested f'(x) = F(x, f(x)) with F a polynomial of degree <= 3 in f, degree <= 2 in x.
+
+**All relative RMSE >= 0.9997.** The polynomial F explains < 0.03% of the variance of f'(x).
+
+f'(x) is essentially uncorrelated with any polynomial function of x and f(x). This is consistent with f(x) being driven by oscillatory zeta-zero contributions whose phases are pseudo-random.
+
+## 5. Volterra Integral Equation
+
+Tested f(x) = alpha * int_2^x K(x,t)*f(t)dt + g(x) with g polynomial.
+
+| Kernel | Best rel_RMSE | Notes |
+|--------|--------------|-------|
+| 1/(x-t+1) | 0.017 | Best, but trivial: this kernel acts as a local average |
+| 1/log(t) | 0.989 | Failure |
+| 1/t | 0.991 | Failure |
+
+The K=1/(x-t+1) kernel is mildly interesting at 1.7% relative RMSE, but this is because int_2^x f(t)/(x-t+1) dt is essentially a smoothed running average, which captures the slow drift of f(x). It contains no new information -- it is equivalent to fitting a smoothed trend polynomial.
+
+## Interpretation
+
+The negative results across all five search methods are consistent with the known structure of f(x):
+
+1. **f(x) = sum over zeta zeros** of oscillatory terms with incommensurate frequencies (imaginary parts of rho). No finite-order ODE can annihilate a sum of infinitely many oscillatory modes.
+
+2. **The GUE random matrix structure** of zeta zero spacings means the phases are pseudo-random, preventing any polynomial relationship between f and its derivatives.
+
+3. **Information-theoretic barrier:** f(x) encodes ~50% of the digits of p(n), which have high Kolmogorov complexity. A DE solution would imply finite-dimensional description, contradicting the entropy bound.
+
+**PATH CLOSED:** f(x) = pi(x) - R(x) does not satisfy any ODE or simple integral equation up to order 3 with polynomial coefficients of degree <= 3.
+
+---
+*Generated by diffeq_search.py*

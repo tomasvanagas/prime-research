@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (480+ Approaches)
+# Closed Paths: Master Lookup (633+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-31, 180+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -15,6 +15,12 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 
 | Approach | Verdict | Mode | Key Finding | Session |
 |----------|---------|------|-------------|---------|
+| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
 | Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
 | Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
 | Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
@@ -22,6 +28,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Weil explicit + Beurling-Selberg | FAIL | I | Same uncertainty barrier | 4 |
 | Mobius inversion of Pi(x) | PARTIAL | E | 10-30x better but still O(sqrt(x)/T) | 4 |
 | Smooth zero sum integral | PARTIAL | E | Better than discrete but O(1) errors | 4 |
+| Heuristic candidate generation + AKS | FAIL | I | Generate candidates near R^{-1}(n), filter with mod30/zeta/sieve. Candidates scale as n^0.577 (=sqrt(n)), not polylog. Interval width O(sqrt(p(n))*log(p(n))) is irreducible without computing zeta zero sum. With C=3.0 multiplier, 100% containment for n<=1000. Sieve reduces to ~4% of interval but still O(sqrt(n)) candidates. | 25 |
 | Smoothed explicit + deconvolution | FAIL | I | Uncertainty principle blocks | 4 |
 | Perron shifted contour (sigma>1) | FAIL | E | Numerically unstable, 20-40% error | 6 |
 | Perron contour integral | FAIL | E | PROVEN equivalent to explicit formula | 5 |
@@ -45,6 +52,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Weniger delta transform on zero sum | FAIL | E | Same failure; oscillatory error defeats all transforms | 11 |
 | Smoothed explicit formula (psi_k/ln) | FAIL | I | psi(x)/ln(x) loses prime power corrections; error ~10% | 11 |
 | Zero-count scaling analysis | CLOSED | E | N_min scales as x^{0.25-0.37} (power law), not polylog | 11 |
+| Zeta oracle query complexity | CLOSED | E+I | M(x)=Theta(sqrt(x)*log(x)) evals needed; cond(sigma=1/2)=sqrt(x); N(T) is O(1) but positions cost Omega(N(T)); oracle cannot bypass sqrt(x) barrier | 21 |
 
 ## Algebraic / Number Theory / p-adic
 
@@ -66,12 +74,14 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Geometric Langlands | FAIL | E | Same complexity as explicit formula | 9 |
 | Motivic integration | FAIL | E | Structural obstruction | 9 |
 | Number field algebraic decomposition | FAIL | E | Splitting doesn't reduce total cost | 7 |
+| Class field tower prime reconstruction | FAIL | C+E | Splitting in m quadratic fields gives ~1 bit each (Chebotarev ~50/50), O(log n) fields suffice for CRT. But pi_split(x,d) = (pi(x) + character sums)/2, so computing it requires pi(x) (C) or zeros of L(s,chi_d) which are ADDITIONAL to zeta zeros (E). Net cost O(x^{1/2+eps}*log n), strictly worse. See experiments/proposals/class_field_splitting.py | 25 |
 | PSLQ/LLL exhaustive identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) tested x=2..10000; all single-point PSLQ relations spurious (cross-validation residuals ~10^4); no recurrence (rms~0.31); Fourier confirms zeta-zero dominance | 18 |
 | Iwasawa theory | FAIL | I | lambda,mu invariants give no shortcut | 7 |
 | Cloitre analytic recurrence (2025) | EXISTS | E | Exact but uses zeta evaluation, not competitive | lit |
 | Farey fractions | FAIL | C | Require phi(k) -> factoring | 8 |
 | Arithmetic derivative | FAIL | C | Requires factoring, O(n^{1/4}) | 8 |
 | NFS-type L[1/3] for pi(x) (4 sub-approaches) | FAIL | E+C | Norm sieve = residue class counting (E); Chebotarev = circular + O(x^{1/2}) error (C+I); class groups = Euler products (E); Artin L-fns = explicit formula (E). NFS exploits multiplicative structure of single N; pi(x) is additive-global with no analog. See experiments/algebraic/lthird_analysis.md | 19 |
+| LLL lattice reduction for algebraic relations in f(x)=pi(x)-R(x) | FAIL | I | Minimal polynomial search deg 2-8 at x=100,1000,10000,100000: coefficient norms follow Dirichlet bounds for generic transcendentals (no anomalous structure). Multi-point polynomial search (k=2,3, deg<=3): all residuals at float64 machine epsilon, no genuine relations. Algebraic independence test on 6-point vector: min ||c||=201, consistent with random reals. Scaled g(x)=f(x)/sqrt(log(x)) search: no integer relations. Polynomial-in-log(x) models: RMSE~1.35 (explains <10% variance). See experiments/algebraic/identity_search/lll_results.md | 29 |
 
 ## Sieve / Combinatorial / Counting
 
@@ -93,6 +103,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Dirichlet series / prime zeta | FAIL | E | Perron integral = explicit formula | 6 |
 | Prime zeta P(s) Mobius extraction | FAIL | E | P(s) poles at rho, rho/2, rho/3... MORE terms than explicit formula; Vandermonde recovery cond~10^26 | 13 |
 | CRT reconstruction of pi(x) | FAIL | E | pi(x) mod q costs same O(x^{2/3}) as pi(x); CRT multiplies cost by k moduli; entropy ratio ~1.0 | 13 |
+| Prime race E(x;q) for CRT | FAIL | E | E(x;4) spectral flatness/power-law same as pi(x)-Li(x); 40 L-function zeros give 0% exactness; K_exact~sqrt(x); p(n)mod q has near-max entropy; L-zeros INDEPENDENT of zeta zeros so CRT costs MORE | 20 |
 | Recursive pi(x/d) identity search | FAIL | E | Best: pi(x)=pi(x/3)+pi(x/5)+2*pi(x/7)+g(x), but g(x) grows as x^{0.22}; correction encodes primes in interval | 13 |
 | Smooth number elimination | FAIL | I | 12% reduction, insufficient | 5 |
 | Bit-by-bit construction | WORKS | E | log2(p(n)) pi(x) calls, each O(x^{2/3}) | 5 |
@@ -156,6 +167,8 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Symbolic dynamics | FAIL | I | Near-random block complexity | 4 |
 | All 256 elementary CA rules | FAIL | I | 0 generate primes; best 75.8% primality | 7 |
 | Cellular automata (general) | FAIL | E | O(sqrt(N)) minimum | 10 |
+| DFA product automaton sieve | FAIL | E | Minimized states = primorial(p_k) ~ e^{sqrt(x)}, worse than O(x) | 20 |
+| Tensor sieve (MPS of divisibility DFAs) | FAIL | I | Transfer matrices full rank, volume-law SV entropy, no compression | 20 |
 | Iterative maps (x+ln(x)+...) | FAIL | I | 4% exact at best | 6 |
 | Rowland acceleration | FAIL | E | O(p^2) | 4 |
 | Deterministic gap recurrence (7 variants) | FAIL | I | <25% accuracy, 5.04 bits/prime entropy | 7 |
@@ -194,6 +207,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Crypto hardness reduction | FAIL | - | No reduction to/from known hard problems | 10 |
 | One-way function connection | FAIL | - | Both directions equally hard | 10 |
 | Expander graphs | FAIL | C | Need primes to build the graph | 10 |
+| Pfaffian/FKT planar sieve encoding | FAIL | I | Three graph encodings tested (sieve bipartite, Lucy DP recurrence, prime dependency). ALL non-planar for x>=80. Treewidth grows as x^0.36 (sieve), x^0.51 (Lucy DP), x^0.43 (prime dep). Prime dep graph is complete (density=1.0). Unbounded treewidth rules out FPT/Pfaffian approach. | 26 |
 | Derandomization (NW/IW) | FAIL | E | R(n) is deterministic, not random | 9 |
 | TC^0 via Legendre sieve | FAIL | E | 2^{pi(sqrt(x))} terms, super-polynomial | 11 |
 | TC^0 via Meissel-Lehmer | FAIL | E | Super-polynomial special leaves | 11 |
@@ -208,7 +222,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | pi(x) mod m shortcut (m>2) | FAIL | E | Conditional entropy H(Y|X) = 0.537 bits INVARIANT across all moduli m; no modular shortcut | 12 |
 | Floor-value linear algebra | FAIL | E | Transformation is full-rank (~80% nonzero coeffs), massive cancellation (|coeffs| >> pi(x)); no compression | 12 |
 | Meissel-Lehmer as NC circuit | FAIL | E | Depth O(log log x) = O(log N) but width O(x^{2/3}) = O(2^{2N/3}); exponential size in input | 12 |
-| TG kernel for exact pi(x) | FAIL | I | arXiv:2506.22634 DEBUNKED: violates uncertainty principle, omits x^{1/2} factor, kernel too wide to resolve primes. AI-generated paper with errors. | 12 |
+| TG kernel for exact pi(x) | FAIL | I | arXiv:2506.22634 DEBUNKED: violates uncertainty principle, omits x^{1/2} factor, kernel too wide to resolve primes. AI-generated paper with errors. Authors (Kilictas/Alpay) have no number theory background; Alpay publicly admits uploading arxiv papers to influence LLM training data (Medium, July 2025). Zero citations, no peer review. | 12,30 |
 | Andrews-Wigderson for pi(x) | FAIL | E | FOCS 2024 constant-depth arithmetic circuits: wrong model (fields not rings), wrong bottleneck (GCD not matrix powering), wrong circuit model (arithmetic not Boolean) | 12 |
 | Succinct/lattice point counting | FAIL | E | Barvinok requires fixed dim; encoding coprimality needs dim ~ sqrt(x)/log(x), exponential in N | 12 |
 | Permanent/determinant encoding | FAIL | E | Would resolve NC question; no natural matching interpretation for primes; circular (matrix entries encode primes) | 12 |
@@ -285,6 +299,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Sufficient statistics of floor values | FAIL | E | poly(logx)-bit statistic EXISTS but computing it from floor values IS the Meissel-Lehmer problem; no compression shortcut | 16 |
 | Curve families over F_p for pi(x) | FAIL | E+C | a_p encodes L(E,s) not pi(x); AKS variety costs O(x*polylog); Frobenius eigenvalues = zeta zeros | 16 |
 | S_n/GL_n representation theory | FAIL | C+E | Cycle structure gives sum 1/p ~ loglogn (Mertens, not pi); P(k) recovery cond~10^26; Fourier coeffs O(sqrt(pi(N))) random | 16 |
+| Green-Tao nilsystem correlation | FAIL | I+E | 1-step nilseqs (Fourier) R^2=0.52, 2-step (bracket quadratics) R^2=0.37, combined CV R^2=0.25. Top freqs = 1/2,1/3,1/6 (sieve bias). p(n) prediction: 0.84 correct digits (CV) vs li^{-1} 1.51 digits. Nilseqs capture AP correlations not individual primes. Residual non-normal, spectral peaks remain. Reduces to Fourier fitting (Sessions 3,7,14). | 25 |
 
 ## Gap Prediction / Interpolation
 
@@ -317,6 +332,7 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Matching pursuit (K zeros) | PARTIAL | I | K=2 error<0.5 at x=1000, fails large x | 7 |
 | RMT/GUE approximation | FAIL | I | Correct statistics, wrong values | 8,10 |
 | Cayley graph / Ihara zeta / spectral graph | FAIL | C+E | Cayley(Z/xZ, primes): circular (lambda_0=pi(x)); Ihara zeta = Selberg trace analog; GCD graph: eigenvalues = Ramanujan sums c_q(n), same ingredients as Meissel-Lehmer O(x^{2/3}); expander mixing error >> 1 | 13 |
+| Trace formula / contour integral shortcut | FAIL | E | Contour ∮ f(s)ζ'/ζ(s)ds needs O(T^{1/2}) per eval (Riemann-Siegel); total O(T^{3/2} log T) = same as direct zero sum. Heat kernel smoothing trades accuracy for speed (no free lunch). First 50 zeros explain only 22% of oscillatory variance. See experiments/wildcard/spectral_shortcut.py | 20 |
 
 ## Other / Miscellaneous
 
@@ -331,8 +347,8 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Wheel + CRT survivor enumeration | PARTIAL | - | O(1) per survivor but need too many | 5 |
 | Smooth number counts | FAIL | I | 5-15% error, inherently approximate | 6 |
 | Deep structure (8 experiments) | FAIL | I | No hidden periodicity | 6 |
-| Function field analog (F_q) | FAIL | - | Genus finite -> O(g); for Z, genus = infinity | 7 |
-| F_1 / Lattice / CFs | FAIL | I | q->1 degenerate, no structure | 10 |
+| Function field analog (F_q) | FAIL | - | Genus finite -> O(g); for Z, genus = infinity. Quantified: virtual curve needs genus~sqrt(x), giving O(x^{3/2}). N_e(ln x)=PNT in disguise. Z[i]/Z[omega] no advantage. See experiments/wildcard/finite_field_lift.py | 7,19 |
+| F_1 / Lattice / CFs | FAIL | I | q->1 degenerate: N_{1+eps}(n)->(n-1)*eps/n->0. No structure | 10,19 |
 | Gap encoding | FAIL | I | ~4 bits irreducible per gap | 10 |
 | Wavelet analysis (100K primes) | PARTIAL | I | alpha=1.68 spectrum, 1.2 bits/prime irreducible | 5 |
 | Cramer model + corrections | FAIL | I | Parity of pi(x) from li: 49.3% (random) | 9 |
@@ -385,6 +401,8 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 | Ergodic theory / orbit complexity | FAIL | E+C | Transfer operators have spectral theory = zeta zeros; Furstenberg correspondence is circular | 16 |
 | Model theory / o-minimality | FAIL | - | o-minimal structures can't represent step functions like pi(x); definability orthogonal to computation | 16 |
 | Tropical geometry of P(s) | FAIL | I+E | Tropicalization loses all but smallest prime factor; tropical convolution = standard convolution | 16 |
+| Tropical/min-plus full battery (7 tests) | FAIL | I | Tropical Dirichlet conv, Mertens, sieve, Euler product, p-adic val of x!, tropical det, tropical conv -- all fail. Core reason: min-plus is OPTIMIZATION not COUNTING; val(a+b)>=min(val(a),val(b)) destroys sum info. See experiments/proposals/tropical_sieve.py | 25+ |
+| Smooth number Ψ(x,B) subtraction for π(x) | FAIL | E | Ψ(x,B) computation IS the sieve. 50-640x slower than Eratosthenes. Linear combo of 11 Ψ features: train RMSE=3.3, test RMSE=37.3 (0/500 exact). Buchstab tree has 1.8·x^{2/3} distinct args = Lucy DP. Legendre identity confirmed exact. See experiments/proposals/smooth_number_subtraction.py | 26 |
 | Sufficient statistics of floor values | FAIL | I | Any T with |T|=poly(log x) determining pi(x) must encode O(N/2) bits; hashing loses exactness | 16 |
 | Algebraic geometry F_q families | FAIL | E+C | Frobenius eigenvalues = zeta zeros; constructing the right variety requires knowing primes | 16 |
 | Representation theory S_n/GL_n | FAIL | C+E | Character sums at primes = Dirichlet characters; Euler product through rep theory = L-functions | 16 |
@@ -419,7 +437,11 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 |----------|---------|------|-------------|---------|
 | Streaming exact pi(x) | FAIL | E | Sieve-based streaming needs Omega(sqrt(x)/log(x)) space (must encode primes up to sqrt(x)); one-way CC from rank gives same bound; no non-sieve streaming algorithm known | 18 |
 | Online p(n) with small state | PARTIAL | - | O(log n) state suffices (just store last prime, test next candidates with AKS); but time = O(n log n), catastrophic. Space is NOT the bottleneck | 18 |
-| Space-time tradeoff for pi(x) | OPEN | - | No formal S*T lower bound proven; L-O achieves S=x^eps, T=x^{3/5+eps}; all known algorithms have T >= x^{1/2}; no proof that polylog(x) space+time is impossible | 18 |
+| Space-time tradeoff for pi(x) (general) | OPEN | - | Communication complexity gives T*S >= Omega(log^2 x) only -- too weak to rule out polylog(x). Proving T >= x^{Omega(1)} requires circuit lower bounds (Natural Proofs barrier). OBDD model: Omega(sqrt(x)) proven. M-L DAG pebbling: T*S >= Omega(x^{5/6}/ln x) algorithm-specific. Nechiporuk: Omega(log x) trivial. See experiments/circuit_complexity/space_time_tradeoff_results.md | 20 |
+| Space-time tradeoff via comm complexity | CLOSED | E | D(pi) = Theta(N/2) bits, giving T*S >= Omega(N^2) = Omega(log^2 x). This is polylog(x), so communication complexity CANNOT rule out polylog-time algorithms. The input has only N=log(x) bits, bounding D(f) <= N, so comm-complexity-based tradeoffs are inherently poly(N). | 20 |
+| Space-time tradeoff via Nechiporuk | CLOSED | E | Nechiporuk formula bound uses rank(M_pi, k-bit) = 2^{k-1}+2 but optimal block size s*=3 gives only L(pi) >= Omega(N) = Omega(log x). Method inherently limited to O(N^2) for ANY function. | 20 |
+| Space-time via OBDD/BDD size | PARTIAL | E | OBDD size ~ 2^{0.79*N} empirically (N=4..12); matches random functions. OBDD width >= 2^{N/2-1} proven from comm rank. But general BPs can be exponentially smaller than OBDDs. | 20 |
+| Space-time via M-L DAG pebbling | CLOSED | E | Lucy DP DAG: depth=pi(sqrt(x)), width=O(sqrt(x)). Pebbling gives T*S >= Omega(x^{5/6}/ln x) but ONLY for Meissel-Lehmer; a non-sieve algorithm could bypass this DAG. | 20 |
 | Branching program width for pi(x) | FAIL | E | Nechiporuk bound gives BP size >= 2^{N/2} = sqrt(x) from rank computation; confirms no NC^1 shortcut via BPs | 18 |
 
 ## Session 18: Self-Correction / Amplification / Boosting
@@ -440,25 +462,163 @@ Last updated: 2026-04-04 (Sessions 1-19, 135+ sub-agents)
 |----------|---------|------|-------------|---------|
 | Unbalanced communication complexity | FAIL | - | rank = 2^{min(k,N-k)-1}+2 for ALL bit partitions k=1..N-1 (verified N=4..20). No polynomial-rank partition exists. Barrier is intrinsic. | 19 |
 | 3-party NOF communication complexity | PARTIAL | - | Balanced (N/3,N/3,N/3): max cut rank = 2^{N/3}, NOF = N/3. Best (1,1,N-2): rank = 4 (trivial). Consistent with TC^0 but insufficient to prove/disprove. | 19 |
+| k-party NOF (k=2..8) mode-unfolding rank | CLOSED | - | For k>=3: ALL mode-unfoldings have FULL RANK = 2^{sizes[i]}. Max rank = 2^{ceil(N/k)} exactly. Verified N=6..18, k=2..8 (35+ cases). For k=2: rank = 2^{N/2-1}+2 (sub-full). GF(p) rank identical for p=2,3,5,7. SVD: rank-1 dominates (99.9% variance). Residual (pi-smooth) also full rank. Mode-unfolding rank is too coarse to resolve ACC^0 question -- need tensor rank, discrepancy, or polynomial method. | 20 |
 | SVD spectral decay of oscillatory part | FAIL | I | Power-law S~i^{-1} (not geometric). 90% osc variance in ~20 SVs but 99% needs ~30% of total. Max osc SV scales as x^{0.66}. Insufficient for exact computation. | 19 |
 | SVD ↔ zeta zero correspondence | CONFIRMED | E | Top osc SVs match zeta zeros (corr 0.95 at N=20 for gamma_1). Zeta basis explains 0.12% of variance at N=20 (need more zeros for larger N). SVD IS explicit formula decomposition. | 19 |
 | PSLQ/LLL identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types tested (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) x=2..10000. All single-point PSLQ relations spurious (cross-validation residuals ~10^4). Fourier confirms zeta-zero dominance. | 19 |
 | NFS-type L[1/3] for pi(x) (4 sub-approaches) | FAIL | E+C | Norm sieve = residue class counting (E); Chebotarev = circular + O(x^{1/2}) error (C+I); class groups = Euler products (E); Artin L-fns = explicit formula (E). NFS exploits multiplicative structure; pi(x) is additive-global. | 19 |
 | Gap-based predictability for pi(x) | FAIL | I | AR(1..50) gives NO improvement over baseline. MI(g_n;g_{n+1})=0.38 bits (10.3%). Gaps 9% more compressible than i.i.d. Near Cramér random model. | 19 |
 | Kt complexity of delta(n) empirical | FAIL | I | |delta|~n^{0.57}; bit ratio 0.52; AR(1) R²=0.996 but RMSE=10.5 (innovations random); uniform mod m; 18% compressible; sign run length 38.5 (zeta oscillation); no exploitable structure beyond smoothness | 19 |
+| Fast-forwardable dynamical system on gaps | FAIL | I | AR(1..50) R^2<0 (worse than mean). Residue-conditional (g_n, p_n mod m) R^2<0.05. HMM(2-8 states) = baseline. MI(g_n;g_{n+1})=0.35 bits (8.9%). LZ complexity 71% of random. Correlation dim grows with embedding (no attractor). No substitution/morphism structure. p(n) mod m equidistributed, no autocorrelation. | 20 |
 
 ---
 
 ## Summary Statistics
 
-- **Total approaches tested:** 525+
-- **FAIL:** ~437 (confirmed impossible or impractical)
+- **Total approaches tested:** 628+
+- **FAIL:** ~444 (confirmed impossible or impractical)
 - **PARTIAL:** ~19 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
 - **OPEN:** 5 (circuit complexity TC^0/NC, BPSW correctness, QFT deterministic, #TC^0⊆NC?, S*T tradeoff)
 
 ### By Failure Mode
-- **Circularity (C):** ~72 approaches
-- **Equivalence (E):** ~212 approaches
-- **Information Loss (I):** ~170 approaches
+- **Circularity (C):** ~82 approaches
+- **Equivalence (E):** ~222 approaches
+- **Information Loss (I):** ~180 approaches
+
+---
+
+## Session 20: Fresh Perspective (10 wildcard experiments)
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| CRT modular π(x) mod m reconstruction | FAIL | C | π(x) mod m = random walk with step ~1/ln(x); no structure | 20 |
+| Tensor network / MPS sieve | FAIL | I | Bond dim = primorial (volume-law entanglement); exponential | 20 |
+| Automata-theoretic sieve (DFA product) | FAIL | I | Minimized DFA has exactly primorial(y) states; exponential | 20 |
+| Trace formula / spectral shortcut | FAIL | E | Trace formula IS explicit formula (circular); O(T^{3/2}) | 20 |
+| Heat kernel smoothing of zero sum | FAIL | I | Smoothing introduces O(√x) bias; no free lunch | 20 |
+| Fast-forwardable dynamical system on gaps | FAIL | I | Gaps ~90% random; MI(g_n;g_{n+1})~0.3 bits; no attractor | 20 |
+| HMM / substitution morphism for gaps | FAIL | I | LZ complexity near-random; no finite-state generator | 20 |
+| Finite field lifting F_q→Z via q→1 | FAIL | E | q→1 degenerates to 0; virtual curve needs genus ~√x | 20 |
+| F₁ (field with one element) for primes | FAIL | E | No meaningful polynomial ring; produces PNT not exact | 20 |
+| Z[i]/Z[ω] prime counting shortcut | FAIL | E | Reduces to rational primes + congruence; MORE zeros | 20 |
+| Sieve matrix SVD / low-rank | FAIL | I | Matrix has FULL rank = #primes; SVs don't decay fast | 20 |
+| Lucy_Hedgehog S(v,p) compression | FAIL | I | Binary step function; Fourier NOT sparse; 90/10 split | 20 |
+| Log-Fourier sieve (multiplicative → translation) | FAIL | I | 90% energy in 10 modes BUT 99% needs ~70% of modes | 20 |
+| Iterative zero-sum with self-correction | FAIL | E | Sensitivity <1 (converges), but to value ~√x from exact | 20 |
+| Wilson's theorem batch computation | FAIL | C | Computing (k-1)! mod k IS primality testing | 20 |
+| Determinant/permanent sieve formulation | FAIL | E | Reduces to Möbius inclusion-exclusion with 2^k terms | 20 |
+| Cyclotomic polynomial prime encoding | FAIL | C | Φ_n(1)=p iff n=p^k, but evaluation requires factoring | 20 |
+| Arithmetic derivative (n'=1 iff prime) | FAIL | C | Perfect encoding but requires factorization | 20 |
+| Number field sieve analog | FAIL | E | ζ_K has MORE zeros than ζ_Q; harder not easier | 20 |
+| Matrix exponentiation for π(n) | FAIL | I | Non-autonomous system (M_n depends on primality); no fixed M | 20 |
+| Selberg sieve as optimization / LP | FAIL | I | Parity barrier: sieves cannot distinguish set from complement | 20 |
+| Dirichlet character decomposition | FAIL | E | Deviations O(√x/φ(q)); L-function zeros equally hard | 20 |
+| L-function zero convergence rate | FAIL | E | Empirical: pi(x;q,a) error is ROUGHER than pi(x) (TV ratio 1.5-3x for q=3..7); spectral 90% power at K=39-81 vs K=148 for pi(x) but total zeros needed = phi(q) sets; principal char alone gives ~same error as zeta for pi(x); no convergence advantage | 20+ |
+| Bit-by-bit computation of Δ=π(x)-Li(x) | FAIL | I | Even MSB requires O(√x) zeros; bits are entangled | 20 |
+| Contour integral with Euler product | FAIL | E | Requires O(T^{3/2}) quadrature; worse than sieving | 20 |
+| Euler product convergence for ζ | FAIL | E | Need primes up to ~x for accuracy; circular | 20 |
+
+## Kt Complexity / Information Theory (Session 20 Deep Focus)
+
+| Approach | Verdict | Mode | Key Finding | Session |
+|----------|---------|------|-------------|---------|
+| Predict delta(n) from n via polynomial | FAIL | I | R²<0, worse than naive predict-zero. Poly degree 6: RMSE 11x naive | 20 |
+| Predict delta(n) from n via ML (RF, GBM) | FAIL | I | R²=-0.17 (RF), -0.14 (GBM). n is informationally irrelevant to delta | 20 |
+| Predict delta(n) from n via Fourier series | FAIL | I | 200 Fourier terms: RMSE=55.5 vs std=176. Need ~10^4 params to match AR | 20 |
+| AR + n-features | FAIL | I | Adding n as feature to AR(k) gives exactly 0% improvement | 20 |
+| Predict delta(n) mod m from n | FAIL | I | At random baseline for all m=2,3,4,5,6 | 20 |
+| Predict sign(delta(n)) from n | MARGINAL | I | Best 55.9% accuracy vs 50% random. Only from long sign runs | 20 |
+| Explicit formula partial sums (K zeros) | FAIL | E | Diverges: error grows linearly with K at x<10^6 (conditional convergence) | 20 |
+| Kt(delta) via incremental entropy | INCONCLUSIVE | - | Growth ~0.22*log(n) but this is statistical, not algorithmic Kt | 20 |
+| Low-dim manifold for delta sequence | FAIL | I | Correlation dimension grows with embedding dim (no saturation) | 20 |
+| SVD low-rank approx of delta | FAIL | I | S_k ~ k^{-1.1} power law, need 71% of SVs for 99.9% energy | 20 |
+| Conditional entropy H(delta|n mod m) | FAIL | I | Even n mod 1000 only captures 31% of delta entropy | 20 |
+| ML (Ridge/kNN) prediction of delta(n) | FAIL | I | 0% exact on 1000 test cases. Ridge RMSE improves 35% over baseline but still off by 190. kNN RMSE=78 but 0.2% exact | 21 |
+| Fourier interpolation of S(x) via zero frequencies | FAIL | I | Test RMSE saturates at ~2.2 regardless of zeros used (5→30). Need O(sqrt(x)) zeros to resolve | 21 |
+| F_1 extrapolation (q→1 limit of F_q counting) | FAIL | E | Richardson extrapolation DIVERGES. The limit is singular—not computationally transferable | 21 |
+| Gaussian test function in Weil explicit formula | FAIL | E | Smoothing that kills zeros also destroys resolution. No optimum exists | 21 |
+| Diophantine quasi-periodicity of zero ratios | FAIL | I | Super-period LCM=819 fundamental periods (~10^{158} multiplicatively). Zero ratios are generic irrationals | 21 |
+| CRT reconstruction of delta(n) (direct) | PARTIAL | C | Framework works (unique candidate with M=30030) but computing p(n) mod q requires pi(x;q,a) at cost O(x^{2/3})—CIRCULAR | 21 |
+| Bisection with R(x)-only oracle | FAIL | E | Error O(sqrt(x)) at convergence. Without zero info, oscillatory correction dominates | 21 |
+| Prime autocorrelation mod W for prediction | FAIL | I | Strong lag-1 correlation (chi2/df=159) in p(n) mod 30 but only short-range (decays by lag 5). O(1) bits, not O(log n) | 21 |
+| Prime race pi(x;q,a) shortcut for CRT | FAIL | E+C | pi(x;q,a) errors are 2x ROUGHER than pi(x) (TV ratio~2.0); each L-function needs O(sqrt(x)) zeros; phi(q) L-functions multiply cost; Chebyshev bias gives O(1) bits not O(log n). Katz-Sarnak universality: L-function zeros have GUE stats like zeta zeros | 22 |
+| L-function zero convergence vs zeta convergence | FAIL | E | Per-character 90% power at K~39-81 vs K=148 for zeta, but phi(q) characters needed → total zeros >= zeta zeros. TV rougher. No faster convergence | 22 |
+| k-party NOF communication (k≥3) | FAIL | E | Mode-unfolding rank is FULL (=2^{ceil(N/k)}) for ALL k≥3, indistinguishable from random functions. Mode-unfolding rank too coarse for ACC^0 question. Need true tensor rank or discrepancy | 23 |
+| Communication complexity → time-space lower bound | FAIL | E | Communication complexity bounded by input length N=log(x), so can NEVER give super-polylog lower bounds. Max achievable: T*S >= Omega(log^2 x). Fundamental limitation | 23 |
+| OBDD for pi(x) | FAIL | E | Size grows as 2^{0.79*N} — comparable to random functions. OBDD lower bound Omega(sqrt(x)) from communication rank, but only for OBDD model | 23 |
+| Meissel-Lehmer pebbling space-time | PARTIAL | E | T*S >= Omega(x^{5/6}/ln x) for M-L DAG specifically. But algorithm-specific: different algorithm could bypass entirely | 23 |
+| Holonomic (D-finite) recurrence for pi(n) | FAIL | I | NOT holonomic for any order d≤20 with polynomial degree r≤8. Test/random ratio ~1.0-1.7 across all (d,r). Stronger than "not LRS" (Session 14) — polynomial coefficients don't help either | 23 |
+| Prime indicator holonomic | FAIL | I | Prime indicator (delta pi(n)) NOT holonomic. Same ratio to random as pi(n) itself | 23 |
+| Ono partition characterization (p-adic lift) | FAIL | C+E | M_k(n) DP has O(n^2) ops — WORSE than O(x^{2/3}). Modular version same op count, only bounded values. Ono criterion mod l gives 46-72% accuracy (near random). Ramanujan congruences special cases only | 23 |
+| Short-interval explicit formula iteration | FAIL | E | Each round needs K_i ~ K_1 zeros (sinc envelope gives x/W cutoff). Iteration does NOT reduce zero count. Hybrid optimum at W=sqrt(x) gives O(sqrt(x)*polylog) — matching known best | 23 |
+| Approx degree of isPrime over GF(p) | PARTIAL | E | GF(2/3): trivial deg 0 for N≥8 (prime density < 1/(2p)). GF(5): deg grows ~2N/3 up to N=12, then full N at N=14. GF(7): similar. Linear growth CONSISTENT with ∉ACC^0 but only upper bounds (ANF truncation). Razborov-Smolensky breaks down for sparse functions | 23 |
+| Real-valued approx degree of chi_P (polynomial method) | CLOSED | I | adeg_0.49(chi_P) = ceil(N/2) for N=4..11 (LP-verified). Power-law fit: 0.601*N^0.909 = Theta(N). adeg(pi(x)) = adeg(chi_P) exactly. Error = 0.5 for deg < N/2, then exponential drop (phase transition). Promise version (coprime to 2,3,5) reduces by only 1-2 degrees. Quantum lower bound: Q(chi_P) >= N/4 queries. SOS degree = adeg. PARITY-like, not MAJORITY-like. See experiments/circuit_complexity/approx_degree_prime_results.md | 28 |
+| Zeta oracle query complexity | FAIL | E | M(x) ~ x^{alpha} evaluations needed, alpha ∈ [0.25, 0.50]. Three arguments: (A) K_min zeros scales as x^alpha; (B) N(sqrt(x)) ~ sqrt(x)*log(x) zeros needed, each O(1) eval; (C) condition number O(sqrt(x)). Oracle model CONFIRMS sqrt(x) barrier | 23 |
+| CRT Prime Locator (progression counting) | FAIL | C | π(x;q,a) as hard as π(x). L-function zeros same barrier. Only 4-5 CRT moduli needed but each requires full prime counting | 24 |
+| Hierarchical sieve (fast-multipole Φ) | FAIL | E | Φ calls/x = 0.03-0.04 constant (linear, not polylog). Prime indicator Fourier: 99% energy needs 78% of coefficients. Möbius sparsity doesn't scale | 24 |
+| Spectral compression of zero sum | FAIL | I | 50 zeros: residual 1.84 at x=10000. DCT best: 99% in 10.4% coefficients. Critical 5% dense in ALL bases. Fourier interpolation: only 2x savings | 24 |
+| Prime gap linear recurrence | FAIL | I | R² negative for all orders 1-20 (worse than mean predictor). Next gap ≈ 10±8 regardless of history | 24 |
+| k-automatic prime indicator | FAIL | I | 2-kernel has 38 growing subsequences (vs 6 for Thue-Morse). NOT k-automatic for any k | 24 |
+| LFSR encoding over finite fields | FAIL | I | L/N = 0.5000 over ALL GF(p) tested (p=2..23). Maximally random-like in every field | 24 |
+| Recursive Dickman DDE shortcut | FAIL | E | Correction grows with exponent α≈7.9, dominates signal. 93-100% recursion nodes need exact computation | 24 |
+| Neural/ML for δ(n) | FAIL | I | Test RMSE=3.44 (random features), 1.3-1.6 (zeta features). Never <0.5. No generalization | 24 |
+| Étale/Weil formula analog | FAIL | E | Needs genus ~10^102 for target. Frobenius eigenvalues cost O(g²) = O(10^204) | 24 |
+| Connes trace formula optimization | FAIL | E | σ=0.1 optimal (5 zeros for 99%), but smoothed π(x) error O(√x/log x). No σ gives <0.5 | 24 |
+| NTT/Dirichlet convolution for sieve | FAIL | E | Perron needs T~x, O(T) quadrature. Floor grouping: 2√x−1 values, reproduces O(x^{2/3}) | 24 |
+| Binary search + local sieve | FAIL | C | Works mechanically but requires π(x) oracle at window boundary. Problem relocated, not solved | 24 |
+| Adelic local-global reconstruction | FAIL | C | Only 2 moduli suffice for CRT, but computing p(n) mod p^k needs Dirichlet L-function zeros | 24 |
+| Kolmogorov complexity of δ(n) | PARTIAL | I | 5x more compressible than random (0.049 vs 0.256). Improves with length (1.56 bits/symbol at N=10000). Shannon entropy ratio 0.84. Structure exists but insufficient for exactness | 24 |
+| Multiplicative Fourier / characters | FAIL | E | L(1,χ) polylog via digamma but gives density not count. Summing L-function zeros same barrier | 24 |
+| Sublinear spectral correction (DCT+zeros) | FAIL | C+I | 17.3% of DCT coefficients needed for rounding (867/4999). Coefficients unpredictable across scales (correlation 0.742). Hybrid zeros+DCT circular. FRI sampling → 100% at scale | 24 |
+| Tensor network (MPS) Legendre sieve contraction | FAIL | I | Bond dim ~ 2^(0.33-0.43 * a), exponential in #primes. Sieve 5-20x more structured than random but still exponential. Dominant SV is rank-1 (floor(x)), corrections full-rank. O(sqrt(x)) unique floors don't help: non-local assignment to bipartitions. Confirms S10/S20 | 26 |
+| Explicit BDD circuit synthesis for pi(x) | PARTIAL | E | ROBDD with multi-ordering: LSB BDD ~ 2^(0.73*N). Better than OBDD 2^(0.79*N) (S20) but worse than sqrt = 2^(0.5*N). Per-bit: MSB~N+1 (trivial), LSB~2^(0.73*N). Influence(LSB)~N/2. BDDs are restricted (branching programs); general circuits could be exponentially smaller. Does NOT prove circuit lower bound. | 28 |
+| Ramanujan Library PSLQ on delta(n)=p(n)-R^{-1}(n) | FAIL | I | PSLQ on n=1..2000, validated n=2001..2500. Linear recurrence orders 2-20: all relations unique (spurious). Polynomial deg 2-3 in consecutive deltas: all unique. Mixed delta(n) vs log(n)/sqrt(n): all unique. Modular: brute-force mod 2 order-4 gives 70% but trivial predictor gives 92% (autocorrelation artifact). Berlekamp-Massey: LFSR length L=N/2 for all mod 2,3,5,7,11 (maximally complex). Differenced delta same. Entropy 6.26 bits. Confirms algebraic independence of delta sequence | 26 |
+| Group-theoretic cross-modulus prime race shortcut | FAIL | E+C | E(x;q) correlations between moduli are trend artifacts (QR/NQR imbalance); oscillatory parts independent (roughness ratio 0.997). Galois lifts go wrong direction (fine->coarse free, coarse->fine needs new zeros). Linear prediction of p(n) mod q from E(x;q_i): R^2 < 0.03, MI < 3% of max. Character orthogonality makes cross-modulus shortcuts mathematically impossible. CRT via prime races costs 96*O(sqrt(x)) for q<=23, worse than direct pi(x) | 26 |
+| Wheel decomposition circuit complexity | FAIL | I | Per-class pi_r(x) circuits 3-4x MORE complex (normalized transitions) than full pi(x). Classes near-independent (I/H < 0.01), preventing shortcuts. Total entropy grows as phi(M). Entropy reduction from mixed-radix conditioning is finite-size effect (shrinks as N grows). Decomposition destroys sequential regularity that makes pi(x) partially structured | 28 |
+| Multiplicative-additive circuit structure (Legendre I-E cancellation) | FAIL | I | Signed matrix rank = #distinct floors (full rank, no reduction). 90% of floor values have nonzero net I-E contribution. Effective terms O(sqrt(x)) but no way to evaluate sum sublinearly | 28 |
+| Carry propagation structure in pi(x) sum | FAIL | I | Carry chain distribution IDENTICAL to random Bernoulli(1/ln x). Max carry = O(log pi(x)) = O(N). No exploitable additive structure | 28 |
+| Monochromatic rectangle partition of pi(x) | FAIL | I | Partition number ~ 2^(0.76*N), exceeding rank ~ 2^(0.41*N). Nondeterministic communication complexity exponential. partition/rank ratio grows as 2^(0.35*N) | 28 |
+| Per-bit complexity gradient analysis | DIAGNOSTIC | I | LSB-half influence 2x MSB-half, ratio growing with N. Bit 0 influence ~ N/2, max sensitivity = N. MSB influence O(1). Crossover at bit N/2. All CONSISTENT with polylog circuits | 28 |
+| Approximate degree of chi_P at rounding threshold | DIAGNOSTIC | -- | adeg(chi_P, 0.49) = ceil(N/2) for N=4..10. Same for pi(x) mod 2. Counting adds no difficulty. Quantum lower bound Omega(N/4), still polylog | 28 |
+| Rounding boundary / frac(R(x)) analysis | FAIL | I | frac(R(x)) perfectly uniform; precision follows geometric distribution P(k bits)=2^{-(k-1)}; no easy subset. R(x) accuracy drops to 13% at N=16 | 28 |
+| Legendre I-E cancellation structure | FAIL | E | Signed matrix rank = distinct floors (full rank). 90% nonzero net. Max collision grows but doesn't cancel | 28 |
+| Linear dynamical systems over Z/MZ | FAIL | I | p(n) mod M has no linear recurrence dim<=4 for M=3..30. No affine recurrence. Random matrix orbits match at chance level. Only trivial mod 2 (all odd) | 29 |
+| GF(2) sieve matrix product fast-forward | FAIL | E | Product of sieve matrices is DIAGONAL (commuting). Encodes Mobius parity = Legendre sieve in disguise. Rank = #primes+1s. No matrix structure shortcut | 29 |
+| Polynomial recurrence mod m (deg<=3) | FAIL | I | No degree-1/2/3 polynomial recurrence p(n)=f(p(n-1),p(n-2)) mod M for M=3,5,7. Only trivial mod 2. Extends S24 LFSR to nonlinear | 29 |
+| CF / Stern-Brocot structure of p(n)/n | FAIL | I | CF partial quotients follow Gauss-Kuzmin (random). SB path lengths O(log p(n)). p(n)/n behaves as generic real | 29 |
+| CRT from modular periods of p(n) | FAIL | I | p(n) mod m NOT periodic for m>=5 (within 500 terms). Only mod 2/3/4/6/12 trivially periodic (all primes odd, Dirichlet). Cannot fast-forward residues | 29 |
+| Cipolla residual autoregression | FAIL | I | AR(1) 91.4% reduction but irreducible error grows as O(log n) = O(gap std). AR(20) gives no improvement over AR(1). Cannot achieve O(1) for exact | 29 |
+| GUE CLT for zero sum | FAIL | I | CLT gives O(sqrt(log x)) typical size but actual correction is O(sqrt(x)/log(x)). CLT applies to random ensembles, not specific zero config | 29 |
+| Zero grouping/clustering | FAIL | I | Group size 2→error 9.65, group 4→0.51 (lucky), group 8→2.65 at x=10K. Rapid oscillation of exp(i*gamma*log(x)) makes each zero position essential | 29 |
+| GUE surrogate replacement | FAIL | I | Random matrix surrogates give mean=-0.81±1.18 vs actual -0.25. Right order of magnitude, wrong value. Specific zero config matters | 29 |
+| Interpolation of pi correction | FAIL | I | 100 Chebyshev nodes on [2,10000]: max error=7. Fine structure from zeta zeros prevents polynomial interpolation with few points | 29 |
+| Polynomial empirical correction to R(x) | FAIL | I | Polynomial in 1/log(x) reduces error 60-80% but cross-validation confirms overfitting. Oscillatory part genuinely non-polynomial | 29 |
+| Compressed sensing on prime indicator | FAIL | C | pi(x)-x/log(x) has 99% energy in 1.25% of Fourier components, but those ARE zeta zero frequencies. Circular | 29 |
+| Transfer matrix / stat mech for sieve | FAIL | E | State space 2^{pi(sqrt(x))}—exponential. Wheel sieve already exploits small-prime periodicity. No stat-mech shortcut | 29 |
+| p-adic interpolation of pi(x) | FAIL | I | pi(x) NOT p-adically continuous: pi(x) mod p^k varies across all residue classes of x mod p^k. Local info doesn't determine global count | 29 |
+| Wilson's theorem bulk primality | FAIL | E | Running factorial requires O(x!) precision. Computing (k-1)! mod k for single k is O(k). No bulk shortcut | 29 |
+| Goldbach representation extraction | FAIL | C | Computing r_2(n) requires knowing primes. Hardy-Littlewood formula error O(sqrt(n/log(n))) too noisy | 29 |
+| Finite field F_q[x] analogy lift | FAIL | I | F_q[x] works because its zeta has ONE zero. Z has infinitely many. No deformation from F_q to Z preserves the counting formula | 29 |
+| PSLQ identity search | FAIL | I | No integer relation found among pi(x), li, R, sqrt, log, zeta values with coefficients ≤1000. Known asymptotics are the only relations | 29 |
+| Primorial decomposition optimization | FAIL | E | Optimal c=3 in x^{1/c} split → O(x^{2/3}). This IS Meissel-Lehmer. No c gives better tradeoff | 29 |
+| Short-interval error structure | FAIL | C | Short-interval Fourier structure from zeta zeros. CS recovery requires zero frequencies a priori | 29 |
+| Number-theoretic hash p(n) mod m | FAIL | I | p(n) mod m for m≥3 shows no periodicity, no autocorrelation, pseudorandom. No polylog-computable formula | 29 |
+| DE search for f(x)=pi(x)-R(x) | FAIL | I | Tested linear ODEs order<=3 poly deg<=3, Euler-type, nonlinear poly ODEs, Volterra integrals. Best linear ODE residual matches random noise (spurious from smoothing). Euler/nonlinear residuals ~1.0. f encodes infinitely many zeta-zero oscillations incompatible with finite-order DE | 29 |
+| Extended PSLQ identity search x=2..100000 | FAIL | I | 14-element basis (log,sqrt,roots,li-variants,zeta zero oscillations). 18 PSLQ tests, 15 relations with nonzero f-coeff -- ALL fail cross-validation (residuals 13-53000). Functional relations f(ax) vs f(x) for a=2,3,4: fail. Shift recurrences f(x)..f(x+10): fail. Extends S19 to 10x range | 29 |
+| Wilf-Zeilberger definite sum for f(x) | FAIL | I | Delta_f bimodal (prime indicator). Higher-order differences RMS GROW (ratio->2.0=white noise). Hypergeometric recurrence R^2=0.997 is spurious (trivial autocorrelation). Summation kernel full Hankel rank 250/250 (incompressible). No WZ certificate | 29 |
+| f(x) vs Bernoulli numbers | FAIL | I | Bernoulli corrections < 10^{-7} at x=1000, zero correlation with f(x) (r=-0.006). Trivial zeros contribute negligibly | 29 |
+| f(x) vs zeta values zeta(2..7) PSLQ | FAIL | I | PSLQ finds x-dependent relations with large coefficients (~10^6). Different coefficients at each x. Perfect-square x gives trivial sqrt relations. No universal algebraic relation | 29 |
+| f(x) vs Dirichlet L-values L(1,chi) | FAIL | I | Same as zeta values -- x-dependent large-coefficient relations only. L(1,chi_3)=0.605, L(1,chi_4)=pi/4. No universal relation | 29 |
+| f(x) vs Ramanujan tau function | FAIL | I | Pearson r=+0.010, p=0.93. Spearman r=+0.054. Zero correlation. Different mathematical objects (weight-12 modular form vs zeta zero oscillations) | 29 |
+| Chebyshev psi(x)/log(x) as f(x) shortcut | FAIL | E | g(x)/log(x) captures 91% of f(x) variance (r=0.996) via partial summation identity. BUT psi(x) requires O(x) computation -- worse than O(x^{2/3}) sieve. Known identity, not shortcut | 29 |
+| LLL minimal polynomials for f(x) | FAIL | I | "Candidate" polynomials at every x but DIFFERENT polynomials at each x (x=100: [156396,287371,96731], x=1000: [119569,141263,-381961]). Multi-point relations at float64 precision limit. f(x) values effectively algebraically independent transcendentals | 29 |
+| Polynomial-in-log(x) fit for f(x) | FAIL | I | f(x) ~ sum a_j*log(x)^j: best validation RMSE=1.976 (~47% of std). With sqrt(x) factor: no improvement. Degree>4 overfits. f(x) not a polynomial in log(x) | 29 |
+| Incremental delta(n) via autocorrelation | FAIL | I | r(1)=0.975 but smooth-trend artifact (after MA-10 detrending: r(1)=0.41). AR(1) RMSE=7.31, AR(5) RMSE=7.27, both >> 0.5 threshold. Only 5.3% of predictions within rounding range. H(delta(n+1)\|delta(n))=4.93 bits/step. RMSE grows with n (4.8->8.1). See experiments/proposals/critique_incremental_delta.py | 30 |
+| Verification-prediction separation | FAIL | C | Primality testing is O(polylog) but ordinality (is g the n-th prime?) requires pi(g) = O(x^{2/3}). Claim conflates primality with ordinality. Local sieving gives interval count but not global rank. At x=10^100: primality ~10^9 ops, ordinality ~10^68 ops. See experiments/proposals/critique_verification_separation.py | 30 |
+| NOF discrepancy for chi_P (3-party) | FAIL | - | Discrepancy HIGH (~bias), dominated by density imbalance. Trivial cylinder (A=B=C=all) achieves max. No communication lower bound. Degree-1 Walsh correlation 3-1513x random (parity), degree ≥ 2 matches random. Consistent with TC^0. See experiments/circuit_complexity/nof_discrepancy_chi_P.py | 31 |
+| Gamma-2 (factorization) norm / sign-rank | FAIL | - | γ₂ ~ 2^{0.186N}, 85-93% of random matrices. Sign-rank = rank for all N=4..10. No hidden low-rank sign structure. SM complexity bound O(log γ₂) = O(N) trivially weak. F_2 rank = rank_R - 1. See experiments/circuit_complexity/gamma2_norm_chi_P.py | 31 |
+| True tensor rank of chi_P (3-way) | DIAGNOSTIC | - | Tensor rank ~ d^{1.5} = 2^{N/2} = sqrt(x). N=6: rank=5 (random=7), N=9: rank≤19 (random=29), N=12: rank≈67 (random>100). chi_P 25-35% BELOW random but still EXPONENTIAL. Confirms N/2 universality. Close to generic d²/3 bound. See experiments/circuit_complexity/tensor_rank_robust.py | 31 |
+| BDD size / sensitivity / decision tree | FAIL | - | BDD grows as 1.661^N (R²=0.997). chi_P ~30% simpler than random (ratio 0.69-0.71). Sensitivity = block sensitivity = certificate complexity = N for N≥7. Decision tree depth = N. All N variables essential. See experiments/circuit_complexity/min_circuit_size.py | 31 |
+| F_2 correlation profile (degree-d polynomials) | DIAGNOSTIC | - | Degree-0,1 dominate: W(0)+W(1) = 47%(N=6) to 68%(N=16). W(1) z-score grows from 3 to 1513 (parity). W(d≥2) BELOW random (z-scores -2 to -30). After bias+parity removal, chi_P more pseudorandom than random. No exploitable low-degree F_2 structure. See experiments/circuit_complexity/f2_correlation_profile.py | 31 |

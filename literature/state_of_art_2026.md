@@ -126,7 +126,98 @@ Makes Guth-Maynard results explicit and quantitative for short intervals. Provid
 
 **Does it change the barrier?** No.
 
-### 2.4 Overall RH Status (April 2026)
+### 2.4 Harper-Xu-Wang: Gaussian Multiplicative Chaos and Primes (2025)
+
+**Source:** Announced September 2025 conference; Xu-Wang 2025 paper
+
+**The breakthrough:** Adam Harper (Warwick) proved that the statistics of zeta function zeros are captured by Gaussian multiplicative chaos (GMC) -- random fractal measures. Xu and Wang then verified Harper's conjecture that GMC provides a better prime counting formula than Riemann's in short intervals [x, x+y] for y near sqrt(x).
+
+**Key insight:** In the "transition regime" (y ~ sqrt(x)), the exact mix of randomness and deterministic chaos in prime distribution is computable. For large intervals, random fractal measures describe primes; for sufficiently small intervals, statistics revert to pure unstructured randomness.
+
+**Connection to our barrier:** This characterizes the DISTRIBUTIONAL nature of the oscillatory correction delta(n) = p(n) - R^{-1}(n). The GMC framework says delta(n) has log-correlated, scale-invariant fluctuations -- exactly the type of structure our Session 19 found (1/f^{1.69} spectrum). However, this is about statistical properties, not exact computation.
+
+**Does it change the barrier?** No. Distributional statistics, not exact values. But it deepens understanding of WHY the oscillatory part is hard: it has genuine fractal structure at all scales.
+
+### 2.5 Connes-Consani-Moscovici: Prolate Wave Operators (2023/2024)
+
+**Source:** arXiv:2310.18423 (revised May 2024)
+
+Introduces semilocal prolate wave operator for spectral realization of zeta zeros. Positive spectrum captures low-lying zeros; negative spectrum (Sonin space) captures ultraviolet behavior. Operator = sum of squared scaling operator with grading of orthogonal polynomials. Extends to semilocal case via metaplectic representation of SL(2,R).
+
+**Does it change the barrier?** No. Purely theoretical framework; no computational shortcuts for summing zeta zero contributions.
+
+### 2.5b Connes-Consani-Moscovici: Zeta Spectral Triples (November 2025)
+
+**Source:** arXiv:2511.22755
+
+Constructs self-adjoint operators as rank-one perturbations of the spectral triple
+associated with the scaling operator on [lambda^{-1}, lambda]. Uses Euler products over
+primes p <= x = lambda^2 to produce operators whose spectra match non-trivial zeta zeros
+with striking numerical accuracy. Using only primes <= 13, obtains first 50 zeros with
+errors from 2.5 x 10^{-55} (first zero) to ~10^{-3} (50th zero). Regularized determinants
+converge toward the Riemann Xi function.
+
+**Key observation for project:** Very few primes (just 2,3,5,7,11,13) produce astonishing
+accuracy for low-lying zeros. But this does NOT help compute pi(x): the zeros are obtained
+from an operator whose construction requires knowing the primes, and the accuracy degrades
+for higher zeros. No pathway to algorithmic speedup.
+
+**Does it change the barrier?** No. Theoretical/numerical RH strategy. No computational shortcut.
+
+### 2.5c Yakaboylu: Hilbert-Polya Hamiltonian (2024-2026)
+
+**Source:** arXiv:2408.15135 (v15, March 2026); also arXiv:2309.00405
+
+Introduces non-symmetric operator R on L^2([0,infinity)) with spectrum encoding nontrivial
+Riemann zeros: sigma(R) = {i(1/2 - lambda) | lambda in Z_Lambda}. Under assumption of
+simple zeros, compression operator intertwined with adjoint by positive semidefinite operator
+W. Positivity of W = operator-theoretic Weil positivity criterion => RH.
+
+**Does it change the barrier?** No. Purely theoretical; no algorithms proposed.
+
+### 2.5d Kilictas-Alpay: TG Kernel for Exact Prime Counting (June 2025)
+
+**Source:** arXiv:2506.22634
+
+**KEY FINDING -- most relevant new result for project.**
+
+Uses a Truncated Gaussian (TG) kernel in the explicit formula framework. The TG kernel
+is a piecewise function: Gaussian e^{-t^2} for t in [0,alpha], smoothly joined by cubic
+polynomial P(t)e^{-t^2} for t in (alpha, alpha+Delta], zero beyond. C^2 continuity ensured.
+Vanishing moments eliminate main terms.
+
+**Main claim:** Approximation error remains globally below 1/2 for all x >= 10^3,
+guaranteeing EXACT pi(x) via rounding, without assuming RH.
+
+**Zeros needed:** For x with 10^8 decimal digits (~10^{10^8}), only ~1200 nontrivial
+zeta zeros suffice. ~600 zeros with positive imaginary part. This is N = O(log x) zeros.
+
+**Computational cost:** Single FFT-based multiplication on ~330 million-bit number.
+Claims "seconds on modern hardware" for 10^8-digit x.
+
+**Key theorems:**
+- Lemma 1 (Tail Error): R_tail(x) < (alpha+Delta)*e^{-alpha^2}
+- Lemma 2 (Zero Truncation): E_zeros(x) < 0.6*C/T^2*(ln T + 1)
+
+**CRITICAL ASSESSMENT:**
+This paper makes extraordinary claims that need careful scrutiny:
+1. If only O(log x) zeros are needed, total complexity would be O(polylog(x)) -- exactly
+   our target. But the paper does NOT provide a formal complexity analysis.
+2. The ~1200 zeros are PRECOMPUTED and assumed known. Computing them is non-trivial.
+3. The 330 million-bit FFT multiplication is for the smooth part evaluation, not zero
+   summation. Unclear if the total pipeline is truly polylog.
+4. The authors (Kilictas & Alpay) have several other arxiv papers on novel number-theoretic
+   claims. The results should be independently verified before relying on them.
+5. Even if error < 0.5 is achieved, the METHOD still requires computing zeta at each zero
+   location with sufficient precision, and evaluating x^rho for each zero rho.
+
+**If correct, this would be the closest result to our goal.** The claim that O(log x)
+zeros suffice for exact pi(x) is remarkable and warrants immediate experimental verification.
+
+**Does it change the barrier?** POTENTIALLY YES -- if the complexity analysis holds up.
+Priority: VERIFY THIS PAPER.
+
+### 2.6 Overall RH Status (April 2026)
 
 - 20 trillion zeros verified on critical line (Platt-Trudgian, 2021)
 - De Bruijn-Newman constant Lambda = 0 (Rodgers-Tao, 2020)
@@ -273,13 +364,33 @@ Autoformalization agent for Lean proof verification. Formalized Strong Prime Num
 
 **Assessment:** Important for verification infrastructure. Formalizing PNT does not yield faster prime algorithms.
 
-### 5.4 ML for Prime Classification
+### 5.4 ML for Prime Classification and Distribution
 
 The withdrawn paper (arXiv:2402.03363, 2024) was the most notable attempt -- ResNet + Transformer achieving ~99% recall, never 100%. Authors retracted it, stating the approach "does not lead to meaningful or valid conclusions."
 
 **Theoretical limitation:** Prime Coding Theorem (arXiv:2308.10817, 2023) proves information content of prime sequence exceeds any learnable pattern.
 
+**Kolpakov-Rocke (2024):** Maximum entropy methods provide theoretical argument that ML learns the smooth part of prime distribution (Hardy-Ramanujan-type results) but cannot discover deeper structure (Erdos-Kac law).
+
 **Does it change the barrier?** No. ML cannot achieve exactness for primes.
+
+### 5.5 Automated Conjecture Discovery (2024-2026)
+
+**Ramanujan Library (ICLR 2025):** PSLQ-based hypergraph of mathematical constants discovered 75 new relations including pi-e formulas generalizing Ramanujan. Framework could be applied to search for identities involving pi(x) corrections, though none found yet.
+
+**Unsupervised Formula Discovery (NeurIPS 2024):** Convergence-dynamics-based metric enables automated formula clustering and discovery. Found new formulas for pi, ln(2), Gauss' constant. Key paradigm: use convergence behavior rather than numerical value as distance metric.
+
+**Learning Conjecturing from Scratch (2025):** Neural translator + Z3 feedback loop solved 5,565 OEIS-derived induction problems (2.5x baseline). Approach could be directed at prime-related OEIS sequences.
+
+**IntSeqBERT (2026):** Modulo-spectrum Transformer for OEIS sequences with CRT-based integer prediction. 7.4x improvement over tokenized baselines. The modular decomposition approach resonates with CRT-based pi(x) ideas (already closed in Session 13).
+
+**Sequencelib (2026):** 25,000+ OEIS sequences formalized in Lean 4 with 1.6M proved theorems. Infrastructure for machine-verified conjecture testing.
+
+**Aletheia/DeepMind (2026):** Autonomous math research agent solved 4 open Erdos problems. Generated research paper on eigenweights in arithmetic geometry. Not yet applied to prime counting.
+
+**Assessment:** The automated discovery ecosystem is maturing rapidly. PSLQ-on-hypergraph and convergence-dynamics approaches are the most promising tools for discovering new number-theoretic identities. However, our Session 19 already applied PSLQ/LLL extensively to delta(n) = p(n) - R^{-1}(n) and found NO linear, polynomial, recurrence, modular, functional, or differential relations with elementary functions. The automated tools would need to search a fundamentally different space of formulas.
+
+**Does it change the barrier?** No, but provides better tooling for identity search (Open Problem #5).
 
 ---
 
@@ -337,9 +448,56 @@ p(10^100) ~ 2.35 x 10^102. Computing it exactly requires:
 
 ### Bottom line:
 
-The problem of computing p(n) in polylogarithmic time remains open in the strongest theoretical sense (no impossibility proof), but all 480+ approaches across 17 sessions confirm the barrier empirically. The 2024-2026 literature -- including the most significant results in decades (Guth-Maynard, Prunescu-Shunia, Aggarwal, Ono) -- provides deeper understanding without changing the computational landscape. Session 17's exact communication complexity formula (rank = 2^{N/2-1}+2) gives the most precise characterization yet of the √x barrier. The gap between the trivial Omega(log x) lower bound and the O(x^{1/2+eps}) upper bound for pi(x) remains one of the least-explored frontiers in computational complexity.
+The problem of computing p(n) in polylogarithmic time remains open in the strongest theoretical sense (no impossibility proof), but all 560+ approaches across 20 sessions confirm the barrier empirically. The 2024-2026 literature -- including the most significant results in decades (Guth-Maynard, Prunescu-Shunia, Aggarwal, Ono) -- provides deeper understanding without changing the computational landscape. Session 17's exact communication complexity formula (rank = 2^{N/2-1}+2) gives the most precise characterization yet of the sqrt(x) barrier. The gap between the trivial Omega(log x) lower bound and the O(x^{1/2+eps}) upper bound for pi(x) remains one of the least-explored frontiers in computational complexity.
+
+**April 2026 internet search update:** Harper's Gaussian multiplicative chaos framework (2025) characterizes the fractal structure of prime oscillations at all scales, explaining WHY delta(n) has 1/f^{1.69} spectrum. The automated conjecture discovery ecosystem (Ramanujan Library, convergence-dynamics formulas, IntSeqBERT, Sequencelib) is maturing but has not produced prime-counting identities. STOC 2026 algebraic complexity papers advance lower bounds but not for number-theoretic functions. Matrix multiplication exponent improved to omega < 2.371339 but this does not help pi(x).
+
+**April 2026 session 29 search update (5 topics):**
+
+1. **Kilictas-Alpay TG Kernel (June 2025):** Claims exact pi(x) via explicit formula with
+   only O(log x) zeta zeros and error < 0.5. If verified, this is the most significant
+   result for the project -- would imply near-polylog prime counting. NEEDS VERIFICATION.
+   See Section 2.5d.
+
+2. **Connes-Consani-Moscovici Zeta Spectral Triples (Nov 2025):** Using primes <= 13,
+   spectra match first 50 zeta zeros to 10^{-55} accuracy. Beautiful but no algorithmic
+   pathway. See Section 2.5b.
+
+3. **Yakaboylu Hilbert-Polya Hamiltonian (2024-2026):** Operator-theoretic spectral
+   realization of zeros. Theoretical RH strategy, no algorithms. See Section 2.5c.
+
+4. **Explicit formula error terms (2024-2025):** Cully-Hugill & Lee (arXiv:2402.04272)
+   improved Riemann-von Mangoldt error to O(x/T) without log factor, using averaged
+   truncated Perron formula. Application: primes between n^90 and (n+1)^90 for all n >= 1.
+
+5. **GUE/RMT and algorithms:** No new algorithmic connections found 2023-2026. The
+   Montgomery-Odlyzko GUE conjecture remains confirmed numerically but provides statistical
+   information about zeros, not computational shortcuts. Nishigaki (2024) extended GUE
+   consecutive spacing distributions. No pathway from GUE statistics to fast zero summation.
+
+6. **Zeta computation advances:** Hiary's O(t^{4/13+eps}) method remains best. New 2025
+   work on simple approximations to zeta (arXiv:2503.09519) and valley scanner algorithm
+   for Z(t) zeros, but no complexity improvement.
+
+**April 2026 session 30 search update (7 topics):**
+
+1. **Etale cohomology for primes:** No connection found. Point counting on varieties (Kedlaya-Harvey algorithms) counts F_q-rational points on curves, fundamentally different from counting primes. No 2024-2026 work bridges this gap. CLOSED.
+
+2. **ML for prime gaps/distribution:** Kolpakov-Rocke (PLOS ONE 2024, arXiv:2403.12588) formalized the barrier: ML learns smooth part (Hardy-Ramanujan), cannot discover oscillatory structure (Erdos-Kac). Prime Coding Theorem (arXiv:2308.10817, v7 Dec 2024) proves information content exceeds learnable patterns. CONFIRMS BARRIER.
+
+3. **PSLQ/integer relations:** Conservative Matrix Field (Elimelech et al., PNAS 2024) provides structured continued fraction discovery framework extending PSLQ. Ramanujan Library (ICLR 2025) discovered 75 new constant relations via PSLQ on hypergraph. Neither has produced prime-counting identities. Could be applied to Open Problem #5.
+
+4. **Info-theoretic lower bounds:** MOST SIGNIFICANT FINDING. Brandt (TCC 2024) proved MKtP not in DTIME[O(n^2)] via diagonalization that BYPASSES natural proofs and algebrization barriers. This is the only known technique that could lead to unconditional superpolynomial lower bounds without hitting the barriers identified in Session 23. Connection to primes: if extended to show MKtP hard for P, would imply strong circuit lower bounds that could constrain pi(x). MONITOR CLOSELY.
+
+5. **LLL for zeta zeros:** Lamzouri (arXiv:2311.04860, revised May 2024) formulates effective Linear Independence conjecture for zeta zero ordinates using Lang-Waldschmidt heuristics. Under this conjecture: optimal Omega bounds for PNT error, partial resolution of Gonek's conjecture on M(x). If zeta zeros are Q-linearly independent (as conjectured), no shortcut via partial zero sums is possible. CONFIRMS BARRIER.
+
+6. **Quantum-inspired classical:** Tang's dequantization (2024) applies to low-rank problems. Pi(x) communication matrix has rank 2^{N/2-1}+2 (Session 17) -- not low-rank. No quantum-inspired technique applies. CLOSED.
+
+7. **Automated conjecture generation:** Ecosystem maturing (Ramanujan Library, CMF, IntSeqBERT, Sequencelib, Learning Conjecturing). No prime-counting identities produced. Best tools for Open Problem #5 are CMF framework + convergence-dynamics metrics.
+
+**Key takeaway:** Brandt's MKtP diagonalization is the only genuinely new theoretical technique found that could eventually impact the prime computation barrier question. Everything else confirms existing understanding.
 
 ---
 
-Generated: 2026-04-04
-Consolidated from: latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md
+Generated: 2026-04-05
+Consolidated from: latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md, session20_internet_search, session30_internet_search

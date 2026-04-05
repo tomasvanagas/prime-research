@@ -42,11 +42,21 @@ and rules. It points to status/ files for closed paths and open problems.
 4. Spin sub-agents to explore in parallel (save context!)
 5. Save experiments to experiments/<topic>/
 6. Update status/CLOSED_PATHS.md when you close an approach
-7. Novel findings go to novel/ with evidence
 
 # ALSO CHECK
-- Read novel/critique_latest.md if it exists -- it may contain NOVEL proposals
+- Read archive/ephemeral/critique_latest.md if it exists -- it may contain NOVEL proposals
   that survived critique and are worth implementing.
+
+# FILE PLACEMENT (STRICT)
+- Every .py script MUST have a companion <name>_results.md alongside it.
+- Do NOT create multiple versions of the same script (no foo.py, foo_v2.py, foo_quick.py).
+  Refactor the original or use command-line arguments.
+- novel/ is ONLY for genuinely original findings not in published literature.
+- Session syntheses go to archive/sessions/.
+- Proven barriers go to proven/.
+- Ephemeral outputs (proposals, critiques) go to archive/.
+- Results format is .md only. No .txt for human-readable results.
+- Delete __pycache__ directories before finishing.
 
 # RULES
 - DO NOT touch run.sh or FOCUS_QUEUE.md
@@ -99,10 +109,13 @@ This is a FRESH THINKING session. Start from first principles.
 4. Search the internet for latest 2025-2026 papers. Look in unexpected places:
    quantum information, algebraic topology, machine learning theory, cryptography.
 
-## SAVING
+## SAVING & FILE RULES
 - Save experiments to experiments/wildcard/
-- Promising findings go to novel/wildcard_findings.md
+- Every .py script MUST have a companion <name>_results.md alongside it.
+- Do NOT create multiple versions of the same script. One script per experiment.
+- Promising findings go to novel/ (ONLY if genuinely original, not in published literature).
 - Better algorithms go to algorithms/
+- Delete __pycache__ directories before finishing.
 - DO NOT read CLAUDE.md or status/CLOSED_PATHS.md
 - DO NOT spend time proving things impossible
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
@@ -133,9 +146,14 @@ test hypotheses, and record results.
 - Stay focused on Task #__TASK_NUM__. Do NOT explore other directions.
 - Write code and run experiments. This is NOT a theory-only session.
 - Save all experiments to the directory specified in FOCUS_QUEUE.md.
-- Significant discoveries: update CLAUDE.md and novel/
+- Every .py script MUST have a companion <name>_results.md alongside it.
+- Do NOT create multiple versions of the same script. One script per experiment.
+- Significant discoveries: update CLAUDE.md and novel/ (novel/ is ONLY for genuinely
+  original findings not in published literature -- NOT session summaries or barriers).
+- Session syntheses go to archive/sessions/. Proven barriers go to proven/.
 - Closed directions: update status/CLOSED_PATHS.md with evidence
 - Use sub-agents for parallel experiments
+- Delete __pycache__ directories before finishing.
 - DO NOT touch run.sh or FOCUS_QUEUE.md
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
@@ -184,9 +202,13 @@ algebraic topology, representation theory, information theory.
 - Operator-theoretic approaches (trace formula shortcuts)
 - Information-theoretic: prove O(polylog) is achievable via entropy arguments
 
-## SAVING
-- Save detailed proposals to novel/proposals_session.md
+## SAVING & FILE RULES
+- Save detailed proposals to archive/ephemeral/proposals_session.md (NOT novel/).
 - If any idea works on small cases, save code to experiments/proposals/
+  with a companion <name>_results.md for each .py script.
+- Do NOT create multiple versions of the same script. One script per experiment.
+- Only move a proposal to novel/ if it is genuinely original AND survives testing.
+- Delete __pycache__ directories before finishing.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
@@ -202,8 +224,8 @@ You are a rigorous mathematical critic evaluating proposed approaches
 to computing p(n) in O(polylog(n)) time.
 
 ## YOUR TASK
-1. Read archive/proposals_latest.md for the latest proposals.
-   If missing/empty, try novel/proposals_session.md instead.
+1. Read archive/ephemeral/proposals_latest.md for the latest proposals.
+   If missing/empty, try archive/ephemeral/proposals_session.md instead.
    If neither exists, read CLAUDE.md and status/OPEN_PROBLEMS.md for context,
    then search the internet for any 2025-2026 papers proposing new prime algorithms.
 
@@ -224,11 +246,16 @@ to computing p(n) in O(polylog(n)) time.
 
 5. For PARTIALLY novel proposals: extract the novel component and test it separately.
 
-## SAVING
-- Save your critique to novel/critique_latest.md
-- NOVEL proposals: add to status/OPEN_PROBLEMS.md
-- DUPLICATE proposals: note which CLOSED_PATHS entry they match
-- Update CLAUDE.md if your analysis reveals new insights
+## SAVING & FILE RULES
+- Save your critique to archive/ephemeral/critique_latest.md (NOT novel/).
+- NOVEL proposals that survive critique: add to status/OPEN_PROBLEMS.md
+  and save evidence to novel/ (novel/ is ONLY for genuinely original findings).
+- DUPLICATE proposals: note which CLOSED_PATHS entry they match.
+- Session synthesis documents go to archive/sessions/.
+- If you run experiments, every .py MUST have a companion <name>_results.md.
+- Do NOT create multiple versions of the same script. One script per experiment.
+- Update CLAUDE.md if your analysis reveals new insights.
+- Delete __pycache__ directories before finishing.
 - DO NOT touch run.sh or FOCUS_QUEUE.md
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
@@ -243,7 +270,8 @@ LOGFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.log"
 JSONFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.json"
 TMPFILE=$(mktemp)
 ASSISTFILE=$(mktemp)
-PROPOSALS_FILE="./archive/proposals_latest.md"
+PROPOSALS_FILE="./archive/ephemeral/proposals_latest.md"
+CRITIQUE_FILE="./archive/ephemeral/critique_latest.md"
 trap 'rm -f "$TMPFILE" "$ASSISTFILE"' EXIT
 
 echo "Human-readable log: $LOGFILE"
@@ -298,6 +326,13 @@ while true; do
             CURRENT_PROMPT="$PROMPT_CRITIQUE"
             ;;
     esac
+
+    # Tell the agent to persist the next run number before it finishes
+    CURRENT_PROMPT="$CURRENT_PROMPT
+
+# STATE: When you finish your work, run this command BEFORE your final message:
+#   echo $((RUN + 1)) > .run_state
+# This saves progress so the next ./run.sh invocation resumes at the correct run."
 
     echo ""
     echo "============================================================"

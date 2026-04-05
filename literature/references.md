@@ -97,6 +97,21 @@ First formalization of natural proof barriers for linear circuit complexity. Sho
 **Chen, L.; Tal, A.; Wang, Y.** "Super-Quadratic Lower Bounds for Depth-2 Linear Threshold Circuits." ECCC TR26-039, March 2026. [ECCC](https://eccc.weizmann.ac.il/report/2026/039/)
 Function in E^NP requiring n^{2.5-eps}-size THR-of-THR circuits. Strongest known lower bound for depth-2 linear threshold model.
 
+**Rossman, B.** "Riffle Rank." Preprint, May 2025. [PDF](https://users.cs.duke.edu/~br148/riffle-rank.pdf)
+New tensor complexity measure on even-order tensors. Lower bounds on riffle rank of identity tensor would separate VNC^1 from VBP. Algebraic circuits only, not Boolean.
+
+**Chukhin, Kulikov, Mihajlin, Smirnova.** "Conditional Complexity Hardness Results." ECCC TR25-038, April 2025. [ECCC](https://eccc.weizmann.ac.il/report/2025/038/)
+Under NSETH assumptions, constructs explicit tensors with superlinear rank and monotone circuit lower bounds. Conditional, not unconditional.
+
+**Kelley, Z.; Lovett, S.; Meka, R.** "Explicit Separations between Randomized and Deterministic Number-on-Forehead Communication." STOC 2024. [ACM](https://dl.acm.org/doi/pdf/10.1145/3618260.3649721)
+First explicit 3-player function with O(1)-bit randomized but Omega(log^{1/3}(N)) deterministic NOF complexity. Most methodologically relevant recent advance for NOF lower bounds.
+
+**Improved NOF Sifting.** arXiv:2505.01587, May 2025.
+Improves KLM'24 lower bound from Omega(log^{1/3}) to Omega(log^{1/2}) via better grid-norm sifting. Shows weak one-sided pseudorandomness suffices for discrepancy bounds.
+
+**Communication complexity from information causality.** arXiv:2602.10206, February 2026. [arXiv](https://arxiv.org/abs/2602.10206)
+New information-theoretic framework for one-way communication complexity lower bounds. Potentially relevant to communication rank of prime counting (Session 17 result: rank(π_N) = 2^{N/2-1}+2).
+
 ---
 
 ## 3. Exact Formulas for Primes
@@ -235,6 +250,9 @@ Sparse prime-indexed Fourier series from sopfr(n). Exact decomposition of summat
 **Li, Z.** "Deterministic Fractal Set from Prime Number Sequence." arXiv:2603.00658, February 2026. [arXiv](https://arxiv.org/abs/2603.00658)
 Cantor-like fractal from primes mod 16 with universal Hausdorff dimension 1/4, independent of specific prime residue sequence.
 
+**Valley Scanner Algorithm.** arXiv:2512.09960, December 2025. [arXiv](https://arxiv.org/abs/2512.09960)
+New geometry-driven method for locating zeta zeros without Gram points or bracketing. Uses real-to-complex conversion and tracks minima of |Z(t)|. Tested up to t ~ 10^20.
+
 ---
 
 ## 6. 2024-2026 Breakthroughs
@@ -263,6 +281,15 @@ First poly-time algorithm for learning ROD polynomials; first NC algorithm for p
 **Pain, J.-C.** "Three expressions of the n-th prime number." arXiv:2601.18816, Jan 2026.
 Formal/exact expressions via Mobius, von Mangoldt, survival dynamics. NOT computational algorithms.
 
+**Lamzouri, Y.** "An effective Linear Independence conjecture for the zeros of the Riemann zeta function and applications." arXiv:2311.04860, November 2023; revised May 2024. [arXiv](https://arxiv.org/abs/2311.04860)
+Formulates effective version of the Linear Independence conjecture for zeta zero ordinates using heuristics from linear forms in logarithms (Lang-Waldschmidt). Under this conjecture: obtains best-possible Omega results for the error in PNT (matching Montgomery's conjecture), and conditionally resolves part of Gonek's conjecture on Mobius summatory function: M(x) = Omega_pm(sqrt(x) * (log log log x)^{5/4}). Relevant: strengthens understanding of oscillatory contributions that encode delta(n); if zeta zeros are linearly independent (over Q), no finite linear combination of zero contributions vanishes, blocking shortcuts via partial zero sums.
+
+**Brandt, N.** "Lower Bounds for Levin-Kolmogorov Complexity." TCC 2024; ePrint 2024/687. [arXiv](https://eprint.iacr.org/2024/687)
+Proves unconditionally that MKtP (decisional Levin-Kolmogorov complexity) cannot be decided in deterministic linear time. For RAM models with linear-time universal simulation, obtains quadratic lower bound: MKtP not in DTIME[O(n^2)]. Novel diagonalization technique that bypasses algebrization and natural proofs barriers. Relevant: MKtP is closely connected to prime detection complexity; stronger lower bounds via this approach could eventually constrain pi(x) computation, and the technique itself avoids the barriers that block proving primes hard.
+
+**Elimelech, R.; David, O.; De la Cruz Mengual, C.; Kalisch, R.; Berndt, W.; Shalyt, M.; Silberstein, M.; Hadad, Y.; Kaminer, I.** "Algorithm-assisted discovery of an intrinsic order among mathematical constants." PNAS 121(25), 2024; arXiv:2308.11829. [PNAS](https://www.pnas.org/doi/abs/10.1073/pnas.2321440121) [arXiv](https://arxiv.org/abs/2308.11829)
+Massively parallel algorithm discovering unprecedented number of continued fraction formulas for fundamental constants. Unveiled the Conservative Matrix Field (CMF) -- a novel structure relating constants through continued fractions analogous to conservative vector fields. CMFs provide a powerful framework for generating irrationality proofs. Relevant: the CMF framework extends PSLQ-type integer relation detection to structured families of continued fractions; could potentially be applied to search for identities involving zeta-zero-related constants, though no prime-counting connections found.
+
 ---
 
 ## 7. Quantum Computing
@@ -283,11 +310,32 @@ Information content of prime sequence exceeds any learnable pattern. Explains wh
 **Prime classification with sparse encoding.** arXiv:2402.03363, 2024 (WITHDRAWN).
 ResNet + Transformer for prime/non-prime classification. ~99% recall, never 100%. Withdrawn by authors.
 
+**Kolpakov, A.; Rocke, A.** "Machine Learning of the Prime Distribution." arXiv:2403.12588, March 2024; PLOS ONE, September 2024. [arXiv](https://arxiv.org/abs/2403.12588) [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC11432912/)
+Uses maximum entropy methods to derive theorems in probabilistic number theory (Hardy-Ramanujan Theorem). Provides theoretical argument explaining Yang-Hui He's observations about learnability of primes. Argues Erdos-Kac law would very unlikely be discovered by current ML. Confirms ML learns the smooth part of prime distribution but NOT the oscillatory correction.
+
 **AI in Number Theory: LLMs for Algorithm Generation.** arXiv:2504.19451, April 2025. [arXiv](https://arxiv.org/abs/2504.19451)
 Qwen2.5-Math-7B achieves >= 0.95 accuracy on algorithmic number theory tasks with optimal hints. LightGBM classifier achieves >= 93.9% accuracy identifying Dirichlet character modulus from L-function zeros.
 
 **Google DeepMind.** "AlphaEvolve: A Gemini-Powered Coding Agent for Designing Advanced Algorithms." arXiv:2506.13131, 2025. [arXiv](https://arxiv.org/abs/2506.13131)
 Evolutionary algorithm discovery: 4x4 matrix multiplication in 48 scalar ops (breaking Strassen), improved solutions on 50+ open problems. Not yet applied to prime computation.
+
+**Google DeepMind.** "Towards Autonomous Mathematics Research" (Aletheia). arXiv:2602.10177, February 2026. [arXiv](https://arxiv.org/abs/2602.10177)
+AI research agent (Gemini Deep Think) with Generator/Verifier/Reviser subagents. Autonomous solutions to 4 open Erdos problems. Generated research paper on eigenweights in arithmetic geometry without human intervention. 95.1% on IMO-ProofBench. No application to prime counting algorithms.
+
+**Gauthier, T.; Urban, J.** "Learning Conjecturing from Scratch." arXiv:2503.01389, March 2025. [arXiv](https://arxiv.org/abs/2503.01389)
+Self-learning system for generating induction predicates on 16,197 OEIS-derived problems. Neural translator in feedback loop with Z3 prover. Solved 5,565 problems vs 2,265 by CVC5/Vampire/Z3 baselines. Relevant approach: automated conjecture generation from integer sequences could potentially discover prime-related identities, though no prime results reported.
+
+**Beit-Halachmi, I.; Kaminer, I.** "The Ramanujan Library -- Automated Discovery on the Hypergraph of Integer Relations." arXiv:2412.12361, December 2024; ICLR 2025. [arXiv](https://arxiv.org/abs/2412.12361)
+Hypergraph representation of mathematical constants (nodes) and formulas (edges). Uses PSLQ algorithm to discover 75 previously unknown connections between constants, including new formulas for pi, ln(2), and relations generalizing century-old Ramanujan pi-e formula. Open-source API. No prime-counting or zeta-related discoveries, but the PSLQ framework could be applied to search for identities involving pi(x) corrections.
+
+**Shalyt, M.; Seligmann, U.; Beit-Halachmi, I.; David, O.; Elimelech, R.; Kaminer, I.** "Unsupervised Discovery of Formulas for Mathematical Constants." arXiv:2412.16818, December 2024; NeurIPS 2024. [arXiv](https://arxiv.org/abs/2412.16818)
+Key innovation: convergence-dynamics-based distance metric for formula discovery (traditional numerical precision fails since near-true formulas give no signal). Tested on 1,768,900 Polynomial Continued Fraction formulas; discovered novel formulas for pi, ln(2), Gauss' constant, Lemniscate constant. Revealed patterns enabling generalization to infinite families. Paradigm of using convergence dynamics rather than endpoint values could potentially apply to discovering prime correction formulas.
+
+**Nakasho, K.** "IntSeqBERT: Learning Arithmetic Structure in OEIS via Modulo-Spectrum Embeddings." arXiv:2603.05556, March 2026. [arXiv](https://arxiv.org/abs/2603.05556)
+Dual-stream Transformer (91.5M params) encoding OEIS sequences via log-scale magnitude + sin/cos modulo embeddings (moduli 2-101), fused via FiLM. CRT-based solver converts probabilistic predictions to integers with 7.4x improvement over tokenized baselines (Top-1: 19.09% vs 2.59%). Strong negative correlation between information gain and Euler's totient ratio suggests composite moduli capture arithmetic structure more efficiently. Potentially applicable to predicting prime-related sequences modularly.
+
+**Moreira, W.; Stubbs, J.** "Sequencelib: A Computational Platform for Formalizing the OEIS in Lean." arXiv:2601.11757, January 2026. [arXiv](https://arxiv.org/abs/2601.11757)
+Formalized 25,000+ OEIS sequences in Lean 4, proved 1.6M theorems about their values. Includes SML-to-Lean transpiler. Infrastructure for automated conjecture verification on integer sequences.
 
 ---
 
@@ -366,6 +414,12 @@ Reduces ideal primality testing to Sigma_3^p ∩ Pi_3^p (under GRH). About IDEAL
 **Craig, W.; van Ittersum, J.-W.; Ono, K.** "Integer partitions detect the primes." PNAS 121(39), 2024. arXiv:2405.06451.
 Proves primes are solutions to infinitely many Diophantine equations in MacMahon partition functions. n>=2 prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0. Runner-up 2025 Cozzarelli Prize. Beautiful but computationally worse than BPSW (requires divisor computation, O(n²) per test).
 
+**Harper, A.; Xu, M. W.; Wang, V.; Soundararajan, K.** "Prime distribution via Gaussian multiplicative chaos and random fractal measures." Announced September 2025 conference.
+Harper proved that statistics of zeta function zeros are captured by random fractal measures (Gaussian multiplicative chaos). Xu-Wang (2025) verified Harper's conjecture that GMC gives a better prime counting formula than Riemann's in the "beyond sqrt(x) barrier" transition interval [x, x+y]. In the transition regime, the exact mix of randomness and chaos is computable. The statistics revert to pure randomness for sufficiently small intervals. CAVEAT: This is about distributional statistics of primes, not exact computation. Does not provide a new algorithm for pi(x), but characterizes the information-theoretic structure of the oscillatory correction.
+
+**Connes, A.; Consani, C.; Moscovici, H.** "Zeta zeros and prolate wave operators." arXiv:2310.18423, October 2023 (revised May 2024). [arXiv](https://arxiv.org/abs/2310.18423)
+Introduces semilocal analogue of the prolate wave operator for spectral realization of zeta zeros. Positive spectrum captures low-lying zeros; negative spectrum (Sonin space) captures ultraviolet behavior. Operator is sum of squared scaling operator with grading of orthogonal polynomials. Extends to semilocal case via metaplectic representation of SL(2,R). Purely theoretical framework; no computational implications for prime counting. Relevant to Berry-Keating / Hilbert-Polya direction.
+
 **Gafni, A.; Tao, T.** "Rough numbers between consecutive primes." arXiv:2508.06463, August 2025.
 Almost all prime gaps contain a rough number with lpf ≥ gap length. Confirms Erdős conjecture (problem #682). Number of exceptions ≤ O(X/log² X). Gap structure, not counting.
 
@@ -375,5 +429,35 @@ Deborders Andrews-Forbes STOC 2022 result: for f in determinantal ideal with pol
 **Vijayaraghavan, T. C.** "The Complexity of Logarithmic Space Bounded Counting Classes." arXiv:2507.23563, December 2025.
 Comprehensive textbook on GapL and related classes. Standard GapL theory. No new results on counting primes.
 
-Generated: 2026-04-04 (updated Session 17)
-Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md
+**Dwivedi, P.; Pago, B.; Seppelt, T.** "Lower Bounds in Algebraic Complexity via Symmetry and Homomorphism Polynomials." STOC 2026. [STOC](https://acm-stoc.org/stoc2026/accepted-papers.html)
+New algebraic circuit lower bounds via symmetry. Relevant to determinantal/algebraic complexity of pi(x).
+
+**Saraf, S.; Shringi, D.; Varadarajan, N.** "Reconstruction of Depth-3 Arithmetic Circuits with Constant Top Fan-in." STOC 2026.
+Arithmetic circuit reconstruction. Relevant to understanding structure of bounded-depth arithmetic circuits.
+
+**Grochow, J. A.** "Polynomial Identity Testing and the Ideal Proof System." STOC 2026.
+Connects PIT to algebraic proof complexity. Foundational for algebraic circuit complexity.
+
+**Alman, J.; Duan, R.; et al.** "More Asymmetry Yields Faster Matrix Multiplication." SODA 2025. arXiv:2404.16349. [arXiv](https://arxiv.org/abs/2404.16349)
+New bound omega < 2.371339 (from 2.371552). Builds on Duan-Wu-Zhou FOCS 2023 and Vassilevska Williams-Xu-Xu-Zhou SODA 2024. Circumvents Schonhage tau theorem via asymmetric analysis. Relevant to any matrix-based approach to pi(x).
+
+**Tao, T.; Trudgian, T.; Yang, A.** "New exponent pairs and zero density estimates via ANTEDB." arXiv:2501.16779, January 2025. [ANTEDB](https://teorth.github.io/expdb/)
+Living database + Python optimizer for automated derivation of exponent pairs, zero density estimates, and zero additive energy estimates. Found 4 new exponent pairs and improved multiple zero density bounds through automated optimization. Most actionable new tool for systematically checking whether cascading known results yields better pi(x) complexity.
+
+**Goldston, D.; Lee, Y.; Schettler, J.; Suriajaya, A.** "PCC implies 100% critical zeros." arXiv:2503.15449 (Part I, March 2025), arXiv:2507.06823 (Part II, July 2025), arXiv:2511.20059 (November 2025).
+Using "horizontal multiplicity" technique, PCC alone (without RH) implies asymptotically 100% of zeta zeros are simple and on the critical line. First time PCC yields horizontal distribution. Simplifies conditional analytic pi(x) framework but doesn't help compute zeros.
+
+**Hardy, O.; Xu, M. W.** "Helson's conjecture for smooth numbers." arXiv:2511.03430, November 2025.
+Random multiplicative function sums over y-smooth numbers have beyond-sqrt cancellation, uniformly for (log x)^30 ≤ y ≤ x. Structural insight about smooth number sums; potentially relevant to smooth/rough decomposition in analytic pi(x) methods.
+
+**Ferrari, M.; Hainry, E.; Pechoux, R.; Silva, R.** "Quantum Programming in Polylogarithmic Time." arXiv:2507.15415, July 2025. MFCS 2025.
+First characterization of FBQPOLYLOG (functions computable in quantum polylog time). Proves FBQPOLYLOG strictly contained in QNC. Formal target class for impossibility results about quantum prime counting.
+
+**Kuznetsov, A.** "Simple and accurate approximations to the Riemann zeta function." arXiv:2503.09519, March 2025.
+Elementary function replacements for Riemann-Siegel remainder + precomputed Gaussian quadrature. Reduces constants in zeta evaluation, not asymptotics.
+
+**Orellana Real, C.** "Valley scanner for zeta zeros." arXiv:2512.09960, December 2025.
+Mountain-valley geometry approach to Hardy Z-function, replacing Gram-point bracketing. Cloud-based (AWS EC2), reaches height t ~ 10^20. New computational paradigm for individual zero finding.
+
+Generated: 2026-04-05 (updated Session 29 internet search)
+Sources: FINDINGS.md, all_known_exact_formulas.md, arithmetic_pi_formula.md, combinatorial_formulas.md, recursive_formulas.md, prunescu_shunia_formula.md, complexity_of_primes.md, latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md, session29_internet_search
