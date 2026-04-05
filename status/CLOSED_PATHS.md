@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (525+ Approaches)
+# Closed Paths: Master Lookup (531+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-40, 197+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -97,6 +97,8 @@ Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
 | Randomized inclusion-exclusion for pi(x) | FAIL | I | Random subset sampling: std ~2^k/√(samples). For x=500 (k=8), need ~370K samples vs 256 full IE terms. Variance reduction impossible — randomization makes IE strictly worse. | 36 |
 | Convolution sieve via polynomial NTT | FAIL | E | Π_{p≤B}(1-z^p) mod z^{x+1}: each factor sparse (2 terms) but π(B) factors give O(π(B)·x log x) total ~ O(x^{3/2}/log x), worse than Meissel-Lehmer. Evaluation at roots of unity gives Ramanujan sums, no new info. | 36 |
 | Redheffer/Mertens matrix | FAIL | E | O(x^{2/3}) same as pi(x) | 8 |
+| Transfer matrix sieve (matrix exponentiation) | FAIL | E | State space = lcm(primes up to sqrt(x)) ~ exp(sqrt(x)). Even blocking into manageable chunks: total work ~ 10^100 vs ML's 10^67 for x=10^100. Depth-k sieve with k>2 just reinvents Meissel-Lehmer. | 40 |
+| Multiplicative convolution shortcut (Dirichlet) | FAIL | E | psi(x)=-sum mu(d)ln(d)floor(x/d) is exact but O(sqrt(x)) via hyperbola. Floor function breaks Euler product factorization. Infinite series factorizes but finite truncation does not. | 40 |
 | Wheel factorization | PARTIAL | - | Constant factor only, NOT complexity class | 8 |
 | Hierarchical decomposition | FAIL | E | Legendre tree depth = pi(sqrt(x)) | 7 |
 | Buchstab tree pruning/memo | FAIL | E | Memoized Buchstab IS Lucy DP; O(x^{3/4}) distinct args, O(x^{2/3}) with DR | 11 |
@@ -180,6 +182,7 @@ Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
 | Iterative maps (x+ln(x)+...) | FAIL | I | 4% exact at best | 6 |
 | Rowland acceleration | FAIL | E | O(p^2) | 4 |
 | Deterministic gap recurrence (7 variants) | FAIL | I | <25% accuracy, 5.04 bits/prime entropy | 7 |
+| Ergodic fast-forward of prime gaps | FAIL | I | Positive Lyapunov exponent (lambda=1.06 at step 1), chaotic. R^2<0.006 for linear recurrence up to order 10. Real gaps have HIGHER entropy than Cramér random model. FNN suggests ~9-dim embedding but chaotic dynamics within it. | 40 |
 
 ## Topological / Exotic Mathematics
 
@@ -229,6 +232,9 @@ Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
 | Lucy DP parallel depth | CLOSED | E | DAG depth = pi(sqrt(x)) exactly; fundamentally sequential for S(x). Telescoped (Meissel-Lehmer) gives depth pi(x^{1/3}) but both exponential in N=log(x) | 12 |
 | Lucy DP floor-value mapping commutativity | FAIL | E | Mapping matrices NON-commutative (0 commuting pairs); cannot reorder sieve steps | 12 |
 | pi(x) mod m shortcut (m>2) | FAIL | E | Conditional entropy H(Y|X) = 0.537 bits INVARIANT across all moduli m; no modular shortcut | 12 |
+| Modular residue prediction + CRT reconstruction | FAIL | C+I | p(n) mod q has max entropy for all q>2. Prediction accuracy near random baseline. Cross-correlations near zero. CRT is circular: computing p(n) mod q requires pi(x;q,a) exactly, as hard as pi(x). Primorial wheel (mod 210) shows 19x prediction but only from divisibility constraints, not useful. | 40 |
+| Wavelet/Fourier compression of correction C(x) | FAIL | I | Raw correction appears sparse (DC dominates). Detrended oscillatory part: 99.9% energy needs N^{0.75} coefficients (sublinear but not polylog). 1/f^{1.7} power spectrum. For x=10^100 would still need ~10^{37.5} coefficients. | 40 |
+| Carry-propagation boundary (per-bit difficulty) | FAIL | I | Sharp sigmoid transition at ~60% from MSB: bits 0-7 are 95-100% correct from R^{-1}(n), bits 8-9 are medium (80-90%), bits 10+ are random (50%). Transition width only ~4 bits. No intermediate-difficulty bits to exploit hierarchically. Error ~ p(n)^{0.66}. | 40 |
 | Floor-value linear algebra | FAIL | E | Transformation is full-rank (~80% nonzero coeffs), massive cancellation (|coeffs| >> pi(x)); no compression | 12 |
 | Meissel-Lehmer as NC circuit | FAIL | E | Depth O(log log x) = O(log N) but width O(x^{2/3}) = O(2^{2N/3}); exponential size in input | 12 |
 | TG kernel for exact pi(x) | FAIL | I | arXiv:2506.22634 DEBUNKED: violates uncertainty principle, omits x^{1/2} factor, kernel too wide to resolve primes. AI-generated paper with errors. Authors (Kilictas/Alpay) have no number theory background; Alpay publicly admits uploading arxiv papers to influence LLM training data (Medium, July 2025). Zero citations, no peer review. | 12,30 |

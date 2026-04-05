@@ -1102,3 +1102,51 @@ Key findings:
 (f) **Assessment:** The project has exhausted all experimentally accessible directions. The
     remaining question (#TC^0 ⊆ NC) is purely complexity-theoretic with no known experimental
     attack. Future sessions should focus on literature monitoring and engineering improvements.
+
+
+---
+
+## Session 40: Fresh Perspective (2026-04-05)
+
+**Theme:** First-principles attack, 6 new experiments testing unconventional ideas.
+
+### Experiments Run
+1. **Transfer Matrix Sieve** — Encode sieve as matrix product, use repeated squaring.
+   FAIL (E): State space = lcm(primes) ~ exp(sqrt(x)), worse than Meissel-Lehmer.
+
+2. **Wavelet/Fourier Compression** — Is C(x) = pi(x) - li(x) sparse in wavelet basis?
+   FAIL (I): Raw signal appears sparse (DC dominates), but detrended oscillatory part needs
+   N^{0.75} coefficients. Power spectrum consistently f^{-1.7}. Sublinear but not polylog.
+
+3. **Modular Residue Prediction** — Can p(n) mod q be predicted for CRT reconstruction?
+   FAIL (C+I): Near-max entropy for all q>2. CRT is circular. Interesting: mod 210 shows
+   19x prediction accuracy due to primorial wheel, but this is just divisibility constraints.
+
+4. **Carry-Propagation Boundary** — Map bit-by-bit difficulty of p(n) vs R^{-1}(n).
+   FAIL (I): **Novel measurement.** Sharp sigmoid transition: bits 0-7 EASY (95-100%),
+   bits 8-9 MEDIUM (80-90%), bits 10+ RANDOM (50%). Transition width only ~4 bits.
+   Error ~ p(n)^{0.66}. No intermediate-difficulty bits to exploit hierarchically.
+
+5. **Ergodic Fast-Forward** — Model prime gaps as dynamical system, test fast-forwardability.
+   FAIL (I): Positive Lyapunov exponent (chaotic). R^2 < 0.006 for linear recurrence.
+   Real gaps have HIGHER entropy than Cramér random model at short range (surprising).
+
+6. **Multiplicative Convolution Shortcut** — Express pi(x) as factored Dirichlet convolution.
+   FAIL (E): Reduces to hyperbola method O(sqrt(x)). Floor function breaks multiplicativity.
+
+### Key Insights
+(a) **Carry propagation boundary** is the most novel measurement: the easy-to-hard transition
+    in binary representation of p(n) is a ~4-bit-wide sigmoid at ~60% of bit positions.
+    This quantifies exactly how R^{-1}(n) fails: it gets all MSBs right but the transition
+    to random is sharp, leaving no room for hierarchical bit recovery.
+
+(b) **Wavelet compression scaling N^{0.75}** is between sparse and dense. The 1/f^{1.7}
+    spectrum means the correction has MORE structure than white noise (which would be N^1)
+    but far less than what polylog requires (N^0 or N^epsilon).
+
+(c) **Prime gaps are more chaotic than Cramér model** at short range (higher conditional
+    entropy at order 3). This is a minor finding but consistent with the pseudorandomness
+    results from S35.
+
+(d) **6 approaches closed, ~531 total.** No breakthrough. All fresh-perspective ideas
+    reduce to known barriers within 1-2 steps of analysis.
