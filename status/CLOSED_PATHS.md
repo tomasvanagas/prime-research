@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (641+ Approaches)
+# Closed Paths: Master Lookup (655+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -22,6 +22,8 @@ Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 | DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
 | Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
 | Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
 | Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
 | Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
 | Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
@@ -89,6 +91,10 @@ Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 | Approach | Verdict | Mode | Key Finding | Session |
 |----------|---------|------|-------------|---------|
 | Sieve weights formula | FAIL | I | Parity barrier (Selberg) | 4 |
+| Batch Möbius sieve (recursive halving phi) | FAIL | E | Split prime set in half at each recursion level. Tree depth O(log(pi(√x))) but branching 2^{half_size}. Total leaves = 2^{pi(√x)} same as unpruned standard tree. At x=10^4, 30x slower than Lucy_Hedgehog despite pruning 64% of terms. Branching at x=10^6 would be 2^84 ~ 10^25. Mathematically identical to standard IE, just reordered. | 36 |
+| Automata digit DP prime counting | FAIL | I | Product DFA for B-rough numbers: O(M·log x) via digit DP where M=primorial(B). Timing: M=210 at x=10^6 in 6ms, M=30030 at x=10^8 in 0.9s. DFA provably minimal (all M states distinguishable). Gap: at B=13, false positives ≈ true primes. Need B≥√x → M=e^{√x} states. | 36 |
+| Randomized inclusion-exclusion for pi(x) | FAIL | I | Random subset sampling: std ~2^k/√(samples). For x=500 (k=8), need ~370K samples vs 256 full IE terms. Variance reduction impossible — randomization makes IE strictly worse. | 36 |
+| Convolution sieve via polynomial NTT | FAIL | E | Π_{p≤B}(1-z^p) mod z^{x+1}: each factor sparse (2 terms) but π(B) factors give O(π(B)·x log x) total ~ O(x^{3/2}/log x), worse than Meissel-Lehmer. Evaluation at roots of unity gives Ramanujan sums, no new info. | 36 |
 | Redheffer/Mertens matrix | FAIL | E | O(x^{2/3}) same as pi(x) | 8 |
 | Wheel factorization | PARTIAL | - | Constant factor only, NOT complexity class | 8 |
 | Hierarchical decomposition | FAIL | E | Legendre tree depth = pi(sqrt(x)) | 7 |
@@ -196,6 +202,7 @@ Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 | Approach | Verdict | Mode | Key Finding | Session |
 |----------|---------|------|-------------|---------|
 | Levin universal search (AIT) | FAIL | I | K(p(n)|n) >= 0.5*log2(n) bits | 7 |
+| Local-to-global reconstruction of pi(x) | FAIL | I | E(x)=pi(x)-Li(x) has only O(log x) bits — NO info-theoretic barrier to polylog. But O(log x) bits encoded across ~x^{1/2} GUE-random zero contributions via massive cancellation. Error autocorr=0.996 at lag 1 (helps adjacent queries only). Barrier is COMPUTATIONAL not informational. | 36 |
 | Busy Beaver connection | FAIL | - | Wrong hierarchy (computability vs complexity) | 7 |
 | Curry-Howard type theory | FAIL | - | Proof = algorithm, no gap to exploit | 7 |
 | SNARG/STARK verification | PARTIAL | - | 50K ops verify but 10^68 to COMPUTE | 7 |
@@ -553,6 +560,7 @@ Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 | Holonomic (D-finite) recurrence for pi(n) | FAIL | I | NOT holonomic for any order d≤20 with polynomial degree r≤8. Test/random ratio ~1.0-1.7 across all (d,r). Stronger than "not LRS" (Session 14) — polynomial coefficients don't help either | 23 |
 | Prime indicator holonomic | FAIL | I | Prime indicator (delta pi(n)) NOT holonomic. Same ratio to random as pi(n) itself | 23 |
 | Ono partition characterization (p-adic lift) | FAIL | C+E | M_k(n) DP has O(n^2) ops — WORSE than O(x^{2/3}). Modular version same op count, only bounded values. Ono criterion mod l gives 46-72% accuracy (near random). Ramanujan congruences special cases only | 23 |
+| Ono partition criterion (GF approach) | FAIL | E | M₁(n) via divisor-partition convolution: O(n^{3/2}). Direct enumeration: O(exp(π√(2n/3))). Both worse than Meissel-Lehmer O(x^{2/3}). Partition functions inherently require O(n) terms minimum. | 36 |
 | Short-interval explicit formula iteration | FAIL | E | Each round needs K_i ~ K_1 zeros (sinc envelope gives x/W cutoff). Iteration does NOT reduce zero count. Hybrid optimum at W=sqrt(x) gives O(sqrt(x)*polylog) — matching known best | 23 |
 | Approx degree of isPrime over GF(p) | PARTIAL | E | GF(2/3): trivial deg 0 for N≥8 (prime density < 1/(2p)). GF(5): deg grows ~2N/3 up to N=12, then full N at N=14. GF(7): similar. Linear growth CONSISTENT with ∉ACC^0 but only upper bounds (ANF truncation). Razborov-Smolensky breaks down for sparse functions | 23 |
 | Real-valued approx degree of chi_P (polynomial method) | CLOSED | I | adeg_0.49(chi_P) = ceil(N/2) for N=4..11 (LP-verified). Power-law fit: 0.601*N^0.909 = Theta(N). adeg(pi(x)) = adeg(chi_P) exactly. Error = 0.5 for deg < N/2, then exponential drop (phase transition). Promise version (coprime to 2,3,5) reduces by only 1-2 degrees. Quantum lower bound: Q(chi_P) >= N/4 queries. SOS degree = adeg. PARITY-like, not MAJORITY-like. See experiments/circuit_complexity/approx_degree_prime_results.md | 28 |
@@ -642,3 +650,11 @@ Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 | Dequantized Grover counting for pi(x) | FAIL | I | Tang 2024/Chia 2025 dequantization requires low-rank input. Prime indicator has adeg=N/2, comm rank=2^{N/2-1}+2 — full-rank. Truncated Möbius sums diverge. Sampling variance O(x²/S). Hyperbola=known O(√x). See experiments/proposals/proposal18_dequantized_grover_count.py | 33 |
 | PSLQ/LLL on delta(n) (Ramanujan Library) | FAIL | I | delta(n) range [-130,102], std~33, lag-1 autocorr 0.95. PSLQ finds DIFFERENT relations per n (no universal formula). No recurrence order 1-6. No modular patterns. Best basis RMSE=31. 7th PSLQ/identity variant tested. See experiments/proposals/proposal19_ramanujan_library_delta.py | 33 |
 | Étale cohomology point-counting for pi(x) | FAIL | C+E | Grothendieck-Lefschetz is polylog for FIXED variety, but encoding pi(x) needs unbounded dimension. Frobenius eigenvalues = zeta zeros. Character sums cost O(x). Hasse-Weil gives enough bits but each costs O(x^{2/3}). EC trace correlation 0.39 — too weak. 3rd algebraic geometry variant tested. See experiments/proposals/proposal20_etale_cohomology_count.py | 33 |
+| MKtP / meta-complexity framework | FAIL | E | Kt framework reformulates "Is pi(x) in NC?" as "Is Kt(pi(x)mod2\|x) = O(polylog)?" — equivalent, not easier. Brandt's MKtP↔circuit lower bounds is GENERIC (any function in E, not pi(x) specifically). Kt(T_N) = O(2^N·N) by sieve regardless of circuit size. No new technique beyond circuit complexity theory. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+| Approximate circuit complexity phase transition | FAIL | I | NO phase transition in rank-k approximation accuracy. Accuracy degrades GRADUALLY (rank-2: 63%, rank-10: 83%, rank-20: 95% at N=14). Errors spatially uniform (CV=0.22-0.25). No "easy core" to exploit for approx-then-correct strategy. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+| Truth table compressibility for pi(x) | FAIL | I | 2.6x more compressible than random at N=20 (gzip 0.385 vs 1.0) but only LOCAL structure (prime sparsity creates runs). Block entropy → max at all scales. Shannon entropy → 1.0 bit/entry. Doesn't imply small circuits. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+| GF(2) SLP / common subexpression analysis | FAIL | I | ANF sparsity EXACTLY 0.50 (random). CSE savings 50-66% = SAME as random functions. SLP length Θ(2^N). No GF(2) algebraic compression. Variable frequencies uniform. Monomial patterns at each degree → 0.50. pi(x) mod 2 indistinguishable from random Boolean function in ANF structure. See experiments/circuit_complexity/gf2_slp_structure.py | 35 |
+| Smooth approximation for pi(x) parity | FAIL | I | R(x) accuracy for pi(x) mod 2 → 0.50 (random) as N grows. Smooth part provides ZERO parity information. Top-2 SVs capture only 12% of variance at N=14 (decreasing as 1/N). Parity entirely determined by oscillatory (zeta zero) contributions. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+| Unbalanced communication matrix rank | DIAGNOSTIC | - | For k_LSB > N/2, actual rank EXCEEDS formula 2^{min(k,N-k)-1}+2 — often full row rank. Formula only tight for k ≤ N/2. SVD spectrum flat (power-law decay, no gap). Each additional SV contributes small equal increment. Polynomial rank for k=2logN but component functions g_i(MSBs) are as hard as pi(x). See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+| Depth-2 threshold circuits for pi(x) LSB | FAIL | I | PTF degree = N/2 exactly (LP-verified N=4-12, ratio 0.50 stable from N=6). Requires C(N,N/2) ~ 2^N/sqrt(N) monomials = EXPONENTIAL. Single LTF accuracy → 0.50 (random). Depth-2 heuristic with k=64 gates fails for N≥8. Matches random function PTF degree (Gotsman 1994). Does NOT rule out poly-depth TC^0. See experiments/circuit_complexity/threshold_circuit_construction.py | 35 |
+| Adelic local-global prime counting (CRT mod q) | FAIL | E | 6th CRT variant. pi(x) mod q via AP decomposition 100-1000x SLOWER than pi(x) direct. R(x) error grows as O(sqrt(x)), mod-q correctness degrades to 0/6 at x=10^6. Liouville/Mertens parity ~50% (random). floor division not a ring homomorphism kills all modular decomposition. 3-6 moduli suffice for CRT but each costs O(x^{2/3}). See experiments/wildcard/adelic_prime_count.py | 35 |

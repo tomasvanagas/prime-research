@@ -68,4 +68,25 @@ The circuit complexity of pi(x) is genuinely unstudied territory.
 
 ---
 
-## Discovered: Session 10, 2026-04-04
+## Quantitative Data (Session 36)
+
+Empirical measurement of E(x) = pi(x) - Li(x):
+
+| x | |E(x)| | bits needed | (log₂ x)² (polylog budget) | ratio |
+|---|--------|-------------|--------------------------|-------|
+| 10³ | 9 | 4.2 | 99 | 4.2% |
+| 10⁴ | 16 | 5.1 | 177 | 2.9% |
+| 10⁵ | 5 | 3.3 | 277 | 1.2% |
+| 10¹⁰⁰ (est.) | ~10⁴⁸ | ~160 | ~110,000 | 0.15% |
+
+E(x) uses **less than 0.15% of the polylog budget** even at x = 10^100.
+The error's autocorrelation at lag 1 is 0.996 — adjacent values nearly identical.
+But this helps only for sequential queries, not single-point computation.
+
+The O(log x) bits are encoded across ~x^{1/2} zeta zero contributions that
+massively cancel. Analogous to Σ cos(kθ) = closed form: can the zero sum
+Σ_ρ R(x^ρ) be collapsed similarly?
+
+---
+
+## Discovered: Session 10, 2026-04-04. Quantified: Session 36, 2026-04-05.

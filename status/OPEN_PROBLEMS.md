@@ -1,10 +1,15 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-05 (Session 29)
+Last updated: 2026-04-05 (Session 36)
 
 These are the ONLY directions not yet proven closed. Everything else has been
-tested (591+ approaches across 27 sessions) and confirmed to hit one of three
+tested (655+ approaches across 36 sessions) and confirmed to hit one of three
 failure modes: Circularity, Equivalence, or Information Loss.
+
+**Session 36 key insight:** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
+well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
+a sum of ~x^{1/2} cancelling terms), not information-theoretic. This reframes the problem:
+find algebraic structure in the zero sum enabling bulk cancellation.
 
 ---
 
@@ -160,20 +165,21 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 
 ---
 
-## Priority Assessment (updated Session 31)
+## Priority Assessment (updated Session 35)
 
 | Direction | Feasibility | Impact | Recommended Effort |
 |-----------|-------------|--------|-------------------|
-| #TC^0 ⊆ NC? | Low | Maximal | THE key question. **S31: tensor rank, discrepancy, gamma-2, BDD, F_2 correlation ALL computed.** Tensor rank ~ 2^{N/2} (same as comm rank). Discrepancy HIGH (no lower bound). All 15+ measures confirm N/2 universality. **All "natural" combinatorial measures now exhausted.** Need non-natural methods or conditional lower bounds (Brandt MKtP framework). |
-| Circuit complexity | Low | High | All sieve-based TC^0/NC paths closed. BPSW-in-TC^0 conditional. S31 closes discrepancy, gamma-2, BDD, sign-rank approaches. |
+| #TC^0 ⊆ NC? | Low | Maximal | THE key question. **S31: 15+ natural measures ALL give N/2 universality. S35: MKtP framework is reformulation not tool. GF(2) SLP complexity = random. Approximate circuit complexity has NO phase transition.** Every characterization attempted confirms "random-like" behavior. Only SAT-based exact circuit minimization remains untested at scale. |
+| Circuit complexity | Low | High | All sieve-based TC^0/NC paths closed. BPSW-in-TC^0 conditional. S35: meta-complexity framework CLOSED (reformulation). SVD rank-k approximation shows gradual degradation (no easy core). |
 | Determinantal complexity | CLOSED | High | **S17: dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)). Exponential.** |
 | Space-time tradeoff | CLOSED (as impossibility route) | High | **S23: Comm complexity can NEVER give super-polylog. General lower bounds face Natural Proofs barrier.** |
-| Kt complexity | Medium | High | Theoretical exploration |
-| Novel identity | **CLOSED** | Maximal | **S29: 7 experiments (PSLQ, WZ, algebraic constants, LLL, ODE, Volterra). f(x) algebraically independent of all tested bases. No computable identity.** |
-| Zero compressibility | Very Low | Very High | **S25: ALL structural approaches CLOSED** (ratios, PSLQ, DFT, recurrence, mod-constants, sparse matrix). Zeros are GUE-random in every sense tested. |
+| Kt complexity | **CLOSED** (as attack path) | High | **S35: Kt framework reformulates but doesn't solve. Kt(T_N) = O(2^N·N) by sieve regardless of circuit size. Brandt framework too generic.** |
+| Novel identity | **CLOSED** | Maximal | **S29: 7 experiments. f(x) algebraically independent of all tested bases.** |
+| Zero compressibility | Very Low | Very High | **S25: ALL structural approaches CLOSED.** |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
-| Non-sieve pi(x) approach | CLOSED | Maximal | **S16: 15 families closed. S17: Fourier analysis near-random. S23: Not holonomic.** |
-| Proving impossibility | BLOCKED | Maximal | **S23: Proving T >= x^{Omega(1)} is as hard as P != NP (Natural Proofs barrier). Not achievable with current techniques.** |
+| Non-sieve pi(x) approach | CLOSED | Maximal | **S16: 15 families closed. S17: Fourier near-random. S23: Not holonomic.** |
+| Proving impossibility | BLOCKED | Maximal | **S23: Natural Proofs barrier. Not achievable with current techniques.** |
+| GF(2) algebraic structure | **CLOSED** | High | **S35: ANF sparsity = 0.50 (random), SLP savings = same as random, no compression. Fully characterized.** |
 
 **Session 11 closed:** All convergence acceleration methods (Richardson orders 1-10,
 Levin u/t, Weniger delta, smoothed formulas). All alternative decompositions of pi(x)

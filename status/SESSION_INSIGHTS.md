@@ -860,3 +860,123 @@ for p(n) under standard conjectures (GRH, RH, Elliott-Halberstam, Cramér's).
 **8 new closed paths. Total approaches: 641+ across 33 sessions.**
 
 Experiments saved: experiments/analytic/conditional/ (4 scripts + 4 results files)
+
+---
+
+## Session 35
+
+**Focus:** Circuit complexity deep-dive — meta-complexity, approximate circuits, GF(2) SLP analysis.
+
+**5 experiments completed:**
+
+(a) **Approximate circuit complexity — NO phase transition.** Rank-k SVD approximation
+    accuracy for balanced partition increases GRADUALLY: rank-1 → 59%, rank-5 → 73%,
+    rank-10 → 83%, rank-20 → 95% (at N=14). Each singular vector contributes a small,
+    roughly equal increment. No "easy core" vs "hard shell." Errors from degree-2 PTF
+    are spatially uniform (CV = 0.22-0.25). Rules out "approximate then correct" strategies.
+
+(b) **MKtP / meta-complexity framework CLOSED.** Formal analysis: "Is pi(x) in NC?" ≡
+    "Is Kt(pi(x) mod 2 | x) = O(polylog)?" — pure reformulation, no new technique.
+    Brandt's conditional framework connects circuit lower bounds to meta-complexity but
+    for ANY function in E, not pi(x) specifically. Kt(T_N) = O(2^N * N) by sieve
+    regardless of circuit size, so Kt cannot distinguish poly from exponential circuits.
+
+(c) **Smooth approximation is useless for parity.** R(x) accuracy for pi(x) mod 2 → 50%
+    (random) as N grows. Top-2 SVs capture only 12% of variance at N=14 (decreasing as 1/N).
+    The parity of pi(x) is ENTIRELY determined by the oscillatory (zeta zero) part.
+
+(d) **GF(2) SLP complexity = random.** ANF sparsity EXACTLY 0.50 for all N. CSE savings
+    50-66% = SAME as random functions (±1%). SLP length Θ(2^N). Variable frequencies
+    uniform. Monomial fractions at each degree → 0.50. pi(x) mod 2 is indistinguishable
+    from random in ALL GF(2) structural metrics.
+
+(e) **Unbalanced partition rank correction.** Formula rank = 2^{min(k,N-k)-1}+2 confirmed
+    for k ≤ N/2 but UNDERESTIMATES for k > N/2 (often full row rank). Polynomial rank
+    for k = 2*log(N) doesn't help: component functions g_i(MSBs) are as hard as pi(x).
+
+**Threshold gate construction (agent completed):**
+(f) **PTF degree = N/2 exactly** (LP-verified for N=4-12). Ratio degree/N = 0.50 from N=6 onward.
+    This means C(N, N/2) ~ 2^N/sqrt(N) monomials needed for depth-2 threshold circuits —
+    EXPONENTIAL. Single LTF accuracy → 0.50 (random). Matches random function bound (Gotsman 1994).
+    Does NOT rule out poly-depth TC^0 but confirms exponential at depth 2.
+
+**Key session insight:** The pi(x) mod 2 function is random-like in EVERY computable measure:
+ANF sparsity, SLP length, rank-k approximation decay, error geography, block entropy,
+gzip compressibility (approaching random), PTF degree scaling. The function has NO exploitable
+structure beyond what's already captured by the smooth approximation R(x) — which provides
+exactly 0% of parity information.
+
+The MKtP/Brandt framework, last remaining recommended direction from S31, is now closed as
+an attack path. It provides a reformulation equivalent to the circuit complexity question,
+not a new technique.
+
+**SAT circuit minimization (agent running):** N=4 exact = 3 gates. N=5+ exceeds DFS timeout.
+Agent rewriting with improved SAT encoding. Pending completion.
+
+**8 new closed paths. Total approaches: 649+ across 35 sessions.**
+
+Experiments saved: experiments/circuit_complexity/ (4 scripts + 4 results files, 1 more pending)
+
+---
+
+## Session 36 — Fresh Perspective (Analogies from Other Fields)
+
+**Approach:** Start from first principles, ignoring prior closed paths. Draw analogies from
+Shor's algorithm, compressed sensing, fast multipole method, AlphaFold, matrix completion.
+Test 7 genuinely unconventional ideas via 5 parallel agents + main thread.
+
+**Web research findings (2025-2026):**
+- Ono/Craig/van Ittersum 2024: "Integer partitions detect primes" — beautiful but O(exp(√n))
+- Guth/Maynard 2024: New zero density estimates → primes in short intervals x^{17/30}
+- Aggarwal 2025: O(√n·log⁴n) for computing p_n via binary search (arxiv 2510.16285)
+- Green/Sawhney 2024: New prime detection via integer partitions connection
+- NO progress toward polylog in the literature
+
+**7 experiments run (5 agents + 2 main thread):**
+
+(a) **Batch Möbius sieve (recursive halving) CLOSED:** Depth O(log(π(√x))) but branching
+    2^{half_size}. Total work 2^{π(√x)} = same as unpruned standard tree. At x=10^4:
+    30x slower than Lucy_Hedgehog. At x=10^6: branching = 2^84. Reorganizing IE order
+    doesn't reduce total work.
+
+(b) **Automata-theoretic digit DP CLOSED:** Product DFA for B-rough numbers achieves
+    O(primorial(B)·log x). Digit DP verified correct. Timing: M=210 at x=10^6 in 6ms.
+    But DFA provably minimal (all states distinguishable). Need B≥√x → M=e^{√x}.
+    At B=13 (M=30030), false positives ≈ true primes. Exponential state space.
+
+(c) **Adelic local-global CRT (6th variant) CLOSED:** pi(x) mod q via AP decomposition
+    100-1000x slower than pi(x) direct. R(x) error grows O(√x), mod-q correctness
+    degrades. Liouville/Mertens parity ~50% (random). Floor division not ring hom.
+
+(d) **Self-correcting explicit formula CLOSED:** Truncation bias is systematic ~O(N), not
+    random noise. Monotonicity+rounding: max error reduced 50% but accuracy < 3%.
+    Primality correction propagates errors. Autocorrelation > 0.98.
+
+(e) **Ono partition criterion (GF approach) CLOSED:** M₁(n) = Σ d(j)·p(n-j) via
+    divisor-partition convolution. Best: O(n^{3/2}). Direct: O(exp(π√(2n/3))).
+    Both worse than Meissel-Lehmer. Partition functions inherently need O(n) terms.
+
+(f) **Local-to-global reconstruction — KEY FINDING:**
+    E(x) = pi(x) - Li(x) has only **O(log x) bits** of information.
+    At x=10^100: E needs ~160 bits, polylog budget is ~110,000 bits.
+    **NO information-theoretic barrier to polylog!**
+    Barrier is COMPUTATIONAL: O(log x) bits encoded across ~x^{1/2} zero contributions
+    with massive cancellation. Each zero adds < 1 bit net. Error autocorrelation 0.996
+    at lag 1 (helps adjacent queries only, not single-point computation).
+
+(g) **Explicit formula proper convergence CLOSED:** Naive R(x^ρ) summation DIVERGES:
+    error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts
+    cause instability. Only contour integration (Lagarias-Odlyzko) is numerically stable.
+
+**7 new closed paths. Total approaches: 655+ across 36 sessions.**
+
+**Session 36 synthesis:** The fresh perspective confirmed all known barriers but surfaced
+one potentially significant insight: the error term E(x) carries only O(log x) bits, well
+within polylog bounds. The problem is not that pi(x) CONTAINS too much information, but
+that we cannot EXTRACT the O(log x) bits without O(x^{1/2}) computation. This is
+structurally similar to one-way functions: small output, hard to compute. The breakthrough
+(if it exists) must find algebraic structure in the zeta zero sum that enables bulk
+cancellation — analogous to geometric series collapsing many oscillating terms into a
+closed form.
+
+Experiments saved: experiments/wildcard/ (5 new scripts + 5 results files)
