@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (633+ Approaches)
+# Closed Paths: Master Lookup (641+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-32, 185+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-34, 189+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -637,3 +637,8 @@ Last updated: 2026-04-05 (Sessions 1-32, 185+ sub-agents)
 | Schoenfeld interval sieve under RH | FAIL | E | |pi(x)-li(x)|<√x·ln(x)/(8π). Sieve cost O(√x·ln x·ln ln x)=O(x^{1/2+ε}), better than ML O(x^{2/3}) asymptotically but still exponential in input bits. Iterative refinement with 1000 zeros: only 21% error reduction at x=10^6. Need O(√x·log²x) zeros for exactness. See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
 | Cramér search + counting bottleneck | FAIL | E | Walk phase O(ln⁴x) trivial (0-114 steps verified). Counting phase pi(x₀) grows to dominate: 25% at n=5M, heading to 100%. At x=10^100: count=10^66.7 ops vs walk=10^9.5 ops. No conjecture reduces counting below O(x^{1/2+ε}). See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
 | Best conditional algorithm (all conjectures) | FAIL | E | Under RH+Odlyzko-Schönhage: O(x^{1/2+ε}). RH alone with Turing zeros: O(x^{2/3+ε}), WORSE than unconditional. GRH, EH, Cramér all fail to improve beyond O(x^{1/2+ε}). For p(10^100): ~10^51 ops minimum. The √x barrier is fundamental — no standard conjecture breaks it. See experiments/analytic/conditional/best_conditional_algorithm.py | 33 |
+| Spectral truncation / adaptive zero selection | FAIL | E | Select "resonant" zeros (γ·log(x) near kπ). For n<100, 1-2 zeros suffice (small-number artifact). For n≥500, 1000 zeros insufficient. Adaptive selection 41% better than sequential but cannot reduce O(√x) requirement. = reordering explicit formula sum. See experiments/proposals/proposal16_spectral_truncation_bound.py | 33 |
+| p-adic lifting via CRT for pi(x) | FAIL | C+E | CRT works (3-6 primes suffice) but pi(x) mod p costs O(x^{2/3}) per prime. floor(x/d) mod q ≠ floor((x mod q)/(d mod q)) — floor division not a ring homomorphism. 12th CRT variant tested. See experiments/proposals/proposal17_padic_lifting.py | 33 |
+| Dequantized Grover counting for pi(x) | FAIL | I | Tang 2024/Chia 2025 dequantization requires low-rank input. Prime indicator has adeg=N/2, comm rank=2^{N/2-1}+2 — full-rank. Truncated Möbius sums diverge. Sampling variance O(x²/S). Hyperbola=known O(√x). See experiments/proposals/proposal18_dequantized_grover_count.py | 33 |
+| PSLQ/LLL on delta(n) (Ramanujan Library) | FAIL | I | delta(n) range [-130,102], std~33, lag-1 autocorr 0.95. PSLQ finds DIFFERENT relations per n (no universal formula). No recurrence order 1-6. No modular patterns. Best basis RMSE=31. 7th PSLQ/identity variant tested. See experiments/proposals/proposal19_ramanujan_library_delta.py | 33 |
+| Étale cohomology point-counting for pi(x) | FAIL | C+E | Grothendieck-Lefschetz is polylog for FIXED variety, but encoding pi(x) needs unbounded dimension. Frobenius eigenvalues = zeta zeros. Character sums cost O(x). Hasse-Weil gives enough bits but each costs O(x^{2/3}). EC trace correlation 0.39 — too weak. 3rd algebraic geometry variant tested. See experiments/proposals/proposal20_etale_cohomology_count.py | 33 |
