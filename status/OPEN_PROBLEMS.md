@@ -88,7 +88,13 @@ that would prove no fast algorithm exists.
 
 ---
 
-## 3. Zeta Zero Compressibility
+## 3. Zeta Zero Compressibility — CLOSED (Session 36)
+
+**CLOSED.** Session 36 spectral + Kt analysis definitively rules out compressibility:
+- 82% of Fourier modes needed for reconstruction (no sparse representation)
+- Kt complexity grows linearly ~5.58*N (incompressible)
+- No algebraic structure in spectrum
+See `experiments/information_theory/kt_complexity/SYNTHESIS.md` for full evidence.
 
 **Question:** Do the Riemann zeta zeros have exploitable global structure
 that allows fast summation of sum_rho R(x^rho)?
@@ -175,7 +181,7 @@ the zero sum entirely. The least likely to succeed but highest impact if found.
 | Space-time tradeoff | CLOSED (as impossibility route) | High | **S23: Comm complexity can NEVER give super-polylog. General lower bounds face Natural Proofs barrier.** |
 | Kt complexity | **CLOSED** (as attack path) | High | **S35: Kt framework reformulates but doesn't solve. Kt(T_N) = O(2^N·N) by sieve regardless of circuit size. Brandt framework too generic.** |
 | Novel identity | **CLOSED** | Maximal | **S29: 7 experiments. f(x) algebraically independent of all tested bases.** |
-| Zero compressibility | Very Low | Very High | **S25: ALL structural approaches CLOSED.** |
+| Zero compressibility | **CLOSED** | Very High | **S25: ALL structural approaches CLOSED. S36: 82% Fourier modes needed, Kt~5.58*N linear, no algebraic structure. Definitively incompressible.** |
 | Berry-Keating | Very Low | Very High | Literature monitoring |
 | Non-sieve pi(x) approach | CLOSED | Maximal | **S16: 15 families closed. S17: Fourier near-random. S23: Not holonomic.** |
 | Proving impossibility | BLOCKED | Maximal | **S23: Natural Proofs barrier. Not achievable with current techniques.** |

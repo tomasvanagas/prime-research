@@ -910,12 +910,18 @@ The MKtP/Brandt framework, last remaining recommended direction from S31, is now
 an attack path. It provides a reformulation equivalent to the circuit complexity question,
 not a new technique.
 
-**SAT circuit minimization (agent running):** N=4 exact = 3 gates. N=5+ exceeds DFS timeout.
-Agent rewriting with improved SAT encoding. Pending completion.
+**SAT circuit minimization (agent completed):**
+(g) **Circuit size for pi(x) mod 2 matches random functions.** N=4: exact minimum = 6 gates
+    (same as is_prime, random = 5). N=5-8 upper bounds via Shannon decomposition: 12, 39, 81,
+    153 gates (growth ~2x per bit). N=9-10 fell back to DNF synthesis (loose bounds: 2015, 4829).
+    Polynomial fit ~N^9.8, but synthesis gives upper bounds only — true minima likely much smaller.
+    pi(x) mod 2 and random functions have nearly identical circuit sizes at all N tested.
+    No evidence of structural advantage over random. INCONCLUSIVE on exact growth rate due to
+    synthesis limitations, but confirms pseudorandomness thesis at circuit level.
 
-**8 new closed paths. Total approaches: 649+ across 35 sessions.**
+**10 new closed paths. Total approaches: 651+ across 35 sessions.**
 
-Experiments saved: experiments/circuit_complexity/ (4 scripts + 4 results files, 1 more pending)
+Experiments saved: experiments/circuit_complexity/ (5 scripts + 5 results files)
 
 ---
 

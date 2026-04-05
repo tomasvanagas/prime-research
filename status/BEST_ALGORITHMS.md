@@ -112,6 +112,63 @@ better exponent (N/2 vs 2N/3) but worse constants. NEITHER approaches poly(N).
 
 ---
 
+## Approximation Methods
+
+These are **not exact** — they return floating-point estimates. Useful for
+quick estimates and as starting points for exact algorithms.
+
+### Lambert W Prime Formula (V1)
+
+**File:** `algorithms/v1_pade_approximation.py`
+**Complexity:** O(1) per evaluation (single closed-form expression)
+**Type:** APPROXIMATION only
+
+**Formula (polynomial form):**
+```
+p(n) ≈ n * W(n) * (c₀ + c₁/W + c₂/W² + c₃/W³)
+```
+where W = W(n) is the Lambert W function (principal branch).
+
+**Formula (Padé [2,2] form, more accurate):**
+```
+p(n) ≈ n * W(n) * (a₀W² + a₁W + a₂) / (W² + b₁W + b₂)
+```
+
+**Error:**
+- Padé form: ~0.019% mean relative error (n > 50,000)
+- Polynomial form: ~0.028% mean relative error
+
+**Benchmarks (Padé form vs exact):**
+
+| n | Exact | Lambert W | Error |
+|---|-------|-----------|-------|
+| 1,000 | 7,919 | 7,918 | 0.018% |
+| 10,000 | 104,729 | 104,763 | 0.033% |
+| 100,000 | 1,299,709 | 1,299,646 | 0.005% |
+
+Exact match rate (rounded to nearest integer = exact prime): 1.4% for n=55..10,000.
+
+**Comparison with other approximations at p(100,000) = 1,299,709:**
+
+| Method | Estimate | Error |
+|--------|----------|-------|
+| n*ln(n) | 1,151,293 | 11.42% |
+| Cipolla 4-term (1902) | 1,298,620 | 0.084% |
+| **Lambert W K=3** | **1,299,646** | **0.005%** |
+| R^{-1}(n) | 1,299,733 | 0.0019% |
+
+**Lambert W vs R^{-1}(n):**
+- Lambert W is O(1) — a single evaluation with no iteration. Needs only `math` stdlib.
+- R^{-1}(n) is more accurate (~0.003% vs ~0.019%) but requires Newton iteration on the
+  Riemann prime-counting function R(x), and for high precision needs `mpmath`.
+- Both are approximations that give ~50% of digits for very large n.
+- V10's exact mode uses R^{-1}(n) as its starting estimate, then refines via Lucy DP.
+
+The Lambert W basis absorbs the log-log interaction that plagues the classical
+Cipolla double-log expansion, giving ~10x better accuracy at the same truncation order.
+
+---
+
 ## For p(10^100) Specifically
 
 Best known result: R^{-1}(10^100) gives ~50/103 correct digits in 0.32s.

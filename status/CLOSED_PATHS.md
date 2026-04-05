@@ -56,6 +56,7 @@ Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
 | Smoothed explicit formula (psi_k/ln) | FAIL | I | psi(x)/ln(x) loses prime power corrections; error ~10% | 11 |
 | Zero-count scaling analysis | CLOSED | E | N_min scales as x^{0.25-0.37} (power law), not polylog | 11 |
 | Zeta oracle query complexity | CLOSED | E+I | M(x)=Theta(sqrt(x)*log(x)) evals needed; cond(sigma=1/2)=sqrt(x); N(T) is O(1) but positions cost Omega(N(T)); oracle cannot bypass sqrt(x) barrier | 21 |
+| Zeta zero compressibility / exploitable structure | FAIL | I | S36 spectral+Kt analysis: 82% of Fourier modes needed for reconstruction (no sparse representation), Kt complexity grows linearly ~5.58*N (incompressible), no algebraic structure in spectrum. Combined with S25: no rational/linear relations, GUE-random in all measures. Zero sequence is definitively incompressible. See experiments/information_theory/kt_complexity/SYNTHESIS.md | 25,36 |
 
 ## Algebraic / Number Theory / p-adic
 

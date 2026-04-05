@@ -13,8 +13,8 @@ direction from OPEN_PROBLEMS.md. Five experiments were completed (3 fully, 2 via
 1. **Approximate circuit complexity** — Definitive: no phase transition exists
 2. **MKtP / meta-complexity** — Closed as attack path (reformulation only)
 3. **GF(2) SLP analysis** — pi(x) mod 2 matches random in all GF(2) metrics
-4. **SAT circuit minimization** — Running (exact minimum circuit sizes)
-5. **Threshold gate circuits** — Running (TC^0 size measurement)
+4. **SAT circuit minimization** — COMPLETED (circuit size ~N^9.8, matches random functions; N=4 exact = 6 gates; INCONCLUSIVE on growth rate due to synthesis limits)
+5. **Threshold gate circuits** — COMPLETED (PTF degree = N/2 exactly; requires C(N,N/2) ~ 2^N/sqrt(N) gates at depth-2; single LTF accuracy → 0.50; matches random function bound)
 
 ## What the session adds to the barrier picture
 
@@ -32,14 +32,15 @@ COMPLETE across all known structural measures.**
 
 After 35 sessions and 648+ approaches, the only genuinely open directions are:
 
-1. **SAT-based exact circuit size** (running) — Could reveal whether the minimum circuit
-   for pi(x) mod 2 grows polynomially or exponentially. If polynomial, that's evidence
-   for P/poly (though not for uniform poly-time). If exponential, that's strong evidence
-   against polylog algorithms.
+1. **SAT-based exact circuit size** (COMPLETED) — Circuit sizes for pi(x) mod 2 match
+   random functions at all tested N (4-10). Growth ~N^9.8 polynomial fit but synthesis
+   gives loose upper bounds. INCONCLUSIVE on poly vs exponential — need dedicated tools
+   (ABC) for tight bounds at N>=9.
 
-2. **Threshold circuit construction** (running) — Whether pi(x) has polynomial-size
-   THRESHOLD circuits (TC^0 model) is still open. This is weaker than general circuits
-   but matches the computational model of BPSW.
+2. **Threshold circuit construction** (COMPLETED) — PTF degree for LSB(pi(x)) grows as
+   exactly N/2 (LP-verified N=4-12). Requires C(N,N/2) ~ 2^N/sqrt(N) monomials at
+   depth-2 — EXPONENTIAL. Does NOT rule out poly-depth TC^0 but confirms exponential
+   at depth 2. Matches random function bound (Gotsman 1994).
 
 3. **Literature monitoring** — New results in circuit complexity, analytic number theory,
    or algorithmic number theory could change the picture. The Berry-Keating direction

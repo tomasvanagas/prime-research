@@ -12,6 +12,7 @@ Target: p(10^100) in <1 second, 100% accurate.
 - **pi(x) mod 2 is random-like in 20+ structural measures** (S35)
 - Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
 - Best approximate: R^{-1}(n) -- O(polylog), ~50% digits correct
+- **TECH DEBT:** ~200 experiment scripts lack companion _results.md files. See TODO.md.
 
 ## The Barrier (One Paragraph)
 p(n) = SMOOTH(n) + RANDOM(n). The smooth part R^{-1}(n) is O(polylog) and gives
@@ -23,7 +24,7 @@ Best known: O(x^{2/3}) combinatorial, O(x^{1/2+epsilon}) analytic.
 
 ```
 status/
-  CLOSED_PATHS.md      <-- 633+ tested approaches. SEARCH before proposing anything.
+  CLOSED_PATHS.md      <-- 658+ tested approaches. SEARCH before proposing anything.
   OPEN_PROBLEMS.md     <-- The ONLY viable research directions. Start here.
   BEST_ALGORITHMS.md   <-- Working implementations with benchmarks.
   SESSION_INSIGHTS.md  <-- Detailed per-session findings (Sessions 12-31).
@@ -61,7 +62,9 @@ FOCUS_QUEUE.md               <-- Deep-dive tasks for focused sessions.
 ## Rules for AI Agents
 
 ### Workflow
-1. **On startup:** check if `TODO.md` exists. If so, work through its items first.
+1. **On startup:** check if `TODO.md` exists. If it has [HOUSEKEEPING] items,
+   complete ALL of them before starting any new research. Housekeeping debt
+   compounds — do not skip it to chase new experiments.
 2. **Read `status/OPEN_PROBLEMS.md`** for viable directions.
 3. **Search `status/CLOSED_PATHS.md`** before proposing ANY approach.
 4. Use sub-agents to save context window.
@@ -78,6 +81,14 @@ FOCUS_QUEUE.md               <-- Deep-dive tasks for focused sessions.
 10. **Every .py script MUST have a companion `<name>_results.md`** saved alongside
     it with the experiment's findings, verdict, and key numbers. Do NOT just capture
     results in your context — persist them to disk.
+    - **Write the _results.md IMMEDIATELY after running the script.** Do not batch
+      them up. Do not move on to the next experiment until the results file exists.
+    - **If you cannot run a script** (missing deps, too slow), write a _results.md
+      anyway noting: what it attempts, why it couldn't run, and your best assessment
+      from reading the code.
+    - **ENFORCEMENT:** Before ending ANY session, run this check:
+      `find experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done`
+      If any are missing, write them before stopping.
 11. **Do NOT create multiple versions** of the same script (e.g., `foo.py`,
     `foo_v2.py`, `foo_quick.py`, `foo_small.py`). Refactor the original or use
     command-line arguments/flags. One script per experiment.
@@ -93,7 +104,25 @@ FOCUS_QUEUE.md               <-- Deep-dive tasks for focused sessions.
 18. **Working algorithms** go to `algorithms/` with benchmarks.
 19. Update `status/CLOSED_PATHS.md` when closing an approach.
 
+### Status File Hygiene (STRICT — previous sessions violated this)
+20. **When an experiment closes a path:** add it to CLOSED_PATHS.md in the SAME session.
+    Do not leave it for "later." The entry needs: approach name, verdict, failure mode
+    (C/E/I), one-line key finding, session number.
+21. **When an open problem is resolved:** update OPEN_PROBLEMS.md in the SAME session.
+    Mark it CLOSED with the evidence citation. Do not leave stale "open" problems.
+22. **When a completed experiment is labeled "pending" in ephemeral docs:** correct
+    the label immediately. Stale "pending" labels create confusion for future sessions.
+23. **Every approximation formula or algorithm** must appear in BEST_ALGORITHMS.md,
+    even if it's not exact. Separate sections for "Exact" and "Approximate" methods.
+24. **Novel findings that unify multiple session results** (e.g., "20+ measures show
+    pseudorandomness") deserve their own document in `novel/`. Do not leave cross-session
+    synthesis undone — it's arguably more valuable than any single experiment.
+
 ### Cleanup (before finishing each session)
-20. Delete any `__pycache__` directories you created.
-21. Verify every `.py` you wrote has a companion `_results.md`.
-22. Do NOT leave orphaned or duplicate scripts.
+25. Delete any `__pycache__` directories you created.
+26. Verify every `.py` you wrote has a companion `_results.md` (run the find
+    command from Rule 10 — zero tolerance for missing results files).
+27. Do NOT leave orphaned or duplicate scripts.
+28. Verify every experiment you ran has its verdict in `status/CLOSED_PATHS.md`.
+29. Verify no "pending" labels remain in ephemeral docs for completed work.
+30. Update `status/SESSION_INSIGHTS.md` with this session's key findings.
