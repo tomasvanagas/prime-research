@@ -1150,3 +1150,47 @@ Key findings:
 
 (d) **6 approaches closed, ~531 total.** No breakthrough. All fresh-perspective ideas
     reduce to known barriers within 1-2 steps of analysis.
+
+## Session 41 (Engineering + Novel Write-up)
+
+**Focus:** Engineering improvements to v10 + novel finding documentation.
+All FOCUS_QUEUE tasks were already COMPLETED; session pivoted to productive
+engineering work per CLAUDE.md guidelines.
+
+### Experiments
+
+1. **Lehmer method vs Lucy DP** (`experiments/sieve/lehmer_vs_lucy.py`)
+   Three C implementations benchmarked: Lucy DP, Lehmer (recursive phi + P2),
+   Meissel-Lehmer (P3 term). All verified 100% correct to 10^10.
+   RESULT: Lucy DP is 5-13x FASTER than naive Lehmer. Recursive phi inclusion-exclusion
+   with hash memoization has worse cache behavior than Lucy's sequential array access.
+   The Deleglise-Rivat/Gourdon speedup comes from segmented sieve for phi, not the
+   decomposition itself.
+
+2. **Wheel-30 + prefetch Lucy DP** (`experiments/sieve/segmented_lucy.py`)
+   Wheel mod 30 (skip p=2,3,5) + __builtin_prefetch hints on C Lucy DP.
+   RESULT: Only 2-35% speedup. Hardware prefetcher already optimal for sequential access.
+   The 100-1000x gap to primecount is algorithmic (Gourdon variant), not parameter tweaking.
+
+### Novel Finding Documented
+
+- **Carry-propagation boundary** from S40 written up in `novel/carry_propagation_boundary.md`.
+  Per-bit difficulty of p(n) has a sharp 4-bit sigmoid transition from EASY (R^{-1}
+  determines) to HARD (coin flip) at ~60% of bit positions. Genuinely novel measurement
+  not in published literature.
+
+### Key Insights
+(a) **Naive Lehmer is SLOWER than Lucy DP.** The standard textbook Lehmer decomposition
+    only helps when phi is computed via segmented sieve, not recursion. This explains why
+    primecount's speed comes from infrastructure (SIMD, segmented sieve, OpenMP), not
+    from the formula decomposition.
+
+(b) **Within-Lucy-DP optimizations are marginal.** Wheel-30 gives at most 35% at small x,
+    dropping to 2% at x=10^11. To match primecount, one must reimplement Gourdon's full
+    algorithm — essentially forking primecount. Not worth it for this project.
+
+(c) **No new literature breakthroughs.** Web search for April 2026 publications on pi(x)
+    algorithms, TC^0 lower bounds, and zeta computation found no results beyond what's
+    already in `literature/state_of_art_2026.md`.
+
+(d) **2 approaches closed, ~533 total.**

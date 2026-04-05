@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (531+ Approaches)
+# Closed Paths: Master Lookup (533+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-40, 197+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-41, 197+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -127,6 +127,8 @@ Last updated: 2026-04-05 (Sessions 1-40, 197+ sub-agents)
 | Nonlinear sieve: bitwise/TC^0 | FAIL | E | Bit features + AND: 85% exact but no generalization; degree d in K values needs K >= x^{1/(2d)} | 14 |
 | Nonlinear sieve: parity barrier bypass | FAIL | E | Nonlinear ops CAN distinguish primes from semiprimes but cost O(x^{3/2}) -- worse than Meissel-Lehmer | 14 |
 | Nonlinear sieve: floor identities | FAIL | E | No exact polynomial identity; recursive pi(x/k) formulas have O(1) residual; overfitting scales with degree | 14 |
+| Lehmer method vs Lucy DP | FAIL | E | Naive Lehmer (recursive phi + P2) is 5-13x SLOWER than Lucy DP due to recursion overhead. Phi hash cache has ~30% collision rate. Lucy DP's sequential array access wins on cache. Speedup requires segmented sieve, not decomposition alone. | 41 |
+| Lucy DP wheel-30 + prefetch | PARTIAL | - | Wheel-30 (skip p=2,3,5) gives only 2-35% speedup. Prefetch hints ≈ no effect (hardware prefetcher already optimal). 100-1000x gap to primecount is algorithmic (Gourdon), not parameter. | 41 |
 
 ## Machine Learning / Statistical / Fitting
 

@@ -1,0 +1,879 @@
+
+=== Run #28 — Mode: focused — Sun Apr  5 18:30:17 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/FOCUS_QUEUE.md
+    1	# Focus Queue: Deep Dive Research Tasks
+    2	
+    3	Each focused session works on exactly ONE task from this list.
+    4	The task number rotates automatically across sessions.
+    5	
+    6	**NOTE (S37):** All 4 original tasks below are COMPLETED. Do NOT re-run them.
+    7	
+    8	**To add a new task:** Copy the format below (Goal, Experiments, Key question,
+    9	Save to) and append it as Task 5, 6, etc. New tasks should target the ONLY
+    10	remaining open direction: circuit complexity of pi(x). See `status/OPEN_PROBLEMS.md`.
+    11	
+    12	**If no concrete experiment can be formulated:** Do not invent busywork. Instead,
+    13	check `literature/state_of_art_2026.md` for new publications or improve existing
+    14	algorithms (see BEST_ALGORITHMS.md comparison table for known gaps vs primecount).
+    15	
+    16	---
+    17	
+    18	## Task 1: Kt Complexity of delta(n) — COMPLETED (Sessions 20, 36)
+    19	
+    20	**Results:** `experiments/information_theory/kt_complexity/SYNTHESIS.md`
+    21	
+    22	Key findings: Kt(delta) ~ 5.58*N (linear, incompressible). Entropy rate 5.8 bits/value.
+    23	Transfer entropy n->delta is 0.013 bits (n adds no info). AR(7) captures direct memory.
+    24	1/f^1.70 spectrum real but not exploitable. 82% of Fourier modes needed.
+    25	**Verdict: delta(n) is incompressible. Attack path CLOSED (S35).**
+    26	
+    27	---
+    28	
+    29	## Task 2: Zeta Zero Structural Patterns — COMPLETED (Session 25)
+    30	
+    ... (29 more lines)
+  [Read] /apps/aplikacijos/prime-research/TODO.md
+    1	# TODO
+    2	
+    3	## [HOUSEKEEPING] 1. Flag duplicate scripts (NON-BLOCKING)
+    4	
+    5	Rule 11 says no duplicate scripts. Known suspects:
+    6	- `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py`
+    7	- `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+    8	
+    9	Action: List duplicates in this file below. Human will review before deletion.
+    10	**This is non-blocking — proceed to research after listing them.**
+    11	
+    12	Duplicates found (Session 39):
+    13	- [ ] `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py` (v3 same size as v1, possible revert)
+    14	- [ ] `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+    15	- [ ] `experiments/circuit_complexity/k_party_nof.py` vs `k_party_nof_v2.py`
+    16	- [ ] `experiments/circuit_complexity/approx_degree.py` + `approx_degree_quick.py` + `approx_degree_small.py` + `approx_degree_prime.py` + `approx_degree_counting.py` (5 scripts; may be distinct experiments but violates one-script-per-experiment rule)
+    17	- [ ] `experiments/information_theory/information_shortcut.py` vs `information_shortcut_v2.py`
+    18	- [ ] `experiments/other/breakthrough_attempt_v2.py` (no v1 exists)
+    19	- [ ] `experiments/other/self_correcting_v2.py` (no v1 exists)
+    20	Human review needed before merging/deleting. All have companion _results.md files.
+    21	
+    22	---
+    23	
+    24	## [RESEARCH] 2. Benchmark Helfgott-Thompson O(x^{3/5}) for M(x)
+    25	
+    26	`experiments/sieve/mertens_speedup.py` references H-T (2021). Transfer to pi(x) fails
+    27	(signed->unsigned barrier, S16), but the M(x) algorithm itself was never benchmarked.
+    28	Won't help pi(x), but establishes the constant-factor landscape.
+    29	
+    30	---
+    ... (7 more lines)
+All 4 tasks in FOCUS_QUEUE.md are COMPLETED. Let me check what productive work remains.
+  [Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    1	# Open Problems: Viable Research Directions
+    2	
+    3	Last updated: 2026-04-05 (Session 37)
+    4	
+    5	These are the ONLY directions not yet proven closed. Everything else has been
+    6	tested (525+ approaches across 37 sessions) and confirmed to hit one of three
+    7	failure modes: Circularity, Equivalence, or Information Loss.
+    8	
+    9	**Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
+    10	well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
+    11	a sum of ~x^{1/2} cancelling terms), not information-theoretic. This reframes the problem:
+    12	find algebraic structure in the zero sum enabling bulk cancellation.
+    13	
+    14	**Pseudorandomness (S37 synthesis):** pi(x) mod 2 is indistinguishable from random under
+    15	21 independent structural measures. See `novel/pseudorandomness_of_pi.md`.
+    16	
+    17	---
+    18	
+    19	## 1. Circuit Complexity of pi(x) [ONLY REMAINING DIRECTION]
+    20	
+    21	**Question:** What is the circuit complexity of the prime-counting function?
+    22	
+    23	**The gap:** Omega(log x) proven lower bound vs O(x^{1/2+epsilon}) best upper bound.
+    24	This is the largest unexplored gap in complexity theory for a natural problem.
+    25	
+    26	**Equivalence:** "Is pi(x) in NC?" is EQUIVALENT to our polylog target (S12).
+    27	
+    28	**What's known:**
+    29	- PRIMES is in P (AKS), NOT in AC^0 or AC^0[p] (Allender-Saks-Shparlinski 2001)
+    30	- PRIMES is in NONUNIFORM TC^0 unconditionally (S13)
+    ... (76 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/BEST_ALGORITHMS.md
+    1	# Best Working Algorithms
+    2	
+    3	All algorithms here are **100% exact** and **verified**. Listed by performance.
+    4	
+    5	---
+    6	
+    7	## 1. V10: C-Accelerated Hybrid (BEST)
+    8	
+    9	**File:** `algorithms/v10_c_accelerated.py`
+    10	**Complexity:** O(p(n)^{2/3})
+    11	**Dual mode:** exact + approximate
+    12	
+    13	### Exact Mode
+    14	
+    15	| n | p(n) | Time |
+    16	|---|------|------|
+    17	| 10^3 | 7,919 | 0.000s |
+    18	| 10^5 | 1,299,709 | 0.006s |
+    19	| 10^7 | 179,424,673 | 0.034s |
+    20	| 10^8 | 2,038,074,743 | 0.140s |
+    21	| 10^9 | 22,801,763,489 | 0.175s |
+    22	
+    23	### Approximate Mode (R^{-1} only)
+    24	
+    25	| n | Time | Total Digits | Correct Digits |
+    26	|---|------|-------------|---------------|
+    27	| 10^10 | 1.5s | 12 | ~5 |
+    28	| 10^50 | 0.14s | 53 | ~25 |
+    29	| 10^100 | 0.32s | 103 | ~50 |
+    30	| 10^200 | 1.15s | 203 | ~99 |
+    ... (147 more lines)
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    1	# State of the Art: Prime Computation (2024-2026)
+    2	
+    3	Consolidated survey of all developments relevant to computing p(n) exactly.
+    4	Deduplicated from 6 overlapping source files.
+    5	
+    6	Last updated: 2026-04-05 (Session 38 critique)
+    7	
+    8	---
+    9	
+    10	## 1. Prime Counting Algorithms
+    11	
+    12	### 1.1 Combinatorial Methods (Best Practical)
+    13	
+    14	**Current best asymptotic:** O(x^{2/3} / log^2 x) -- Deleglise-Rivat / Gourdon (1996/2001)
+    15	
+    16	**Best implementation:** Kim Walisch's primecount library
+    17	- Version 8.4 released 2026-04-01
+    18	- Implements Gourdon's algorithm with SIMD acceleration (AVX512, ARM SVE)
+    19	- primecount 8.3 (March 2026): bidirectional clustered easy leaves, faster compression
+    20	- primecount 8.1 (January 2026): 15% faster AC.cpp
+    21	- primecount 8.0 (December 2025): new 128-bit API
+    22	- pi(10^25) computed in 330 CPU core hours on AMD EPYC Zen4
+    23	- The SIMD-accelerated Gourdon D formula in v8.4 vectorizes the hard special leaves bottleneck, estimated 2-4x speedup on modern CPUs
+    24	
+    25	**Relevance to project:** This is the engine behind our best practical approach (binary search on pi(x)). Constant-factor improvements continue but no asymptotic breakthrough.
+    26	
+    27	**Does it change the barrier?** No. Still O(x^{2/3}).
+    28	
+    29	### 1.2 Hirsch-Kessler-Mendlovic: Elementary O~(sqrt(N)) (2022/2024)
+    30	
+    ... (498 more lines)
+Task #2 (Zeta Zero Structural Patterns) is already **COMPLETED** (Session 25). All 4 tasks in FOCUS_QUEUE.md are completed.
+
+Per CLAUDE.md guidance for when paths are closed, I'll do productive work from TODO.md's remaining research items. Let me check the relevant files.
+  [Read] /apps/aplikacijos/prime-research/experiments/sieve/mertens_speedup.py
+  [Read] /apps/aplikacijos/prime-research/experiments/sieve/inversion_search.py
+    File content (12773 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+    1	"""
+    2	Inversion Search: Exact formula for the nth prime via inverting R(x)
+    3	=====================================================================
+    4	Core idea: p(n) = R^{-1}(n + correction), where R is the Riemann
+    5	prime-counting function and the correction comes from zeta zeros.
+    6	
+    7	The fixed-point iteration:
+    8	  p_0 = R^{-1}(n)
+    9	  p_{k+1} = R^{-1}(n + sum_rho R(p_k^rho))
+    10	
+    11	This should converge to the EXACT nth prime.
+    12	"""
+    13	
+    14	import mpmath
+    15	import math
+    16	import time
+    17	import os
+    18	import sys
+    19	from functools import lru_cache
+    20	
+    21	mpmath.mp.dps = 50  # high precision
+    22	
+    23	SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    24	sys.path.insert(0, SCRIPT_DIR)
+    25	
+    26	from riemann_explicit import R_function, R_at_rho, load_or_compute_zeros, MOBIUS
+    27	
+    28	# ============================================================
+    29	# Precompute primes via sieve for verification
+    30	# ============================================================
+    ... (571 more lines)
+Let me check the dependencies and existing results.
+  [Glob] experiments/sieve/riemann_explicit*
+  [Glob] experiments/sieve/inversion_search*
+    No files found
+    experiments/sieve/inversion_search.py
+    experiments/sieve/inversion_search_results.md
+  [Glob] experiments/sieve/mertens_speedup*
+    experiments/sieve/mertens_speedup.py
+    experiments/sieve/mertens_speedup_results.md
+  [Read] /apps/aplikacijos/prime-research/experiments/sieve/inversion_search_results.md
+    1	# Inversion Search: Results
+    2	
+    3	**Date:** 2026-04-04 (Session context)
+    4	**Script:** inversion_search.py
+    5	
+    6	## What Was Tested
+    7	Exact formula for the nth prime via inverting the Riemann R function. Six parts: (1) li^{-1}(n) as approximation, (2) correction functions g(n), (3) R^{-1}(n) inversion, (4-5) fixed-point iteration p_{k+1} = R^{-1}(n + sum_rho R(p_k^rho)), (6) analysis of the zero-sum correction.
+    8	
+    9	## Key Findings
+    10	- li^{-1}(n) overestimates systematically; error grows as sqrt(p(n))*ln(p(n)) consistent with RH
+    11	- R^{-1}(n) is much better than li^{-1}(n) but still not always roundable to correct prime
+    12	- Fixed-point iteration converges with 500 zeta zeros: exact by rounding at k=0 or k=1 for most tested n up to 10000
+    13	- The correction sum_rho R(x^rho) is oscillatory, grows as ~sqrt(x)/ln(x), cannot be replaced by elementary function
+    14	- The iteration is a direct consequence of inverting pi(x) = R(x) - sum_rho R(x^rho) -- not a new discovery per se
+    15	- Computing the zero sum requires O(sqrt(x)) zeta zeros for exact results -- same complexity barrier
+    16	
+    17	## Verdict
+    18	**CLOSED**
+    19	**Failure Mode:** I (Information Loss) -- the correction requires O(sqrt(x)) zeta zeros, encoding incompressible oscillatory information
+    20	
+    21	## One-Line Summary
+    22	R^{-1} inversion with fixed-point iteration works but requires O(sqrt(x)) zeta zeros for exactness -- no polylog shortcut.
+    23	
+  [Read] /apps/aplikacijos/prime-research/experiments/sieve/mertens_speedup_results.md
+    1	# Mertens Function Speedup: Results
+    2	
+    3	**Date:** 2026-04-04 (Session context)
+    4	**Script:** mertens_speedup.py
+    5	
+    6	## What Was Tested
+    7	Why D(x) = sum d(n) admits O(x^{1/3}) via hyperbola method but M(x) = sum mu(n) is stuck at O(x^{2/3}). Implemented and benchmarked: brute-force M(x), Lucy DP M(x) in O(x^{2/3}), optimized Lucy with memoization, D(x) via hyperbola in O(sqrt(x)), D(x) in O(x^{1/3}) via block decomposition, and analysis of why M(x) resists speedup.
+    8	
+    9	## Key Findings
+    10	- D(x) = sum d(n) has a closed-form sum of floor functions (no recursion), enabling O(x^{1/3})
+    11	- M(x) is self-referential: M(x) = 1 - sum_{n>=2} M(floor(x/n)), requiring O(sqrt(x)) recursive evaluations
+    12	- No known factorization mu = f*g (Dirichlet convolution) exists where both sum_f and sum_g are easy
+    13	- H-T achieves O(x^{3/5}) for M(x) via elementary methods but this does NOT help pi(x)
+    14	- The Liouville function L(x) is computationally equivalent to M(x)
+    15	- M(x) speedup is a genuine theoretical advance but does NOT break the O(x^{2/3}) barrier for pi(x)
+    16	
+    17	## Verdict
+    18	**CLOSED**
+    19	**Failure Mode:** E (Equivalence) -- M(x) speedup to O(x^{3/5}) does not propagate to pi(x); the conversion reintroduces O(x^{2/3})
+    20	
+    21	## One-Line Summary
+    22	M(x) admits O(x^{3/5}) via H-T but D(x) admits O(x^{1/3}) due to closed-form structure; neither helps pi(x) below O(x^{2/3}).
+    23	
+Both TODO research items are also completed. Let me check the latest session state and find productive work.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (20 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | sort -t'n' -k2 -n | tail -5
+    session36b_kt_deep_focus.md
+    session37_housekeeping.md
+    session38_critique.md
+    session39_literature_depth.md
+    session40_fresh_perspective.md
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session40_fresh_perspective.md
+    1	# Session 40: Fresh Perspective (2026-04-05)
+    2	
+    3	## Theme
+    4	First-principles attack on O(polylog) prime computation, deliberately avoiding reading CLOSED_PATHS.md to force fresh thinking.
+    5	
+    6	## Approach
+    7	Brainstormed 5 genuinely unconventional ideas inspired by barrier-breaking analogies:
+    8	- Shor's algorithm (quantum Fourier transform)
+    9	- Compressed sensing (sparsity assumptions)
+    10	- Fast multipole method (hierarchical decomposition)
+    11	- Matrix completion (nuclear norm relaxation)
+    12	
+    13	## Experiments
+    14	
+    15	### 1. Transfer Matrix Sieve (`experiments/wildcard/transfer_matrix_sieve.py`)
+    16	**Idea:** Encode sieve as matrix product, iterate via repeated squaring.
+    17	**Result:** State space = lcm(primes up to sqrt(x)) ~ exp(sqrt(x)). Even with blocking, work ~ 10^100 vs ML's 10^67 for x=10^100. Depth-k sieve reinvents Meissel-Lehmer.
+    18	**Verdict:** FAIL (Equivalence)
+    19	
+    20	### 2. Wavelet/Fourier Compression (`experiments/wildcard/wavelet_zero_compression.py`, `wavelet_detrended.py`)
+    21	**Idea:** If C(x) = pi(x) - li(x) is sparse in wavelets, evaluate at point using O(polylog) coefficients.
+    22	**Result:** Raw signal: 99% energy in 1 coeff (DC artifact). Detrended: N^{0.75} coefficients for 99.9% energy. Power spectrum f^{-1.7} across all scales.
+    23	**Verdict:** FAIL (Information). Sublinear compression but far from polylog.
+    24	
+    25	### 3. Modular Residue Prediction (`experiments/wildcard/modular_residue_prediction.py`)
+    26	**Idea:** Predict p(n) mod q from n for all small q, then CRT to recover p(n).
+    27	**Result:** Near-max entropy for q>2. CRT is circular. Primorial mod-210 shows 19x prediction from wheel structure, but not useful.
+    28	**Verdict:** FAIL (Circularity + Information)
+    29	
+    30	### 4. Carry-Propagation Boundary (`experiments/wildcard/carry_propagation_boundary.py`)
+    ... (22 more lines)
+Task #2 is completed, all TODO research items are done, and Session 40 just ran 6 fresh-perspective experiments. The project is in monitoring/engineering phase.
+
+I'll focus on the most productive remaining work: **engineering improvements to v10** (the best algorithm). The BEST_ALGORITHMS comparison shows v10 is 100-1000x slower than primecount due to using naive Lucy DP instead of Gourdon's decomposition. Let me also check for new literature.
+  [Read] /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py
+    1	"""
+    2	V10: C-ACCELERATED NTH PRIME SOLVER
+    3	=====================================
+    4	Uses ctypes to call a C implementation of Lucy_Hedgehog DP
+    5	for maximum performance. Also implements the analytical formula
+    6	for p(n) that works in O(polylog(n)) time but gives only ~47% of digits.
+    7	
+    8	TWO MODES:
+    9	  1. EXACT MODE: Uses C-accelerated Lucy DP. 100% accurate. O(p(n)^{2/3}).
+    10	     Works up to p(10^12) in reasonable time.
+    11	
+    12	  2. APPROXIMATE MODE: Uses R^{-1}(n) via mpmath. O(polylog(n)) time.
+    13	     Gives first ~47% of digits correctly.
+    14	     p(10^100) in 0.5 seconds (approximate).
+    15	     p(10^1000) in ~2 seconds (approximate).
+    16	"""
+    17	
+    18	import math
+    19	import time
+    20	import ctypes
+    21	import tempfile
+    22	import os
+    23	import subprocess
+    24	import sys
+    25	
+    26	# ============================================================
+    27	# C implementation of Lucy DP (compiled at runtime)
+    28	# ============================================================
+    29	
+    30	LUCY_C_CODE = r"""
+    ... (70 more lines)
+  [Agent] 
+    Async agent launched successfully.
+    agentId: aad6d9f22e45ecccb (internal ID - do not mention to user. Use SendMessage with to: 'aad6d9f22e45ecccb' to continue this agent.)
+    The agent is working in the background. You will be notified automatically when it completes.
+    Do not duplicate this agent's work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+    output_file: /tmp/claude-0/-apps-aplikacijos-prime-research/bfaf1964-135a-4199-ab52-9f2de8b9643c/tasks/aad6d9f22e45ecccb.output
+    If asked, you can check progress before completion by using Read or Bash tail on the output file.
+  [Read] /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py
+    100	
+    101	    lib = ctypes.CDLL(so_path)
+    102	    lib.lucy_pi.restype = ctypes.c_longlong
+    103	    lib.lucy_pi.argtypes = [ctypes.c_longlong]
+    104	    return lib
+    105	
+    106	# ============================================================
+    107	# Python fallback Lucy DP
+    108	# ============================================================
+    109	
+    110	def lucy_pi_py(x):
+    111	    x = int(x)
+    112	    if x < 2: return 0
+    113	    if x < 3: return 1
+    114	    sqrtx = int(x**0.5)
+    115	    small = list(range(-1, sqrtx + 1))
+    116	    large = [0] * (sqrtx + 2)
+    117	    for v in range(1, sqrtx + 1):
+    118	        large[v] = x // v - 1
+    119	    for p in range(2, sqrtx + 1):
+    120	        if small[p] == small[p - 1]: continue
+    121	        pcnt = small[p - 1]
+    122	        p2 = p * p
+    123	        for v in range(1, min(sqrtx, x // p2) + 1):
+    124	            d = v * p
+    125	            if d <= sqrtx:
+    126	                large[v] -= large[d] - pcnt
+    127	            else:
+    128	                large[v] -= small[x // d] - pcnt
+    129	        for v in range(sqrtx, p2 - 1, -1):
+    ... (120 more lines)
+  [Read] /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py
+    250	
+    251	    for _ in range(200):
+    252	        rx = mpf(0)
+    253	        for k in range(1, 100):
+    254	            m = int(mobius(k))
+    255	            if m == 0: continue
+    256	            xk = x ** (mpf(1)/k)
+    257	            if xk <= 1 + mpf(10)**(-30): break
+    258	            rx += mpf(m) / k * li(xk)
+    259	            if abs(mpf(m) / k * li(xk)) < mpf(10)**(-mp.dps + 10): break
+    260	
+    261	        rpx = mpf(1) / log(x)
+    262	        dx = (n_mp - rx) / rpx
+    263	        x += dx
+    264	        if abs(dx) < mpf(10)**(-mp.dps + 10): break
+    265	
+    266	    # Error estimate
+    267	    ln_x = float(log(x))
+    268	    sqrt_x = float(mpmath.sqrt(x))
+    269	    error_bound = sqrt_x * ln_x * 0.14  # RH-conditional bound
+    270	
+    271	    result = mpmath.nstr(x, min(mp.dps, digits_needed))
+    272	    total_digits = int(float(mpmath.log10(x))) + 1
+    273	    try:
+    274	        correct_digits = total_digits - int(float(mpmath.log10(mpf(error_bound)))) - 1
+    275	    except (OverflowError, ValueError):
+    276	        correct_digits = max(0, total_digits // 2)
+    277	
+    278	    return {
+    279	        'value': result,
+    ... (93 more lines)
+Let me check if the carry-propagation finding from S40 was recorded in novel/, then implement a concrete engineering improvement.
+  [Glob] novel/carry*
+  [Glob] novel/*
+    No files found
+    novel/failure_taxonomy.md
+    novel/entropy_measurements.md
+    novel/tc0_matrix_powering_reduction.md
+    novel/algebraic_geometry_point_counting_analysis.md
+    novel/bpsw_tc0_reduction.md
+    novel/prime_indicator_anf_structure.md
+    novel/gapl_question.md
+    novel/determinantal_complexity.md
+    novel/delta_spectrum.md
+    novel/approx_degree_prime.md
+    novel/info_computation_gap.md
+    novel/pseudorandomness_of_pi.md
+  [Read] /apps/aplikacijos/prime-research/experiments/wildcard/carry_propagation_boundary_results.md
+    1	# Carry-Propagation Boundary — Results
+    2	
+    3	**Experiment:** Map which bits of p(n) are "easy" (determined by R^{-1}(n)) vs "hard" (need zeta zeros).
+    4	
+    5	**Verdict:** CLOSED as approach, but provides **novel quantitative measurement** of the easy/hard bit boundary.
+    6	
+    7	## Key Findings
+    8	
+    9	### 1. Error Scaling
+    10	|p(n) - R^{-1}(n)| ~ p(n)^{0.66}
+    11	
+    12	This means ~66% of bits (from LSB) are "hard." Theory under RH predicts ~50% (sqrt(x) error). The observed 66% is likely a small-sample bias — at p(n) ~ 10^5, the error hasn't settled to its asymptotic behavior.
+    13	
+    14	### 2. Per-Bit Agreement Rate (MAIN RESULT)
+    15	Beautiful sigmoid transition from EASY → HARD:
+    16	
+    17	| Bit (MSB=0) | Agreement | Status |
+    18	|---|---|---|
+    19	| 0-4 | 99.4-100% | EASY |
+    20	| 5-6 | 97.5-98.5% | EASY |
+    21	| 7 | 95.0% | EASY |
+    22	| 8 | 89.8% | MEDIUM |
+    23	| 9 | 79.6% | MEDIUM |
+    24	| 10 | 63.8% | HARD |
+    25	| 11 | 53.9% | HARD |
+    26	| 12-16 | 48.6-50.9% | RANDOM (coin flip) |
+    27	
+    28	**The transition spans ~4 bit positions (bits 8-11)** from 90% to 50%. Below bit 12, R^{-1}(n) provides NO information — those bits are pure noise from R^{-1}'s perspective.
+    29	
+    30	### 3. First Disagreeing Bit Distribution
+    ... (29 more lines)
+The carry-propagation finding is genuinely novel and should be in `novel/`. Let me write that up and implement an engineering experiment in parallel.
+  [Write] /apps/aplikacijos/prime-research/novel/carry_propagation_boundary.md
+    File created successfully at: /apps/aplikacijos/prime-research/novel/carry_propagation_boundary.md
+  [Write] /apps/aplikacijos/prime-research/experiments/sieve/lehmer_vs_lucy.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/sieve/lehmer_vs_lucy.py
+Now let me run the benchmark.
+  [Bash] python3 experiments/sieve/lehmer_vs_lucy.py 2>&1
+    ======================================================================
+    LEHMER vs LUCY DP BENCHMARK
+    ======================================================================
+    
+    Compiling C code...
+    
+    --- Correctness Verification ---
+      pi(        10) =        4  Lucy=       4[OK]  Lehmer=       4[OK]  M-L=       4[OK]
+      pi(       100) =       25  Lucy=      25[OK]  Lehmer=      25[OK]  M-L=      25[OK]
+      pi(     1,000) =      168  Lucy=     168[OK]  Lehmer=     168[OK]  M-L=     168[OK]
+      pi(    10,000) =    1,229  Lucy=   1,229[OK]  Lehmer=   1,229[OK]  M-L=   1,229[OK]
+      pi(   100,000) =    9,592  Lucy=   9,592[OK]  Lehmer=   9,592[OK]  M-L=   9,592[OK]
+      pi( 1,000,000) =   78,498  Lucy=  78,498[OK]  Lehmer=  78,498[OK]  M-L=  78,498[OK]
+    
+      Exhaustive check (pi(x) for x in [2, 10000])...
+      Lucy:   9999/9999 correct
+      Lehmer: 9999/9999 correct
+      M-L:    9999/9999 correct
+    
+      Spot-checking larger values...
+      pi(  10,000,000): Lucy=     664,579  Lehmer=     664,579  M-L=     664,579  AGREE
+      pi(  50,000,000): Lucy=   3,001,134  Lehmer=   3,001,134  M-L=   3,001,134  AGREE
+      pi( 100,000,000): Lucy=   5,761,455  Lehmer=   5,761,455  M-L=   5,761,455  AGREE
+      pi( 500,000,000): Lucy=  26,355,867  Lehmer=  26,355,867  M-L=  26,355,867  AGREE
+      pi(1,000,000,000): Lucy=  50,847,534  Lehmer=  50,847,534  M-L=  50,847,534  AGREE
+    
+    --- Performance Benchmark ---
+                 x     Lucy (ms)   Lehmer (ms)      M-L (ms)   Speedup L  Speedup ML
+    ----------------------------------------------------------------------------
+           100,000         0.013         0.037         0.044        0.35x        0.30x
+    ... (33 more lines)
+Interesting result — Lucy DP is actually **faster** than the naive Lehmer implementation by 5-13x. The phi recursion is the bottleneck. Let me record this and analyze why.
+  [Write] /apps/aplikacijos/prime-research/experiments/sieve/lehmer_vs_lucy_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/sieve/lehmer_vs_lucy_results.md
+Now let me implement a more impactful experiment — a **segmented Lucy DP** that processes blocks for better cache behavior. This addresses the actual bottleneck.
+  [Write] /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py
+  [Bash] python3 experiments/sieve/segmented_lucy.py 2>&1
+    ================================================================================
+    SEGMENTED LUCY DP: CACHE & WHEEL OPTIMIZATION BENCHMARK
+    ================================================================================
+    
+    Compiling with -O3 -march=native...
+    
+    --- Correctness ---
+      Lucy (baseline): 9/9 correct
+      Wheel-6: pi(10) = 5, expected 4
+      Wheel-6: pi(100) = 26, expected 25
+      Wheel-6: pi(1000) = 169, expected 168
+      Wheel-6: pi(10000) = 1230, expected 1229
+      Wheel-6: pi(100000) = 9593, expected 9592
+      Wheel-6: pi(1000000) = 78499, expected 78498
+      Wheel-6: pi(10000000) = 664580, expected 664579
+      Wheel-6: pi(100000000) = 5761456, expected 5761455
+      Wheel-6: pi(1000000000) = 50847535, expected 50847534
+      Wheel-6: 0/9 correct
+      Wheel-30: pi(10) = 5, expected 4
+      Wheel-30: pi(100) = 26, expected 25
+      Wheel-30: pi(1000) = 169, expected 168
+      Wheel-30: pi(10000) = 1230, expected 1229
+      Wheel-30: pi(100000) = 9593, expected 9592
+      Wheel-30: pi(1000000) = 78499, expected 78498
+      Wheel-30: pi(10000000) = 664580, expected 664579
+      Wheel-30: pi(100000000) = 5761456, expected 5761455
+      Wheel-30: pi(1000000000) = 50847535, expected 50847534
+      Wheel-30: 0/9 correct
+      Wheel-30+prefetch: pi(10) = 5, expected 4
+      Wheel-30+prefetch: pi(100) = 26, expected 25
+    ... (36 more lines)
+Off-by-one in wheel initialization — counting 1 as coprime. Let me fix.
+  [Edit] /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py
+    The file /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py has been updated successfully.
+Now fix the wheel-6 and the optimized version too.
+  [Edit] /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py
+    The file /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py has been updated successfully.
+Now fix the optimized version (wheel-30+prefetch):
+  [Edit] /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py
+    The file /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy.py has been updated successfully.
+  [Bash] python3 experiments/sieve/segmented_lucy.py 2>&1
+    ================================================================================
+    SEGMENTED LUCY DP: CACHE & WHEEL OPTIMIZATION BENCHMARK
+    ================================================================================
+    
+    Compiling with -O3 -march=native...
+    
+    --- Correctness ---
+      Lucy (baseline): 9/9 correct
+      Wheel-6: 9/9 correct
+      Wheel-30: 9/9 correct
+      Wheel-30+prefetch: 9/9 correct
+    
+    --- Performance Benchmark ---
+                 x     Lucy (baseline)             Wheel-6            Wheel-30   Wheel-30+prefetch  Speedup(best)
+    --------------------------------------------------------------------------------------------------------------
+           100,000            0.013ms            0.010ms            0.010ms            0.010ms        1.35x
+         1,000,000            0.060ms            0.052ms            0.051ms            0.050ms        1.21x
+        10,000,000            0.302ms            0.275ms            0.266ms            0.271ms        1.14x
+       100,000,000            1.534ms            1.423ms            1.427ms            1.410ms        1.09x
+      1,000,000,000            7.775ms            7.481ms            7.465ms            7.498ms        1.04x
+      10,000,000,000           39.539ms           38.077ms           39.712ms           38.885ms        1.04x
+      100,000,000,000          198.944ms          211.556ms          195.855ms          196.624ms        1.02x
+    
+    ================================================================================
+    ANALYSIS
+    ================================================================================
+    
+    Wheel factorization removes iterations for p=2,3 (wheel-6) or p=2,3,5 (wheel-30).
+    This saves iterations in the outer DP loop but does NOT change the inner loop count.
+    
+    ... (9 more lines)
+All methods correct. Wheel-30 gives only 2-35% speedup — marginal. Let me write results and check the literature search.
+  [Write] /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/sieve/segmented_lucy_results.md
+Now let me check the literature search agent and do session cleanup.
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/bfaf1964-135a-4199-ab52-9f2de8b9643c/tasks/aad6d9f22e45ecccb.output 2>/dev/null | tail -30
+    {"parentUuid":null,"isSidechain":true,"promptId":"8b42cc3b-04af-4086-846d-20335770a8ce","agentId":"aad6d9f22e45ecccb","type":"user","message":{"role":"user","content":"Search the web for any new publications (2026, especially March-April 2026) related to:\n1. Riemann zeta zero computation algorithms (faster than Hiary's O(t^{4/13+eps}))\n2. New TC^0 or circuit complexity lower bounds\n3. Any breakthrough in prime counting algorithms\n4. New connections between zeta zeros and computation\n\nReport in under 200 words. Focus only on genuinely new results not already covered in the following known literature: Guth-Maynard 2024, Connes 2026, Yakaboylu 2024-2026, Kilictas-Alpay 2025 (debunked), primecount 8.4, HKM 2022/2024, Aggarwal 2025, Chen-Tal-Wang 2026, Gurumukhani 2026, Behera-Hansen-Limaye-Srinivasan 2026."},"uuid":"7a443bad-c348-4e42-8e74-b062cfdb1ea0","timestamp":"2026-04-05T18:31:47.150Z","userType":"external","entrypoint":"sdk-cli","cwd":"/apps/aplikacijos/prime-research","sessionId":"bfaf1964-135a-4199-ab52-9f2de8b9643c","version":"2.1.92","gitBranch":"main","slug":"tender-rolling-otter"}
+    {"parentUuid":"7a443bad-c348-4e42-8e74-b062cfdb1ea0","isSidechain":true,"agentId":"aad6d9f22e45ecccb","message":{"model":"claude-opus-4-6","id":"msg_01YQ2tvnxfgHWuVfQRp9URWk","type":"message","role":"assistant","content":[{"type":"text","text":"\n\nI don't have the ability to search the web or access current internet resources. My knowledge has a cutoff of May 2025, so I cannot verify what has been published in March-April 2026.\n\n**What I can confirm:**\n\nBased on my training data (through May 2025), I have no knowledge of publications beyond what's already in your known literature list. The references you cite (Chen-Tal-Wang 2026, Gurumukhani 2026, Behera-Hansen-Limaye-Srinivasan 2026) are all beyond my knowledge cutoff.\n\n**Recommendation:**\n\nTo check for genuinely new results, you would need to:\n- Search arXiv directly for recent preprints in math.NT (prime counting, zeta zeros), cs.CC (circuit complexity, TC^0 lower bounds)\n- Check MathSciNet or Google Scholar for 2026 publications\n- Monitor the Computational Number Theory community (e.g., numbertheory.org mailing list)\n\n**Key search terms:** \"prime counting function complexity 2026\", \"zeta zero computation algorithm 2026\", \"TC0 lower bound 2026\", \"pi(x) sublinear\"\n\nI cannot provide a literature update since I lack web access and my training data predates the period you're asking about. If you have access to a web-browsing tool or can share specific paper abstracts, I can analyze their relevance to the project."}],"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":3,"cache_creation_input_tokens":11245,"cache_read_input_tokens":0,"output_tokens":331,"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":0,"ephemeral_5m_input_tokens":11245},"inference_geo":"","iterations":[],"speed":"standard"}},"requestId":"req_011CZm6sVvF3y1gTzzXEbLxw","type":"assistant","uuid":"6f31b22a-4846-4d45-be2f-53fad1708ca1","timestamp":"2026-04-05T18:31:56.081Z","userType":"external","entrypoint":"sdk-cli","cwd":"/apps/aplikacijos/prime-research","sessionId":"bfaf1964-135a-4199-ab52-9f2de8b9643c","version":"2.1.92","gitBranch":"main","slug":"tender-rolling-otter"}
+The agent couldn't search. Let me do the web search directly.
+  [ToolSearch] 
+  [WebSearch] 
+  [WebSearch] 
+  [WebSearch] 
+    Web search results for query: "prime counting function algorithm breakthrough 2026"
+    
+    Links: [{"title":"GitHub - kimwalisch/primecount: 🚀 Fast prime counting function library","url":"https://github.com/kimwalisch/primecount"},{"title":"Counting primes in $$$\\tilde{{\\cal O}}(n^{2/3}\\,\\,)$$$ - Codeforces","url":"https://codeforces.com/blog/entry/91632"},{"title":"Prime Counting Function -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/PrimeCountingFunction.html"},{"title":"Prime-counting function - Wikipedia","url":"https://en.wikipedia.org/wiki/Prime-counting_function"},{"title":"Computing the Prime Counting Function","url":"https://wstein.org/projects/stueve.pdf"},{"title":"Prime Counting Functions · vitaly-t/prime-lib · Discussion #6","url":"https://github.com/vitaly-t/prime-lib/discussions/6"},{"title":"Mathematicians uncover a new way to count prime numbers | Hacker News","url":"https://news.ycombinator.com/item?id=42405733"},{"title":"An Approximation of the Prime Counting Function and a New Representation of the Riemann Zeta Function","url":"https://www.mdpi.com/2227-7390/12/17/2624"},{"title":"Prime Counting Function Calculator - Online Primes Less Than Counter","url":"https://www.dcode.fr/prime-number-pi-count"},{"title":"Prime-counting function - HandWiki","url":"https://handwiki.org/wiki/Prime-counting_function"}]
+    
+    Based on the search results, I found information about prime counting function algorithms, though the results don't show a specific major breakthrough announced in 2026. Here's what the search reveals:
+    
+    ## Recent Developments in Prime Counting Algorithms
+    
+    Using Xavier Gourdon's algorithm, π(10^25) can be computed in only 330 CPU core hours on the AMD EPYC Zen4 CPU, which represents a significant efficiency improvement over previous methods.
+    
+    Implementations include all important combinatorial prime counting algorithms known to date, and primecount contains the first ever open source implementations of the Deleglise-Rivat algorithm and Xavier Gourdon's algorithm.
+    
+    ## Algorithm Types
+    
+    The search results show that formulas for prime-counting functions come in two kinds: arithmetic formulas and analytic formulas, with analytic formulas for prime-counting being the first used to prove the prime number theorem, stemming from the work of Riemann and von Mangoldt.
+    
+    The results demonstrate ongoing optimization work in prime counting algorithms, but I didn't find information about a specific major breakthrough announced in 2026. If you're looking for very recent developments from 2026, you might want to search academic databases or specialized number theory forums for the latest announcements.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: "TC0 circuit complexity lower bound 2026 arxiv"
+    
+    Links: [{"title":"Circuit Complexity Bounds for Visual Autoregressive Model","url":"https://arxiv.org/pdf/2501.04299"},{"title":"arXiv:2408.16406v2 [quant-ph] 5 Nov 2024 Improved Circuit Lower Bounds and","url":"https://www.arxiv.org/pdf/2408.16406v2"},{"title":"Circuit complexity - Wikipedia","url":"https://en.wikipedia.org/wiki/Circuit_complexity"},{"title":"THEORIES FOR TC0 AND OTHER SMALL COMPLEXITY ...","url":"https://arxiv.org/pdf/cs/0505013"},{"title":"arXiv:2106.16213v3 [cs.CL] 11 Apr 2022","url":"https://arxiv.org/pdf/2106.16213"},{"title":"Structure-Fair Quantum Circuit Complexity: An Auditable Information-Theoretic Lower Bound","url":"https://arxiv.org/html/2509.18205"},{"title":"TC0 - Wikipedia","url":"https://en.wikipedia.org/wiki/TC0"},{"title":"#2257 - Theories for TC0 and Other Small Complexity Classes","url":"https://lmcs.episciences.org/2257"},{"title":"[cs/0505013] Theories for TC0 and Other Small Complexity Classes","url":"https://arxiv.org/abs/cs/0505013"},{"title":"On Uniformity and Circuit Lower Bounds Rahul Santhanam University of Edinburgh","url":"https://people.csail.mit.edu/rrw/WeakUniformity-journal-rev.pdf"}]
+    
+    Based on the search results, here's what I found regarding TC0 circuit complexity lower bounds:
+    
+    ## Key Findings
+    
+    A single G(k) gate requires exponential-size TC0 circuits for k = Ω(nε), which represents progress on understanding TC0 lower bounds through generalized circuit classes.
+    
+    Polynomial-method lower bounds for AC0[p] lift to GC0[p] with no loss in parameters, and Majority requires depth-d GC0[p] circuits of size 2Ω(n1/2(d−1)), matching the state-of-the-art lower bounds for AC0[p].
+    
+    ## Important Open Problems
+    
+    Whether TC0 ⊊ NC1 remains an open problem in circuit complexity. Additionally, whether TC0 ⊆ NC1 is a strict inclusion is "one of the main open problems in circuit complexity", and it is even open whether TC0 ⊆ P/poly is a strict inclusion.
+    
+    The 2026 arXiv results appear to focus on TC0 in relation to other circuit classes and generalized gate functions, rather than establishing new direct lower bounds for TC0 itself, which remains a challenging open problem in circuit complexity theory.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: "Riemann zeta zero computation new algorithm 2026"
+    
+    Links: [{"title":"Numerical Behavior of the Riemann Zeta Function Using Real-to-Complex Conversion[v1] | Preprints.org","url":"https://www.preprints.org/manuscript/202511.1070"},{"title":"Computational strategies for the Riemann zeta function - ScienceDirect","url":"https://www.sciencedirect.com/science/article/pii/S0377042700003368"},{"title":"A Computational Approach for Riemann Hypothesis Verification Novel Algorithms for Zero Distribution Analysis[v1] | Preprints.org","url":"https://www.preprints.org/manuscript/202504.1587"},{"title":"Riemann hypothesis - Wikipedia","url":"https://en.wikipedia.org/wiki/Riemann_hypothesis"},{"title":"Riemann Zeta Function Zeros -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/RiemannZetaFunctionZeros.html"},{"title":"Simple and accurate approximations to the Riemann zeta function","url":"https://arxiv.org/html/2503.09519v1"},{"title":"TRANSACTIONS OF THE AMERICAN MATHEMATICAL SOCIETY Volume 309, Number","url":"https://www.ams.org/journals/tran/1988-309-02/S0002-9947-1988-0961614-2/S0002-9947-1988-0961614-2.pdf"},{"title":"NEW COMPUTATIONS OF THE RIEMANN ZETA FUNCTION ON THE CRITICAL LINE","url":"https://arxiv.org/pdf/1607.00709"},{"title":"Odlyzko–Schönhage algorithm - Wikipedia","url":"https://en.wikipedia.org/wiki/Odlyzko%E2%80%93Sch%C3%B6nhage_algorithm"},{"title":"[2512.09960] Numerical Behavior of the Riemann Zeta Function Using Real-to-Complex Conversion Without Gram Points or Bracketing","url":"https://arxiv.org/abs/2512.09960"}]
+    
+    Based on my search results, here are recent developments in Riemann zeta zero computation algorithms:
+    
+    ## Recent 2025-2026 Algorithmic Advances
+    
+    A novel computational framework introduces a real-to-complex conversion and a valley scanner algorithm that efficiently identifies zeros by tracking minima of |Z(t)|, achieving stability and precision up to t ≈ 10^20 with moderate computational cost using AWS EC2 computation.
+    
+    Another approach develops a numerical framework that replaces classical Gram-point bracketing with a real-to-complex parametrization of the critical line, combined with high-precision evaluation of the Hardy Z function using the Riemann-Siegel formula with remainder control and a Valley Scanner algorithm that identifies local minima and refines them using Newton iterations.
+    
+    ## Pattern Discovery Method
+    
+    A novel algorithm has been introduced that identifies previously undetected patterns in zero distributions, providing evidence supporting the Riemann Hypothesis, with a computational framework allowing verification to unprecedented heights along the critical line.
+    
+    ## Alternative Computational Approaches
+    
+    Recent work develops approximations for the Riemann zeta function that enable high-precision computation within the critical strip, combining the main sum of the Riemann-Siegel formula with simple approximations of the remainder term involving only elementary functions and precomputed coefficients obtained via Gaussian quadrature.
+    
+    These developments represent significant progress in computational efficiency and numerical stability for computing Riemann zeta zeros at increasingly large heights.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+No new literature breakthroughs found — everything matches what's already in `state_of_art_2026.md`. Now let me do session cleanup.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    1	# Closed Paths: Master Lookup (531+ Approaches)
+    2	
+    3	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    4	
+    5	Last updated: 2026-04-05 (Sessions 1-40, 197+ sub-agents)
+    6	
+    7	## Failure Modes
+    8	- **C** = Circularity (needs primes to compute primes)
+    9	- **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    10	- **I** = Information Loss (smooth approximation loses critical bits)
+    11	
+    12	---
+    13	
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    19	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    20	| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    21	| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    22	| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    23	| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    24	| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    25	| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    26	| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    27	| Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
+    28	| Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
+    29	| Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
+    30	| Weil explicit + Gaussian kernel | FAIL | I | Uncertainty principle: resolution * bandwidth >= const | 4 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    0	# Closed Paths: Master Lookup (531+ Approaches)
+    1	
+    2	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    3	
+    4	Last updated: 2026-04-05 (Sessions 1-40, 197+ sub-agents)
+  [Grep] Lehmer|Lucy.*wheel|segmented.*Lucy
+    18
+    
+    Found 0 total occurrences across 0 files.
+Good, not yet recorded. Let me find where the Engineering/Algorithm section is in CLOSED_PATHS.md to add entries.
+  [Grep] ^## (Engineering|Algorithm|Sieve|Computational)"
+    No matches found
+  [Grep] ^##"
+    No matches found
+  [Grep] ^## "
+    No matches found
+  [Grep] ^## 
+    7:## Failure Modes
+    14:## Analytic / Explicit Formula / Zeta Zeros
+    61:## Algebraic / Number Theory / p-adic
+    90:## Sieve / Combinatorial / Counting
+    131:## Machine Learning / Statistical / Fitting
+    154:## Quantum Computing / Quantum Information
+    170:## Dynamical Systems / Automata
+    187:## Topological / Exotic Mathematics
+    204:## Information Theory / Complexity Theory
+    279:## Encoding / Novel Representations
+    299:## Additive Combinatorics / Goldbach / Partitions
+    319:## Gap Prediction / Interpolation
+    335:## Spectral Methods
+    352:## Other / Miscellaneous
+    425:## Session 17: Communication Complexity, Fourier Analysis, New Literature
+    439:## Session 18: Preprocessing / Succinct Data Structures
+    449:## Session 18: Streaming / Space Complexity
+    462:## Session 18: Self-Correction / Amplification / Boosting
+    474:## Session 19: Communication Complexity, SVD Spectral, Identity Search
+    491:## Summary Statistics
+    507:## Session 20: Fresh Perspective (10 wildcard experiments)
+    538:## Kt Complexity / Information Theory (Session 20 Deep Focus)
+  [Grep] ^## "
+    No matches found
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    90	## Sieve / Combinatorial / Counting
+    91	
+    92	| Approach | Verdict | Mode | Key Finding | Session |
+    93	|----------|---------|------|-------------|---------|
+    94	| Sieve weights formula | FAIL | I | Parity barrier (Selberg) | 4 |
+    95	| Batch Möbius sieve (recursive halving phi) | FAIL | E | Split prime set in half at each recursion level. Tree depth O(log(pi(√x))) but branching 2^{half_size}. Total leaves = 2^{pi(√x)} same as unpruned standard tree. At x=10^4, 30x slower than Lucy_Hedgehog despite pruning 64% of terms. Branching at x=10^6 would be 2^84 ~ 10^25. Mathematically identical to standard IE, just reordered. | 36 |
+    96	| Automata digit DP prime counting | FAIL | I | Product DFA for B-rough numbers: O(M·log x) via digit DP where M=primorial(B). Timing: M=210 at x=10^6 in 6ms, M=30030 at x=10^8 in 0.9s. DFA provably minimal (all M states distinguishable). Gap: at B=13, false positives ≈ true primes. Need B≥√x → M=e^{√x} states. | 36 |
+    97	| Randomized inclusion-exclusion for pi(x) | FAIL | I | Random subset sampling: std ~2^k/√(samples). For x=500 (k=8), need ~370K samples vs 256 full IE terms. Variance reduction impossible — randomization makes IE strictly worse. | 36 |
+    98	| Convolution sieve via polynomial NTT | FAIL | E | Π_{p≤B}(1-z^p) mod z^{x+1}: each factor sparse (2 terms) but π(B) factors give O(π(B)·x log x) total ~ O(x^{3/2}/log x), worse than Meissel-Lehmer. Evaluation at roots of unity gives Ramanujan sums, no new info. | 36 |
+    99	| Redheffer/Mertens matrix | FAIL | E | O(x^{2/3}) same as pi(x) | 8 |
+    100	| Transfer matrix sieve (matrix exponentiation) | FAIL | E | State space = lcm(primes up to sqrt(x)) ~ exp(sqrt(x)). Even blocking into manageable chunks: total work ~ 10^100 vs ML's 10^67 for x=10^100. Depth-k sieve with k>2 just reinvents Meissel-Lehmer. | 40 |
+    101	| Multiplicative convolution shortcut (Dirichlet) | FAIL | E | psi(x)=-sum mu(d)ln(d)floor(x/d) is exact but O(sqrt(x)) via hyperbola. Floor function breaks Euler product factorization. Infinite series factorizes but finite truncation does not. | 40 |
+    102	| Wheel factorization | PARTIAL | - | Constant factor only, NOT complexity class | 8 |
+    103	| Hierarchical decomposition | FAIL | E | Legendre tree depth = pi(sqrt(x)) | 7 |
+    104	| Buchstab tree pruning/memo | FAIL | E | Memoized Buchstab IS Lucy DP; O(x^{3/4}) distinct args, O(x^{2/3}) with DR | 11 |
+    105	| Vaughan identity exact computation | FAIL | E | Type I/II/bilinear all O(x^{2/3}) individually; designed for bounds not computation | 11 |
+    106	| Legendre sieve FFT/NTT | FAIL | E | floor(x/d) breaks multiplicativity; cannot use convolution acceleration | 11 |
+    107	| Alternative DP formulations (4 variants) | FAIL | E | Largest/smallest prime factor DP, P_k DP, Mobius DP all reduce to O(x^{2/3}) | 11 |
+    108	| Dirichlet series extrapolation to s=0 | FAIL | E | Pole at s=1 makes extrapolation unstable; IS Lagarias-Odlyzko method | 11 |
+    109	| Double hyperbola decomposition | FAIL | E | No way to split pi(x) into two independently O(x^{1/2})-computable pieces | 11 |
+    110	| Mertens function shortcuts | FAIL | E | O(x^{2/3}) -- same as pi(x); H-T gives O(x^{3/5}) for M(x) but doesn't transfer to pi(x) | 6,11 |
+    111	| M(x) hyperbola factorization | FAIL | E | No mu=f*g with both partial sums easy; self-referential structure fundamental | 11 |
+    112	| M(x)->pi(x) transfer | FAIL | E | H-T O(x^{3/5}) for M(x) exploits signed cancellation; pi(x) is positive count, no analog | 11 |
+    113	| Dirichlet series / prime zeta | FAIL | E | Perron integral = explicit formula | 6 |
+    114	| Prime zeta P(s) Mobius extraction | FAIL | E | P(s) poles at rho, rho/2, rho/3... MORE terms than explicit formula; Vandermonde recovery cond~10^26 | 13 |
+    115	| CRT reconstruction of pi(x) | FAIL | E | pi(x) mod q costs same O(x^{2/3}) as pi(x); CRT multiplies cost by k moduli; entropy ratio ~1.0 | 13 |
+    116	| Prime race E(x;q) for CRT | FAIL | E | E(x;4) spectral flatness/power-law same as pi(x)-Li(x); 40 L-function zeros give 0% exactness; K_exact~sqrt(x); p(n)mod q has near-max entropy; L-zeros INDEPENDENT of zeta zeros so CRT costs MORE | 20 |
+    117	| Recursive pi(x/d) identity search | FAIL | E | Best: pi(x)=pi(x/3)+pi(x/5)+2*pi(x/7)+g(x), but g(x) grows as x^{0.22}; correction encodes primes in interval | 13 |
+    118	| Smooth number elimination | FAIL | I | 12% reduction, insufficient | 5 |
+    119	| Bit-by-bit construction | WORKS | E | log2(p(n)) pi(x) calls, each O(x^{2/3}) | 5 |
+    ... (15 more lines)
+Let me add the new entries. I'll append to the Sieve section and also update the count.
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update SESSION_INSIGHTS.md:
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    0	# Session-by-Session Key Insights
+    1	
+    2	Detailed findings from each research session. Read the relevant session
+    3	if you need deep context on a specific topic. For a quick overview,
+    4	see the Status section of CLAUDE.md.
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1152 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1130	5. **Ergodic Fast-Forward** — Model prime gaps as dynamical system, test fast-forwardability.
+    1131	   FAIL (I): Positive Lyapunov exponent (chaotic). R^2 < 0.006 for linear recurrence.
+    1132	   Real gaps have HIGHER entropy than Cramér random model at short range (surprising).
+    1133	
+    1134	6. **Multiplicative Convolution Shortcut** — Express pi(x) as factored Dirichlet convolution.
+    1135	   FAIL (E): Reduces to hyperbola method O(sqrt(x)). Floor function breaks multiplicativity.
+    1136	
+    1137	### Key Insights
+    1138	(a) **Carry propagation boundary** is the most novel measurement: the easy-to-hard transition
+    1139	    in binary representation of p(n) is a ~4-bit-wide sigmoid at ~60% of bit positions.
+    1140	    This quantifies exactly how R^{-1}(n) fails: it gets all MSBs right but the transition
+    1141	    to random is sharp, leaving no room for hierarchical bit recovery.
+    1142	
+    1143	(b) **Wavelet compression scaling N^{0.75}** is between sparse and dense. The 1/f^{1.7}
+    1144	    spectrum means the correction has MORE structure than white noise (which would be N^1)
+    1145	    but far less than what polylog requires (N^0 or N^epsilon).
+    1146	
+    1147	(c) **Prime gaps are more chaotic than Cramér model** at short range (higher conditional
+    1148	    entropy at order 3). This is a minor finding but consistent with the pseudorandomness
+    1149	    results from S35.
+    1150	
+    1151	(d) **6 approaches closed, ~531 total.** No breakthrough. All fresh-perspective ideas
+    1152	    reduce to known barriers within 1-2 steps of analysis.
+    1153	
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now create the session archive and do cleanup.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session41_engineering.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session41_engineering.md
+Now run the cleanup checks.
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+  [Bash] find /apps/aplikacijos/prime-research -name "__pycache__" -type d 2>/dev/null
+    <tool_use_error>Cancelled: parallel tool call Bash(find /apps/aplikacijos/prime-research/ex…) errored</tool_use_error>
+  [Bash] find experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "DONE"
+    DONE
+  [Bash] find . -name "__pycache__" -type d 2>/dev/null; echo "DONE"
+    DONE
+All clean — no missing results files, no __pycache__. Now update CLAUDE.md count and save run state.
+  [Edit] /apps/aplikacijos/prime-research/CLAUDE.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/CLAUDE.md
+    1	# Prime Research: Computing p(n) Exactly Without Bruteforcing
+    2	
+    3	## Goal
+    4	Find an O(polylog) algorithm to compute the nth prime p(n) exactly.
+    5	Target: p(10^100) in <1 second, 100% accurate.
+    6	
+    7	## Status (April 2026)
+    8	- **525+ approaches tested** across 37 sessions, 197+ sub-agents
+    9	- **All known paths closed** but no proof that polylog is impossible
+    10	- **Problem is genuinely open** -- no unconditional lower bound beyond Omega(log x)
+    11	- **Proving impossibility faces Natural Proofs barrier** -- as hard as P != NP (S23)
+    12	- **pi(x) mod 2 is random-like in 20+ structural measures** (S35)
+    13	- Best exact: `algorithms/v10_c_accelerated.py` -- O(p(n)^{2/3}), p(10^9) in 0.175s
+    14	- Best approximate: R^{-1}(n) -- O(polylog), ~50% digits correct
+    15	- **TECH DEBT RESOLVED (S37):** All 351 experiment scripts now have _results.md companions.
+  [Edit] /apps/aplikacijos/prime-research/CLAUDE.md
+    The file /apps/aplikacijos/prime-research/CLAUDE.md has been updated successfully.
+  [Bash] echo 29 > .run_state
+    (Bash completed with no output)
+## Session 41 Summary
+
+**Task #2 (Zeta Zero Structural Patterns)** was already COMPLETED (Session 25). All 4 FOCUS_QUEUE tasks are done. Pivoted to productive engineering work per CLAUDE.md.
+
+### What was done:
+
+1. **Lehmer vs Lucy DP benchmark** (`experiments/sieve/lehmer_vs_lucy.py`) — Implemented three C pi(x) methods. **Lucy DP is 5-13x faster** than naive Lehmer. The recursive phi function is the bottleneck. Primecount's speed comes from segmented sieve infrastructure, not formula decomposition.
+
+2. **Wheel-30 + prefetch optimization** (`experiments/sieve/segmented_lucy.py`) — Only **2-35% speedup**, diminishing at larger x. The 100-1000x gap to primecount is algorithmic (Gourdon), not parametric.
+
+3. **Documented novel finding** (`novel/carry_propagation_boundary.md`) — S40's per-bit difficulty sigmoid (4-bit transition width at ~60% of bits) written up as genuinely novel measurement.
+
+4. **Literature check** — No new breakthroughs in April 2026.
+
+### Key insight:
+Matching primecount requires reimplementing Gourdon's full algorithm from scratch — not worth it for this project. v10 with Lucy DP is adequate for understanding barriers.
+
+**533+ approaches closed. No breakthrough. Project in monitoring/engineering phase.**
+--- Session ended ---
+The background literature search agent completed — it couldn't access the web, but I already covered that with direct WebSearch calls earlier. No new findings beyond what's in `state_of_art_2026.md`. Session 41 is complete.
+--- Session ended ---
+Sleeping 600 seconds before next run...
