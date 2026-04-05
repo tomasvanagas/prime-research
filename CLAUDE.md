@@ -5,7 +5,7 @@ Find an O(polylog) algorithm to compute the nth prime p(n) exactly.
 Target: p(10^100) in <1 second, 100% accurate.
 
 ## Status (April 2026)
-- **633+ approaches tested** across 31 sessions, 180+ sub-agents
+- **641+ approaches tested** across 33 sessions, 189+ sub-agents
 - **All known paths closed** but no proof that polylog is impossible
 - **Problem is genuinely open** -- no unconditional lower bound beyond Omega(log x)
 - **Proving impossibility faces Natural Proofs barrier** -- as hard as P != NP (S23)

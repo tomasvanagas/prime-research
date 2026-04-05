@@ -782,3 +782,81 @@ genuinely novel mathematics or progress on #TC^0 subset NC?.
 - Conditional lower bounds (Brandt MKtP framework, 2024)
 - Constructive approach: try to BUILD a poly-size circuit (no evidence it exists or doesn't)
 - Wait for breakthroughs in TC^0 lower bounds from complexity theory community
+
+---
+
+## Session 32: Fresh Perspective (2026-04-05)
+
+**Approach:** Started from first principles without reading closed paths. Tested 8 experiments in parallel using analogies from FMM, compressed sensing, quantum computing, tropical geometry, and spectral theory.
+
+**8 experiments, ALL closed:**
+1. Zero sum convergence acceleration (6 methods): errors GROW as N^{0.8-1.0}
+2. Recursive prime counting (FMM-inspired): 99.9% work at depth 0, Θ(x^{2/3})
+3. Tropical/min-plus gap structure: Hankel rank ratio 0.98 (= random), R² < 0.002
+4. Trace formula/moment method: moments diverge, Weil duality circular, full-rank
+5. Contour integral: equivalent to zero sum by residue theorem
+6. Hybrid analytic+sieve: O(x^{1/2+ε}), matches Lagarias-Odlyzko exactly
+7. Hilbert-Pólya trace: GUE analogy breaks (unbounded spectrum), δ(x) incompressible
+8. Literature 2025-2026: TG Kernel paper interesting (~1200 zeros for 10^8-digit x) but doesn't break barrier
+
+**Most interesting finding:** The TG Kernel paper (arxiv 2506.22634) shows ~1200 zeros suffice for π(x) at astronomical x. This is much fewer than the naive O(x^{1/2}/log x), but zero computation cost remains the bottleneck. The barrier may be more about arithmetic complexity on huge numbers than zero count.
+
+**Key quantitative results:**
+- δ(x)/(√x/log x) is incompressible: poly deg-50 RMSE ≈ deg-2 RMSE (0.205 vs 0.212)
+- SVD of zero-contribution matrix: 99% energy needs 133/500 components
+- Prime gaps MI: 0.42% of entropy between consecutive gaps
+- Truncated zero sums: K=0 often beats K=100-500 (conditional convergence)
+
+**Total closed paths:** 640+ across 32 sessions.
+
+## Session 33: Deep Focus — Conditional Algorithms (2026-04-05)
+
+**Task:** FOCUS_QUEUE Task #4. Systematic investigation of the best exact algorithm
+for p(n) under standard conjectures (GRH, RH, Elliott-Halberstam, Cramér's).
+
+**7 experiments across 4 parallel sub-agents, ALL closed:**
+
+(a) **GRH batch Miller testing:** GRH bound 2ln²(n) is conservative (only witnesses {2,3}
+    needed to 10^6). Batch testing gives 1.02x speedup (negligible — each number needs
+    independent modular exponentiation). Cost O(n·polylog n), worse than sieve.
+
+(b) **GRH explicit formula optimal T:** With 1000 zeros, error ≥18 for x≥10^4.
+    T_min = O(√x·log²x) confirmed. Individual zeros at γ~200-400 still contribute >0.5
+    to pi(10^6). No way to use fewer than O(√x) zeros. GUE-random phases incompressible.
+
+(c) **Elliott-Halberstam and counting:** EH controls equidistribution, NOT total count.
+    Summing li(x)/φ(q) across residue classes recovers li(x) (same error as direct).
+    Residue-class approach is 10^3-10^6x SLOWER than direct computation.
+
+(d) **Gap structure under Cramér:** Cramér model fits (max gaps 40-60% of ln²p). R⁻¹(n)
+    search interval has O(ln x) primes. But identifying which is p(n) requires pi(x) at
+    the boundary. Counting is the bottleneck, not searching.
+
+(e) **Schoenfeld explicit bounds under RH:** Sieve in Schoenfeld interval is O(x^{1/2+ε}),
+    better than Meissel-Lehmer O(x^{2/3}) asymptotically, but still exponential in input bits.
+    1000 zeros reduce error by only 21% at x=10^6. Need O(√x·log²x) zeros for exactness.
+
+(f) **Cramér search + counting bottleneck:** Walk phase O(ln⁴x) trivial (0-114 steps).
+    Counting phase dominates: 25% at n=5M, heading to 100%. At x=10^100:
+    count=10^66.7 ops vs walk=10^9.5 ops (factor 10^57 gap).
+
+(g) **Best conditional algorithm (all conjectures combined):**
+    | Assumption | Best complexity |
+    |---|---|
+    | Unconditional (Meissel-Lehmer) | O(x^{2/3}) |
+    | RH + Turing zeros | O(x^{2/3+ε}) — WORSE |
+    | RH + Odlyzko-Schönhage batch | O(x^{1/2+ε}) — best known |
+    | GRH | O(x^{1/2+ε}) — same |
+    | GRH + EH + Cramér | O(x^{1/2+ε}) — same |
+    | Approximate only (R⁻¹) | O(polylog) — ~50% digits |
+
+**Key insight: The √x barrier is fundamental across ALL standard conjectures.**
+- RH alone with naive zeros is WORSE than unconditional (O(x^{2/3+ε}) vs O(x^{2/3}))
+- RH only helps when combined with batch zero computation (Odlyzko-Schönhage)
+- GRH, Elliott-Halberstam, and Cramér's conjecture all address the WRONG subproblem
+  (primality testing, distribution, or gap structure) — none reduce the counting cost
+- The counting bottleneck is information-theoretic: exact pi(x) encodes O(√x) zeta zeros
+
+**8 new closed paths. Total approaches: 641+ across 33 sessions.**
+
+Experiments saved: experiments/analytic/conditional/ (4 scripts + 4 results files)

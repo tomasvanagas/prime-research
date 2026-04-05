@@ -2,7 +2,7 @@
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-31, 180+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-32, 185+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -21,6 +21,7 @@ Last updated: 2026-04-05 (Sessions 1-31, 180+ sub-agents)
 | PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
 | DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
 | Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
 | Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
 | Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
 | Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
@@ -475,8 +476,8 @@ Last updated: 2026-04-05 (Sessions 1-31, 180+ sub-agents)
 
 ## Summary Statistics
 
-- **Total approaches tested:** 628+
-- **FAIL:** ~444 (confirmed impossible or impractical)
+- **Total approaches tested:** 641+
+- **FAIL:** ~452 (confirmed impossible or impractical)
 - **PARTIAL:** ~19 (works partially but doesn't meet target)
 - **WORKS:** ~8 (correct but O(x^{2/3}) or worse, or TC^0 but conditional)
 - **EXISTS:** ~3 (formulas exist but computationally useless)
@@ -622,3 +623,17 @@ Last updated: 2026-04-05 (Sessions 1-31, 180+ sub-agents)
 | True tensor rank of chi_P (3-way) | DIAGNOSTIC | - | Tensor rank ~ d^{1.5} = 2^{N/2} = sqrt(x). N=6: rank=5 (random=7), N=9: rank≤19 (random=29), N=12: rank≈67 (random>100). chi_P 25-35% BELOW random but still EXPONENTIAL. Confirms N/2 universality. Close to generic d²/3 bound. See experiments/circuit_complexity/tensor_rank_robust.py | 31 |
 | BDD size / sensitivity / decision tree | FAIL | - | BDD grows as 1.661^N (R²=0.997). chi_P ~30% simpler than random (ratio 0.69-0.71). Sensitivity = block sensitivity = certificate complexity = N for N≥7. Decision tree depth = N. All N variables essential. See experiments/circuit_complexity/min_circuit_size.py | 31 |
 | F_2 correlation profile (degree-d polynomials) | DIAGNOSTIC | - | Degree-0,1 dominate: W(0)+W(1) = 47%(N=6) to 68%(N=16). W(1) z-score grows from 3 to 1513 (parity). W(d≥2) BELOW random (z-scores -2 to -30). After bias+parity removal, chi_P more pseudorandom than random. No exploitable low-degree F_2 structure. See experiments/circuit_complexity/f2_correlation_profile.py | 31 |
+| Recursive prime counting (FMM-inspired) | FAIL | E | Aggressive recursion achieves O(log log x) depth but work catastrophically concentrated at depth 0: Theta(x^{2/3}/ln x). phi recursion tree has O(x^{2/3}/ln x) leaves. FMM analogy fails: no smooth kernel. Hierarchical sieve: large primes make O(x^{2/3}) irregular removals. Reduces to Meissel-Lehmer. See experiments/wildcard/recursive_prime_counting.py | 32 |
+| Tropical/min-plus fast-forward via gap structure | FAIL | I | Hankel rank 418/500 (ratio to random: 0.98). Corr dim grows with embedding (2.1→5.8, no attractor). Linear R²<0.001, quadratic R²<0.002. MI(g_n;g_{n+1})=0.013 bits (0.4% of entropy). Min-plus accuracy 7-11%. Algebraic obstruction: p(n)=sum(gaps) needs (+,×) not (min,+). Gaps indistinguishable from IID. See experiments/wildcard/tropical_prime_gaps.py | 32 |
+| Trace formula / moment method for zero sums | FAIL | I | Moment expansion S(x)=Σ(lnx)^k/k!·M_{k-1} DIVERGES: |M_k|~γ_max^k>>k!, radius of convergence x<1.0007. GUE trace analogy breaks: bounded eigenvalues required. Weil geometric side circular (needs all primes to x). Effective rank ~N (no compression). Gaussian damping unfavorable trade-off. 4 independent failures. See experiments/wildcard/trace_formula_approach.py | 33 |
+| Contour integral evaluation of zero sum | FAIL | E | Contour ∮(ζ'/ζ)(s)·x^s/s ds equivalent to zero summation by residue theorem. Nyquist: quadrature points ≥ enclosed zeros. Smoothing trades accuracy for fewer zeros (uncertainty principle). SVD of zero-contribution matrix: 99% energy needs 133/500 components. No sparse representation in any basis. See experiments/wildcard/contour_integral_zerosum.py | 32 |
+| Hybrid analytic + local sieve | FAIL | E | R⁻¹(n) error O(√p(n)) with ratio 0.05-0.25. Truncated zero sum often WORSE than none (K=0 error 12 vs K=500 error 208 at n=50000). Optimal hybrid complexity O(x^{1/2+ε}) matches Lagarias-Odlyzko. Iterative refinement oscillates. Cannot beat O(√x) zeros required. See experiments/wildcard/hybrid_analytic_sieve.py | 32 |
+| Hilbert-Pólya trace / GUE model / functional equation | FAIL | E,I | GUE: correct statistics, wrong values (std≈20-60). Moments: M_k~γ_max^k diverges. Selberg trace: circular (spectral↔geometric duality). Functional equation: doesn't change kernel. δ(x) incompressible: poly deg-50 RMSE=0.21≈deg-2. 90% Fourier power needs 138/500 modes. See experiments/wildcard/hilbert_polya_trace.py | 32 |
+| Convergence acceleration of zeta zero sum | FAIL | I | Richardson, Euler-Maclaurin, Padé, Cesàro, Aitken Δ², Shanks tested. Errors GROW as ~N^{0.8-1.0} (random walk). Best: Shanks(3) gives ~10x constant improvement. Root cause: each zero carries independent info (GUE-random phases). No structured error terms to exploit. See experiments/wildcard/zero_sum_acceleration.py | 32 |
+| GRH batch Miller testing for pi(x) | FAIL | E | GRH Miller (witnesses ≤2ln²n) correct to 10^5. Batch testing: 1.02x speedup (negligible). Cost O(n·polylog n) — worse than sieve O(n·loglog n) and much worse than Meissel-Lehmer O(x^{2/3}). Each number requires independent modular exponentiation. See experiments/analytic/conditional/grh_miller_batch.py | 33 |
+| GRH explicit formula optimal T | FAIL | E | Under GRH, need T=O(√x·log²x) zeros for error<0.5. With 1000 zeros, error≥18 for x≥10^4. Individual zeros at γ~200-400 still contribute >0.5 to pi(10^6). No way to use fewer than O(√x) zeros. Confirms Lagarias-Odlyzko at O(√x·polylog x). See experiments/analytic/conditional/grh_miller_batch.py | 33 |
+| Elliott-Halberstam for pi(x) counting | FAIL | E | EH controls distribution in residue classes, not total count. Summing li(x)/φ(q) over coprime residues gives li(x) (same error as direct). Residue-class method 10^3-10^6x SLOWER than direct primepi. EH is about equidistribution, not enumeration. See experiments/analytic/conditional/elliott_halberstam_gaps.py | 33 |
+| Gap structure (Cramér) for p(n) | FAIL | I | Cramér model fits well (max gaps 40-60% of ln²p). R⁻¹(n) search interval has O(ln x) primes. BUT identifying which is p(n) requires pi(x) at boundary — the counting bottleneck. At x=10^100: counting 10^57x more expensive than searching. Cramér solves wrong problem. See experiments/analytic/conditional/elliott_halberstam_gaps.py | 33 |
+| Schoenfeld interval sieve under RH | FAIL | E | |pi(x)-li(x)|<√x·ln(x)/(8π). Sieve cost O(√x·ln x·ln ln x)=O(x^{1/2+ε}), better than ML O(x^{2/3}) asymptotically but still exponential in input bits. Iterative refinement with 1000 zeros: only 21% error reduction at x=10^6. Need O(√x·log²x) zeros for exactness. See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
+| Cramér search + counting bottleneck | FAIL | E | Walk phase O(ln⁴x) trivial (0-114 steps verified). Counting phase pi(x₀) grows to dominate: 25% at n=5M, heading to 100%. At x=10^100: count=10^66.7 ops vs walk=10^9.5 ops. No conjecture reduces counting below O(x^{1/2+ε}). See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
+| Best conditional algorithm (all conjectures) | FAIL | E | Under RH+Odlyzko-Schönhage: O(x^{1/2+ε}). RH alone with Turing zeros: O(x^{2/3+ε}), WORSE than unconditional. GRH, EH, Cramér all fail to improve beyond O(x^{1/2+ε}). For p(10^100): ~10^51 ops minimum. The √x barrier is fundamental — no standard conjecture breaks it. See experiments/analytic/conditional/best_conditional_algorithm.py | 33 |
