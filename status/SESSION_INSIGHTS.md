@@ -980,3 +980,55 @@ cancellation — analogous to geometric series collapsing many oscillating terms
 closed form.
 
 Experiments saved: experiments/wildcard/ (5 new scripts + 5 results files)
+
+## Session 36b — Deep Focus: Kt Complexity of delta(n) (2026-04-05)
+
+**Task:** FOCUS_QUEUE Task #1 — deep dive extending Session 20's Kt analysis.
+
+**New experiments (8 total):**
+1. **PACF analysis**: AR(7) is optimal by BIC. PACF drops to 0.056 at lag 2,
+   below 0.02 by lag 5. Long-range ACF is indirect (from short AR, not true
+   long memory). PACF ~ k^{-1.33} (α > 1 = finite effective AR order).
+
+2. **Compression comparison**: bz2 (36.5%) > lzma (43.0%) > gzip (56.1%).
+   diff(delta) compresses better (31-37%), confirming AR(1) structure.
+   delta/random ratio: 0.55 (bz2), 0.60 (lzma), 0.71 (gzip).
+
+3. **Compression scaling with N**: Bits/value converges to ~5.8 by N=10000.
+   Power law: N^{-0.059} ≈ constant. Entropy rate is finite.
+
+4. **Kt(1..N) growth**: Kt ~ 5.58*N + 0.023*N*log(N). The N*log(N) term is
+   negligible. Total information is EXTENSIVE (linear in N).
+
+5. **Block MI scaling**: MI ~ 0.55*log(L) - 1.33. Grows with block size,
+   confirming long-range correlations between distant blocks.
+
+6. **DFA/Hurst**: H = 1.31 (between 1/f and Brownian motion). Crossover at
+   scale ~572: H_small = 1.41, H_large = 1.19. Two-regime structure.
+
+7. **Transfer entropy**: TE(delta→delta) = 0.051 >> TE(n→delta) = 0.013.
+   Past delta is 4x more informative than n. n mod 30 contributes 0.003 bits.
+
+8. **Spectral algebraic structure**: The 1/f^1.70 spectrum is a smooth continuum.
+   No discrete lines, no algebraic relations among coefficients. 50% power in
+   8 frequencies, but RMSE < 1 requires 41182/50001 modes (82%). Max error < 1
+   requires ALL modes. 4/10 peaks match zeta zeros but likely chance.
+
+**Key insight:** Session 20 left open "does the 1/f spectrum have exploitable
+algebraic structure?" Answer: **NO.** The spectrum is a genuine continuum,
+not decomposable into sparse computable oscillations. The spectral tail
+(frequencies contributing individually < 0.001% power) is collectively
+essential for exact values, matching the communication matrix rank result.
+
+**Quantitative barrier summary:**
+- Entropy rate: ~5.8 bits/value (finite, not growing)
+- Total Kt for N values: ~5.8*N bits (extensive)
+- Direct dependence on n: zero (transfer entropy confirms)
+- Spectral sparsifiability: 82% of modes needed for RMSE < 1
+- AR model order: 7 (short direct memory, long indirect memory)
+
+**Status:** Task #1 (Kt complexity of delta(n)) is now COMPLETE.
+The R^{-1}(n) + delta(n) decomposition is a dead end for polylog algorithms.
+
+Also: converted all .txt results to .md format in kt_complexity/.
+Experiments saved: experiments/information_theory/kt_complexity/ (2 new scripts + 2 results)

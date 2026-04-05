@@ -89,4 +89,25 @@ massively cancel. Analogous to Σ cos(kθ) = closed form: can the zero sum
 
 ---
 
-## Discovered: Session 10, 2026-04-04. Quantified: Session 36, 2026-04-05.
+## Session 36b: Definitive Kt Measurements
+
+Deep analysis of the delta(n) = p(n) - round(R^{-1}(n)) sequence (N=100000):
+
+| Measure | Value | Implication |
+|---------|-------|-------------|
+| Entropy rate | 5.8 bits/value | Finite, converged by N=10K |
+| Total Kt(1..N) | ~5.58*N bits | EXTENSIVE (linear in N) |
+| AR order (BIC) | 7 | Short direct memory |
+| Hurst exponent | 1.31 | Long-range persistent correlations |
+| TE(n→delta) | 0.013 bits | n adds NO information |
+| TE(delta→delta) | 0.051 bits | Past delta is 4x more informative |
+| Spectral modes for RMSE<1 | 82% of all modes | NOT sparsifiable |
+| Spectral algebraic structure | None found | Smooth continuum |
+
+**Conclusion:** The R^{-1}(n) + delta(n) decomposition is a dead end.
+All predictive power comes from sequential history, not from n.
+The spectral structure (1/f^1.70) is real but not exploitable.
+
+---
+
+## Discovered: Session 10, 2026-04-04. Quantified: Sessions 36/36b, 2026-04-05.

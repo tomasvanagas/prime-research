@@ -1,4 +1,4 @@
-# Closed Paths: Master Lookup (655+ Approaches)
+# Closed Paths: Master Lookup (658+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
@@ -540,6 +540,9 @@ Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
 | Predict sign(delta(n)) from n | MARGINAL | I | Best 55.9% accuracy vs 50% random. Only from long sign runs | 20 |
 | Explicit formula partial sums (K zeros) | FAIL | E | Diverges: error grows linearly with K at x<10^6 (conditional convergence) | 20 |
 | Kt(delta) via incremental entropy | INCONCLUSIVE | - | Growth ~0.22*log(n) but this is statistical, not algorithmic Kt | 20 |
+| Kt deep: PACF/compression/DFA/transfer entropy | FAIL | I | AR(7) by BIC; entropy rate 5.8 bits/val (finite, converged by N=10K); Kt(1..N) ~ 5.58*N (linear); Hurst H=1.31 with crossover at scale 572; TE(n→delta) = 0.013 << TE(delta→delta) = 0.051; n adds NO info beyond delta history | 36b |
+| Spectral algebraic structure of delta(n) | FAIL | I | 1/f^1.70 spectrum is smooth continuum. No discrete lines. No algebraic relations among top coefficients. RMSE < 1 needs 82% of modes. Max error < 1 needs ALL modes. 4/10 peaks match zeta zeros but likely chance (1000 candidates). Definitively answers Session 20's open question | 36b |
+| R^{-1}(n) + delta(n) decomposition for polylog | CLOSED | I | Complete analysis across S19-20-36b: delta(n) has 5.8 bits/value entropy rate, zero dependence on n (TE confirms), no spectral shortcuts, and requires O(N) total bits. This decomposition is a dead end for polylog algorithms | 36b |
 | Low-dim manifold for delta sequence | FAIL | I | Correlation dimension grows with embedding dim (no saturation) | 20 |
 | SVD low-rank approx of delta | FAIL | I | S_k ~ k^{-1.1} power law, need 71% of SVs for 99.9% energy | 20 |
 | Conditional entropy H(delta|n mod m) | FAIL | I | Even n mod 1000 only captures 31% of delta entropy | 20 |
@@ -657,4 +660,5 @@ Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
 | Smooth approximation for pi(x) parity | FAIL | I | R(x) accuracy for pi(x) mod 2 → 0.50 (random) as N grows. Smooth part provides ZERO parity information. Top-2 SVs capture only 12% of variance at N=14 (decreasing as 1/N). Parity entirely determined by oscillatory (zeta zero) contributions. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
 | Unbalanced communication matrix rank | DIAGNOSTIC | - | For k_LSB > N/2, actual rank EXCEEDS formula 2^{min(k,N-k)-1}+2 — often full row rank. Formula only tight for k ≤ N/2. SVD spectrum flat (power-law decay, no gap). Each additional SV contributes small equal increment. Polynomial rank for k=2logN but component functions g_i(MSBs) are as hard as pi(x). See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
 | Depth-2 threshold circuits for pi(x) LSB | FAIL | I | PTF degree = N/2 exactly (LP-verified N=4-12, ratio 0.50 stable from N=6). Requires C(N,N/2) ~ 2^N/sqrt(N) monomials = EXPONENTIAL. Single LTF accuracy → 0.50 (random). Depth-2 heuristic with k=64 gates fails for N≥8. Matches random function PTF degree (Gotsman 1994). Does NOT rule out poly-depth TC^0. See experiments/circuit_complexity/threshold_circuit_construction.py | 35 |
+| SAT-based minimum circuit size for pi(x) mod 2 | INCONCLUSIVE | - | N=4: exact 6 gates (same as random). N=5-8 upper bounds: 12, 39, 81, 153 (grow ~2x/bit). N=9-10 unreliable (Shannon timeout, DNF fallback gives loose 2015/4829). pi(x)mod2 behaves like random function — no structural advantage. Need ABC or dedicated tools for tight bounds at N>=9. See experiments/circuit_complexity/sat_circuit_minimization.py | 35,36b |
 | Adelic local-global prime counting (CRT mod q) | FAIL | E | 6th CRT variant. pi(x) mod q via AP decomposition 100-1000x SLOWER than pi(x) direct. R(x) error grows as O(sqrt(x)), mod-q correctness degrades to 0/6 at x=10^6. Liouville/Mertens parity ~50% (random). floor division not a ring homomorphism kills all modular decomposition. 3-6 moduli suffice for CRT but each costs O(x^{2/3}). See experiments/wildcard/adelic_prime_count.py | 35 |

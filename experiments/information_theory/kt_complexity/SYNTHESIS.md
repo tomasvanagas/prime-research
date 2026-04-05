@@ -294,21 +294,77 @@ finite linear combination captures the sum.
 
 ---
 
+## Session 36 Update: Deep Analysis and Spectral Structure
+
+Session 36 extended the analysis with 8 new experiments addressing the open
+question from conclusion 5 above.
+
+### New Results (Session 36)
+
+1. **PACF reveals AR(7) direct structure**: Despite ACF(200) = 0.84, PACF drops
+   to 0.056 at lag 2. BIC selects AR(7). Long-range correlations are *indirect*
+   (from short-range AR, not true long memory). PACF ~ k^{-1.33} (α > 1).
+
+2. **Hurst exponent H = 1.31 with crossover**: DFA confirms persistent correlations.
+   H_small = 1.41 (scales < 572), H_large = 1.19 (scales > 572). Two regimes.
+
+3. **Entropy rate converges to ~5.8 bits/value**: Compression ratio plateaus by
+   N=10000. bits/val ~ N^{-0.059} (essentially constant). Information is EXTENSIVE.
+
+4. **Kt(1..N) ~ 5.58*N + 0.023*N*log(N)**: Linear growth with negligible log(N)
+   correction. Total information content is proportional to N.
+
+5. **Transfer entropy**: TE(delta→delta) = 0.051 >> TE(n→delta) = 0.013.
+   Past delta is 4x more informative than n. n mod 30 contributes only 0.003 bits.
+
+6. **Multi-algorithm compression**: bz2 = 36.5%, lzma = 43.0%, gzip = 56.1%.
+   diff(delta) compresses better (31-37%), confirming AR(1) removes most redundancy.
+
+7. **1/f spectrum is a smooth continuum**: No discrete spectral lines. 50% power in
+   8 frequencies, but RMSE < 1 requires 41182 modes (82% of spectrum). Max error < 1
+   requires ALL modes. No algebraic relations among coefficients.
+
+8. **Spectral peaks weakly correlate with zeta zeros**: 4/10 top peaks match at 5%
+   error, but likely chance given 1000 candidate zeros.
+
+### Updated Conclusion
+
+**The 1/f spectrum does NOT have exploitable algebraic structure.** (Answering
+the open question from Session 20.) The spectrum is a genuine continuum. Exact
+reconstruction requires ~82% of all Fourier modes, mirroring the communication
+matrix rank result from Session 17. The delta(n) decomposition cannot yield a
+polylog algorithm — each delta value carries ~5.8 irreducible bits.
+
+### Updated Verdict
+
+The Kt complexity investigation is **COMPLETE**. Key conclusions:
+- Kt(delta(n)|n) = O(log n) trivially → wrong measure
+- Circuit complexity: empirical evidence is **consistent with barrier** but not proof
+- The 1/f^{1.7} spectrum is structural but not exploitable
+- All information-theoretic proxies point to EXTENSIVE (linear) information content
+- No shortcut exists via the R^{-1}(n) + delta(n) decomposition
+
+---
+
 ## Files Produced
 
 | File | Contents |
 |------|----------|
 | kt_estimation.py | BFS program search, expression fitting, conditional compression |
-| kt_estimation_results.txt | Kt growth analysis: ~0.22*log(n) |
+| kt_estimation_results.md | Kt growth analysis: ~0.22*log(n) |
 | entropy_spectral.py | Block entropy, PSD, wavelet, MI |
-| entropy_spectral_results.txt | PSD ~ f^{-1.69}, MI ~ k^{-0.34} |
+| entropy_spectral_results.md | PSD ~ f^{-1.69}, MI ~ k^{-0.34} |
 | nonlinear_prediction.py | Direct/AR prediction, sign, mod prediction |
-| nonlinear_prediction_results.txt | R² < 0 for all direct methods |
+| nonlinear_prediction_results.md | R² < 0 for all direct methods |
 | binary_clustering.py | Binary structure, clustering, transitions, LZ, ApEn |
-| binary_clustering_results.txt | LZ = 27% of random, spectral gap = 0.003 |
+| binary_clustering_results.md | LZ = 27% of random, spectral gap = 0.003 |
 | effective_dimension.py | SVD, correlation dim, MDL, rate-distortion |
-| effective_dimension_results.txt | S_k ~ k^{-1.1}, corr dim ~1.5 |
+| effective_dimension_results.md | S_k ~ k^{-1.1}, corr dim ~1.5 |
 | convergence_rate.py | Explicit formula convergence with zeta zeros |
-| convergence_rate_results.txt | Partial sums diverge, need O(sqrt(x)) zeros |
+| convergence_rate_results.md | Partial sums diverge, need O(sqrt(x)) zeros |
 | zero_convergence.py | R-function based convergence (earlier version) |
+| kt_deep_analysis.py | Session 36: PACF, compression scaling, DFA, transfer entropy |
+| kt_deep_analysis_results.md | AR(7) structure, H=1.31, entropy rate 5.8 bits/val |
+| spectral_algebraic_structure.py | Session 36: spectral peaks, algebraic relations, reconstruction |
+| spectral_algebraic_structure_results.md | No exploitable spectral structure, 82% modes needed |
 | SYNTHESIS.md | This document |
