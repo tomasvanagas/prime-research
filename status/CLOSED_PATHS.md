@@ -1,8 +1,8 @@
-# Closed Paths: Master Lookup (658+ Approaches)
+# Closed Paths: Master Lookup (525+ Approaches)
 
 **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
 
-Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
+Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
 
 ## Failure Modes
 - **C** = Circularity (needs primes to compute primes)
@@ -605,6 +605,7 @@ Last updated: 2026-04-05 (Sessions 1-36, 197+ sub-agents)
 | Cipolla residual autoregression | FAIL | I | AR(1) 91.4% reduction but irreducible error grows as O(log n) = O(gap std). AR(20) gives no improvement over AR(1). Cannot achieve O(1) for exact | 29 |
 | GUE CLT for zero sum | FAIL | I | CLT gives O(sqrt(log x)) typical size but actual correction is O(sqrt(x)/log(x)). CLT applies to random ensembles, not specific zero config | 29 |
 | Zero grouping/clustering | FAIL | I | Group size 2→error 9.65, group 4→0.51 (lucky), group 8→2.65 at x=10K. Rapid oscillation of exp(i*gamma*log(x)) makes each zero position essential | 29 |
+| Zero clustering truncation (Proposal 21) | FAIL | I | GUE-based clustering with sinc coherence factor. 10 zeros perform as well as 200 (error saturates at O(1)). Tail prediction via GUE completely fails — tail/partial ratios swing -3.4 to +3.3. Each zero carries independent information. | 37 |
 | GUE surrogate replacement | FAIL | I | Random matrix surrogates give mean=-0.81±1.18 vs actual -0.25. Right order of magnitude, wrong value. Specific zero config matters | 29 |
 | Interpolation of pi correction | FAIL | I | 100 Chebyshev nodes on [2,10000]: max error=7. Fine structure from zeta zeros prevents polynomial interpolation with few points | 29 |
 | Polynomial empirical correction to R(x) | FAIL | I | Polynomial in 1/log(x) reduces error 60-80% but cross-validation confirms overfitting. Oscillatory part genuinely non-polynomial | 29 |
