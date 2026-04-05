@@ -9,8 +9,15 @@ Rule 11 says no duplicate scripts. Known suspects:
 Action: List duplicates in this file below. Human will review before deletion.
 **This is non-blocking — proceed to research after listing them.**
 
-Duplicates found: (fill in during session)
-- [ ] ...
+Duplicates found (Session 39):
+- [ ] `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py` (v3 same size as v1, possible revert)
+- [ ] `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+- [ ] `experiments/circuit_complexity/k_party_nof.py` vs `k_party_nof_v2.py`
+- [ ] `experiments/circuit_complexity/approx_degree.py` + `approx_degree_quick.py` + `approx_degree_small.py` + `approx_degree_prime.py` + `approx_degree_counting.py` (5 scripts; may be distinct experiments but violates one-script-per-experiment rule)
+- [ ] `experiments/information_theory/information_shortcut.py` vs `information_shortcut_v2.py`
+- [ ] `experiments/other/breakthrough_attempt_v2.py` (no v1 exists)
+- [ ] `experiments/other/self_correcting_v2.py` (no v1 exists)
+Human review needed before merging/deleting. All have companion _results.md files.
 
 ---
 

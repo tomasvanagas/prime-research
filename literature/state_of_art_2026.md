@@ -3,7 +3,7 @@
 Consolidated survey of all developments relevant to computing p(n) exactly.
 Deduplicated from 6 overlapping source files.
 
-Last updated: 2026-04-04
+Last updated: 2026-04-05 (Session 38 critique)
 
 ---
 
@@ -199,25 +199,34 @@ Claims "seconds on modern hardware" for 10^8-digit x.
 - Lemma 1 (Tail Error): R_tail(x) < (alpha+Delta)*e^{-alpha^2}
 - Lemma 2 (Zero Truncation): E_zeros(x) < 0.6*C/T^2*(ln T + 1)
 
-**CRITICAL ASSESSMENT:**
-This paper makes extraordinary claims that need careful scrutiny:
-1. If only O(log x) zeros are needed, total complexity would be O(polylog(x)) -- exactly
-   our target. But the paper does NOT provide a formal complexity analysis.
-2. The ~1200 zeros are PRECOMPUTED and assumed known. Computing them is non-trivial.
-3. The 330 million-bit FFT multiplication is for the smooth part evaluation, not zero
-   summation. Unclear if the total pipeline is truly polylog.
-4. The authors (Kilictas & Alpay) have several other arxiv papers on novel number-theoretic
-   claims. The results should be independently verified before relying on them.
-5. Even if error < 0.5 is achieved, the METHOD still requires computing zeta at each zero
-   location with sufficient precision, and evaluating x^rho for each zero rho.
+**DEBUNKED (Sessions 12, 30):**
+1. Violates the uncertainty principle: kernel too wide to resolve primes
+2. Omits critical x^{1/2} factor in error analysis
+3. AI-generated paper with mathematical errors
+4. Authors (Kilictas/Alpay) have no number theory background; Alpay publicly admits
+   uploading arxiv papers to influence LLM training data (Medium, July 2025)
+5. Zero citations, no peer review
 
-**If correct, this would be the closest result to our goal.** The claim that O(log x)
-zeros suffice for exact pi(x) is remarkable and warrants immediate experimental verification.
+**Does it change the barrier?** No. Paper is incorrect.
 
-**Does it change the barrier?** POTENTIALLY YES -- if the complexity analysis holds up.
-Priority: VERIFY THIS PAPER.
+### 2.6 Zeta Zero Computation: Valley Scanner and Variational Methods (2025-2026)
 
-### 2.6 Overall RH Status (April 2026)
+**Valley Scanner (December 2025):** arXiv:2512.09960. Real-to-complex parametrization
+of the critical line replaces classical Gram-point bracketing. Combined with high-precision
+Riemann-Siegel evaluation, the Valley Scanner algorithm identifies local minima of |Z(t)|
+and refines via safeguarded Newton iterations. Stable to t ~ 10^20.
+
+**Variational approach (January 2026):** ScienceDirect (J. Comput. Appl. Math.).
+Accelerated asymptotic formula for Z(t) simplifies error term, producing tractable
+approximants for locating real zeros of the Hardy Z-function.
+
+**Relevance:** Better methods for LOCATING individual zeros, but our barrier is SUMMING
+over ~10^48 zeros, not locating them. Faster zero location helps only if we need fewer
+zeros — but we need O(sqrt(x)) zeros regardless (S11, S15).
+
+**Does it change the barrier?** No.
+
+### 2.7 Overall RH Status (April 2026)
 
 - 20 trillion zeros verified on critical line (Platt-Trudgian, 2021)
 - De Bruijn-Newman constant Lambda = 0 (Rodgers-Tao, 2020)
@@ -268,6 +277,17 @@ Three papers providing:
 **Relevance:** Tighter bracketing for binary search when computing p(n). Reduces number of pi(x) evaluations needed.
 
 **Does it change the barrier?** No. Constant-factor improvement to search phase, not asymptotic.
+
+### 3.5 Tao-Gafni: Rough Numbers Between Consecutive Primes (August 2025)
+
+**Source:** arXiv (August 2025); Terence Tao's blog 2025/08/10.
+
+Resolves an Erdős question about the number of y-rough numbers between consecutive primes.
+Uses Maynard sieve and recent correlation estimates for bounded multiplicative functions.
+
+**Relevance:** Interesting number theory. Does NOT address pi(x) computation or complexity.
+
+**Does it change the barrier?** No.
 
 ---
 
@@ -442,7 +462,11 @@ p(10^100) ~ 2.35 x 10^102. Computing it exactly requires:
 
 8. **Tao-Gafni (2025)** confirmed Erdős conjecture on rough numbers in prime gaps. Gap structure research, not counting.
 
-9. **Chen-Tal-Wang (ECCC 2026)** proved n^{2.5-ε} lower bounds for depth-2 threshold circuits. Strongest THR∘THR lower bound, but hard function is in E^NP, not number-theoretic.
+9. **Chen-Tal-Wang (ECCC TR26-039, March 2026)** proved n^{2.5-ε} lower bounds for depth-2 threshold circuits. Strongest THR∘THR lower bound, but hard function is in E^NP, not number-theoretic.
+
+11. **Gurumukhani et al. (arXiv:2601.04072, January 2026)** proved optimal monotone depth-3 circuit lower bounds for MAJORITY via local enumeration. Applies to monotone circuits only; MAJORITY is trivially in TC^0 (single threshold gate). No relevance to prime counting.
+
+12. **Behera-Hansen-Limaye-Srinivasan (ECCC TR26-002, January 2026)** separated multilinear NC^1 from multilinear NC^2 in Ideal Proof Systems. Proof complexity result, not circuit complexity. No computational implications for pi(x).
 
 10. **Session 17** established EXACT communication complexity: rank(pi_N) = 2^{N/2-1}+2 for balanced bit partition. The √x barrier is universal across all algebraic measures.
 

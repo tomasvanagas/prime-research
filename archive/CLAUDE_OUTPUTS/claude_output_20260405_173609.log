@@ -1,0 +1,914 @@
+
+=== Run #25 — Mode: critique — Sun Apr  5 17:36:09 UTC 2026 ===
+I'll start by reading the required files in parallel.
+  [Read] /apps/aplikacijos/prime-research/TODO.md
+    1	# TODO
+    2	
+    3	## [HOUSEKEEPING] 1. Flag duplicate scripts (NON-BLOCKING)
+    4	
+    5	Rule 11 says no duplicate scripts. Known suspects:
+    6	- `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py`
+    7	- `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+    8	
+    9	Action: List duplicates in this file below. Human will review before deletion.
+    10	**This is non-blocking — proceed to research after listing them.**
+    11	
+    12	Duplicates found: (fill in during session)
+    13	- [ ] ...
+    14	
+    15	---
+    16	
+    17	## [RESEARCH] 2. Benchmark Helfgott-Thompson O(x^{3/5}) for M(x)
+    18	
+    19	`experiments/sieve/mertens_speedup.py` references H-T (2021). Transfer to pi(x) fails
+    20	(signed->unsigned barrier, S16), but the M(x) algorithm itself was never benchmarked.
+    21	Won't help pi(x), but establishes the constant-factor landscape.
+    22	
+    23	---
+    24	
+    25	## [RESEARCH] 3. Benchmark inversion_search.py fixed-point iteration
+    26	
+    27	`experiments/sieve/inversion_search.py` implements p_{k+1} = R^{-1}(n + sum_rho R(p_k^rho)).
+    28	Fix import issues (depends on `riemann_explicit` module in experiments/analytic/) and
+    29	measure convergence rate for n = 10..10000.
+    30	
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+    1	I'll search for recent papers and techniques in parallel, then develop concrete proposals.
+    2	Good research done. Now let me develop the proposals and write test code.
+    3	Let me check what's in the data directory for zeta zeros, and look at the existing best algorithm for reference.
+    4	Now let me write all four proposals as testable Python code. I'll create them in parallel.
+    5	All four proposal scripts written. Now let me run them all in parallel.
+    6	The zeros aren't loading. Let me debug the file path issue and fix the scripts.
+    7	The file has no index column — just one value per line. Let me re-read to confirm.
+    8	The file has one value per line (no index column — the Read tool adds line numbers). The parser expects 2 columns but finds 1. Let me fix all scripts.
+    9	Now run all four in parallel:
+    10	Good results from proposals 21 and 22. Let me fix the bugs in 23 and run 23+24.
+    11	All four proposals ran successfully. Very interesting results. Let me now write the results files and the session proposal document.
+    12	Now let me write the session proposals document.
+    13	Now clean up and save run state.
+    14	## Session 36 Complete — 4 Proposals Tested
+    15	
+    16	All four proposals were developed, coded, tested on n < 10,000, and documented. Here's the executive summary:
+    17	
+    18	### Results
+    19	
+    20	| # | Proposal | Verdict |
+    21	|---|---------|---------|
+    22	| **21** | Zero Clustering Truncation | CLOSED — tail contributions unpredictable; each zero carries independent info |
+    23	| **22** | Compressed Sensing on delta(n) | CLOSED — delta is NOT sparse in any tested basis; 11-16% extrapolation accuracy |
+    24	| **23** | PSLQ Integer Relations | CLOSED — normalized delta passes Gaussian normality test; no universal formula |
+    25	| **24** | Dequantized Grover Sieve | CLOSED — primality operator rank ~ N^{0.365}, not polylog |
+    26	
+    27	### Key New Insights
+    28	
+    29	1. **10 zeros give O(1) accuracy** but ~1.3 average error — not enough to pin down the exact prime. The "last mile" is the hard part.
+    30	
+    ... (11 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    1	# Open Problems: Viable Research Directions
+    2	
+    3	Last updated: 2026-04-05 (Session 37)
+    4	
+    5	These are the ONLY directions not yet proven closed. Everything else has been
+    6	tested (525+ approaches across 37 sessions) and confirmed to hit one of three
+    7	failure modes: Circularity, Equivalence, or Information Loss.
+    8	
+    9	**Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
+    10	well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
+    11	a sum of ~x^{1/2} cancelling terms), not information-theoretic. This reframes the problem:
+    12	find algebraic structure in the zero sum enabling bulk cancellation.
+    13	
+    14	**Pseudorandomness (S37 synthesis):** pi(x) mod 2 is indistinguishable from random under
+    15	21 independent structural measures. See `novel/pseudorandomness_of_pi.md`.
+    16	
+    17	---
+    18	
+    19	## 1. Circuit Complexity of pi(x) [ONLY REMAINING DIRECTION]
+    20	
+    21	**Question:** What is the circuit complexity of the prime-counting function?
+    22	
+    23	**The gap:** Omega(log x) proven lower bound vs O(x^{1/2+epsilon}) best upper bound.
+    24	This is the largest unexplored gap in complexity theory for a natural problem.
+    25	
+    26	**Equivalence:** "Is pi(x) in NC?" is EQUIVALENT to our polylog target (S12).
+    27	
+    28	**What's known:**
+    29	- PRIMES is in P (AKS), NOT in AC^0 or AC^0[p] (Allender-Saks-Shparlinski 2001)
+    30	- PRIMES is in NONUNIFORM TC^0 unconditionally (S13)
+    ... (76 more lines)
+Let me read the proposals session document and CLOSED_PATHS.md.
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_session.md
+    1	# Session 36 Proposals — Fresh Approaches to Computing p(n) Exactly
+    2	
+    3	**Date:** 2026-04-05
+    4	**Method:** Web search for 2025-2026 papers + 4 concrete proposals with computational tests
+    5	
+    6	---
+    7	
+    8	## Summary
+    9	
+    10	Four fresh proposals were developed, coded, and tested on n < 10,000. All four illuminate WHY O(polylog) is hard, but none achieves it. Key findings:
+    11	
+    12	| # | Proposal | Core Idea | Result | New Insight? |
+    13	|---|---------|-----------|--------|-------------|
+    14	| 21 | Zero Clustering Truncation | Group zeta zeros by proximity, use GUE statistics | Tail contribution unpredictable; O(sqrt(x)) zeros still needed | Confirms zero independence |
+    15	| 22 | Compressed Sensing on delta(n) | Sparse recovery of residual in zeta zero basis | delta is NOT sparse: 50+ coefficients for 87% energy | Quantifies non-sparsity |
+    16	| 23 | PSLQ Integer Relations | Search for algebraic formula for delta(n) | Normalized delta ≈ Gaussian; PSLQ finds spurious point-wise relations only | Normality test passed |
+    17	| 24 | Dequantized Grover Sieve | Low-rank decomposition of primality operator | Sieve rank ~ N^{0.365}, Fourier rank ~ N^{0.94} | Quantifies "hardness" of prime indicator |
+    18	
+    19	---
+    20	
+    21	## Proposal 21: Zero Clustering Truncation
+    22	
+    23	### Mathematical Idea
+    24	The Riemann explicit formula requires summing over all nontrivial zeta zeros:
+    25	π(x) = R(x) − Σ_ρ R(x^ρ)
+    26	
+    27	If zeros exhibit correlated contributions due to GUE spacing statistics, we can group them into clusters and represent each cluster by a weighted representative. If cluster count grows as O(log(x)^C), we achieve polylog.
+    28	
+    29	### Key Conjecture
+    30	The oscillatory sum S(x) = Σ_γ x^{iγ}/ρ converges within O(1) using O(log(x)^C) representative zeros.
+    ... (96 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (33468 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+Let me read CLOSED_PATHS in sections and the key novel finding.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [Read] /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md
+    1	# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 20+ Measures
+    2	
+    3	**Status:** Novel synthesis. Individual measures from Sessions 17-36.
+    4	No published work examines this many independent complexity measures on a single natural function.
+    5	
+    6	## Summary
+    7	
+    8	pi(x) mod 2 is indistinguishable from a random Boolean function under every
+    9	structural complexity measure tested in this project (20+). This is the
+    10	project's strongest collective finding.
+    11	
+    12	Each measure probes a different aspect of Boolean function complexity --
+    13	algebraic structure, communication complexity, approximation theory,
+    14	circuit size, spectral properties, information content -- and in every
+    15	case, pi(x) mod 2 lands within the range expected for a random function
+    16	on N = log2(x) variables. The consistency across independent measures
+    17	constitutes strong empirical evidence that pi(x) mod 2 is cryptographically
+    18	pseudorandom under all known structural tests.
+    19	
+    20	## The Measures
+    21	
+    22	| # | Measure | pi(x) mod 2 | Random baseline | Session |
+    23	|---|---------|-------------|-----------------|---------|
+    24	| 1 | Approximate degree (L-inf, eps=0.49) | ceil(N/2) | N/2 | S28 |
+    25	| 2 | Communication matrix rank (2-party) | 2^{N/2-1} + 2 | 2^{N/2} | S17 |
+    26	| 3 | GF(2) ANF sparsity (fraction of nonzero monomials) | 0.5000 exactly (N=4..20) | 0.50 | S13, S35 |
+    27	| 4 | GF(2) SLP complexity (CSE savings) | 59.5% at N=10 | 58.5% at N=10 | S35 |
+    28	| 5 | Boolean Fourier noise sensitivity | ~0.9 | ~1.0 | S17 |
+    29	| 6 | Boolean Fourier total influence ratio | ~0.92 | ~1.0 | S17 |
+    30	| 7 | BDD (OBDD) size | 2^{0.72*N} (c=0.719) | 2^{0.80*N} (c=0.796) | S20 |
+    ... (147 more lines)
+    1	# Closed Paths: Master Lookup (525+ Approaches)
+    2	
+    3	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    4	
+    5	Last updated: 2026-04-05 (Sessions 1-37, 197+ sub-agents)
+    6	
+    7	## Failure Modes
+    8	- **C** = Circularity (needs primes to compute primes)
+    9	- **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    10	- **I** = Information Loss (smooth approximation loses critical bits)
+    11	
+    12	---
+    13	
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    19	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    20	| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    21	| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    22	| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    23	| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    24	| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    25	| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    26	| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    27	| Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
+    28	| Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
+    29	| Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
+    30	| Weil explicit + Gaussian kernel | FAIL | I | Uncertainty principle: resolution * bandwidth >= const | 4 |
+    ... (170 more lines)
+Let me read the remaining CLOSED_PATHS sections.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (13234 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    200	
+    201	## Information Theory / Complexity Theory
+    202	
+    203	| Approach | Verdict | Mode | Key Finding | Session |
+    204	|----------|---------|------|-------------|---------|
+    205	| Levin universal search (AIT) | FAIL | I | K(p(n)|n) >= 0.5*log2(n) bits | 7 |
+    206	| Local-to-global reconstruction of pi(x) | FAIL | I | E(x)=pi(x)-Li(x) has only O(log x) bits — NO info-theoretic barrier to polylog. But O(log x) bits encoded across ~x^{1/2} GUE-random zero contributions via massive cancellation. Error autocorr=0.996 at lag 1 (helps adjacent queries only). Barrier is COMPUTATIONAL not informational. | 36 |
+    207	| Busy Beaver connection | FAIL | - | Wrong hierarchy (computability vs complexity) | 7 |
+    208	| Curry-Howard type theory | FAIL | - | Proof = algorithm, no gap to exploit | 7 |
+    209	| SNARG/STARK verification | PARTIAL | - | 50K ops verify but 10^68 to COMPUTE | 7 |
+    210	| Arthur-Merlin protocols | FAIL | - | No natural polylog hint exists | 7 |
+    211	| Reverse mathematics | FAIL | - | p(n) provable in RCA_0, barrier is computational | 7 |
+    212	| Hypercomputation / real oracles | FAIL | C | All constants tautological or need sqrt(p(n)) ops | 7 |
+    213	| CRT novel encoding (178 bits) | FAIL | - | Identifies info but no way to obtain it | 7 |
+    214	| PRG/Derandomization | FAIL | E | delta(n) appears easy for circuits | 10 |
+    215	| Randomness Extractors | FAIL | E | Seed-finding as hard as original problem | 10 |
+    216	| Crypto hardness reduction | FAIL | - | No reduction to/from known hard problems | 10 |
+    217	| One-way function connection | FAIL | - | Both directions equally hard | 10 |
+    218	| Expander graphs | FAIL | C | Need primes to build the graph | 10 |
+    219	| Pfaffian/FKT planar sieve encoding | FAIL | I | Three graph encodings tested (sieve bipartite, Lucy DP recurrence, prime dependency). ALL non-planar for x>=80. Treewidth grows as x^0.36 (sieve), x^0.51 (Lucy DP), x^0.43 (prime dep). Prime dep graph is complete (density=1.0). Unbounded treewidth rules out FPT/Pfaffian approach. | 26 |
+    220	| Derandomization (NW/IW) | FAIL | E | R(n) is deterministic, not random | 9 |
+    221	| TC^0 via Legendre sieve | FAIL | E | 2^{pi(sqrt(x))} terms, super-polynomial | 11 |
+    222	| TC^0 via Meissel-Lehmer | FAIL | E | Super-polynomial special leaves | 11 |
+    223	| TC^0 via Lucy DP | FAIL | E | Sequential depth O(sqrt(x)/ln(x)), not constant | 11 |
+    224	| TC^0 via Möbius function | FAIL | C | Requires factoring, not known in TC^0 | 11 |
+    225	| TC^0 via partial sieve (constant primes) | FAIL | I | Error Theta(x/ln(x)), same order as pi(x) | 11 |
+    226	| AKS in TC^0 via matrix powering | OPEN | - | Fixed-k MPOW IS in TC^0 (RAIRO 2000), but AKS needs k=polylog(n) GROWING; combination step needs depth O(log log n). IMP_k (k≥3) NOT in TC^0 unless TC^0=NC^1. Growing-dim MPOW is genuinely open at TC^0/NC^1 boundary | 11 |
+    227	| pi(x) mod 2 shortcut | FAIL | E | Parity as hard as full problem; pseudo-random, no pattern | 11 |
+    228	| Compressed pi(x) | PARTIAL | I | 5 bits/prime irreducible entropy | 8 |
+    229	| Lucy DP parallel depth | CLOSED | E | DAG depth = pi(sqrt(x)) exactly; fundamentally sequential for S(x). Telescoped (Meissel-Lehmer) gives depth pi(x^{1/3}) but both exponential in N=log(x) | 12 |
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (10215 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    399	| TC^0 MAJORITY fan-in for pi(x) | FAIL | E | Inputs (BPSW(k)) must be computed first; MAJORITY helps aggregation, not generation; size 2^N * poly(N) | 16 |
+    400	| Batch modular exp via CRT | FAIL | E | 2^{k-1} mod k: exponent-modulus coupling prevents batch. Fixed-base CRT computes different function | 16 |
+    401	| Carmichael lambda batch structure | FAIL | C | Identifying common lambda(k) requires factoring all k; no batch shortcut | 16 |
+    402	| Period exploitation in BPSW | FAIL | E | Autocorrelation of BPSW(n) ≈ 0 at all lags; no periodic structure | 16 |
+    403	| Lambda W error structure exploitation | FAIL | I | delta(n) uncorrelated with gaps (r~0.01); uniform mod m; power law ~sqrt(x); incompressible | 16 |
+    404	| Cheaper oracle hierarchy (R -> Lucy DP) | FAIL | I | R(x) error O(sqrt(x)) = same as search range; saves constants only, not asymptotics | 16 |
+    405	| H-T transfer via explicit formula zeros | FAIL | E | H-T is combinatorial; zero sum is analytic; incompatible techniques | 16 |
+    406	| Weighted prime counting for cancellation | FAIL | E | Multiplicative weights collapse to constants on primes; non-multiplicative lose sieve structure | 16 |
+    407	| Buchstab signed identity + H-T | FAIL | E | Signed Buchstab IS M(x); recovering pi(x) needs A_3, A_5 terms at O(x^{2/3}). The conversion M(x) -> pi(x) costs O(x^{2/3}) minimum | 16 |
+    408	| M(x) -> pi(x) conversion identity | FAIL | E | pi(x) = sum omega(d)*M(floor(x/d)); omega partial sums cost O(x^{2/3}). All conversion paths cost >= O(x^{2/3}) | 16 |
+    409	| Additive combinatorics / sumsets | FAIL | E | r(n) representations via circle method = zeta zeros; Goldbach-type identities don't give pi(x) | 16 |
+    410	| Ergodic theory / orbit complexity | FAIL | E+C | Transfer operators have spectral theory = zeta zeros; Furstenberg correspondence is circular | 16 |
+    411	| Model theory / o-minimality | FAIL | - | o-minimal structures can't represent step functions like pi(x); definability orthogonal to computation | 16 |
+    412	| Tropical geometry of P(s) | FAIL | I+E | Tropicalization loses all but smallest prime factor; tropical convolution = standard convolution | 16 |
+    413	| Tropical/min-plus full battery (7 tests) | FAIL | I | Tropical Dirichlet conv, Mertens, sieve, Euler product, p-adic val of x!, tropical det, tropical conv -- all fail. Core reason: min-plus is OPTIMIZATION not COUNTING; val(a+b)>=min(val(a),val(b)) destroys sum info. See experiments/proposals/tropical_sieve.py | 25+ |
+    414	| Smooth number Ψ(x,B) subtraction for π(x) | FAIL | E | Ψ(x,B) computation IS the sieve. 50-640x slower than Eratosthenes. Linear combo of 11 Ψ features: train RMSE=3.3, test RMSE=37.3 (0/500 exact). Buchstab tree has 1.8·x^{2/3} distinct args = Lucy DP. Legendre identity confirmed exact. See experiments/proposals/smooth_number_subtraction.py | 26 |
+    415	| Sufficient statistics of floor values | FAIL | I | Any T with |T|=poly(log x) determining pi(x) must encode O(N/2) bits; hashing loses exactness | 16 |
+    416	| Algebraic geometry F_q families | FAIL | E+C | Frobenius eigenvalues = zeta zeros; constructing the right variety requires knowing primes | 16 |
+    417	| Representation theory S_n/GL_n | FAIL | C+E | Character sums at primes = Dirichlet characters; Euler product through rep theory = L-functions | 16 |
+    418	
+    419	## Session 17: Communication Complexity, Fourier Analysis, New Literature
+    420	
+    421	| Approach | Verdict | Mode | Key Finding | Session |
+    422	|----------|---------|------|-------------|---------|
+    423	| Ono partition characterization | FAIL | C | n prime iff (n²-3n+2)σ₁(n)-8M₂(n)=0; requires divisors (circular); O(n²) per test, O(x³) total | 17 |
+    424	| GapL via multilinear polynomial | FAIL | - | dc(pi_N) >= 2^{N/2-1}+2 = Omega(sqrt(x)); substitution rank exponential in N; definitively closed | 17 |
+    425	| Boolean Fourier low-degree structure | FAIL | - | 30% excess low-deg weight = parity/mod-4 only; noise sensitivity near-random; no junta structure | 17 |
+    426	| Communication matrix rank shortcut | FAIL | - | rank(pi_N) = 2^{N/2-1}+2 exactly; converges to 50% of max; no efficient 2-party protocol | 17 |
+    427	| Partition generating function sum | FAIL | C | Sum [f(n)=0] has no GF shortcut; indicator of zeros doesn't factor through GFs | 17 |
+    428	| MacMahonesque generalizations | FAIL | C | Higher M_a also circular + more expensive; polynomials in n with periodic corrections | 17 |
+    ... (120 more lines)
+Now let me search for recent 2025-2026 papers on prime algorithms and related breakthroughs.
+  [ToolSearch] 
+  [WebSearch] 
+  [WebSearch] 
+  [WebSearch] 
+    Web search results for query: "prime counting function pi(x) new algorithm 2025 2026 polylogarithmic"
+    
+    Links: [{"title":"Prime-counting function - Wikipedia","url":"https://en.wikipedia.org/wiki/Prime-counting_function"},{"title":"Prime Counting Function -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/PrimeCountingFunction.html"},{"title":"Prime Counting Function \\(\\pi(x)\\) — primeCount • RcppAlgos","url":"https://jwood000.github.io/RcppAlgos/reference/primeCount.html"},{"title":"Prime-counting function - HandWiki","url":"https://handwiki.org/wiki/Prime-counting_function"},{"title":"GitHub - kimwalisch/primecount: 🚀 Fast prime counting function library","url":"https://github.com/kimwalisch/primecount"},{"title":"primeCount: Prime Counting Function pi(x) in RcppAlgos: High Performance Tools for Combinatorics and Computational Mathematics","url":"https://rdrr.io/cran/RcppAlgos/man/primeCount.html"},{"title":"Lucy's Algorithm + Fenwick Trees | griff's math blog!","url":"https://gbroxey.github.io/blog/2023/04/09/lucy-fenwick.html"},{"title":"Prime Counting Functions · vitaly-t/prime-lib · Discussion #6","url":"https://github.com/vitaly-t/prime-lib/discussions/6"},{"title":"Computing the Prime Counting Function","url":"https://wstein.org/projects/stueve.pdf"},{"title":"The prime-counting function and its analytic approximations | Advances in Computational Mathematics | Springer Nature Link","url":"https://link.springer.com/article/10.1007/s10444-007-9039-2"}]
+    
+    Based on the search results, I found information about prime counting function algorithms, but the results don't contain any specific announcements about a breakthrough in polylogarithmic algorithms for computing π(x) in 2025-2026.
+    
+    Here's what the search revealed:
+    
+    **Current Prime Counting Algorithms:**
+    
+    Lucy's algorithm with Fenwick trees achieves a runtime of O(x^{2/3} (log x)^{1/3}) to compute π(x), which was discussed in a blog post updated in February 2025. There are implementations based on Legendre's formula, including algorithms developed by Kim Walisch.
+    
+    The search results show work on optimizing prime counting algorithms up through early 2025, but do not contain any announcements of new polylogarithmic algorithms or major breakthroughs in this area for 2025-2026. If such a development has been published very recently, it may not yet be widely indexed by search engines, or it might be in academic preprints or specialized number theory forums.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: "TC0 circuit lower bounds prime counting 2025 2026 breakthrough"
+    
+    Links: [{"title":"On Uniformity and Circuit Lower Bounds Rahul Santhanam University of Edinburgh","url":"https://people.csail.mit.edu/rrw/WeakUniformity-journal-rev.pdf"},{"title":"On a Conditional Approach to the Twin Prime Conjecture ...","url":"https://www.preprints.org/manuscript/202509.0444/v1/download"},{"title":"The Top 10 Math Discoveries of 2025 | Scientific American","url":"https://www.scientificamerican.com/article/the-top-10-math-discoveries-of-2025/"},{"title":"Tight Correlation Bounds for Circuits Between AC0 and TC0 Vinayak M. Kumar # Ñ","url":"https://drops.dagstuhl.de/storage/00lipics/lipics-vol264-ccc2023/LIPIcs.CCC.2023.18/LIPIcs.CCC.2023.18.pdf"},{"title":"Rough numbers between consecutive primes - Terence Tao","url":"https://terrytao.wordpress.com/2025/08/10/rough-numbers-between-consecutive-primes/"},{"title":"Topics in Circuit Complexity (CS354, Fall’11)","url":"https://people.csail.mit.edu/rrw/week1.pdf"},{"title":"On TC0 Lower Bounds for the Permanent | SpringerLink","url":"https://link.springer.com/chapter/10.1007/978-3-642-32241-9_36"},{"title":"Hong Kong Laureate Forum - The Twin Prime Conjecture and the Polymath Project","url":"https://www.hklaureateforum.org/en/the-twin-prime-conjecture-and-the-polymath-project"},{"title":"Mathematics in 2025: Breakthroughs That Redefined the Field | by Ehsan Ali | Dec, 2025 | Medium","url":"https://medium.com/@wahlastore15/mathematics-in-2025-breakthroughs-that-redefined-the-field-d1b4c75feac1"},{"title":"TC0 - Wikipedia","url":"https://en.wikipedia.org/wiki/TC0"}]
+    
+    Based on the search results, I found some relevant information about breakthroughs in 2025 related to prime counting, though the results don't directly address TC0 circuit lower bounds in connection with prime counting.
+    
+    Here's what I found:
+    
+    **Prime Counting Breakthrough in 2025:**
+    
+    A new method for estimating how many prime numbers exist within any given range of numbers was developed as a breakthrough on the prime front in 2025. The strategy first relies on eliminating all numbers that are multiples of other primes and therefore can't be primes themselves, and then accounts for numbers that get crossed off the list more than once. Notably, the study's authors also discovered a limit to how precise any estimate of this sort can be, showing that the fundamental mysteries of primes will remain elusive, at least for now.
+    
+    **Related 2025 Math Breakthroughs:**
+    
+    Terence Tao and Ayla Gafni uploaded to the arXiv the paper "Rough numbers between consecutive primes" in August 2025, resolving a question of Erdős concerning rough numbers between consecutive gaps.
+    
+    However, the search results did not contain specific information about TC0 circuit lower bounds breakthroughs in 2025-2026. If you're looking for information about a specific paper or result in that area, I'd recommend searching for it more directly or checking recent publications on computational complexity theory.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: "Riemann zeta zeros computation new method 2025 2026 faster"
+    
+    Links: [{"title":"Numerical Behavior of the Riemann Zeta Function Using Real-to-Complex Conversion[v1] | Preprints.org","url":"https://www.preprints.org/manuscript/202511.1070"},{"title":"A New Variational Approach for the Numerical Location of Hardy Z-Function Zeros on the Real Line - ScienceDirect","url":"https://www.sciencedirect.com/science/article/abs/pii/S0377042725008167"},{"title":"Fast algorithms for multiple evaluations of the Riemann zeta function","url":"https://www-users.cse.umn.edu/~odlyzko/doc/arch/fast.zeta.eval.pdf"},{"title":"Riemann Zeta Function Zeros -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/RiemannZetaFunctionZeros.html"},{"title":"Computational strategies for the Riemann zeta function - ScienceDirect","url":"https://www.sciencedirect.com/science/article/pii/S0377042700003368"},{"title":"Riemann Zeta Zeros - Neural Network Prediction of Riemann Zeta Zeros","url":"https://sites.google.com/site/riemannzetazeros/neuralnetwork"},{"title":"A Computational Approach for Riemann Hypothesis Verification Novel Algorithms for Zero Distribution Analysis[v1] | Preprints.org","url":"https://www.preprints.org/manuscript/202504.1587"},{"title":"[2512.09960] Numerical Behavior of the Riemann Zeta Function Using Real-to-Complex Conversion Without Gram Points or Bracketing","url":"https://arxiv.org/abs/2512.09960"},{"title":"DLMF: §25.10 Zeros ‣ Riemann Zeta Function ‣ Chapter 25 Zeta and Related Functions","url":"https://dlmf.nist.gov/25.10"},{"title":"A New Method to Test the Zeros of Riemann Zeta Function","url":"https://eprint.iacr.org/2024/1412"}]
+    
+    Based on the search results, I found several recent developments in Riemann zeta zeros computation methods from 2025-2026:
+    
+    ## Recent Methods and Advances
+    
+    **Real-to-Complex Conversion Approach (November 2025)**
+    
+    A novel method efficiently identifies zeros by tracking minima of |Z(t)|, achieving stability and precision up to t ≈ 10^20 with moderate computational cost, using AWS EC2 computation. This approach employs a real-to-complex number conversion and a novel valley scanner algorithm for evaluating Z(t) = eiθ(t)ζ(1/2 + it) at large imaginary parts t.
+    
+    **Valley Scanner Algorithm (December 2025)**
+    
+    A numerical framework replaces classical Gram-point bracketing with a real-to-complex parametrization of the critical line, and combined with high-precision evaluation of the Hardy Z function using the Riemann-Siegel formula, this parametrization induces a Valley Scanner algorithm that identifies local minima of the absolute value of Z and refines them using safeguarded Newton iterations.
+    
+    **Variational Approach (January 2026)**
+    
+    A novel variational numerical method for the theoretical investigation of the real zeros of the Hardy Z–function Z(t) was introduced, designed to circumvent certain limitations of classical approaches. This approach builds on an accelerated asymptotic formula for Z(t) established in earlier work, simplifying the structure of the error term and producing a family of tractable approximants.
+    
+    These methods represent significant improvements over traditional approaches by moving away from reliance on Gram points and classical Riemann-Siegel evaluations, with cloud-based implementations allowing computations at unprecedented heights along the critical line.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+  [WebSearch] 
+  [WebSearch] 
+    Web search results for query: "arxiv prime nth prime exact computation new algorithm 2025 2026"
+    
+    Links: [{"title":"[1602.00545] Fast Computation of the Nth Term of an Algebraic Series over a Finite Prime Field","url":"https://arxiv.org/abs/1602.00545"},{"title":"1 Accurate and Infinite Prime Prediction from Novel Quasi-Prime","url":"https://arxiv.org/pdf/1903.08570"},{"title":"[1805.10478] Exact search algorithm to factorize large biprimes and a triprime on IBM quantum computer","url":"https://arxiv.org/abs/1805.10478"},{"title":"[2506.04535] BSBench: will your LLM find the largest prime number?","url":"https://arxiv.org/abs/2506.04535"},{"title":"PRIMES: Research Papers","url":"https://math.mit.edu/research/highschool/primes/papers.html"},{"title":"[2506.03005] Multi-scale representation of integer sets: application to prime numbers","url":"https://arxiv.org/abs/2506.03005"},{"title":"Using quantum computers to identify prime numbers via entanglement dynamics","url":"https://arxiv.org/html/2403.14703v1"},{"title":"Number Theory","url":"https://arxiv.org/list/math.NT/recent"},{"title":"[quant-ph/9508027] Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer","url":"https://arxiv.org/abs/quant-ph/9508027"},{"title":"[2511.12944] A Positive Lower Bound for the Sum of Log-Reciprocal Twin Prime Products via Weighted Sieve","url":"https://arxiv.org/abs/2511.12944"}]
+    
+    Based on the search results, I found several recent ArXiv papers related to primes from 2025-2026, though none appear to specifically focus on a "new algorithm" for computing the nth prime with exact computation:
+    
+    **Recent ArXiv papers on prime numbers (2025-2026):**
+    
+    1. BSBench: will your LLM find the largest prime number? (arxiv 2506.04535, submitted June 5, 2025)
+    
+    2. Multi-scale representation of integer sets: application to prime numbers (arxiv 2506.03005, submitted June 3, 2025) - proposes a multi-scale analysis method for studying arithmetic properties of integer sets, such as primality, and applies it to prime numbers
+    
+    3. A Positive Lower Bound for the Sum of Log-Reciprocal Twin Prime Products via Weighted Sieve (arxiv 2511.12944, submitted November 17, 2025)
+    
+    The search results also include some older papers on related topics, such as fast computation of algebraic series terms with complexity improvements, but these are not specifically about computing the nth prime number.
+    
+    If you're looking for a specific paper on a new algorithm for exact computation of the nth prime, you may want to refine your search with additional details or check ArXiv directly for the most recent submissions in the mathematics and computational complexity categories.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: ""#TC0" "NC" circuit complexity counting problems 2025 2026 new results"
+    
+    Links: [{"title":"Resolve the TC^0 versus NC^1 circuit complexity conjecture","url":"https://www.emergentmind.com/open-problems/tc0-vs-nc1-circuit-complexity-conjecture"},{"title":"Circuit Complexity Bounds for RoPE-based Transformer ...","url":"https://aclanthology.org/2025.emnlp-main.561.pdf"},{"title":"Circuit complexity - Wikipedia","url":"https://en.wikipedia.org/wiki/Circuit_complexity"},{"title":"Topics in Circuit Complexity (CS354, Fall’11)","url":"https://people.csail.mit.edu/rrw/week1.pdf"},{"title":"Arithmetic Constant-Depth Circuit Complexity Classes","url":"https://www.researchgate.net/publication/220975420_Arithmetic_Constant-Depth_Circuit_Complexity_Classes"},{"title":"NC (complexity) - Wikipedia","url":"https://en.wikipedia.org/wiki/NC_(complexity)"},{"title":"Complexity Zoo:N - Complexity Zoo","url":"https://complexityzoo.net/Complexity_Zoo:N"},{"title":"ECCC - Electronic Colloquium on Computational Complexity","url":"https://eccc.weizmann.ac.il/"},{"title":"CCC: Conference on Computational Complexity 2027 2026 2025 ...","url":"http://www.wikicfp.com/cfp/program?id=383"},{"title":"THEORIES FOR TC0 AND OTHER SMALL COMPLEXITY ...","url":"https://arxiv.org/pdf/cs/0505013"}]
+    
+    Based on the web search results, I found some relevant information about TC0, NC circuit complexity, and counting problems:
+    
+    ## Recent Results (2025-2026)
+    
+    A 2025 paper "Transformers Provably Learn Chain-of-Thought Reasoning with Length Generalization" (Huang et al., November 2025) discusses the widely held conjecture that TC0 ≠ NC1 in circuit complexity theory. In November 2025, the ACL published work on "Circuit Complexity Bounds for RoPE-based Transformer Architecture", which establishes theorems conditional on the assumption that TC0 ≠ NC1.
+    
+    ## Counting Classes and TC0
+    
+    Researchers have defined the counting classes #NC1, GapNC1, PNC1 and C=NC1, and proved that boolean circuits, algebraic circuits, programs over nondeterministic finite automata, and programs over constant integer matrices yield equivalent definitions of the latter three classes.
+    
+    One significant result includes the unconditional separation of TC0 from the counting hierarchy, which represents an important finding regarding the relationships between TC0 and counting complexity classes.
+    
+    ## Open Problems
+    
+    Proving or refuting the strict separation TC0 ≠ NC1 remains a central open problem in circuit complexity with broad implications for parallel versus inherently sequential computation.
+    
+    The search results don't reveal extensive new breakthrough results specifically about counting problems in TC0/NC from 2025-2026, though recent work continues to engage with these fundamental questions in circuit complexity.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+  [WebSearch] 
+  [WebSearch] 
+    Web search results for query: "Helfgott prime counting Meissel Lehmer improvement 2025 2026"
+    
+    Links: [{"title":"GitHub - kimwalisch/primecount: 🚀 Fast prime counting function library","url":"https://github.com/kimwalisch/primecount"},{"title":"(PDF) Computing π(x): The Meissel-Lehmer Method","url":"https://www.researchgate.net/publication/242922074_Computing_px_The_Meissel-Lehmer_Method"},{"title":"Prime-counting function - Wikipedia","url":"https://en.wikipedia.org/wiki/Prime-counting_function"},{"title":"Meissel–Lehmer algorithm - HandWiki","url":"https://handwiki.org/wiki/Meissel%E2%80%93Lehmer_algorithm"},{"title":"Meissel–Lehmer algorithm - Wikipedia","url":"https://en.wikipedia.org/wiki/Meissel%E2%80%93Lehmer_algorithm"},{"title":"acganesh - Efficient Prime Counting with the Meissel-Lehmer Algorithm","url":"https://acgan.sh/posts/2016-12-23-prime-counting.html"},{"title":"(PDF) Computing π(x): The Meissel-Lehmer Method","url":"https://www.academia.edu/60479877/Computing_%CF%80_x_The_Meissel_Lehmer_Method"},{"title":"(PDF) Computing pi(x): The Meissel-Lehmer Method","url":"https://www.researchgate.net/publication/2655799_Computing_pix_The_Meissel-Lehmer_Method"},{"title":"The Meissel, Lehmer, Lagarias, Miller, Odlyzko method","url":"https://cr.yp.to/bib/1996/deleglise.pdf"},{"title":"Meissel's Formula -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/MeisselsFormula.html"}]
+    
+    Based on my search results, I found relevant information about Helfgott's improvements to prime counting methods using the Meissel-Lehmer algorithm.
+    
+    Helfgott achieved space efficiency of O(x^{1/5} (log x)^{5/3}), at the cost of letting time rise to a higher order. This represents an improvement in space complexity compared to earlier methods.
+    
+    Helfgott's work achieved time complexity of O_ε(x^{3/5} (log x)^{3/5+ε}) and space O(x^{3/10} (log x)^{13/10}) for computing π(x).
+    
+    The search results reference Helfgott in: Math Comput 89:333–350, 2020, indicating this work was published in 2020 in the journal Mathematics of Computation.
+    
+    For context, in 1959, Derrick Henry Lehmer extended and simplified Meissel's method, and further improvements to this method were made by Lagarias, Miller, Odlyzko, Deléglise, and Rivat.
+    
+    The search results provided information about Helfgott's 2020 work but did not contain specific information about developments in 2025 or 2026 in this area.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: "Maynard Tao sieve prime gaps new results 2026 analytic number theory"
+    
+    Links: [{"title":"On smooth gaps between primes using the Maynard-Tao sieve","url":"https://arxiv.org/html/2403.19696v1"},{"title":"[2403.19696] On smooth gaps between primes using the Maynard-Tao sieve","url":"https://arxiv.org/abs/2403.19696"},{"title":"Small gaps between primes Large gaps between primes","url":"https://terrytao.wordpress.com/wp-content/uploads/2015/07/lat.pdf"},{"title":"Bounded gaps between primes | American Inst. of Mathematics","url":"https://aimath.org/workshops/upcoming/primegaps2/"},{"title":"Gaps between prime numbers and primes in arithmetic progressions [after Y. Zhang and J. Maynard]","url":"https://www.researchgate.net/publication/282743917_Gaps_between_prime_numbers_and_primes_in_arithmetic_progressions_after_Y_Zhang_and_J_Maynard"},{"title":"Bounded Gaps Between Primes","url":"https://math.berkeley.edu/~fengt/bounded_gaps.pdf"},{"title":"The \"bounded gaps between primes\" Polymath project - a retrospective","url":"https://www.researchgate.net/publication/266319576_The_bounded_gaps_between_primes_Polymath_project_-_a_retrospective"},{"title":"math.NT | What's new - Terry Tao","url":"https://terrytao.wordpress.com/category/mathematics/mathnt/"},{"title":"[1409.8361] The \"bounded gaps between primes\" Polymath project - a retrospective","url":"https://arxiv.org/abs/1409.8361"},{"title":"A New Generation of Mathematicians Pushes Prime Number Barriers | Quanta Magazine","url":"https://www.quantamagazine.org/a-new-generation-of-mathematicians-pushes-prime-number-barriers-20231026/"}]
+    
+    Based on the web search results, here's what I found about the Maynard-Tao sieve and recent developments in prime gaps research:
+    
+    ## Background on the Maynard-Tao Sieve
+    
+    The breakthrough result of Zhang first established that there are bounded gaps between consecutive primes, and this was quickly followed by another extraordinary argument by Maynard (and discovered independently by Tao), establishing the existence of many primes in bounded intervals. In November 2013, James Maynard dramatically slashed this bound to 600, by a substantially easier method.
+    
+    ## Recent Progress and Applications
+    
+    The polymath project, with Maynard's assistance, eventually obtained the bound H₁ ≤ 246. More recent developments include work by Oxford mathematician James Maynard in 2020 (two years before he was awarded the Fields Medal), where he showed that the level of distribution is at least 0.6, beating the previous record of 0.57 from the 1980s for many commonly used sieves.
+    
+    ## Very Recent Results (2024-2026)
+    
+    Three of Maynard's graduate students have written papers extending both Maynard's and Zhang's results, with one paper by Jared Duker Lichtman pushing Maynard's level of distribution up to about 0.617.
+    
+    A recent paper applies modern analytic number theory tools – most notably, the Maynard sieve and recent correlation estimates for bounded multiplicative functions – to resolve problems on the prime counting function and its relatives.
+    
+    The search results show ongoing development in this field, though specific major breakthroughs from early 2026 aren't prominently featured in these results.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+  [WebSearch] 
+  [WebSearch] 
+    Web search results for query: "site:arxiv.org "prime counting" OR "pi(x)" OR "nth prime" 2026 new"
+    
+    Links: [{"title":"A Note on Algorithms for Computing 𝑝_𝑛","url":"https://arxiv.org/html/2510.16285v1"},{"title":"An Exact Formula for the Prime Counting Function Jose Risomar Sousa","url":"https://arxiv.org/pdf/1905.09818"},{"title":"[1409.1780] New bounds for the prime counting function π(x)","url":"https://arxiv.org/abs/1409.1780"},{"title":"Prime Counting Function -- from Wolfram MathWorld","url":"https://mathworld.wolfram.com/PrimeCountingFunction.html"},{"title":"Prime Counting Function Calculator - Online Primes Less Than Counter","url":"https://www.dcode.fr/prime-number-pi-count"},{"title":"GitHub - kimwalisch/primecount: 🚀 Fast prime counting function library","url":"https://github.com/kimwalisch/primecount"},{"title":"New bounds for the prime counting function \\pi(x)","url":"https://www.researchgate.net/publication/265415090_New_bounds_for_the_prime_counting_function_pix"},{"title":"[1203.5712] Computing $π(x)$ Analytically","url":"https://arxiv.org/abs/1203.5712"},{"title":"1 New Generating and Counting Functions of Prime Numbers","url":"https://arxiv.org/pdf/2106.10228"},{"title":"Prime number theorem - Wikipedia","url":"https://en.wikipedia.org/wiki/Prime_number_theorem"}]
+    
+    Based on the search results, I found relevant information about prime counting research on arxiv.org. Here are the key findings:
+    
+    ## Recent ArXiv Papers on Prime Counting
+    
+    A notable 2025 arxiv paper (2510.16285) discusses algorithms for computing the nth prime, showing that the binary search approach computes p_n in O(√n(log n)^4) time, and assuming the Riemann Hypothesis and Cramér's conjecture, an improved sieve-based algorithm runs in O(√n(log^7/2 n) log log n) time.
+    
+    This work suggests that further refinements to prime gap estimates may yield provably faster methods for computing primes.
+    
+    The search also returned several other relevant papers on prime counting functions:
+    
+    - A 2015 paper by Christian Axler (1409.1780) establishes new estimates concerning the prime counting function π(x), which improve previous estimates, with applications to the existence of prime numbers in small intervals.
+    
+    - A 2012 paper describes a rigorous implementation of the Lagarias and Odlyzko Analytic Method to evaluate the prime counting function and compute unconditionally the number of primes less than 10^24.
+    
+    These papers represent recent advances in computational and theoretical aspects of prime counting problems.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+    Web search results for query: ""Kim Walisch" primecount record 2025 2026 computation pi(x)"
+    
+    Links: [{"title":"GitHub - kimwalisch/primecount: 🚀 Fast prime counting function library","url":"https://github.com/kimwalisch/primecount"},{"title":"primecount/doc/Records.md at master · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/blob/master/doc/Records.md"},{"title":"primecount/doc/primecount.1 at master · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/blob/master/doc/primecount.1"},{"title":"primecount/ChangeLog at master · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/blob/master/ChangeLog"},{"title":"Releases · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/releases"},{"title":"primecount/src/phi.cpp at master · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/blob/master/src/phi.cpp"},{"title":"Prime Counting Function \\(\\pi(x)\\) — primeCount • RcppAlgos","url":"https://jwood000.github.io/RcppAlgos/reference/primeCount.html"},{"title":"primeCount: Prime Counting Function pi(x) in RcppAlgos: High Performance Tools for Combinatorics and Computational Mathematics","url":"https://rdrr.io/cran/RcppAlgos/man/primeCount.html"},{"title":"primeCount function - RDocumentation","url":"https://www.rdocumentation.org/packages/RcppAlgos/versions/2.5.0/topics/primeCount"},{"title":"primecount/src/PhiTiny.cpp at master · kimwalisch/primecount","url":"https://github.com/kimwalisch/primecount/blob/master/src/PhiTiny.cpp"}]
+    
+    Based on the search results, I found relevant information about Kim Walisch's primecount project and recent developments in 2025-2026:
+    
+    ## Overview
+    
+    Primecount is a command-line program and C/C++ library that counts the number of primes ≤ x (maximum 10^31) using highly optimized implementations of the combinatorial prime counting algorithms. Primecount has already been used to compute several prime counting function world records!
+    
+    ## Recent Records and Improvements
+    
+    Using primecount and Xavier Gourdon's algorithm, π(10^25) can be computed in only 330 CPU core hours on the AMD EPYC Zen4 CPU! This represents a significant improvement over previous computational efforts.
+    
+    ## Recent Software Updates
+    
+    Changes in primecount-8.1 were released on 2026-01-26, with AC.cpp showing up to 15% faster performance due to improved instruction level parallelism.
+    
+    Primecount-8.0 was released on 2025-12-13 with breaking C/C++ API changes and a new 128-bit API without string arguments and with better performance and improved error handling.
+    
+    The search results show that primecount continues to be actively maintained and improved, with recent versions emphasizing performance optimizations and enhanced capabilities for computing the prime counting function π(x).
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+Let me check this recent arxiv paper on computing p_n.
+  [WebSearch] 
+    Web search results for query: "arxiv 2510.16285 "algorithms for computing p_n" nth prime 2025"
+    
+    Links: [{"title":"A Note on Algorithms for Computing 𝑝_𝑛","url":"https://arxiv.org/html/2510.16285"},{"title":"A Note on Algorithms for Computing pn Ansh Aggarwal","url":"https://www.arxiv.org/pdf/2510.16285"},{"title":"[quant-ph/9508027v1] Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer","url":"https://export.arxiv.org/abs/quant-ph/9508027v1"},{"title":"[1602.00545] Fast Computation of the Nth Term of an Algebraic Series over a Finite Prime Field","url":"https://arxiv.org/abs/1602.00545"},{"title":"PrimePage Primes: The Nth Prime Algorithm","url":"https://t5k.org/nthprime/algorithm.php"},{"title":"[quant-ph/9508027v2] Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer","url":"https://arxiv.org/abs/quant-ph/9508027v2"},{"title":"[quant-ph/9508027] Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer","url":"https://export.arxiv.org/abs/quant-ph/9508027"},{"title":"What are some good algorithms for computing primes in a range and finding an estimated nth prime number?","url":"https://www.quora.com/What-are-some-good-algorithms-for-computing-primes-in-a-range-and-finding-an-estimated-nth-prime-number"},{"title":"Computer Science","url":"https://arxiv.org/list/cs/recent?skip=1393&show=1000"},{"title":"1 Identification Codes via Prime Numbers","url":"https://arxiv.org/pdf/2408.12455"}]
+    
+    I found the paper! Here's what the search results show about arxiv paper 2510.16285:
+    
+    The paper analyzes algorithms for computing the nth prime (p_n) and establishes asymptotic bounds for several approaches.
+    
+    The paper examines multiple algorithms:
+    
+    1. **Binary Search Approach**: Using an oracle for π(x) (the prime-counting function), the nth prime is computed in O(T_π log n) time. More specifically, p_n can be computed in O(√n · (log n)^4) time.
+    
+    2. **Sieving Approaches**: A sublinear sieve takes O((n log n)/ log log n) time to compute p_n. However, a sublinear sieve is asymptotically worse than the binary search algorithm for computing the nth prime.
+    
+    3. **Interval Sieving**: The paper considers a sieve that finds primes over an interval [R, L] using a segmented sieve, showing that for such a sieve to beat binary search, it must have an interval tighter than some bound.
+    
+    The paper assumes the Riemann hypothesis and Cramér's conjecture on prime gaps to show a way to construct an interval tight enough that an interval sieve would asymptotically beat binary search.
+    
+    The paper was published on October 18, 2025.
+    
+    
+    REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+Good. Now I have all the information needed to write the critique. Let me also check the literature file and read the existing session insights for context.
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    1	# State of the Art: Prime Computation (2024-2026)
+    2	
+    3	Consolidated survey of all developments relevant to computing p(n) exactly.
+    4	Deduplicated from 6 overlapping source files.
+    5	
+    6	Last updated: 2026-04-04
+    7	
+    8	---
+    9	
+    10	## 1. Prime Counting Algorithms
+    11	
+    12	### 1.1 Combinatorial Methods (Best Practical)
+    13	
+    14	**Current best asymptotic:** O(x^{2/3} / log^2 x) -- Deleglise-Rivat / Gourdon (1996/2001)
+    15	
+    16	**Best implementation:** Kim Walisch's primecount library
+    17	- Version 8.4 released 2026-04-01
+    18	- Implements Gourdon's algorithm with SIMD acceleration (AVX512, ARM SVE)
+    19	- primecount 8.3 (March 2026): bidirectional clustered easy leaves, faster compression
+    20	- primecount 8.1 (January 2026): 15% faster AC.cpp
+    21	- primecount 8.0 (December 2025): new 128-bit API
+    22	- pi(10^25) computed in 330 CPU core hours on AMD EPYC Zen4
+    23	- The SIMD-accelerated Gourdon D formula in v8.4 vectorizes the hard special leaves bottleneck, estimated 2-4x speedup on modern CPUs
+    24	
+    25	**Relevance to project:** This is the engine behind our best practical approach (binary search on pi(x)). Constant-factor improvements continue but no asymptotic breakthrough.
+    26	
+    27	**Does it change the barrier?** No. Still O(x^{2/3}).
+    28	
+    29	### 1.2 Hirsch-Kessler-Mendlovic: Elementary O~(sqrt(N)) (2022/2024)
+    30	
+    ... (20 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (20 more lines)
+Now I have comprehensive context. Let me write the critique and update the literature file.
+  [Write] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    1	# Session 35 Self-Critique
+    2	## April 5, 2026
+    3	
+    4	**Reviewer:** Self-critique (Session 35)
+    5	
+    6	---
+    7	
+    8	## What was accomplished
+    9	
+    10	Session 35 performed a comprehensive circuit complexity deep-dive, the last recommended
+    11	direction from OPEN_PROBLEMS.md. Five experiments were completed (3 fully, 2 via agents):
+    12	
+    13	1. **Approximate circuit complexity** — Definitive: no phase transition exists
+    14	2. **MKtP / meta-complexity** — Closed as attack path (reformulation only)
+    15	3. **GF(2) SLP analysis** — pi(x) mod 2 matches random in all GF(2) metrics
+    16	4. **SAT circuit minimization** — COMPLETED (circuit size ~N^9.8, matches random functions; N=4 exact = 6 gates; INCONCLUSIVE on growth rate due to synthesis limits)
+    17	5. **Threshold gate circuits** — COMPLETED (PTF degree = N/2 exactly; requires C(N,N/2) ~ 2^N/sqrt(N) gates at depth-2; single LTF accuracy → 0.50; matches random function bound)
+    18	
+    19	## What the session adds to the barrier picture
+    20	
+    21	The N/2 universality phenomenon (Session 28/31) is now confirmed at the ALGORITHMIC level:
+    22	- Not only do combinatorial measures give N/2...
+    23	- But also: SLP length = random (no algebraic compression)
+    24	- Phase transition search: NONE found (gradual degradation)
+    25	- Error geography: UNIFORM (no easy/hard regions)
+    26	- Meta-complexity: pure reformulation (no new angle)
+    27	
+    28	**The characterization of pi(x) mod 2 as "computationally random" is now essentially
+    29	COMPLETE across all known structural measures.**
+    30	
+    ... (40 more lines)
+  [Write] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    The file /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md has been updated successfully.
+Now let me update the literature file with the Aggarwal paper, create the session archive, and update SESSION_INSIGHTS.
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    0	# State of the Art: Prime Computation (2024-2026)
+    1	
+    2	Consolidated survey of all developments relevant to computing p(n) exactly.
+    3	Deduplicated from 6 overlapping source files.
+    4	
+    5	Last updated: 2026-04-04
+    6	
+    7	---
+    8	
+    9	## 1. Prime Counting Algorithms
+    10	
+    11	### 1.1 Combinatorial Methods (Best Practical)
+    12	
+    13	**Current best asymptotic:** O(x^{2/3} / log^2 x) -- Deleglise-Rivat / Gourdon (1996/2001)
+    14	
+    15	**Best implementation:** Kim Walisch's primecount library
+    16	- Version 8.4 released 2026-04-01
+    17	- Implements Gourdon's algorithm with SIMD acceleration (AVX512, ARM SVE)
+    18	- primecount 8.3 (March 2026): bidirectional clustered easy leaves, faster compression
+    19	- primecount 8.1 (January 2026): 15% faster AC.cpp
+    20	- primecount 8.0 (December 2025): new 128-bit API
+    21	- pi(10^25) computed in 330 CPU core hours on AMD EPYC Zen4
+    22	- The SIMD-accelerated Gourdon D formula in v8.4 vectorizes the hard special leaves bottleneck, estimated 2-4x speedup on modern CPUs
+    23	
+    24	**Relevance to project:** This is the engine behind our best practical approach (binary search on pi(x)). Constant-factor improvements continue but no asymptotic breakthrough.
+    25	
+    26	**Does it change the barrier?** No. Still O(x^{2/3}).
+    27	
+    28	### 1.2 Hirsch-Kessler-Mendlovic: Elementary O~(sqrt(N)) (2022/2024)
+    29	
+    ... (70 more lines)
+Good, the Aggarwal paper is already tracked (section 1.4). Let me check if it was recently added and verify the file doesn't need other updates.
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    100	- Almost all short intervals: theta improved from 1/6 to 2/15
+    101	- Tao: "a remarkable achievement"; Radziwill: "first new idea in the hunt for zeta zeros in 50 years"
+    102	
+    103	**Relevance:** Does NOT directly yield a new algorithm, but tightens theoretical guarantees about prime distribution. Better zero-density bounds could reduce the number of zeta zeros needed for rigorous analytic pi(x) computation; practical impact unclear.
+    104	
+    105	**Does it change the barrier?** No. Improves density estimates, not computational methods.
+    106	
+    107	### 2.2 Gafni-Tao: Exceptional Intervals (May 2025)
+    108	
+    109	**Source:** arXiv:2505.24017
+    110	
+    111	Makes Guth-Maynard results explicit and quantitative for short intervals. Provides explicit upper bounds on exceptional set where PNT fails in [x, x+x^theta]. Computer-assisted optimization.
+    112	
+    113	**Relevance:** Tighter guarantees for binary search bracketing. Marginal practical impact since Visser's exponential bounds already give tight brackets.
+    114	
+    115	### 2.3 Connes: Letter Through Time (February 2026)
+    116	
+    117	**Source:** arXiv:2602.04022
+    118	
+    119	42-page survey plus novel "Letter to Riemann" approach:
+    120	- Using primes < 13, approximates first 50 zeta zeros to accuracies 2.6 x 10^{-55} to 10^{-3}
+    121	- Proves these approximating values lie EXACTLY on the critical line
+    122	- Connects Weil quadratic form to information theory
+    123	- Proposes proof strategy: convergence of zeros from finite to infinite Euler products
+    124	
+    125	**Relevance:** Fascinating analytic tool but NOT computational. No pathway to polylog prime counting. Our Session 9 analyzed the Connes-Weil quadratic form and found: "finds zeros but can't sum them fast."
+    126	
+    127	**Does it change the barrier?** No.
+    128	
+    129	### 2.4 Harper-Xu-Wang: Gaussian Multiplicative Chaos and Primes (2025)
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    200	- Lemma 2 (Zero Truncation): E_zeros(x) < 0.6*C/T^2*(ln T + 1)
+    201	
+    202	**CRITICAL ASSESSMENT:**
+    203	This paper makes extraordinary claims that need careful scrutiny:
+    204	1. If only O(log x) zeros are needed, total complexity would be O(polylog(x)) -- exactly
+    205	   our target. But the paper does NOT provide a formal complexity analysis.
+    206	2. The ~1200 zeros are PRECOMPUTED and assumed known. Computing them is non-trivial.
+    207	3. The 330 million-bit FFT multiplication is for the smooth part evaluation, not zero
+    208	   summation. Unclear if the total pipeline is truly polylog.
+    209	4. The authors (Kilictas & Alpay) have several other arxiv papers on novel number-theoretic
+    210	   claims. The results should be independently verified before relying on them.
+    211	5. Even if error < 0.5 is achieved, the METHOD still requires computing zeta at each zero
+    212	   location with sufficient precision, and evaluating x^rho for each zero rho.
+    213	
+    214	**If correct, this would be the closest result to our goal.** The claim that O(log x)
+    215	zeros suffice for exact pi(x) is remarkable and warrants immediate experimental verification.
+    216	
+    217	**Does it change the barrier?** POTENTIALLY YES -- if the complexity analysis holds up.
+    218	Priority: VERIFY THIS PAPER.
+    219	
+    220	### 2.6 Overall RH Status (April 2026)
+    221	
+    222	- 20 trillion zeros verified on critical line (Platt-Trudgian, 2021)
+    223	- De Bruijn-Newman constant Lambda = 0 (Rodgers-Tao, 2020)
+    224	- Lean 4 Mathlib: machine-checked proof of Prime Number Theorem
+    225	- RH remains OPEN after 167 years
+    226	
+    227	---
+    228	
+    229	## 3. Prime Distribution and Sieve Advances
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    300	**Relevance:** Theoretically significant as the first fully constructive analytic prime recurrence. Practically irrelevant: requires extreme-precision zeta evaluation.
+    301	
+    302	**Does it change the barrier?** No. Trades sieving for equally expensive zeta computation.
+    303	
+    304	### 4.3 Prunescu-Shunia: Arithmetic Terms (December 2024 - 2025)
+    305	
+    306	**Source:** arXiv:2412.14594; J. Integer Seq. 28, 2025
+    307	
+    308	First explicit fixed-length arithmetic terms for pi(n) and p(n). Uses only +, -, *, div, exp applied a fixed finite number of times.
+    309	
+    310	**The catch:** Tower-of-exponentials intermediate values. Even p(1)=2 requires computing integers with more digits than atoms in the observable universe. This is provably inherent (Mazzanti 2002): any arithmetic term encoding variable-length computation into fixed operations MUST use exponentially large intermediates.
+    311	
+    312	**Extended work (2025):** Arithmetic terms for Mersenne/Fermat/twin prime counting (arXiv:2512.01680); smallest/largest prime divisor (arXiv:2510.26939).
+    313	
+    314	**Relevance:** Settles Hardy-Wright's question: yes, a formula for p(n) exists. But it is "utterly useless for computation" as Hardy-Wright anticipated.
+    315	
+    316	**Does it change the barrier?** No. Theoretical existence result only.
+    317	
+    318	### 4.4 Saito: Mills' Constant Is Irrational (2024-2025)
+    319	
+    320	**Source:** arXiv:2404.19461; Mathematika 71(3), 2025
+    321	
+    322	Resolves long-standing open problem. Partial transcendence results obtained. The irrationality means Mills' constant cannot be expressed as a ratio of integers, but the formula floor(A^{3^n}) remains circular (computing A requires primes).
+    323	
+    324	**Does it change the barrier?** No.
+    325	
+    326	### 4.5 Bouras: New Prime-Generating Recurrence (2025)
+    327	
+    328	**Source:** arXiv:2509.09745
+    329	
+    ... (70 more lines)
+The Kilictas-Alpay entry in the literature file is stale — it still says "Priority: VERIFY" but CLOSED_PATHS says it was DEBUNKED in S12/S30. Let me fix that and add new papers.
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    The file /apps/aplikacijos/prime-research/literature/state_of_art_2026.md has been updated successfully.
+Now let me add the new papers found in the literature scan. Let me find the right insertion point.
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    195	**Computational cost:** Single FFT-based multiplication on ~330 million-bit number.
+    196	Claims "seconds on modern hardware" for 10^8-digit x.
+    197	
+    198	**Key theorems:**
+    199	- Lemma 1 (Tail Error): R_tail(x) < (alpha+Delta)*e^{-alpha^2}
+    200	- Lemma 2 (Zero Truncation): E_zeros(x) < 0.6*C/T^2*(ln T + 1)
+    201	
+    202	**DEBUNKED (Sessions 12, 30):**
+    203	1. Violates the uncertainty principle: kernel too wide to resolve primes
+    204	2. Omits critical x^{1/2} factor in error analysis
+    205	3. AI-generated paper with mathematical errors
+    206	4. Authors (Kilictas/Alpay) have no number theory background; Alpay publicly admits
+    207	   uploading arxiv papers to influence LLM training data (Medium, July 2025)
+    208	5. Zero citations, no peer review
+    209	
+    210	**Does it change the barrier?** No. Paper is incorrect.
+    211	
+    212	### 2.6 Overall RH Status (April 2026)
+    213	
+    214	- 20 trillion zeros verified on critical line (Platt-Trudgian, 2021)
+    215	- De Bruijn-Newman constant Lambda = 0 (Rodgers-Tao, 2020)
+    216	- Lean 4 Mathlib: machine-checked proof of Prime Number Theorem
+    217	- RH remains OPEN after 167 years
+    218	
+    219	---
+    220	
+    221	## 3. Prime Distribution and Sieve Advances
+    222	
+    223	### 3.1 Lichtman: Modified Linear Sieve (Published 2025)
+    224	
+    ... (10 more lines)
+Now let me add the new zeta zero computation papers.
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    The file /apps/aplikacijos/prime-research/literature/state_of_art_2026.md has been updated successfully.
+Now let me also add a note about the Tao-Gafni paper. Let me find section 3.
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    250	### 3.2 Pascadi: Exponents of Distribution to x^{5/8} (May 2025)
+    251	
+    252	**Source:** arXiv:2505.00653
+    253	
+    254	Primes and smooth numbers equidistributed in APs to moduli x^{5/8 - o(1)}. Eliminates dependency on Selberg eigenvalue conjecture. Uses triply-well-factorable weights and new large sieve inequalities for exceptional Maass forms.
+    255	
+    256	**Relevance:** x^{5/8} = x^{0.625} is tantalizingly close to x^{2/3} = x^{0.667}. If pushed to x^{2/3}, might enable algorithmic improvements to combinatorial pi(x). Currently below threshold.
+    257	
+    258	**Does it change the barrier?** Not yet, but worth monitoring.
+    259	
+    260	### 3.3 Le Duc Hieu: AP of Primes in Short Intervals (September 2025)
+    261	
+    262	**Source:** arXiv:2509.04883
+    263	
+    264	Once theta > 17/30, every sufficiently long interval [x, x+x^theta] contains many k-term APs of primes. Combines Guth-Maynard uniform short-interval PNT with Green-Tao transference principle.
+    265	
+    266	**Relevance:** Purely theoretical. Confirms richness of prime structure in computationally accessible intervals but provides no new algorithms.
+    267	
+    268	### 3.4 Visser: Exponential Bounds on Primes and Gaps (2025)
+    269	
+    270	**Sources:** Mathematics (MDPI) 13(11), 1844; Int. Math. Forum 2025; arXiv:2507.14410
+    271	
+    272	Three papers providing:
+    273	- Exponentially tight bounds on p(n) location
+    274	- Explicit bounds on prime gaps g(n) with proven validity ranges
+    275	- Analysis of Chebyshev theta at primes
+    276	
+    277	**Relevance:** Tighter bracketing for binary search when computing p(n). Reduces number of pi(x) evaluations needed.
+    278	
+    279	**Does it change the barrier?** No. Constant-factor improvement to search phase, not asymptotic.
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    The file /apps/aplikacijos/prime-research/literature/state_of_art_2026.md has been updated successfully.
+Now update the last-updated date.
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    The file /apps/aplikacijos/prime-research/literature/state_of_art_2026.md has been updated successfully.
+Now create the session archive and update SESSION_INSIGHTS.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    0	# Session-by-Session Key Insights
+    1	
+    2	Detailed findings from each research session. Read the relevant session
+    3	if you need deep context on a specific topic. For a quick overview,
+    4	see the Status section of CLAUDE.md.
+    5	
+    6	---
+    7	
+    8	## Session 12
+    9	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -5
+    session31_tensor_discrepancy.md
+    session32_fresh_perspective.md
+    session33_conditional_algorithms.md
+    session36b_kt_deep_focus.md
+    session37_housekeeping.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    145	    value ~√x from exact. 50 zeros gives O(√x) error. The information IS in the high zeros.
+    146	(h) **ALL ALGEBRAIC SHORTCUTS CLOSED:** Wilson (circular), cyclotomic (circular), arithmetic
+    147	    derivative (circular), determinant sieve (≡ Möbius), number fields (MORE zeros), matrix
+    148	    exponentiation (non-autonomous), Selberg sieve (parity barrier), characters (equally hard).
+    149	(i) **INFORMATION-THEORETIC QUANTIFICATION:** For x=10^100, π(x) has ~332 bits total, ~173
+    150	    "hard" bits encoding zeta zeros. Even the MSB of Δ=π(x)-Li(x) requires O(√x) zeros.
+    151	    Hard bits form a HOLOGRAPHIC projection — no single bit is independently computable.
+    152	(j) **Total approaches: ~550+.** 25 new closed paths. Fresh perspective independently rediscovered
+    153	    and confirmed ALL known barriers from a new starting point. No new viable directions found.
+    154	    The √x barrier is genuinely universal.
+    155	
+    156	## Session 20 (Deep Focus: Kt Complexity of delta(n))
+    157	
+    158	**Task:** FOCUS_QUEUE Task #1 — empirically estimate Kt(delta(n)|n).
+    159	20+ experiments across 4 parallel sub-agents + direct experiments.
+    160	
+    161	Key findings:
+    162	
+    163	(a) **Kt(delta(n)|n) = O(log n) TRIVIALLY**: For any polytime-computable function, Kt = O(1) + log(runtime)
+    164	    = O(log n). Kt is NOT the right measure. The correct question is CIRCUIT COMPLEXITY of delta.
+    165	
+    166	(b) **CANNOT predict delta(n) from n**: Every method tested (linear, polynomial deg 2-6, Fourier up to
+    167	    100 terms, RandomForest, GradientBoosting) achieves R² < 0 on held-out test set. Even best ML method
+    168	    has RMSE 1.07x the naive baseline. Adding n as feature to AR(k) models: 0% improvement.
+    169	    **n is informationally irrelevant to delta.** This is the session's strongest empirical result.
+    170	
+    171	(c) **Power spectrum: PSD ~ f^{-1.69}**: Between pink (1/f) and Brownian (1/f²) noise. Confirmed by
+    172	    shuffled baseline (flat PSD). Mutual information decays as power law MI ~ k^{-0.34}, NOT exponential.
+    173	    This means no finite-memory model (ARMA) captures the full correlation structure.
+    174	
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1040 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1020	   8 frequencies, but RMSE < 1 requires 41182/50001 modes (82%). Max error < 1
+    1021	   requires ALL modes. 4/10 peaks match zeta zeros but likely chance.
+    1022	
+    1023	**Key insight:** Session 20 left open "does the 1/f spectrum have exploitable
+    1024	algebraic structure?" Answer: **NO.** The spectrum is a genuine continuum,
+    1025	not decomposable into sparse computable oscillations. The spectral tail
+    1026	(frequencies contributing individually < 0.001% power) is collectively
+    1027	essential for exact values, matching the communication matrix rank result.
+    1028	
+    1029	**Quantitative barrier summary:**
+    1030	- Entropy rate: ~5.8 bits/value (finite, not growing)
+    1031	- Total Kt for N values: ~5.8*N bits (extensive)
+    1032	- Direct dependence on n: zero (transfer entropy confirms)
+    1033	- Spectral sparsifiability: 82% of modes needed for RMSE < 1
+    1034	- AR model order: 7 (short direct memory, long indirect memory)
+    1035	
+    1036	**Status:** Task #1 (Kt complexity of delta(n)) is now COMPLETE.
+    1037	The R^{-1}(n) + delta(n) decomposition is a dead end for polylog algorithms.
+    1038	
+    1039	Also: converted all .txt results to .md format in kt_complexity/.
+    1040	Experiments saved: experiments/information_theory/kt_complexity/ (2 new scripts + 2 results)
+    1041	
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now create the session archive.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session38_critique.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session38_critique.md
+Now let me run the cleanup checks and save the run state.
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -20
+    (Bash completed with no output)
+  [Bash] find /apps/aplikacijos/prime-research -name "__pycache__" -type d 2>/dev/null
+    (Bash completed with no output)
+All clean — no missing results files, no `__pycache__` directories. Save the run state.
+  [Bash] echo 26 > /apps/aplikacijos/prime-research/.run_state
+    (Bash completed with no output)
+## Session 38 Critique — Complete
+
+### Verdict on S36 Proposals
+
+All four proposals (**zero clustering**, **compressed sensing**, **PSLQ relations**, **dequantized Grover**) are **confirmed CLOSED**. Each matches 3-5 existing entries in CLOSED_PATHS.md and falls into the Information Loss failure mode. The common deficiency: all attempt to compress/sparsify the oscillatory zeta zero contribution, which has been shown incompressible under 21+ independent measures.
+
+### Literature Scan
+
+**No 2025-2026 paper proposes or achieves polylog pi(x) or p(n).** Key findings:
+- Aggarwal (arXiv:2510.16285) — tightest p_n complexity analysis, already tracked
+- Valley Scanner + variational methods — better zero *location*, not summation
+- primecount v8.4 — SIMD engineering, still O(x^{2/3})
+- No TC^0/NC^1 separation breakthroughs
+- Fixed stale "VERIFY" label on debunked Kilictas-Alpay paper in literature file
+
+### Files Updated
+- `archive/ephemeral/critique_latest.md` — full critique
+- `literature/state_of_art_2026.md` — 3 new papers, 1 correction
+- `status/SESSION_INSIGHTS.md` — S38 entry added
+- `archive/sessions/session38_critique.md` — session archive
+
+### Bottom Line
+Circuit complexity (#TC^0 ⊆ NC?) remains the **only** open direction. The project's strongest output remains the 21-measure pseudorandomness synthesis in `novel/pseudorandomness_of_pi.md`.
+--- Session ended ---
+Sleeping 600 seconds before next run...

@@ -1038,3 +1038,67 @@ The R^{-1}(n) + delta(n) decomposition is a dead end for polylog algorithms.
 
 Also: converted all .txt results to .md format in kt_complexity/.
 Experiments saved: experiments/information_theory/kt_complexity/ (2 new scripts + 2 results)
+
+## Session 38 (Critique)
+
+**Task:** Critique Session 36 proposals + literature scan for 2025-2026 papers.
+
+Key findings:
+
+(a) **All four S36 proposals confirmed CLOSED.** Proposals 21-24 (zero clustering,
+    compressed sensing, PSLQ, dequantized Grover) all fall into the Information Loss
+    failure mode. Each matches 3-5 existing CLOSED_PATHS entries.
+
+(b) **Kilictas-Alpay TG kernel paper (arXiv:2506.22634) was still marked "VERIFY" in
+    literature file — corrected to DEBUNKED** per S12/S30 findings.
+
+(c) **New literature scanned:**
+    - Aggarwal (2510.16285): p_n complexity analysis, already tracked
+    - Tao-Gafni: rough numbers in gaps, no computational relevance
+    - Valley Scanner (2512.09960) + variational Z-function methods: better zero
+      location, but barrier is summing zeros not locating them
+    - primecount v8.4: SIMD acceleration, O(x^{2/3}) unchanged
+    - No TC^0/NC^1 separation breakthroughs
+
+(d) **Minor novel observations from S36:** Gaussian normality of normalized delta
+    (p=0.19), sieve rank exponent 0.365, Fourier rank exponent 0.943. None warrant
+    novel/ entries.
+
+(e) **Recommendation:** Circuit complexity (#TC^0 ⊆ NC?) remains the ONLY open direction.
+    Growing-dimension matrix powering in TC^0 is the one genuinely open sub-question.
+
+## Session 39 — Literature Monitoring + Depth Profile (2026-04-05)
+
+**Task:** Literature monitoring for new TC^0/NC^1 results; threshold circuit depth experiment.
+
+Key findings:
+
+(a) **No new TC^0/NC^1 separation results in 2026.** Searched ECCC, arXiv, CCC.
+    - Chen-Tal-Wang (TR26-039): n^{2.5-ε} THR∘THR lower bounds, but for E^NP (already tracked)
+    - Gurumukhani et al. (2601.04072): optimal monotone depth-3 for MAJORITY (monotone, not threshold)
+    - Behera et al. (TR26-002): multilinear IPS separations (proof complexity, not circuits)
+    - TR26-024: Nullstellensatz in counting hierarchy (no computational relevance)
+    - TR26-038: XOR lemma for F_p sums (graph problems, not number theory)
+    - Brandt MKtP: no 2026 follow-ups beyond the TCC 2024 paper
+
+(b) **No new pi(x) algorithms.** Landscape unchanged: O(x^{2/3}) practical, O(x^{1/2+ε}) analytic.
+
+(c) **Threshold depth profile experiment (N=4-10):** Measured depth-vs-accuracy for
+    is_prime, pi_mod2, and random using random LTF features + LP. All three functions
+    behave identically: exact at depth 2 for N ≤ 8, fail at N=10 (heuristic limitation).
+    The 0.832 accuracy for is_prime at N=10 = trivial baseline. This extends the
+    pseudorandomness evidence to the depth-accuracy tradeoff dimension (Measure 22).
+    Reconciled with S35: PTFs show depth-2 always works but needs C(N,N/2) ≈ 2^N/√N
+    gates (exponential), so cannot distinguish TC^0 from non-TC^0 at depth 2.
+
+(d) **Growing-dimension MPOW analysis:** Confirmed this remains genuinely OPEN. The bottleneck
+    is O(log log n) combination depth for polylog eigenvalue powers. The Healy-Viola F_{2^n}
+    technique uses Frobenius endomorphism (characteristic-specific), has no analog over Z_n.
+    The commutative structure of Z_n[x]/(x^r-1) doesn't help due to circularity (CRT
+    decomposition requires knowing factorization of n).
+
+(e) **Housekeeping:** Flagged 7 groups of duplicate/versioned scripts in TODO.md for human review.
+
+(f) **Assessment:** The project has exhausted all experimentally accessible directions. The
+    remaining question (#TC^0 ⊆ NC) is purely complexity-theoretic with no known experimental
+    attack. Future sessions should focus on literature monitoring and engineering improvements.
