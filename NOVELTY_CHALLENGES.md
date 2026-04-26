@@ -1,12 +1,43 @@
 # Novelty Challenges — Active Research Targets
 
-This file holds the active research questions that drive sessions toward
-**genuine mathematical novelty**, not duplicate closures. Every challenge
-is concrete enough that completing it produces a verifiable artifact, and
-open enough that no agent has already solved it (or a published paper).
+This file holds the active research questions for sessions targeting
+**B-grade work** (substantive refinement or ambitious failure of a
+single-session attack — see CLAUDE.md "Novelty Bar").
+
+**For A-grade work, read `ATTACK_VECTORS.md` first.** That file holds
+the frontier targets — the only way to produce genuinely novel
+mathematics. The challenges below are ranked B-grade because they are
+single-session-tractable; the trade-off is that even when they succeed,
+they produce refinements rather than discoveries.
 
 **Pick one challenge per session.** Time-budget the work. If you can't
 finish, write the partial state into RESEARCH_AGENDA.md and halt.
+
+The framework's grading discipline (CLAUDE.md): a session that
+completes a NOVELTY_CHALLENGES.md target with a clean refinement is
+B-grade. A session that *attempts* an ATTACK_VECTORS.md target and
+fails informatively is also B-grade. A session that completes 5
+NOVELTY_CHALLENGES targets in one sitting is *not* A-grade — it's 5×B,
+and a single A-grade attempt would have been more valuable.
+
+---
+
+## §0. Pointer to Frontier Attacks (A-grade work)
+
+**`ATTACK_VECTORS.md` §A through §F** holds the project's frontier
+targets. If your session has 1+ hour available and you are not in
+the middle of an arc, pick from there instead. The frontier sections:
+
+- **§A** TC⁰ Primality, Beyond AKS (3 attacks)
+- **§B** Spectral Identity Searches Beyond Standard Bases (3 attacks)
+- **§C** Break GUE Universality of Zeta Zeros at Some Scale (3 attacks)
+- **§D** Cross-Domain Imports the Project Has Never Tried (4 attacks)
+- **§E** Meta-Analysis of CLOSED_PATHS as a Data Source (2 attacks)
+- **§F** Synthesis Targets That Would Be Publishable (3 multi-session arcs)
+
+The single highest-leverage attempt right now (per ATTACK_VECTORS analysis):
+**§C1** — re-run BK arithmetic correction probe at Odlyzko zeros at
+height ~10²² (1 session, A-grade if a deviation is detected).
 
 ---
 

@@ -100,45 +100,208 @@ archive/
 
 ## Rules for AI Agents
 
-### Workflow (the ordering matters)
+### Workflow (the ordering matters — A-grade-first)
 
-1. **Read `NOVELTY_CHALLENGES.md`.** Pick one challenge that fits the
-   session's available time. This is your primary target.
-2. **Read `RESEARCH_AGENDA.md`** to see if any in-flight arc is waiting
-   for the kind of work you're about to do. If so, prefer continuing that
-   arc over starting fresh.
-3. **Read `EDGES.md`** to ground your work in existing mathematical
+1. **Read `ATTACK_VECTORS.md` FIRST.** This file holds the frontier
+   targets — the only way to produce A-grade work. If you can pick a
+   frontier target that fits your session, *do so even if it's risky*.
+   The framework explicitly rewards ambitious failure (B-grade) over
+   safe refinement (C-grade).
+2. **Read `RESEARCH_AGENDA.md`** to see if any in-flight arc is
+   waiting for the kind of work you're about to do. If yes and the
+   arc has accumulated state, prefer continuing the arc.
+3. **Read `NOVELTY_CHALLENGES.md`** for B-grade single-session
+   targets if no frontier attack or arc fits your session.
+4. **Read `EDGES.md`** to ground your work in existing mathematical
    facts. You will cite edge IDs.
-4. **Read `status/OPEN_PROBLEMS.md`** if your target involves the only
+5. **Read `status/OPEN_PROBLEMS.md`** if your target involves the only
    open problem (circuit complexity of pi(x)).
-5. **Read `TODO.md`** for housekeeping items.
-6. **Search `status/CLOSED_PATHS.md`** before claiming any result is
+6. **Read `TODO.md`** for housekeeping items.
+7. **Search `status/CLOSED_PATHS.md`** before claiming any result is
    novel. The "novel" bar is HIGH at this stage of the project.
-7. **Read `novel/pseudorandomness_of_pi.md`** if your target involves
-   pi(x) mod 2 structural claims. Any new approach to this function must
-   either circumvent the 35+ measures or explain why they don't apply.
+8. **Read `novel/pseudorandomness_of_pi.md`** if your target involves
+   pi(x) mod 2 structural claims. Any new approach to this function
+   must either circumvent the 35+ measures or explain why they don't
+   apply.
 
-### The Novelty Bar (THIS IS THE CORE CRITERION)
+The order matters. Reading NOVELTY_CHALLENGES first will bias toward
+B-grade work; reading ATTACK_VECTORS first biases toward A-grade
+attempts. The project needs A-grade attempts.
 
-A session is **successful** if and only if it produces at least one of:
+### The Novelty Bar — Three Grades (CORE CRITERION)
 
-- **A mathematical object** (circuit, ring, transform, representation,
-  function, or algorithm) that is not equivalent to anything in CLOSED_PATHS,
-  with code that runs and a results file.
-- **A composition** of ≥ 2 existing edges into a single new statement
-  or object, where the composition itself is the novel content.
-- **A Lean 4 proof** of an existing edge or novel result, with the proof
-  type-checking under Lean.
-- **A formal-statement-grade unification** across multiple `novel/`
-  results, written as `novel/<name>.md` with theorem/lemma structure.
-- **A negative-shape edge** (E7.x family) that closes an entire technique
-  family at the structural level (not a single approach).
+Every session ends with a self-graded letter (A / B / C / F). The grade
+goes in the session synthesis. **Be honest. The point of the grading
+system is to make refinement-vs-novelty distinguishable to future
+agents — not to make you feel good.**
 
-A session that produces only "DUPLICATE-PLUS" closures of fresh-perspective
-brainstorms — without any of the above — is a **failed session**, even if
-every CLAUDE.md rule was followed. File the closures and note in the
-synthesis: "session produced no novel artifact; primary failure mode was
-duplicate ideation."
+#### A-grade: GENUINE NOVELTY
+
+A new mathematical object, identity, or structural fact that:
+
+- a published-paper-grade number theorist or complexity theorist could
+  not derive in an afternoon from CLOSED_PATHS.md + EDGES.md alone, AND
+- has at least one of:
+  (a) a precise theorem statement that did not previously exist in the
+      project, with proof or empirical verification at meaningful scale;
+  (b) a working algorithm beating an existing benchmark on at least one
+      concrete metric;
+  (c) a Lean 4 proof of a non-trivial theorem (≥ 50 lines of Lean
+      content, no `sorry`, no new `axiom`);
+  (d) a frontier attack from `ATTACK_VECTORS.md` that produced a
+      *partial positive result* (not just "the technique didn't apply").
+
+Examples that WOULD qualify:
+- A circuit family computing PRIMES in TC⁰ unconditionally.
+- A spectral statistic on zeros that detects arithmetic deviation
+  from GUE at any scale.
+- A polylog algorithm computing one specific bit of π(x) for a fixed
+  bit-position J in the hard zone.
+- A non-trivial Hecke / automorphic / cohomological identity for π(x).
+
+Examples that would NOT qualify (these are B-grade at best):
+- An extension of an existing closed form (S69 → S70 type work).
+- A unification of two existing edges under a shared mechanism.
+- A Lean translation of an already-informally-proven argument.
+- A new pseudorandomness measure landing at the noise floor.
+
+#### B-grade: SUBSTANTIVE REFINEMENT or AMBITIOUS FAILURE
+
+Either:
+
+(i) Refinement of an existing edge with a precise new statement that
+    extends its scope, OR
+(ii) An ambitious frontier attack from ATTACK_VECTORS.md that *failed*
+     but failed informatively — the failure mode was structural, not
+     "I ran out of time." Sessions that take big swings and miss are
+     B-grade because they advance the search-space map even when they
+     don't hit the target.
+
+Discipline: file under `experiments/` with results.md, update EDGES.md
+inline if you refined an edge, file a CLOSED_PATHS row if your
+ambitious attempt closes something that was previously unstated.
+
+#### C-grade: DUPLICATE-PLUS or VERIFICATION
+
+- Closing a previously-proposed approach as duplicate of CLOSED_PATHS,
+  with the closure adding a non-trivial structural reason (not just a
+  citation).
+- A Lean translation of an already-proven informal argument, with
+  the translation type-checking but introducing no new mathematical
+  content.
+- Critique sessions that verify recent work without surfacing flaws.
+
+C-grade is the project's *steady-state* output. It is not a failed
+session — it advances rigor and catalogue. But a sequence of all-C
+sessions means the framework is producing maintenance, not progress.
+
+#### F-grade: FAILED SESSION
+
+- Produces only DUPLICATE closures of fresh-perspective brainstorms
+  with no structural reason added.
+- Spent the session re-running closed paths.
+- Inflated a refinement into a `novel/` claim.
+- Inflated an empirical noise-floor measurement into an "edge."
+- Produced no artefact at all.
+
+#### What this means for the rotation
+
+The harness alternates novelty / construction / arc / lean / critique.
+**Across any 5-session rotation, the project should produce:**
+
+- Target: ≥ 1 A-grade session per 10-session window.
+- Acceptable steady state: 3-4 B-grade per rotation, 1-2 C-grade.
+- Warning sign: 0 A-grade sessions in a 20-session window means the
+  current frontier is exhausted and ATTACK_VECTORS.md needs new entries.
+- Critical sign: ≥ 2 F-grade sessions in a row means the framework is
+  actively counterproductive — escalate to user.
+
+#### Where to find ambitious targets
+
+- For A-grade attempts: `ATTACK_VECTORS.md` (frontier targets, multi-session arcs).
+- For B-grade attempts: `NOVELTY_CHALLENGES.md` (concrete single-session work).
+- For C-grade work: `RESEARCH_AGENDA.md` arcs in maintenance mode.
+
+#### The honest-failure clause
+
+A session that produces only DUPLICATE-PLUS closures of fresh-perspective
+brainstorms — without any of the above — is an F-grade session, even if
+every CLAUDE.md rule was followed. File the closures honestly and note
+in the synthesis: "session produced no novel artifact; primary failure
+mode was duplicate ideation."
+
+**Inflated grading is the worst project behaviour.** A session that
+self-grades A but actually delivered B will pollute future agents'
+expectations. Self-grade DOWN, not up, when in doubt.
+
+### Cross-Domain Imports (NEW — required for A-grade attempts)
+
+The project has worked within {analytic NT, complexity theory, basic
+algebra} for 70+ sessions. Every "novel" approach the agents have
+proposed has been a small variation on these three fields, and
+consequently every proposal has either duplicated or refined existing
+work. **Genuine novelty at this stage requires importing techniques
+from a field the project has not used.**
+
+When attempting an A-grade target from `ATTACK_VECTORS.md`:
+
+- Identify the **single specific cross-domain technique** the attack
+  requires (e.g., "slice rank from polynomial method", "persistent
+  homology", "Szegedy quantum walk", "free cumulants", "transfer
+  operator spectrum").
+- Read at least ONE survey or foundational paper on the technique
+  before writing code. WebFetch is allowed and encouraged for this.
+- Cite the cross-domain source in your `<name>_results.md`.
+- The cross-domain import IS the novel content. If the attack reduces
+  to an analytic-NT or complexity-theory argument the project already
+  knows, it has collapsed and you should pivot.
+
+If the cross-domain technique you need does not exist in your context,
+say so honestly in the session synthesis and pivot to a B-grade target.
+
+### Channel a Specific Mathematician (for breaking out of local minima)
+
+When stuck choosing between safe refinements, explicitly ask: "what
+would <X> do here?" Each of the following has produced specific
+cross-domain insights that the project's standard tooling does not
+naturally surface:
+
+- **Erdős** — combinatorial, additive structure, density arguments
+  (Erdős-Ko-Rado, capset thinking).
+- **Tao** — sum-product, polynomial method, mixing arguments,
+  ergodic-theoretic analogues.
+- **Bourgain** — restriction theory, decoupling, Fourier-analytic
+  bounds with arithmetic content.
+- **Iwaniec / Friedlander** — sieve theory frontier, level-of-
+  distribution machinery, type-I/II decompositions.
+- **Connes / Deninger** — operator-theoretic / cohomological
+  reformulations of arithmetic.
+- **Razborov** — circuit lower bounds via approximation method, but
+  with the Natural Proofs constraint understood.
+- **Maynard / Pintz** — bounded-gaps machinery, GPY-style sieves.
+- **Tao / Williams** — circuit lower bounds via meta-complexity
+  (Williams algorithmic method).
+
+Pick the one whose toolkit best matches your attack vector. State the
+choice explicitly in your session synthesis. The choice IS part of the
+attack — it determines what tools you bring.
+
+### Ambitious Failure is Encouraged (B-grade with credit)
+
+The harness rewards production-mode sessions for *novelty produced*.
+But novelty production has a long tail: most ambitious attacks fail.
+The framework explicitly rewards ambitious failure as B-grade because:
+
+- A failed attempt at an ATTACK_VECTORS.md frontier target produces
+  a *negative-shape edge* (E7.x type) when the failure is structural.
+- A failed cross-domain import documents which techniques don't
+  apply, narrowing the search space for future agents.
+- A successful attempt would have been A-grade; a failed attempt is
+  B-grade. Both are above the C-grade refinement floor.
+
+**Do not retreat to C-grade refinement work just because the A-grade
+attack looks risky.** A 20% chance of A-grade success with 80% B-grade
+fallback dominates a 100% C-grade success in expected information value.
 
 ### Construction Discipline (was the S60 expansion, now the default)
 

@@ -1,38 +1,219 @@
 #!/bin/bash
 
 # ============================================================
-# PRIME RESEARCH: NOVELTY-FIRST AUTONOMOUS LOOP (S70+ rewrite)
+# PRIME RESEARCH: A-GRADE-FIRST AUTONOMOUS LOOP (S74+ rewrite)
 # ============================================================
-# Cycles through 5 modes optimised for *genuine novelty production*
-# rather than disciplined-duplicate-closure:
+# Cycles through 7 modes weighted toward A-grade (genuine novelty)
+# production. The prior 5-mode rotation produced 0% duplicates but
+# 0% A-grade output — only B/C-grade refinements and verifications.
+# This rotation explicitly biases toward ATTACK_VECTORS.md frontier
+# attacks.
 #
-#   1. novelty       - Pick a NOVELTY_CHALLENGES.md §2 / §4 / §5 target
-#   2. construction  - Pick a NOVELTY_CHALLENGES.md §1 composition target,
-#                      build it under experiments/constructions/
-#   3. arc           - Continue a RESEARCH_AGENDA.md multi-session arc
-#   4. lean          - Work on a NOVELTY_CHALLENGES.md §3 Lean formalisation
-#   5. critique      - Verify recent work, enforce novelty bar
+#   1. frontier      - Pick an ATTACK_VECTORS.md §A-§E target. A-grade
+#                      attempt; B-grade fallback if it fails informatively.
+#   2. cross_domain  - Pick an ATTACK_VECTORS.md §D target requiring
+#                      a non-NT cross-domain technique import.
+#   3. construction  - Build a NOVELTY_CHALLENGES.md §1 composition.
+#   4. arc           - Continue a RESEARCH_AGENDA.md multi-session arc.
+#   5. lean          - Advance a Lean formalisation (NOVELTY_CHALLENGES §3).
+#   6. wild_swing    - Single-attempt high-risk full-session attack.
+#                      Permission to use ALL session time on one swing.
+#   7. critique      - Verify recent work, enforce novelty bar with
+#                      explicit A/B/C/F grade assignment.
 #
-# Replaces the prior {normal, wildcard, focused, propose, critique}
-# rotation. The "no-anchor" propose and wildcard prompts produced ~70%
-# duplicate-shape outputs at the project's current saturation (per S60
-# critic's diagnosis), and `focused` mode rotated through a stale
-# FOCUS_QUEUE.md (all tasks marked COMPLETED). All four are now retargeted
-# to read NOVELTY_CHALLENGES.md and RESEARCH_AGENDA.md instead.
-#
-# Critique mode is preserved largely as-is — it was working correctly.
+# Net cycle: 6 production modes (3 frontier-targeted) + 1 audit.
+# Frontier:safe ratio is 5:2 weighted toward A-grade attempts.
 # ============================================================
 
 
 # ============================================================
-# PROMPT: Novelty Mode
+# PROMPT: Frontier Mode (A-grade target)
+# ============================================================
+PROMPT_FRONTIER=$(cat << 'ENDPROMPT'
+# FRONTIER ATTACK SESSION — Aim for A-grade
+
+Mission: attack one frontier target from ATTACK_VECTORS.md. Genuine
+mathematical novelty, not refinement. Failure is acceptable; safe
+refinement is NOT acceptable in this mode.
+
+# START HERE (in this order)
+1. Read ATTACK_VECTORS.md. Pick ONE target from §A, §B, §C, §D, or §E.
+   State the target ID (A1, B2, C3, etc.) at the start of your work.
+2. Read CLAUDE.md "The Novelty Bar — Three Grades" — your goal is
+   A-grade output, B-grade fallback for ambitious failure.
+3. Read CLAUDE.md "Cross-Domain Imports" — required for A-grade.
+4. Read CLAUDE.md "Channel a Specific Mathematician" — pick one whose
+   toolkit matches the attack. State the choice in your synthesis.
+5. Read EDGES.md for IDs you'll cite or contradict.
+6. Skim CLOSED_PATHS.md ONLY to verify your specific attack vector
+   has not been tried (don't get anchored on prior failure modes).
+
+# EXECUTE
+- Build code that runs.
+- Pre-state your falsification criterion in <name>_results.md.
+- Cite the cross-domain technique source.
+- The attack should TRY — not chicken out into a known-safe sub-problem.
+- Save under the ATTACK_VECTORS.md-specified directory or under
+  experiments/constructions/<descriptive_name>/ if the attack is
+  composition-style.
+
+# OUTCOME GRADING (apply CLAUDE.md grading honestly)
+- A-grade: attack produced a partial positive result (a new theorem,
+  new identity, working circuit beating an existing benchmark, or
+  detected a deviation from a published prediction).
+- B-grade: attack failed but the failure was structural and adds to
+  the search-space map (a new negative-shape edge candidate, or a
+  cross-domain technique documented as inapplicable).
+- C-grade: attack collapsed into a known closure or refinement.
+  Acceptable if you self-flag honestly; not acceptable if dressed up.
+- F-grade: did not attempt the frontier target; produced a duplicate
+  or noise-floor measurement with no structural reason added.
+
+# CLOSE
+- Update RESEARCH_AGENDA.md if the attack started or advanced an arc.
+- If A-grade: novel/<name>.md entry + new EDGES.md edge.
+- If B-grade: CLOSED_PATHS row + ATTACK_VECTORS "closed attacks"
+  section update with one-line outcome.
+- If C/F-grade: file honestly; do NOT inflate.
+- Write archive/sessions/sessionNN_<topic>.md with the 4-question
+  CLAUDE.md self-evaluation AND the explicit A/B/C/F grade.
+
+# RULES
+- DO NOT modify run.sh.
+- DO NOT retreat to a B-grade target just because the A-grade attack
+  looks risky. The framework rewards ambitious failure.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Cross-Domain Mode (A-grade with required import)
+# ============================================================
+PROMPT_CROSSDOMAIN=$(cat << 'ENDPROMPT'
+# CROSS-DOMAIN ATTACK SESSION — Required Non-NT Technique Import
+
+Mission: pick an ATTACK_VECTORS.md §D target (or any other vector that
+requires a cross-domain technique). The cross-domain import IS the
+novel content. If the attack reduces to standard analytic NT or
+complexity theory, you have collapsed and must pivot.
+
+# START HERE (in this order)
+1. Read ATTACK_VECTORS.md §D. Pick D1 (ergodic / dynamical zeta),
+   D2 (TDA), D3 (free probability), or D4 (quantum walks).
+   You may also pick from §A or §C if the attack requires a
+   cross-domain technique (e.g., A3 spectral graph theory).
+2. Read CLAUDE.md "Cross-Domain Imports" carefully.
+3. WebFetch a survey or foundational paper on the cross-domain
+   technique. Read it. Cite it in your results.md.
+4. Identify the SPECIFIC named tool/object you will import:
+   "Szegedy walk on Cayley graph", "persistent H_1 of point cloud",
+   "free cumulants of Hermitian matrix", etc. Name it precisely.
+
+# EXECUTE
+- Implement the cross-domain technique applied to the project's
+  specific data (π(x) sequence, χ_P indicator, zeta zeros, etc.).
+- Use sub-agents for parallel exploration if the technique is
+  computationally heavy.
+- The output should be a number (or sequence of numbers) you can
+  compare to a baseline.
+
+# WHAT QUALIFIES AS NOVELTY
+- A cross-domain object (e.g., quantum walk on Cayley graph) that
+  has not been applied to π(x) in the published literature, with
+  a numerical signature you measure.
+- An import that fails informatively (the specific cross-domain
+  hypothesis doesn't hold for primes) → B-grade negative-shape
+  result.
+
+- DO NOT: import a cross-domain word (e.g., "tropical") and apply it
+  to a standard NT object. The IMPORT must do real work.
+
+# CLOSE (same as frontier mode)
+- Grade honestly (A/B/C/F).
+- Update files per the grade.
+
+# RULES
+- DO NOT modify run.sh.
+- WebFetch the cross-domain source paper. Don't bluff.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Wild Swing Mode (full-session high-risk attempt)
+# ============================================================
+PROMPT_WILDSWING=$(cat << 'ENDPROMPT'
+# WILD SWING SESSION — One Attempt, Full Session, Permission to Fail
+
+Mission: pick the SINGLE most ambitious attack you can plausibly
+attempt in one full session. Spend the entire session on it. The
+expected outcome is failure; the goal is informative failure.
+
+# START HERE
+1. Read ATTACK_VECTORS.md sections §A-§F.
+2. Pick the attack with the HIGHEST stated A-grade probability that
+   you have not yet attempted in a prior session. Default order of
+   preference (highest novelty potential first):
+   - §C1 (Odlyzko zeros at height ~10²² — 1-session, high A-grade
+     probability if a deviation exists at all)
+   - §A1 (SAT-search for TC⁰ PRIMES circuits at N=8)
+   - §B1 (slice rank / polynomial method on χ_P)
+   - §A3 (spectral graph theory primality test)
+   - §D4 (quantum walk on divisor graph)
+   - §C2 (orders 4-6 zero correlations)
+3. Read the relevant CLAUDE.md sections:
+   - "The Novelty Bar — Three Grades"
+   - "Cross-Domain Imports"
+   - "Ambitious Failure is Encouraged"
+
+# EXECUTE
+- Spend the full session on ONE attempt. Do not pivot to a safer
+  target if the wild swing looks like it's going to fail.
+- Use sub-agents heavily — wild swings often need parallel
+  computational exploration.
+- Document your attempts as you go; even partial code that didn't
+  work is useful (CLOSED_PATHS row).
+
+# IF IT WORKS
+- A-grade. novel/ entry. New EDGES.md entry. Probably an arc in
+  RESEARCH_AGENDA.md for follow-up.
+
+# IF IT FAILS (expected)
+- B-grade IF the failure is structural (you can articulate WHY
+  the attack didn't work in a way that constrains future attacks).
+- C-grade IF the failure was just "I ran out of time" or "the
+  technique was a bad fit." File honestly.
+
+# CLOSE
+- Update ATTACK_VECTORS.md with closure note in "Closed attacks"
+  section if the vector was definitively closed.
+- Write archive/sessions/sessionNN_<topic>.md with the explicit
+  grade and what specifically failed.
+
+# RULES
+- DO NOT pivot to a safe target mid-session. Commit.
+- DO NOT repeat a wild swing that has been previously attempted
+  without a new technique.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Novelty Mode (B-grade target — single-session refinement)
 # ============================================================
 PROMPT_NOVELTY=$(cat << 'ENDPROMPT'
-# NOVELTY SESSION
+# NOVELTY SESSION (B-grade target)
 
-Mission: produce ONE new mathematical artefact for the project this session.
-"Artefact" = an object, identity, proof, refinement, or composition that did
-not exist in the project before this session.
+Mission: produce ONE substantive refinement of an existing edge OR
+attempt a NOVELTY_CHALLENGES.md frame-shift question. This mode is
+B-grade by construction — for A-grade attempts use frontier or
+wild_swing modes (run.sh rotates through them on other slots).
+
+If you have a clear A-grade idea while in this mode, switch to it.
+Tell the synthesis you upgraded.
 
 # START HERE (in this order)
 1. Read NOVELTY_CHALLENGES.md. Pick a single-session target from
@@ -282,9 +463,21 @@ against the project's novelty bar (CLAUDE.md "The Novelty Bar" section).
       really an EDGES.md refinement): demote it. Move the content into
       the existing EDGES.md edge as a refinement note, and delete (or
       empty) the novel/ entry.
+   h) **GRADE the session A / B / C / F per CLAUDE.md "Three Grades".**
+      Be honest. If the agent self-graded A but the work is B, write
+      a corrected grade with reasoning. The corrected grade is
+      authoritative for project meta-tracking.
 
 5. Identify the single highest-value next-action and write it into
-   NOVELTY_CHALLENGES.md or RESEARCH_AGENDA.md as appropriate.
+   ATTACK_VECTORS.md, NOVELTY_CHALLENGES.md, or RESEARCH_AGENDA.md
+   as appropriate.
+
+6. **A-grade scarcity check.** Look at the last 10 sessions in
+   archive/sessions/. Count grades. If 0 A-grade in last 10 sessions:
+   the framework is producing maintenance, not progress. Note this
+   in archive/ephemeral/critique_latest.md and identify the most
+   ambitious untouched ATTACK_VECTORS.md target as the recommended
+   next pick.
 
 # SAVE
 - archive/ephemeral/critique_latest.md — full per-artefact critique.
@@ -323,10 +516,16 @@ echo "Raw JSON log:       $JSONFILE"
 # ============================================================
 # MODE ROTATION CONFIG
 # ============================================================
-# Rotation order: novelty -> construction -> arc -> lean -> critique
-# The first four are content-producing modes; critique enforces the
-# novelty bar on what they produced. Net cycle: 4 production + 1 audit.
-MODES=("novelty" "construction" "arc" "lean" "critique")
+# Rotation order weighted toward A-grade (frontier) attempts:
+#   frontier -> cross_domain -> construction -> arc -> lean ->
+#   wild_swing -> novelty -> critique
+#
+# Net cycle: 7 production modes + 1 audit. Three modes (frontier,
+# cross_domain, wild_swing) explicitly target A-grade output via
+# ATTACK_VECTORS.md. Two modes (construction, arc) target structured
+# B-grade work. One mode (lean) targets verification artefacts. One
+# mode (novelty) is the B-grade fallback for shorter sessions.
+MODES=("frontier" "cross_domain" "construction" "arc" "lean" "wild_swing" "novelty" "critique")
 
 
 # ============================================================
@@ -350,8 +549,11 @@ while true; do
 
     # Select prompt based on mode
     case $MODE in
-        novelty)
-            CURRENT_PROMPT="$PROMPT_NOVELTY"
+        frontier)
+            CURRENT_PROMPT="$PROMPT_FRONTIER"
+            ;;
+        cross_domain)
+            CURRENT_PROMPT="$PROMPT_CROSSDOMAIN"
             ;;
         construction)
             CURRENT_PROMPT="$PROMPT_CONSTRUCTION"
@@ -361,6 +563,12 @@ while true; do
             ;;
         lean)
             CURRENT_PROMPT="$PROMPT_LEAN"
+            ;;
+        wild_swing)
+            CURRENT_PROMPT="$PROMPT_WILDSWING"
+            ;;
+        novelty)
+            CURRENT_PROMPT="$PROMPT_NOVELTY"
             ;;
         critique)
             CURRENT_PROMPT="$PROMPT_CRITIQUE"
