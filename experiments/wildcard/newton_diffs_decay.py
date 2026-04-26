@@ -75,9 +75,9 @@ def main():
     print(f"\nMagnitude profile (log2 |Delta^k pi(0)|):")
     growth = []
     for k in range(0, K + 1, 8):
-        g = 0 if abs_d[k] == 0 else np.log2(abs_d[k])
+        g = 0.0 if abs_d[k] == 0 else float(np.log2(float(abs_d[k]))) if abs_d[k] < 1e300 else int(abs_d[k]).bit_length() - 1
         growth.append((k, abs_d[k], g))
-        print(f"  k={k:3d}  |Delta^k|={abs_d[k]:>30d}  log2={g:7.2f}")
+        print(f"  k={k:3d}  |Delta^k|={abs_d[k]:>40d}  log2={float(g):7.2f}")
 
     # Truncation: compute pi(x) via partial Newton sum and see error
     print(f"\nNewton-truncation reconstruction error (truncate at K terms):")
@@ -103,7 +103,7 @@ def main():
 
     # Effective decay rate via linear fit on log magnitudes
     ks = np.array([k for k in range(K + 1) if abs_d[k] > 0])
-    ys = np.array([np.log2(abs_d[k]) for k in ks])
+    ys = np.array([float(int(abs_d[k]).bit_length() - 1) for k in ks])
     if len(ks) > 5:
         slope, intercept = np.polyfit(ks, ys, 1)
         print(f"\nLinear fit log2|Delta^k| ~ {slope:.4f} * k + {intercept:.4f}")

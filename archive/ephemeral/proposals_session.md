@@ -1,220 +1,273 @@
-# Proposal Session — 2026-04-26
+# Proposal Session — 2026-04-26 (Fresh, no prior-context)
 
-Four concrete proposals for computing p(n) in O(polylog n) time, each with
-a runnable test in `experiments/proposals/`.
+Goal: O(polylog(n)) exact computation of p(n).
+Constraint: do not look at CLAUDE.md / CLOSED_PATHS.md before generating.
+Discipline: every proposal lists math idea, pseudocode, complexity, key
+assumption, and an n < 10000 test.
 
 ---
 
-## Proposal A: Pade–Borel Acceleration of the Explicit-Formula Zero Sum
+## Proposal A — Tropical Hankel Rank of π
 
 ### Idea
-The Riemann explicit formula gives
-```
-pi(x) = R(x) - sum_rho R(x^rho) - log(2) + integral...
-```
-Truncating the zero sum at height T leaves error of order x/sqrt(T) * log(x),
-so we apparently need T = sqrt(x) zeros for exact integer recovery.
 
-**Hypothesis.** The partial sums S_T(x) = sum_{|rho|<=T} R(x^rho) form a
-sequence whose tail has structured oscillation (driven by GUE pair correlation
-of zeros). If a Pade or Wynn-epsilon resummation of S_T can be applied to a
-short geometric ladder of partial sums (T_k = T_0 * 2^k for k=0..log log x),
-we may recover S_inf from O(polylog) zeros instead of O(sqrt x).
+Build the Hankel-like matrix
+$$H \in \mathbb{N}^{m \times m}, \qquad H_{i,j} \;=\; \pi(i+j),\quad 0 \le i, j < m,$$
+where $m = \lfloor N/2 \rfloor$. Treat $H$ as a matrix over the
+**tropical (max-plus)** semiring $\mathbb R \cup \{-\infty\}$ with
+$\oplus = \max$, $\otimes = +$.
 
-The substantive bet: the *correlations* between zeros (Montgomery–Odlyzko
-GUE) carry redundant information about the tail. A few zeros plus their
-known correlation structure may suffice.
+The **tropical rank** $r(H)$ is the smallest $r$ such that $H = U \otimes V$
+with $U \in (\mathbb{R}\cup\{-\infty\})^{m \times r}$,
+$V \in (\mathbb{R}\cup\{-\infty\})^{r\times m}$. In contrast to ordinary linear
+algebra, tropically low rank means $\pi(i+j) = \max_k (u_{ik} + v_{kj})$.
+Such a decomposition is exactly a piecewise-linear concave-in-each-variable
+representation — and the prime-counting function is asymptotically piecewise
+linear (with breakpoints at primes).
+
+If $r(H_N)$ scales like $\mathrm{polylog}(N)$, then primes can be located by
+a sequence of $r$ comparisons of linear forms; combined with binary search,
+this gives $O(\mathrm{polylog}\, N)$ evaluation of $\pi(x)$, hence $p(n)$
+by inversion.
 
 ### Pseudocode
+
+```python
+def tropical_rank_pi(N):
+    pi = sieve_of_eratosthenes_pi(2*N+2)        # baseline
+    m  = N
+    H  = np.array([[pi[i+j] for j in range(m)]
+                              for i in range(m)], dtype=float)
+    return cgb_tropical_rank(H)                 # see below
 ```
-def pi_pade(x, num_zeros=20):
-    rhos = load_zeros(num_zeros)
-    Ts   = [rhos[2**k - 1].imag for k in range(log2(num_zeros))]
-    S    = [partial_zero_sum(x, T) for T in Ts]
-    S_inf = wynn_epsilon_extrapolate(S, Ts)
-    return round(R(x) - S_inf - log(2))
+
+The **Cuninghame–Green–Butkovic** algorithm reduces $H$ by repeatedly
+finding a column that is a max-plus combination of others; complexity is
+$O(m^4)$ but only needed for the *test*, not the actual evaluator.
+
+### Complexity
+
+If $r(H_N) = O(\log^c N)$ then evaluating $\pi(x)$ for $x \le N$ takes
+$O(r \log m)$ comparisons after $O(r m)$ preprocessing.
+For $p(n)$: invert via tropical bisection in $O(r \log^2 N)$.
+
+### Key assumption
+
+Tropical rank of $\pi$-Hankel is sub-polynomial, not full.
+Equivalent (heuristic): the prime gap landscape, after $\log$-lift, is
+piecewise-linear with $\mathrm{polylog}$ many pieces.
+
+### Test for n < 10000
+
+* Build $H$ of size $m=2000$ ($N=4000$) and $m=5000$ ($N=10000$).
+* Compute tropical rank via CGB.
+* If the rank curve $r(N)$ fits $A \log^c N$ with $c \le 3$, advance.
+* If $r(N)$ scales polynomially (e.g., $r \approx N^{1/3}$), CLOSED.
+
+---
+
+## Proposal B — Continued-Fraction Spectrum of the Prime Constant
+
+### Idea
+
+Define the **prime constant**
+$$\alpha \;=\; \sum_{p\,\text{prime}} 2^{-p} \;=\; 0.414682509851111660248109622\ldots_{(2)}$$
+i.e. $\alpha = 0.b_1 b_2 b_3 \ldots$ in binary with $b_k = 1$ iff $k$ is
+prime. The classical real-line representation of $\alpha$ is
+information-equivalent to $\pi(\cdot)$.
+
+Switch representations: compute the **regular continued fraction**
+$\alpha = [a_0; a_1, a_2, \ldots]$. The classical Lévy theorem says for
+random reals $\frac{1}{n}\log a_n \to \pi^2 / (12 \log 2)$ (Khintchine
+constant), but the prime constant is *not* random — it is computable.
+
+**Conjecture (testable, fresh):** the partial-quotient sequence
+$\{a_n\}$ admits a sub-linear sketch — e.g. its DFT decays like $1/k$ or
+the sequence is automatic in a base related to small primes.
+
+If true, we can compute $a_n$ in $\mathrm{polylog}\, n$ time, then
+recover the binary digits (i.e., the primality indicator up to position
+$\sim n$) by reconstructing convergents — yielding $\pi(x)$ in
+$\mathrm{polylog}\, x$.
+
+### Pseudocode
+
+```python
+def cf_of_prime_constant(N_digits):
+    sieve   = sieve_of_eratosthenes(N_digits)
+    mp.prec = 4 * N_digits
+    alpha   = mp.mpf(0)
+    for p in sieve:
+        alpha += mp.mpf(2) ** (-p)
+    a, x = [], alpha
+    for _ in range(M):                          # M ≪ N_digits depth
+        ai = int(mp.floor(x))
+        a.append(ai)
+        if x == ai:        break
+        x = 1 / (x - ai)
+    return a
+```
+
+Then probe `a` for structure:
+* power-spectrum decay (FFT of `log(a)`),
+* automaticity (Allouche–Shallit test),
+* PSLQ on the generating series $A(z) = \sum a_n z^n$,
+* k-automatic structure for small k.
+
+### Complexity
+
+If `a_n` is $k$-automatic, $a_n$ is computable in $O(\log n)$ (one DFA
+walk) and convergents in $O(\log^2 n)$, giving polylog primality test.
+Otherwise the experiment shows a barrier (Khintchine-like growth ⇒ random).
+
+### Key assumption
+
+Some non-Khintchine, non-random structure is hiding in the CF expansion
+of $\alpha$. Most $\alpha$'s are Khintchine-typical; the prime
+constant is special — it's deterministic.
+
+### Test for n < 10000
+
+* Compute CF of $\alpha$ from $\sim 12000$ binary digits → expect ~7000
+  partial quotients (Khintchine-on-average gives ~1.7 digits per step).
+* Apply: power-spectrum, autocorrelation, automaticity tests.
+* CLOSE if $\{a_n\}$ shows full Khintchine statistics with no structural
+  deviation.
+
+---
+
+## Proposal C — Algebraicity of Riemann Zero Differences
+
+### Idea
+
+The Riemann explicit formula needs $O(\sqrt{x})$ zeros to compute
+$\pi(x)$ exactly. But what if the zeros themselves are not independent?
+
+**Conjecture C (folklore-violating):** there exists a
+$d = \mathrm{polylog}\,N$ -dimensional $\mathbb{Q}$-vector space
+$V_d \subset \mathbb{R}$ such that $\{\gamma_k\}_{k \le N} \subset V_d$
+modulo errors $< 2^{-N}$ (i.e., the zero ordinates lie on a
+finite-rank lattice up to polynomially small noise).
+
+If true, only $d$ "atomic" zero ordinates suffice to reconstruct all
+$\sqrt{x}$ contributions, dropping the explicit-formula cost from
+$\sqrt{x}$ to $d$.
+
+This is the Hilbert–Pólya conjecture from the data-compression angle:
+HP says zeros are eigenvalues of a Hermitian operator $H$. If $H$ has a
+$\mathrm{polylog}$-dimensional algebraic shadow, $\pi$ is polylog.
+
+### Pseudocode
+
+```python
+def zero_basis_search(zeros, basis):
+    # zeros: γ_1,...,γ_N
+    # basis: (1, π, log2, log3, log5, ..., log p_k,
+    #        log Γ-values, multiple zeta values, ...)
+    relations = []
+    for k in range(1, len(zeros)):
+        delta_k = zeros[k] - zeros[0]
+        rel     = pslq([delta_k] + list(basis), tol=1e-40)
+        if rel:                                  # found integer relation
+            relations.append((k, rel))
+    return relations
+```
+
+Then check:
+* what fraction of $\gamma_k$ admit relations of bounded height,
+* if all relations factor through a small sub-basis (then we have $V_d$).
+
+### Complexity
+
+Pre-cache $d$ atomic zeros, compute $\pi(x)$ via explicit formula in
+$O(d \cdot \log^c x)$.
+
+### Key assumption
+
+The zeros are NOT $\mathbb{Q}$-linearly independent (folklore expects
+they ARE). PSLQ would find any relation of polynomial height; absence
+gives a strong negative result, presence is a breakthrough.
+
+### Test for n < 10000
+
+* Use the existing 8000 zeros at 30-digit precision.
+* For $k = 2, \ldots, 200$, run PSLQ on $\gamma_k - \gamma_1$ against
+  basis $\{1, \pi, \log 2, \log 3, \log 5, \log 7, \log 11, \log
+  \Gamma(1/4), \log \Gamma(1/3)\}$.
+* Record any candidate relation; bound height.
+* If 0/200 relations found at height $\le 10^{15}$, proposal C is dead.
+* If $\ge 5/200$ found, escalate immediately to proposal C-1 (full-basis
+  search) and write to `novel/`.
+
+---
+
+## Proposal D — Reservoir Echo of π(x) via Liquid State Machines
+
+### Idea
+
+A **reservoir computer** is a fixed random recurrent net; only the
+output linear layer is trained. Universal-approximation-on-trajectories
+results (Maass–Natschläger–Markram 2002, Grigoryeva–Ortega 2018) say
+that an $L$-node reservoir with sufficient memory and fading memory can
+approximate any $\epsilon$-fading-memory functional of its input.
+
+If $\pi$ has fading memory in $\log n$ (i.e., $\pi(n)$ is determined by
+recent inputs only), an $L = \mathrm{polylog}\,n$ reservoir suffices.
+
+If we *succeed* in fitting $L = O(\log^c n)$ reservoir to $\pi$ on $n
+\le 10000$ with zero error and stable extrapolation to $10001\ldots
+20000$, we have empirical evidence that $\pi$ has polylog descriptive
+complexity.
+
+### Pseudocode
+
+```python
+def reservoir_pi(N_train, N_test, L):
+    rng = np.random.default_rng(0)
+    W   = rng.standard_normal((L, L)) / np.sqrt(L)
+    Win = rng.standard_normal((L, 1))
+    rho = 0.9 / max(np.abs(np.linalg.eigvals(W)))
+    W  *= rho
+    state = np.zeros(L)
+    Xs    = []
+    for n in range(1, N_train + N_test + 1):
+        u     = np.array([float(n)])
+        state = np.tanh(W @ state + Win @ u)
+        Xs.append(state.copy())
+    Xtr, Xte = Xs[:N_train], Xs[N_train:]
+    ytr      = pi_table[1:N_train+1]
+    Wout, *_ = np.linalg.lstsq(np.array(Xtr), ytr, rcond=None)
+    pred     = np.array(Xte) @ Wout
+    return pred, pi_table[N_train+1:N_train+N_test+1]
 ```
 
 ### Complexity
-- O(polylog(x)) zeros; each R(x^rho) is O(log x) with Riemann–Siegel arithmetic.
-- Wynn-epsilon: O((log x)^3).
+
+Inference: $O(L^2 \log n)$ per query. If $L = \log^c n$, polylog.
 
 ### Key assumption
-The truncation tail S_inf - S_T(x) is *oscillatory in T with a smooth envelope*,
-not just bounded by O(x/T^{1/2}). Pade/Wynn need the smooth envelope.
 
-### Test design
-For x = 100, 1000, 10000:
-- Compute S_T for T at heights of zeros 5, 10, 20, 40, 80.
-- Wynn-epsilon to extrapolate.
-- Compare R(x) - S_extrap to true pi(x).
+$\pi$ has fading memory (recent values determine current up to bounded
+correction). Empirically falsifiable in one experiment.
 
-Code: `experiments/proposals/pade_zero_sum.py`
+### Test for n < 10000
+
+* Train on $n \in [1, 5000]$, test on $n \in [5001, 10000]$.
+* Sweep $L \in \{4, 8, 16, 32, 64, 128, 256, 512\}$.
+* If extrapolation MAE stays $\ge 1$ across $L$, fading-memory
+  assumption fails — close.
+* If for some $L = O(\log^c 10000)$ MAE = 0, escalate.
 
 ---
 
-## Proposal B: Lagrange–Bürmann Inversion with Borel Resummation
+## Triage / order of execution
 
-### Idea
-The Cipolla / asymptotic expansion of p(n):
-```
-p(n) = n*ln(n) + n*(ln ln n - 1) + n*(ln ln n - 2)/ln n + O(n*(ln ln n)^2/ln^2 n)
-```
-is a divergent (asymptotic) series. The standard prescription truncates at
-the optimal index, getting roughly half the digits.
+1. **Proposal C** — cheapest (data exists), highest signal: yes/no on
+   whether zeros admit hidden algebraic structure.
+2. **Proposal B** — moderate cost, fresh angle, gives information either
+   way (Khintchine vs. structure).
+3. **Proposal A** — moderate cost, novel framing (tropical), buildable.
+4. **Proposal D** — clearest empirical pass/fail, but most likely to
+   degenerate into "deep nets memorise but don't generalise."
 
-**Fresh angle.** Apply Borel summation to the *full formal series* obtained
-by Lagrange–Bürmann inversion of pi(x) ~ Li(x) (not pi(x) ~ x/log x).
-The formal series for Li^{-1}(n) has cleaner combinatorial structure: its
-coefficients are signed Stirling-like numbers.
-
-If the Borel transform of this formal series has finite radius of convergence
-(unproven), the resummed series gives p(n) to arbitrary precision in
-polylog(n) operations.
-
-### Pseudocode
-```
-def p_lagrange_borel(n, K=30):
-    coeffs = lagrange_inversion_coeffs_of_li(K)   # K coeffs of formal series
-    borel  = [coeffs[k] / factorial(k) for k in range(K)]
-    return integrate_borel(borel, log(n))
-```
-
-### Complexity
-- Coefficient generation: O(K^2) symbolic arithmetic.
-- Borel integration: O(K log K).
-- Total O((log n)^c) if K = O(polylog n) suffices.
-
-### Key assumption
-The Borel transform converges for the inversion series of Li. If it does,
-the analytic continuation gives p(n) without a zero-sum correction.
-(If not, the experiment will show divergence and we close cleanly.)
-
-### Test design
-For n in {10, 100, 1000, 10000}:
-- Generate first 30 Lagrange coefficients of Li^{-1}.
-- Compute partial sums and Borel-resummed values.
-- Plot |truncated value - true p(n)| vs K. If error decays exponentially in K,
-  this is polylog. If it bottoms out at sqrt(p(n)), it's the standard barrier.
-
-Code: `experiments/proposals/lagrange_borel.py`
-
----
-
-## Proposal C: Modular-Form Fingerprint as a Polylog Primality Oracle
-
-### Idea
-Hecke eigenvalues of weight-k cusp forms encode arithmetic data of primes.
-For Ramanujan's Delta, tau(p) is computable in O(polylog(p)) via Eichler–
-Selberg + class numbers. The Ramanujan congruence tau(p) ≡ p^11 + 1 (mod 691)
-holds for *all* primes p.
-
-**Question.** Does there exist a finite collection of modular forms whose
-joint Hecke fingerprint identifies primes among integers, in the sense that
-*for every prime p and every composite n*, at least one form distinguishes
-them?
-
-If yes, we have a polylog-time membership test for primes (faster than the
-AKS log^c bound, conjecturally). Combined with binary search, we get p(n)
-in polylog. The bottleneck moves to *counting* primes with the fingerprint
-in [1,x], which is a different problem.
-
-This proposal is mainly a falsifiable conjecture: measure the discrimination
-rate of small fingerprints on n <= 10000.
-
-### Pseudocode
-```
-def fingerprint(n):
-    return (tau_mod(n, 691), tau_mod(n, 5), j_invariant_mod(n, 11), ...)
-
-def is_prime_oracle(n):
-    return fingerprint(n) in PRIME_FINGERPRINTS
-
-# Test: do all primes p <= 10000 have a unique fingerprint pattern? Do composites?
-```
-
-### Complexity
-- Each tau(n) mod l: O(polylog n) via the standard recursion plus modular
-  inverse on Hecke eigenvalues at prime power levels.
-- Fingerprint comparison: O(polylog n) per check.
-
-### Key assumption
-A polylog-size collection of Hecke eigenvalues (mod small primes) separates
-primes from composites among n <= N. This is a strengthening of known
-modular form / Galois representation properties.
-
-### Test design
-For n = 1..10000:
-- Compute fingerprint via tau(n) mod 691 (using sympy).
-- Augment with sigma_k(n) mod l for several small l, k.
-- Measure: how many composites collide with primes? Build a confusion matrix.
-- If discrimination rate exceeds 99% with ~10 features, this is promising.
-
-Code: `experiments/proposals/modular_fingerprint.py`
-
----
-
-## Proposal D: Weighted Random Sampling with Zero-Aware Variance Reduction
-
-### Idea
-A naive Monte-Carlo estimator pi(x) ~ x * mean(is_prime(U_k)) has variance
-~ x. Importance-weighted by 1/log k drops variance by a log factor.
-
-**Fresh angle.** Use the explicit formula as a *control variate*: the
-truncated zero sum sum_{|rho|<T} R(x^rho) is computable in O(polylog) and
-is correlated with the random fluctuations of pi up to height T. Subtracting
-this control variate from the Monte-Carlo estimator should drop variance by
-factor T.
-
-If T = polylog(x) zeros suffice to make residual variance polylog, then
-O(polylog) random samples suffice and the algorithm is polylog.
-
-This is empirically falsifiable: measure variance of the residual
-(Monte-Carlo estimate of pi(x)) - (Riemann explicit formula truncated at
-polylog zeros) for x growing.
-
-### Pseudocode
-```
-def pi_control_variate(x, num_zeros, num_samples):
-    rhos = load_zeros(num_zeros)
-    expl = R(x) - sum(R(x**rho) for rho in rhos) - log(2)
-    # Monte-Carlo of the residual fluctuation
-    samples = [is_prime(uniform_int(1,x)) - 1/log(k) for k in random_indices]
-    correction = x * mean(samples)
-    return round(expl + correction)
-```
-
-### Complexity
-- Computing the explicit-formula truncation: O(num_zeros * log x).
-- Variance of residual after control variate: ?
-- Conjectured polylog if zero correlations capture most variance.
-
-### Key assumption
-Var(pi(x) - explicit_formula_truncated_at_T) = O(x/T^{1+epsilon}) for some
-epsilon > 0. (Standard bounds give epsilon=0.) The substantive claim is
-that GUE statistics enable variance reduction beyond the trivial bound.
-
-### Test design
-For x = 1000, 10000, 100000:
-- Compute explicit formula truncation at T = 10, 50, 200 zeros.
-- Compute residual = pi(x) - truncation.
-- Plot residual^2 vs T on log-log scale.
-- If slope < -1, the bet wins; if = -1 (the predicted classical bound),
-  it's exactly the sqrt-x barrier we already know.
-
-Code: `experiments/proposals/zero_aware_variance.py`
-
----
-
-## Summary
-
-| Proposal | Polylog if... | Falsifiable? |
-|----------|---------------|--------------|
-| A. Pade–Borel zero sum | tail oscillation has smooth envelope | yes, n <= 10^4 |
-| B. Lagrange–Borel inversion | Borel transform of Li^{-1} converges | yes, n <= 10^4 |
-| C. Modular fingerprint | small Hecke fingerprint separates primes | yes, n <= 10^4 |
-| D. Zero-aware control variate | variance reduction beats sqrt(x) | yes, x <= 10^5 |
-
-Each test below n = 10000 returns either "barrier confirmed" or
-"polylog plausible — escalate." All four were chosen so that a single small
-experiment cleanly distinguishes the two outcomes.
+Run order: C → B → A → D.

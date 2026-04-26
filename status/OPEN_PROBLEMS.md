@@ -1,6 +1,6 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-26 (Session 67)
+Last updated: 2026-04-26 (Session 67 + Session 49 FOCUS-4 closure)
 
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (538+ approaches across 66 sessions) and confirmed to hit one of three
@@ -92,10 +92,21 @@ Resolving Kt(delta(n)|n) would connect to Problem 1 but no viable attack path ex
 
 ---
 
-## 3. Zeta Zero Compressibility — CLOSED (S25, S36)
+## 3. Zeta Zero Compressibility — CLOSED (S25, S36, S45, S57, S49)
 
 **CLOSED.** Zeros are GUE-random in every sense tested. 82% of Fourier modes needed,
 Kt ~ 5.58*N linear, no algebraic structure. See `experiments/information_theory/kt_complexity/SYNTHESIS.md`.
+
+**S49 update — FOCUS-4 large-N + Bogomolny-Keating arithmetic-correction probe also closed.**
+Extended the S25/S45/S57 correlation battery to N=8000 and tested whether
+the empirical pair-correlation residual D(s) = R_2_emp(s) − R_2_GUE(s)
+carries the BK prime-arithmetic shape D_BK(s; T) ≈ -(2/L²) ∑_{p,k}
+(log p)²/p^k · cos(2π s · k log p / L). Calibrated against a gap-shuffled
+null (the only valid null per new edge E1.10): zeta gives Pearson z =
+−10.85σ, phase coherence z = −2.20σ — both BELOW the null. Zeta is
+*more* GUE-like than gap-shuffled controls; no detectable BK arithmetic
+correction at N≤8000, T≤8148. See CLOSED_PATHS.md last line and
+`experiments/analytic/zeta_structure/large_n_correlations/large_n_battery_results.md`.
 
 ---
 

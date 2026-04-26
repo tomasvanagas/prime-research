@@ -2849,3 +2849,86 @@ FOCUS-4 (3-point correlation at N≥10⁴) remain.
 - `EDGES.md` — E2.11 extended with S67 methodological note
 - `archive/sessions/session67_focus2_e211_pretest.md` — synthesis
 - `.run_state` set to 47
+
+---
+
+## Session 48-fresh (2026-04-26, fresh-perspective wildcards, 5 angles)
+
+Out-of-order session label: this was a "fresh perspective" run launched after S67. Five untouched-among-142-wildcards angles built and closed.
+
+### What was attempted
+
+1. **Newton forward-difference series** for π(x). Test whether Δᵏπ(0) decays / has compact structure permitting truncated polylog evaluation.
+2. **Multilinear extension** of χ_P over {0,1}ⁿ via boolean Möbius transform. Test sumcheck-style polylog evaluation hypothesis.
+3. **Linear dynamical system view of the sieve.** CP / Tucker-rank decomposition of the alive-vector and wheel-period rank-1 factorization.
+4. **Dirichlet character spectrum** of χ_P modulo prime q. Test sparsity in the character basis.
+5. **Semiclassical log-block resummation** of the explicit-formula zero sum. Test whether log-block grouping breaks the √x truncation barrier.
+
+### Key quantitative findings
+
+- Newton forward-differences: log₂|Δᵏπ(0)| ≈ 0.995·k − 3.17 for k = 1..200 — almost exact 2ᵏ growth. Truncation diverges; bit complexity Ω(x) per term × Ω(x) terms.
+- Multilinear extension: nonzero MLE coefficient ratio nz/N converges from below to ≈0.71 at n=14; max |coef| grows like 2^{n/2} (276 at n=14). Independent measurement of the rank(π_N)=2^{N/2−1}+2 result via the multilinear-Möbius basis.
+- Sieve as linear DS: wheel factorization is rank-1 in CRT tensor basis up to primorial(K) ≤ N (verified K=3,4,5); 64×64 reshape rank of alive-vector after sieving primes ≤13 is exactly 32 = N^{1/2}/2.
+- Dirichlet spectrum: L1/L2 ratio ≈ 0.85·√(φ(q)) — white-noise expected value — across q=11..97. Significant coefs are 5-15% of φ(q), not polylog.
+- Block resummation at x=10000 (2000 zeros): per-block contribution grows as 2^{i/2}·√x; cumulative diverges from truth as more blocks added (best at 2 blocks, err=8; err=-26792 at 11 blocks).
+
+### Verdicts
+
+All 5 closed. Modes: 2 × I (info), 3 × E (equivalent to known barrier).
+
+No genuinely new attack surface; all five collapse to existing project barriers (E2.x algebraic, E3.x analytic, E5.x sieve, the rank(π_N)=2^{N/2−1}+2 wall).
+
+### Literature scan (parallel sub-agent)
+
+Targeted 10 topics including sumcheck-for-π, Barvinok-for-π, Gutzwiller orbit truncation, Newton series for arithmetic functions, holographic/Valiant for primes. Result: **no new 2025-2026 publications** in any of the 10 directions; the cached `literature/state_of_art_2026.md` remains current.
+
+### Files
+
+- `experiments/wildcard/newton_diffs_decay.py` + `_results.md`
+- `experiments/wildcard/multilinear_ext_pi.py` + `_results.md`
+- `experiments/wildcard/parallel_sieve_matrix_exp.py` + `_results.md`
+- `experiments/wildcard/dirichlet_char_decomp.py` + `_results.md`
+- `experiments/wildcard/orbit_resum_pi.py` + `_results.md`
+- `archive/sessions/session48_fresh_perspective_5_wildcards.md`
+- `status/CLOSED_PATHS.md` — 5 new entries appended
+- `.run_state` advanced to 48
+
+## Session 49 — FOCUS-4 closure: large-N zeta-zero correlation battery + BK arithmetic-correction probe (deep-focus, Task #2 = FOCUS-4)
+
+**Verdict:** CLOSED — mode I. The Bogomolny-Keating arithmetic correction is below the noise floor at N ≤ 8000, T ≤ 8148. New methodological edge added: gap-shuffled-zeros are the proper null for prime-frequency Fourier probes.
+
+### Goal
+
+FOCUS-4 (TODO.md): extend the S25/S45/S57 zeta-zero correlation battery from N=2000 to N up to 10⁴, and specifically test whether the empirical pair-correlation residual D(s) = R_2_emp(s) − R_2_GUE(s) carries a recognisable Bogomolny-Keating prime-arithmetic shape
+
+    D_BK(s; T) ≈ -(2/L²) ∑_{p, k≥1} ((log p)² / pᵏ) · cos(2π s · k log p / L)
+
+where L = log(T/(2π)).  This is the leading non-universal correction to GUE pair correlation that becomes visible at large height.
+
+### What ran
+
+- `data/gen_zeros_8000.py` (sequential mpmath @ 15 dps) and `data/gen_zeros_parallel.py` (6 workers covering disjoint k-ranges 5001..8000) co-generated zeros 2001..8000 in ~12 minutes total wall clock (vs ~50 min sequential-only).  Combined into `data/zeta_zeros_8000.txt` (8000 zeros total).
+- `experiments/analytic/zeta_structure/large_n_correlations/large_n_battery.py`:
+  pair correlation, form factor (Gaussian-smoothed), triple correlation, number variance Σ²(L), 3rd/4th cumulant rigidity, Bogomolny-Keating template Pearson, Fourier-prime amplitude/phase probe at log(p)/L for primes p ≤ 50, gap-shuffled null calibration (n_seeds=20).
+
+### Key quantitative findings
+
+- **Pair correlation:** RMS deviation from GUE shrinks 0.0947 (N=2000) → 0.0538 (N=8000); ratio 0.568 vs 1/√N prediction 0.500.  Statistical-noise-dominated, no BK floor.
+- **Triple correlation:** RMS_far 0.0924 → 0.0617, similar shrinkage; no order-3 arithmetic structure.
+- **Cumulant rigidity:** κ₃ stays at ~10⁻³ at every L ∈ {1, 2, 4, 8, 16, 32, 64, 128} (Poisson would give κ₃ = L; factor 10⁵ separation at L=128).  GUE rigidity holds up to the longest tested window.
+- **BK Pearson:** zeta D(s) vs the multi-prime template has Pearson +0.111 (N=8000), +0.101 (N=2000) — *less* than the gap-shuffled null mean (+0.487 ± 0.035), at z = **−10.85σ BELOW the null**.  Phase coherence ⟨cos(φ − π)⟩: zeta +0.544 vs null +0.624 ± 0.036, z = **−2.20σ**.
+- **NEW EDGE (E1.10 candidate, methodological):** the proper null for Fourier-prime probes is GAP-SHUFFLED zeros (preserving local GUE statistics, destroying long-range arithmetic), not uniform-random frequencies.  Uniform-random gives spurious p < 0.05 because it does not preserve the local gap structure that drives D(s) shape.  Without this null, the Fourier-prime amplitude probe falsely 'detects' BK at p<0.01.
+
+### Verdict
+
+**CLOSED.** FOCUS-4 closes mode I — the BK arithmetic correction, if conjecturally present, is below the empirical noise floor at this N (≤8000) and T (≤8148).  Detecting it would require Odlyzko's tabulated zeros at heights T ∈ [10⁶, 10²²], which mpmath cannot generate within session-time budgets.  The empirical zeta zeros are *more* GUE-like than gap-shuffled controls — opposite of what a real BK arithmetic correction would produce.
+
+### Files
+
+- `data/gen_zeros_8000.py`, `data/gen_zeros_parallel.py`, `data/combine_zeros.py`
+- `data/zeta_zeros_8000.txt` (8000 zeros at 15 dps)
+- `experiments/analytic/zeta_structure/large_n_correlations/large_n_battery.py` + `_results.md`
+- `status/CLOSED_PATHS.md` — FOCUS-4 entry appended
+- `EDGES.md` — new edge E1.10 (gap-shuffled-zeros null methodology)
+- `archive/sessions/session49_focus4_large_n_zeta.md` — session synthesis
+- `.run_state` advanced to 49

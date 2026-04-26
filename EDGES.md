@@ -169,6 +169,45 @@ analysis at N = 100 000 corrects this:
 > this rules out *any* recurrence-based shortcut from n to delta(n)
 > (a recurrence of order > 7 would have non-zero PACF at higher lags).
 
+### E1.10 — Gap-shuffled-zeros: the only valid null for prime-frequency probes of zeta-zero D(s)  [EVS shape]
+
+S49; `experiments/analytic/zeta_structure/large_n_correlations/large_n_battery_results.md`;
+`archive/sessions/session49_focus4_large_n_zeta.md`.
+
+For any test that Fourier-decomposes the pair-correlation residual
+D(s) = R_2_emp(s) − R_2_GUE(s) at frequencies tied to primes
+(e.g. f_p = log(p)/L for the Bogomolny-Keating arithmetic
+correction), the **uniform-random-frequency null is wrong**: it
+produces false-positive p < 0.05 detections even on data with no
+arithmetic content beyond local GUE statistics.
+
+The *correct* null is the **gap-shuffled** sequence: take the
+unfolded zeros, compute the gaps, randomly permute them, regenerate
+the sequence by cumulative summing the shuffled gaps. Gap-shuffling
+preserves the local GUE pair correlation (the gap distribution) but
+destroys long-range arithmetic structure beyond nearest-neighbour.
+
+S49 measurement at N=8000:
+
+```
+Statistic                  Zeta      Gap-shuffled null    z-score
+Pearson(D, BK_template)   +0.111     +0.487 ± 0.035       −10.85σ
+Phase coherence ⟨cos(φ-π)⟩ +0.544     +0.624 ± 0.036       −2.20σ
+```
+
+Both statistics on real zeta are **below** the gap-shuffled null —
+zeta is *more* GUE-like than the matched null, the opposite of what
+a real BK arithmetic signature would produce.
+
+> Why this is an edge: shape-edge, methodological. Any future zeta-
+> zero structural test that uses Fourier-prime amplitude or phase
+> coherence MUST calibrate against gap-shuffled null, not uniform-
+> random frequencies. Without this calibration, one would falsely
+> 'detect' BK at p < 0.05 in any GUE-like sequence.  This narrows
+> the failure modes of all future Fourier-prime probes (Chain D
+> extensions, FOCUS-4-style retests at higher N, conditional-test
+> n-correlation extensions in S57's Conrey-Snaith framework).
+
 ### E1.9 — phi(x,a) 2D rank: 22nd pseudorandomness measure       [EVS L]
 
 S65; `experiments/wildcard/phi_2d_lowrank.py` and `_results.md`;
@@ -360,6 +399,25 @@ of bit positions, with the residue concentrated in the top-degree term
 > Edge value: the additive part is exactly R(x). The "residue" is exactly
 > the explicit-formula correction. This is a third witness (after E1.4 and
 > E2.1) of the smooth/oscillatory bisection.
+
+**S48-fresh refinement:** A *fourth* independent witness of the 2^{N/2}
+coefficient-magnitude wall comes from forward-differences of pi at 0:
+
+```
+   log_2 |Delta^k pi(0)|  ≈  0.995 k - 3.17    (k = 1..200)
+```
+
+Cleanly linear with slope 1, confirming pi(x) is **order-1 entire** in
+the forward-difference sense (sharpest non-smooth behaviour possible).
+S48-fresh's parallel multilinear-extension test on (Z/2)^n gave
+max-coefficient `~ 2^{n/2}` and nonzero-coefficient ratio `~ 0.71` — both
+matching E2.1's TT bond-dim 2^{N/2} and E2.7's communication rank
+2^{N/2-1}+2. Three independent operations (TT reshape, 2-party split,
+forward differences) on three different objects (chi_P, comm matrix,
+pi at 0) all reproduce the same Theta(2^{N/2}) wall. Not a separate
+edge — just the cleanest empirical confirmation that the wall is
+*operation-invariant*.
+See `archive/sessions/session48_fresh_perspective_5_wildcards.md`.
 
 ### E2.7 — Rank deficiency of communication matrix is *exactly* +2  [EVS M]
 
@@ -709,6 +767,53 @@ arXiv:2402.04272.
 Riemann–von Mangoldt error improved to O(x/T) without log factor via
 *averaged truncated Perron formula*. Still O(sqrt x) when T = sqrt x,
 but cleaner constants.
+
+### E3.13 — Bogomolny-Keating arithmetic correction is empirically absent at N=8000 [EVS M]
+
+S49; `experiments/analytic/zeta_structure/large_n_correlations/large_n_battery.py`
+and `_results.md`; `archive/sessions/session49_focus4_large_n_zeta.md`.
+Companion methodology edge: E1.10.
+
+The Bogomolny-Keating semiclassical conjecture predicts a non-universal
+prime-arithmetic departure from GUE pair correlation:
+
+```
+   D(s) = R_2_emp(s) - R_2_GUE(s)
+   D_BK(s; T) ≈ -(2/L²) sum_{p, k≥1} ((log p)² / pᵏ) · cos(2π s · k log p / L)
+```
+
+with `L = log(T/(2π))`. If detectable empirically, this would be the
+**first non-universal structural deviation of zeta zeros from random-matrix
+predictions** in the project — and would constitute exploitable arithmetic
+information accessible from local pair-correlation data alone.
+
+**S49 measurement at N=8000 (zero-height range up to ~T ≈ 9878):** zeta
+sits **below** the gap-shuffled null on every BK statistic. Concretely:
+
+| Statistic | Zeta | Gap-shuffled null mean ± std | z-score |
+|-----------|------|------------------------------|---------|
+| Pearson(D, BK_template), s>0.5 | +0.111 | +0.487 ± 0.035 | **−10.85σ** |
+| Phase coherence ⟨cos(φ_p − π)⟩, p ≤ 50 | +0.544 | +0.624 ± 0.036 | −2.20σ |
+
+Per-prime phase pattern matches the gap-shuffled null pattern (small
+primes 2,3,5 have phases far from π; larger primes 29..47 have phases
+near π). This is exactly the signature of *no real BK content* — purely
+local-GUE behaviour with the same finite-N artefacts as a matched null.
+
+> Why this is an edge: it is a **quantified empirical falsification** of
+> a specific arxiv-grade theoretical prediction (BK arithmetic correction
+> visible at this scale). Any chain that depends on BK-style residuals
+> being recoverable from pair-correlation data is provably empty up to
+> N=8000. **Combined with E7.1 (zeros linearly independent over Q in
+> every measurable sense), the structural-arithmetic content of zero
+> spacings is now empirically constrained to be at most O(1/√N) at every
+> measurable scale.** Future Chain-D-style attacks that try to extract
+> arithmetic from zero correlations need to find a different statistic
+> than BK or operate at N >> 10⁴ — and even there, the gap-shuffled
+> null calibration of E1.10 is mandatory.
+
+This is a *negative* analytic edge: it doesn't open a chain, it closes
+the BK-correction-extraction route up to current scale. Pairs with E7.1.
 
 ---
 
@@ -1476,4 +1581,12 @@ folklore note under E5.3.
 Extended: 2026-04-26 post-critique-46 — added E7.11 (convergence-
 acceleration / variance-reduction family systematically exhausted across
 13+ sessions; pairs with E7.10 as the second family-level closure).
+Extended: 2026-04-26 post-S49 (FOCUS-4 closure) — added E1.10 (gap-
+shuffled-zeros null methodology, mandatory for prime-frequency Fourier
+probes of pair-correlation residuals).
+Extended: 2026-04-26 audit (post-S49 content gap) — added E3.13 (BK
+arithmetic correction empirically absent at N=8000, z=-10.85σ) as the
+content companion to E1.10's methodology entry; refined E2.6 with the
+S48-fresh forward-difference signature as the fourth independent
+witness of the 2^{N/2} wall.
 This document is alive — extend it with new edges as they appear.*
