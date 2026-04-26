@@ -2972,3 +2972,131 @@ Built `experiments/constructions/brandt_mktp/`:
 - `EDGES.md` — E5.8 added; footer updated
 - `TODO.md` — FOCUS-3 marked CLOSED; critical-path section emptied
 - `archive/sessions/session51_brandt_mktp.md` — session synthesis
+
+---
+
+## Session 68 (2026-04-26, deep focus Task #3 — Bessel-basis PSLQ identity search)
+
+**Verdict:** CLOSED — mode E. Task #3 (Novel Identity Search) was previously closed in S29 for an elementary + li + sin/cos basis. This run runs a strict basis-extension experiment: PSLQ in a 10-element basis disjoint from S29, containing modified-Bessel K_0, I_0, oscillatory-Bessel J_0, Y_0 at γ_1·log x, and the partition-asymptotic kernel K_0(2π√(log x)). Motivated by Bessel kernels appearing in the Selberg trace formula spectral side and Mellin–Barnes representations — a place where an identity could in principle exist that elementary functions missed.
+
+### What ran
+
+`experiments/algebraic/identity_search/bessel_basis_pslq.py` (~120 LOC). Reuses S29's `fx_data.npz`. PSLQ at mpmath 50 dps, maxcoeff=10⁶, maxsteps=8000, x ∈ {5000, 10000, 50000, 100000}, cross-validation at x+1000. Three Gaussian random-control trials at x=50000 with σ matched to f.
+
+### Key findings
+
+- Every fit produces tight residuals (1.9e-36 to 4.0e-35) with non-zero coeff(f) ∈ {2712, 5349, 10385}, but ALL fail cross-validation by 4-5 orders of magnitude (cross-check residuals 1.10e+04 / 6.03e+04).
+- Random control: same-σ Gaussians give statistically indistinguishable signatures (fit residuals 8.5e-37 to 6.4e-35; cross-check 1.77e+04 to 1.60e+05). The PSLQ "tight relations" are pure numerical coincidences from finite precision on a 10-element basis.
+- Rules out three concrete Bessel-shaped donors: Selberg-trace shadow (low-order K_{ir}-kernel reuse), partition-saddle reuse (K_0(2π√(log x)) from Hardy-Ramanujan), modified-Bessel growth/decay scaffolding.
+
+### Verdict
+
+CLOSED, FAIL/E. Strengthens S29 verdict from "f(x) admits no identity in tested elementary basis" to "f(x) admits no identity in any tested basis including spectral-trace-related Bessel kernels." Adds 34th measure to `novel/pseudorandomness_of_pi.md`.
+
+### Files
+
+- `experiments/algebraic/identity_search/bessel_basis_pslq.py` (new)
+- `experiments/algebraic/identity_search/bessel_basis_pslq_results.md` (new)
+- `status/CLOSED_PATHS.md` — Bessel S68 row appended; header bumped
+- `novel/pseudorandomness_of_pi.md` — measure #34 added; title bumped to 34
+- `archive/sessions/session68_task3_bessel_basis.md` — session synthesis
+- `.run_state` advanced to 54
+
+---
+
+## Session 56 (critique-mode, 2026-04-26) — critique of S55 proposals
+
+**Mode:** critique. Five proposals from `archive/ephemeral/proposals_session.md`
+(S55) reviewed against CLOSED_PATHS. **All five collide with prior closures.**
+
+### Verdict matrix
+
+| # | Proposal | Verdict | Mode | Closes by |
+|---|----------|---------|------|-----------|
+| 1 | Compressed sensing on M[i,j]=R(x_i^ρ_j) | DUPLICATE | I | lines 26 (S32), 654 (S36), 699 (S54), 708 (S49) |
+| 2 | PSLQ on δ(2^k), δ(F_k), δ(p_k) | DUPLICATE | I+E | lines 23, 666 (S33), 703 (S49), 711 (S60) |
+| 3 | TT-rank of χ_P : {0,1}^L → {0,1} | DUPLICATE | I | lines 518 (S41 *theorem*), 707 (S49), 712 (S60), 729 (S48) |
+| 4 | GUE-aware adaptive importance sampling of zeros | DUPLICATE | E | lines 256/257 (S15), 656 (S31), 723 (S46-fresh), 726 (S46), 732 (S48), 733 (S49) |
+| 5 | Modular/theta bridge to π(x) | DUPLICATE | E | line 519 (S28), Landau natural-boundary obstruction |
+
+### What ran
+
+- Re-verified Proposal 3 TT-rank measurement at L=10 in this session: max
+  TT-rank = 17 = 2^{(L-1)/2}+1, exactly matching the S41 closed-form
+  rank theorem and the proposer's table at L∈{10,12,14,16}.
+- Proposals 1, 2, 3 had been preemptively executed by the proposer; their
+  `_results.md` files (`zero_contribution_compressibility_results.md`,
+  `pslq_subsequence_delta_results.md`, `tt_rank_prime_indicator_results.md`)
+  were audited and found internally consistent and consistent with the
+  prior closures cited above.
+- Proposals 4 and 5 ruled by prior art, no re-run.
+
+### Files
+
+- `archive/ephemeral/critique_latest.md` — full per-proposal critique
+- `status/CLOSED_PATHS.md` — three new refining entries appended (cumulative 622)
+- `archive/sessions/session56_critique.md` — this session's synthesis
+- `.run_state` advanced to 56
+
+### Process note
+
+Proposer document explicitly bypassed CLOSED_PATHS to "avoid bias." This
+ideation discipline is defensible but should be paired with a critique
+pass before *running* experiments — three experiments in S55 reproduced
+known closures. Future proposal sessions should grep CLOSED_PATHS for
+their proposal's keywords before writing code.
+
+---
+
+## Session 57 (2026-04-26, normal mode) — smoothness-of-(p-1) conditioning of delta
+
+**Mode:** normal. Single targeted measurement closing one residual gap
+in the empirical pseudorandomness catalogue: condition delta(pi(p)) on
+arithmetic features of p (smoothness/factorization of p-1) rather than
+on features of the index n.
+
+### What ran
+
+`experiments/proposals/delta_pminus1_smoothness.py`. N=9592 primes
+p ≤ 10⁵; delta computed via R^{-1}(n) ≈ p + f(p)·log(p) linearization
+(validated ±1 vs Newton-Rinv at mpmath 30 dps; bias is independent of
+class). Quartile-binned on s_ratio = log(LPF(p-1))/log(p); KS test on
+extreme quartiles; Pearson and Spearman vs delta and |delta|;
+Sophie-Germain (p=2q+1) sub-class; omega(p-1) feature.
+
+### Key findings
+
+* Per-quartile mean(delta) range = 1.6 (single sigma), std(delta)
+  range = 1.4. No monotonic trend.
+* Pearson(s_ratio, delta) = +0.0049 (p=0.634); KS class-0-vs-3 p=0.91.
+* Sophie-Germain (N=670) KS vs others p=0.95.
+* Pearson(omega(p-1), |delta|) = +0.054 (p=1e-7) — statistically real
+  but explains 0.3% variance, fully explained by both quantities
+  co-scaling with p (Erdős-Kac log log p, |delta|~p^{0.57}).
+
+### Verdict
+
+FAIL / mode I. Arithmetic features of p (factorization of p-1) are
+empirically orthogonal to the transcendental sector (delta of R^{-1}).
+Adds 35th measure to `novel/pseudorandomness_of_pi.md`. Rules out a
+class of "smoothness-aware delta predictors" and the Pollard /
+Pocklington side-channel into prime-counting.
+
+### Files
+
+* `experiments/proposals/delta_pminus1_smoothness.{py,_results.md}`
+* `experiments/proposals/delta_pminus1_smoothness_data.npz`
+* `status/CLOSED_PATHS.md` — S57 row appended (cumulative 545+)
+* `novel/pseudorandomness_of_pi.md` — measure #35 added; title bumped to 35
+* `archive/sessions/session57_smoothness_conditioning.md` — synthesis
+* `.run_state` advanced to 57
+
+### Status update
+
+Project plateau reaffirmed: with all FOCUS lines closed and the
+fourth-encoding sweep cumulative at ~78, this S57 measurement was a
+hand-picked one-off chosen specifically because it was NOT a duplicate
+of any prior CLOSED_PATHS row. The signal is exactly what the
+pseudorandomness picture predicts (independent within a single sigma);
+the only "significant" hit is statistically explained by trivial
+co-scaling with p. No new attack surface revealed.

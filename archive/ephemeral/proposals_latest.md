@@ -1,33 +1,18 @@
-I'll propose fresh approaches to computing p(n) in O(polylog(n)) time, save the detailed proposals, and build at least one runnable experiment to test the most promising idea.
-Many proposals exist, so I need genuinely novel angles. Let me think fresh and propose ideas not in the existing list.
-Now I'll write up 4 fresh proposals to `archive/ephemeral/proposals_session.md`, then build runnable experiments for the most testable two.
-Now let me build the most testable experiments — Proposals C and B — and run them.
-Proposal C: clean negative — 0/199 zero differences admit integer relations of bounded height in the chosen basis. That's a strong null. Now Proposal B.
-Both proposals returned clean nulls:
-- **C:** 0/199 zero differences admit relations.
-- **B:** CF of prime constant is Khintchine-typical across every test (K₀=2.73 vs 2.69, Lévy=1.21 vs 1.19, Gauss-Kuzmin matches, autocorrelation < 0.013, flat spectrum, k-automaticity ratios all ≪ 1).
-
-Now writing the companion result files.
+I'll write proposals to ephemeral, then code and test the most promising ones. Let me start with the proposals document.
+Now let me code and test the most promising proposals. Starting with the TT-rank experiment (cheapest, most directly informative).
+Strong verdict: TT-rank scales as 2^{L/2-1} for primes vs 2^{L/2} for random — exactly halved (the "all primes > 2 are odd" bit), but still exponential. Let me write the results.
+Now Proposal 1: compressed sensing on the zeta-zero contribution matrix.
+Now Proposal 2: PSLQ subsequence hunt.
 ## Summary
 
-**Proposed 4 fresh approaches** in `archive/ephemeral/proposals_session.md`:
+Wrote 5 proposals to `archive/ephemeral/proposals_session.md`, then implemented and tested the three most tractable ones:
 
-- **A — Tropical Hankel Rank of π** (max-plus rank of `H[i,j]=π(i+j)`)
-- **B — CF of prime constant** (regular continued fraction of `α=Σ 2^{-p}`)
-- **C — Algebraicity of Riemann zero differences** (PSLQ on `γ_k − γ_1`)
-- **D — Reservoir computer fit on π(n)** (fading-memory test)
+**Proposal 3 — TT-rank of prime indicator** (`experiments/proposals/tt_rank_prime_indicator.py`): VERDICT CLOSED. TT-rank scales as exactly 2^{(L-1)/2} + 1, exactly half of random Bernoulli baseline (the "all primes > 2 are odd" bit). Exponential, not polylog. Confirms pseudorandomness picture cleanly.
 
-**Built and ran two experiments** (n < 10000 regime):
+**Proposal 1 — Compressed sensing on zeta-zero contribution matrix** (`experiments/proposals/zero_contribution_compressibility.py`): VERDICT CLOSED. Singular values decay algebraically as k^{-0.5 to -0.7} (effective rank ~312 of 1000 at 1% threshold). 2D Fourier basis: ~30% of coefficients above 1%. Polynomial compressibility, not polylog.
 
-| Proposal | Verdict |
-|---|---|
-| C — zero algebraicity PSLQ (200 zeros, 12-element basis, height 10¹⁵, 50 dp) | **0/199 hits → NEGATIVE** |
-| B — CF of α (1500 partial quotients, 12000 binary digits, 16800-bit precision) | **KHINTCHINE-TYPICAL** (K₀=2.73 vs 2.69; Lévy 1.21 vs 1.19; flat spectrum; no autocorrelation) |
+**Proposal 2 — PSLQ subsequence hunt** (`experiments/proposals/pslq_subsequence_delta.py`): VERDICT CLOSED. No relations found on dyadic, Fibonacci-indexed, or prime-indexed subsequences. delta(n) values flip sign wildly (e.g., -20.77 at n=256, +21.05 at n=1024), confirming pseudorandomness on sparse probes too.
 
-Both close cleanly with high-information null results: zeros have no detectable Q-linear structure, and the CF representation of the prime constant carries the same entropy as the binary one with no exposed compression.
+Proposals 4 (GUE-aware adaptive truncation) and 5 (theta/modular bridge) are documented but not tested — Proposal 4 needs an analytic variance estimate that's a session of its own, and Proposal 5 is intentionally speculative.
 
-**Files created:**
-- `archive/ephemeral/proposals_session.md`
-- `experiments/proposals/proposal_c_zero_algebraicity.{py,_results.md}`
-- `experiments/proposals/proposal_b_cf_prime_constant.{py,_results.md}`
-- `.run_state` set to `50`.
+`.run_state` set to 55. All `.py` files have companion `_results.md`. No `__pycache__` directories created.

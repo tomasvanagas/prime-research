@@ -1,14 +1,17 @@
-# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 33 Measures
+# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 35 Measures
 
 **Status:** Novel synthesis. Individual measures from Sessions 17-56 plus
-two adjacent representations (S48 Dirichlet character spectrum of chi_P;
-S51 regular CF of the prime constant alpha=Σ 2^{-p}).
+four adjacent representations (S48 Dirichlet character spectrum of chi_P;
+S51 regular CF of the prime constant alpha=Σ 2^{-p}; S68 Bessel-basis PSLQ
+identity test for f(x) = pi(x) - R(x); S57 smoothness-of-(p-1) conditioning
+of delta(pi(p))).
 No published work examines this many independent complexity measures on a single natural function.
 
 ## Summary
 
-pi(x) mod 2 is indistinguishable from a random Boolean function under every
-structural complexity measure tested in this project (33). This is the
+pi(x) mod 2 (and its smooth-residual companion f(x) = pi(x) - R(x)) is
+indistinguishable from a random Boolean / Gaussian function under every
+structural complexity measure tested in this project (35). This is the
 project's strongest collective finding.
 
 The 2 measures added in S55 (A(x) mod 2, C_3(x) mod 2) probe the COMPONENTS of
@@ -77,6 +80,8 @@ pseudorandom under all known structural tests.
 | 31 | A_chi(x) mod 2 over chi mod 13 (worst of 12 chars, orders include 3,4,6,12) | LFSR/N=0.5000, h_8=7.97/8, AC=0.54 (density), max MI w/ pi(x;13,a)=9.5e-6 bits | density-bias-comparable | S56 |
 | 32 | Dirichlet character spectrum of chi_P mod q in {11..97} | L1/L2 ratio = 0.85*sqrt(phi(q)) (white-noise expectation), 5-15% above mean+2sigma | white-noise-comparable | S48 |
 | 33 | Regular continued-fraction quotients of prime constant alpha = sum_{p prime} 2^{-p} (depth 1500) | K_0 = 2.7336 (Khintchine 2.6854), Levy = 1.2056 (1.1866), max\|AC[1..10]\| = 0.013, 1/f^{-0.09} (white), k-automaticity ratio < 0.012 for k in {2,3,5,7,10}, Shannon entropy 3.26 b/quotient | Khintchine-typical | S51 |
+| 34 | Bessel-basis PSLQ identity test for f(x) = pi(x) - R(x) (10-element basis with K_0, I_0, J_0, Y_0 at log x, gamma_1*log x, 2*pi*sqrt(log x); mp 50 dps) | residuals 1.9e-36 .. 4.0e-35 at fit (always tight by overfit), but ALL fail cross-validation (cross-check residuals 1.10e+04 .. 6.03e+04); same-sigma Gaussian random control gives 8.5e-37 .. 6.4e-35 fit / 1.77e+04 .. 1.60e+05 cross-check — statistically indistinguishable | Gaussian-random-comparable | S68 |
+| 35 | delta(pi(p)) conditioned on smoothness of p-1 (largest-prime-factor quartiles + Sophie-Germain p=2q+1 sub-class + omega(p-1), N=9592 primes ≤ 10^5) | Pearson(s_ratio, delta) = +0.0049 (p=0.634); KS class-0-vs-3 D=0.016 (p=0.91); Sophie-Germain KS p=0.95; only "significant" hit is omega(p-1) vs \|delta\| at r=+0.054 (0.3% variance) which is fully explained by both quantities co-scaling with p (Erdős-Kac log log p, \|delta\|~p^{0.57}) | independent | S57 |
 
 ### Notes on Individual Measures
 
