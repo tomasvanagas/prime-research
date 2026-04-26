@@ -40,7 +40,7 @@ publishable structural results. None is published. A single coherent
 preprint is the highest-leverage output the project can produce.
 
 ### Arc 2 — Lean Formalisation Track
-**Status:** IN PROGRESS — L1 statement-and-skeleton built, 2 lemmas closed
+**Status:** IN PROGRESS — L1 has 4 lemmas closed + main theorem reduced; 1 `sorry` remains
 **Owner:** any agent who picks it up
 **Goal:** Permanent verifiable artifacts for the project's main results.
 See `NOVELTY_CHALLENGES.md` §3.
@@ -57,32 +57,53 @@ See `NOVELTY_CHALLENGES.md` §3.
   `lower_bound`, `rank_le_min_dim`, `row_support_coprime`,
   `live_columns_count` (8 declarations total including `chiP` and
   `unfolding`).
-- [x] Proof skeleton with `sorry` placeholders. **Done** — skeleton has
-  4 remaining `sorry`s and 0 `axiom` introductions.
+- [x] Proof skeleton with `sorry` placeholders. **Done** — skeleton
+  reduced to **1 remaining `sorry`** (only `lower_bound`) and 0 `axiom`
+  introductions.
 - [x] Auxiliary closed: `rank_le_min_dim` (one-liner cite of
   `Matrix.rank_le_height`).
-- [x] **Auxiliary closed: `row_support_coprime`** — 30-line
+- [x] Auxiliary closed: `row_support_coprime` — 30-line
   number-theoretic proof: nonzero entry ⇒ `n` prime ⇒ `gcd(n, W) = 1`
   (via `coprime_or_dvd_of_prime` plus `n > W`); then mod-`W` reduction
   via `gcd_add_mul_right_left` after rewriting `W^(d-j) = W^(d-j-1) · W`.
-- [ ] Lemma `live_columns_count`: CRT-based count of `φ(W)·W^(d-j-1)`
-  columns `k ∈ [0, W^(d-j))` with `gcd(k+1, W) = 1`. (Periodicity in
-  `W`-blocks; mathlib has the totient infrastructure.)
-- [ ] Lemma `upper_bound`: combine `row_support_coprime` +
-  `live_columns_count`; rows `i ≥ 1` span an `φ(W)·W^(d-j-1)`-dim
-  subspace, row `0` adds at most one more.
+- [x] Auxiliary closed: `live_columns_count` (S75) — ~110-line CRT
+  count: `Fin → range` value-projection bijection + induction on
+  `W`-blocks reducing to `Nat.filter_coprime_Ico_eq_totient W 1`.
+- [x] **Lemma `upper_bound` closed (S76).** ~80-line column-span
+  argument. Strategy: with `e0 := Pi.single i₀ 1 : Fin(W^j) → ℚ` the
+  row-0 unit vector and `GoodCols` the live-column index set, the
+  generating set `S := insert e0 (GoodCols.image col)` has cardinality
+  `≤ φ(W)·W^(d-j-1) + 1`. Bad columns are scalar multiples of `e0`
+  (via `row_support_coprime`); good columns lie in `S` directly.
+  Hence column-span ⊆ span(S), and `rank = finrank(span(range col)) ≤
+  S.card` via `Matrix.rank_eq_finrank_span_cols`,
+  `Submodule.finrank_mono`, `finrank_span_finset_le_card`.
+- [x] **Main theorem `mps_bond_dim` closed (S76).** Reduced to
+  `Nat.le_antisymm` of (`Nat.le_min` of `rank_le_min_dim` and
+  `upper_bound`) and `lower_bound`. The proof itself is 3 lines and
+  contains no `sorry`; the only remaining open obligation is the
+  `lower_bound` lemma it cites. Restructuring required: moved the
+  main theorem to the file's bottom so the term-mode proof can refer
+  to the auxiliary lemmas.
 - [ ] Lemma `lower_bound`: the harder side; needs row independence
-  via prime-counting density.
-- [ ] Main theorem `mps_bond_dim`: `Nat.le_antisymm` + `min` case-split.
+  via prime-counting density. **THIS IS THE LAST REMAINING `sorry`.**
 - [ ] Repeat for L2, L3, L4, L5.
 
 **Estimated total effort:** L1 alone is 1-2 sessions; full queue is
 12-20 sessions.
-**Next action:** prove `live_columns_count` (the CRT count). It is the
-next-most tractable of the four open `sorry`s — pure combinatorics, no
-linear algebra, no analytic number theory. See
-`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md` for
-the proof sketch and `Finset.filter` machinery hints.
+**Next action:** prove `lower_bound` in `MPSBondDim/Basic.lean`. The
+informal argument: among the `φ(W)·W^(d-j-1)` live columns, exhibit
+`min(W^j, φ(W)·W^(d-j-1) + 1)` rows whose restriction to live columns
+is linearly independent over ℚ. The candidate rows are indexed by
+`i ∈ {0, 1, ..., min(W^j - 1, φ(W)·W^(d-j-1))}`. Linear independence
+is hand-waved in `novel/mps_bond_dimension.md` via prime-counting
+density (asymptotically there are enough primes in each `[i·W^(d-j),
+(i+1)·W^(d-j))` block to make distinct rows distinguishable). Two
+formalisation routes: (A) carry the prime-counting argument directly
+(needs PNT in Lean — heavy); (B) reduce to a generic combinatorial
+fact like "Vandermonde-style" exhibits over a generic finite extension.
+Route (B) is the lighter-weight path. See
+`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 **Toolchain note:** elan + Lean stable (`v4.30.0-rc2`) installed at
 `$HOME/.elan/`. Full mathlib `.olean` cache (~8300 files) downloaded
@@ -113,7 +134,7 @@ for fixed J independent of N. See `NOVELTY_CHALLENGES.md` §2.F1.
 boundary novel doc.
 
 ### Arc 4 — Composition over EDGES.md
-**Status:** IN PROGRESS — Run #63 (picking C5)
+**Status:** IN PROGRESS — S74 (picked C2; built; spike-count regularity)
 **Owner:** any agent
 **Goal:** Systematically explore the "compose two edges" challenge space.
 See `NOVELTY_CHALLENGES.md` §1.
@@ -140,20 +161,30 @@ See `NOVELTY_CHALLENGES.md` §1.
   **structural unification of E2.7 + E2.8** via the column-zero density
   principle `rank(M_f^{balanced}) ≤ (1−ρ_f)·2^{N/2}`. No polylog
   opening. See `experiments/constructions/n_over_2_universality_class/`.
-- [ ] Pick C2 (free cumulants × MPS bond-dim). Build it. Close or extend.
+- [x] **C2 (free cumulants × MPS bond-dim) — BUILT S74.** Three-part
+  structure of χ_P MPS unfolding spectrum: (a) finite structural peak
+  reproduced by matched-active iid baseline, (b) **spike band of
+  `O(N^{0.42})` outlier eigenvalues** absent from random baseline (new
+  empirical regularity, fitted `k* ∝ R^{0.85}` on W=2 sweep d=14..22),
+  (c) **MP bulk matching `c = φ(W)/W = ∏_{p≤W}(1 − 1/p)`** — the wheel-W
+  Mertens product is exactly the free-Poisson rate of the bulk. This
+  refines E2.1 from a rank statement to a moment-level statement and
+  recovers a polynomial-in-N spectral compression barrier from a
+  free-probabilistic angle. Cross-domain: Mingo-Speicher 2017.
+  See `experiments/constructions/free_cumulants_chi_p/`.
 - [ ] Pick C3 (Brandt × per-bit). Build it. Close or extend.
 - [ ] Pick C4 (Aggarwal × Dusart × BPSW). Build the unified library.
+- [ ] Pick C6 (three-pillars × HKM time-space curve). Build it.
 - [ ] After 4-6 compositions, write a meta-synthesis: which edge pairs
   yielded structure, which collapsed?
 
 **Estimated total effort:** 1-2 sessions per composition × 4-6 compositions = 5-12 sessions.
-**Next action:** pick C2 (free cumulants × MPS — substantive). After
-two cheap compositions (C1, C5) yielding *closed forms*, the
-remaining open compositions (C2, C3, C4, C6) are all substantive.
-C2 is the most likely next-source of a closed-form result because
-free cumulants are tightly constrained algebraic invariants; if the
-MPS bond-dim formula determines them they will hit a known
-distribution (semicircle / free Poisson / Marchenko-Pastur).
+**Next action:** pick C3 (Brandt per-bit) or C6 (three-pillars). C2's
+spike-count regularity `k* ∝ R^{0.85}` is itself a sub-arc target —
+worth confirming on independent (W, d) at larger d, and characterizing
+*which* eigenvectors the spikes correspond to (small-prime indicators?
+Selberg eigenfunctions? cross-block correlation modes?). That sub-arc
+is the natural next step inside C2 if a future agent wants to push it.
 
 ### Arc 5 — Frame-Shift exploration
 **Status:** SUGGESTED

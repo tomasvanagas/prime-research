@@ -2,7 +2,7 @@
 
 **Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
 **Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
-**Build status:** `lake build` succeeds. 4 `sorry` placeholders remain (down from 5 in the initial skeleton).
+**Build status:** `lake build` succeeds. **1 `sorry` placeholder remains** (down from 3 after S76 closed `upper_bound` and reduced `mps_bond_dim` to a term application of the lemmas).
 **No `axiom` introductions.**
 
 ## What this file formalises
@@ -26,14 +26,19 @@ The proof is decomposed into 6 declarations:
 |------------------------|--------------------------------------------|----------|
 | `chiP`                 | prime indicator `ℕ → ℚ`                    | def      |
 | `unfolding`            | the `(W^j × W^(d-j))` matrix over `ℚ`      | def      |
-| `mps_bond_dim`         | **main theorem**                           | `sorry`  |
-| `upper_bound`          | `rank ≤ φ(W) · W^(d-j-1) + 1`              | `sorry`  |
-| `lower_bound`          | `min(W^j, φ(W) · W^(d-j-1) + 1) ≤ rank`    | `sorry`  |
 | `rank_le_min_dim`      | trivial ceiling `rank ≤ W^j`               | **done** |
 | `row_support_coprime`  | nonzero entries imply `gcd(k+1, W) = 1`    | **done** |
-| `live_columns_count`   | CRT count: live columns = `φ(W) · W^(d-j-1)` | `sorry`  |
+| `live_columns_count`   | CRT count: live columns = `φ(W) · W^(d-j-1)` | **done** |
+| `upper_bound`          | `rank ≤ φ(W) · W^(d-j-1) + 1`              | **done** |
+| `lower_bound`          | `min(W^j, φ(W) · W^(d-j-1) + 1) ≤ rank`    | `sorry`  |
+| `mps_bond_dim`         | **main theorem** (term application)        | **done** |
 
-The two completed proofs:
+(Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
+`Nat.le_antisymm` of the auxiliary lemmas. But it transitively depends
+on `lower_bound`, which still has a `sorry`. Once `lower_bound` is
+closed, the main theorem is automatically closed without modification.)
+
+The five completed proofs (plus the term-mode main theorem):
 
 1. `rank_le_min_dim` is one line: a direct citation of mathlib's
    `Matrix.rank_le_height`.
@@ -42,36 +47,65 @@ The two completed proofs:
    `n > W`; hence no prime factor of `W` divides `n`, so `gcd(n, W) = 1`;
    reducing mod `W` (using `gcd_add_mul_right_left` after rewriting
    `W^(d-j) = W^(d-j-1) · W`) yields `gcd(k+1, W) = 1`.
+3. `live_columns_count` is a ~110-line two-stage argument (S75):
+   - **Stage A (Fin → range):** `Finset.card_bij` with the value-projection
+     `k ↦ k.val` shows the count over `Fin (W^(d-j))` equals the count over
+     `Finset.range (W^(d-j))`.
+   - **Stage B (multi-block induction):** for every `M : ℕ`,
+     `|{n ∈ range(W·M) : gcd(n+1,W)=1}| = M · φ(W)` by induction on `M`.
+     The successor step splits `range(W·(M+1)) = range(W·M) ∪ Ico(W·M)(W·M+W)`
+     (disjoint), invokes the IH on the first piece, and reduces the second
+     piece to `Nat.filter_coprime_Ico_eq_totient W 1` via the bijection
+     `n ↔ n + 1 − W·M` (`Finset.card_bij'`). The bijection's gcd-preservation
+     uses `Nat.gcd_add_mul_right_left` (the same identity that
+     `row_support_coprime` uses).
+   - Combine with `W^(d-j) = W · W^(d-j-1)` (single-occurrence `conv_lhs`
+     rewrite to avoid the subterm-clash with `d-j-1`) and instantiate at
+     `M := W^(d-j-1)`.
+4. **`upper_bound` is a ~80-line column-span argument (S76).** Strategy:
+   - Define `i₀ : Fin(W^j) := ⟨0, hWj_pos⟩` (the row-0 index) and
+     `e0 : Fin(W^j) → ℚ := Pi.single i₀ 1` (the row-0 unit vector).
+   - Define `GoodCols : Finset (Fin(W^(d-j)))` as the live columns —
+     `|GoodCols| = φ(W)·W^(d-j-1)` by `live_columns_count`.
+   - Define the generating Finset `S := insert e0 (GoodCols.image col)`.
+     `|S| ≤ |GoodCols| + 1 = φ(W)·W^(d-j-1) + 1`.
+   - Show every column lies in `Submodule.span ℚ (S : Set _)`:
+     - **Good columns** (`gcd(k+1, W) = 1`): in `S` directly.
+     - **Bad columns** (`gcd(k+1, W) ≠ 1`): all entries at rows `i ≥ 1`
+       vanish (by `row_support_coprime`), so the column equals
+       `(unfolding i₀ k) • e0`, hence in `Submodule.span ℚ {e0} ⊆ span S`.
+   - Apply `Matrix.rank_eq_finrank_span_cols`, `Submodule.span_le`,
+     `Submodule.finrank_mono`, then `finrank_span_finset_le_card S` to
+     conclude `rank ≤ |S| ≤ φ(W)·W^(d-j-1) + 1`.
+5. **`mps_bond_dim` (main theorem) is a 3-line term-mode proof (S76).**
+   `Nat.le_antisymm` of:
+   - `Nat.le_min.mpr ⟨rank_le_min_dim, upper_bound⟩` for the upper side
+     (`rank ≤ min(W^j, φ(W)·W^(d-j-1) + 1)`).
+   - `lower_bound` for the lower side.
+   The main theorem itself contains no `sorry`. It currently still has
+   an open obligation only because `lower_bound` is not yet closed —
+   once `lower_bound` loses its `sorry`, `mps_bond_dim` is automatically
+   closed without modification.
 
 ## What the next session needs to do
 
-In rough order of decreasing tractability:
+Only one open obligation remains:
 
-1. **`live_columns_count`** — the CRT count
-   `#{k ∈ [0, W^(d-j)) : gcd(k+1, W) = 1} = φ(W) · W^(d-j-1)`.
-   Periodicity in `W`-blocks; each block contains exactly `φ(W)` live
-   columns (a one-`W`-block lemma plus an induction on `d-j-1`).
-   Mathlib has `Nat.totient_eq_card_lt_and_coprime`, `Nat.totient` lemmas,
-   and `Finset.filter` + `Finset.card_eq_sum_ones` machinery.
+**`lower_bound`** — the harder side. Informally, exhibit a set of
+`min(W^j, φ(W) · W^(d-j-1) + 1)` rows whose restrictions to the live
+columns are linearly independent over ℚ. The informal argument
+hand-waves over a prime-counting density; making this rigorous in Lean
+will probably require either (i) a counting-via-PNT step or (ii) a
+clever reformulation that reduces to a generic "many rows with distinct
+non-zero patterns" combinatorial lemma.
 
-2. **`upper_bound`** — combines `row_support_coprime` and
-   `live_columns_count`. The structural step: rows `i ≥ 1` of `unfolding W d j`
-   live in the subspace `V := {v : Fin(W^(d-j)) → ℚ | ∀ k, gcd(k+1, W) ≠ 1 → v k = 0}`,
-   which has dimension `φ(W) · W^(d-j-1)`. Adding row `0` gives at most
-   one further dimension. Use `Matrix.rank_le` plus
-   `Submodule.finrank_le_finrank_of_le`.
-
-3. **`lower_bound`** — the harder side. Informally, exhibit a set of
-   `min(W^j, φ(W) · W^(d-j-1) + 1)` rows whose restrictions to the live
-   columns are linearly independent. The informal argument hand-waves
-   over a prime-counting density; making this rigorous in Lean will
-   probably require either (i) a counting-via-PNT step or (ii) a clever
-   reformulation that reduces to a generic "many rows with distinct
-   non-zero patterns" combinatorial lemma.
-
-4. **`mps_bond_dim`** — `Nat.le_antisymm` of the two bounds, plus a small
-   case split between the two arguments to `min` (using
-   `rank_le_min_dim` to handle the `W^j ≤ φ(W) · W^(d-j-1) + 1` case).
+**File structure note (S76):** the file was reorganised so the lemmas
+(`rank_le_min_dim`, `row_support_coprime`, `live_columns_count`,
+`upper_bound`, `lower_bound`) now appear before the main theorem
+`mps_bond_dim`. This was needed for `mps_bond_dim`'s term-mode proof
+to refer to the lemmas. The narrative-first ordering (statement at
+the top) was traded for proof structure; the file's opening
+docstring/decomposition section makes the architecture explicit.
 
 ## Falsification
 

@@ -453,7 +453,35 @@ If a frontier attack produces a result that survives the critique:
 
 ## Closed attacks
 
-(none yet — this is a new file)
+### §C1 — Odlyzko zeros at height 10²² (CLOSED 2026-04-26, S71, mode I)
+
+**Outcome:** structural negative result + new quantitative obstruction.
+
+Re-ran the S49 BK arithmetic-correction probe on Odlyzko's published
+tables `zeros4` (n ∈ [10²¹+1, 10²¹+10⁴], height T ≈ 1.4·10²⁰, L = 44.6)
+and `zeros5` (n ∈ [10²²+1, 10²²+10⁴], T ≈ 1.4·10²¹, L = 46.8). Used a
+**random-prime null** (template with primes replaced by uniform
+pseudo-primes in [2, 50]) as the proper test instead of the biased
+gap-shuffled null. Empirical Pearson with the BK template is
+statistically indistinguishable from the random-prime null
+(z = -0.94σ, +0.93σ); prime-frequency Fourier amplitudes are NOT
+enhanced over random frequencies (ratios 0.95, 0.99).
+
+Why §C1 fails by structure: the BK signal scales as `13.6/L²` while
+empirical noise scales as `4/√N`. Detection requires
+**N ≥ 0.09 κ² L⁴** for κ-σ Pearson detection. At Odlyzko's heights
+this needs N ≈ 3·10⁵-4·10⁵ zeros; Odlyzko publishes 10⁴, short by
+~35×. Pushing to higher heights makes the situation *worse* because
+L⁴ grows faster than any reasonable N. The asymptotic regime
+*suppresses* the BK signal faster than data accumulation can
+compensate.
+
+This sharpens E7.1 / E1.10 / E3.13 from qualitative "BK undetected"
+to quantitative "BK detection requires N ≥ 0.81 L⁴ zeros" — a hard
+scaling barrier independent of computational budget.
+
+See `experiments/analytic/zeta_structure/odlyzko_high_height/`
+and `archive/sessions/session71_c1_odlyzko_bk_probe.md`.
 
 ---
 

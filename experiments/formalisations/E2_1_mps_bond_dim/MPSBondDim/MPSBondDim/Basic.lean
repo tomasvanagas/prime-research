@@ -39,28 +39,19 @@ noncomputable def unfolding (W d j : ℕ) :
     Matrix (Fin (W ^ j)) (Fin (W ^ (d - j))) ℚ :=
   fun i k => chiP (i.val * W ^ (d - j) + k.val + 1)
 
-/--
-**Main theorem (E2.1).** For every `W ≥ 2` and every cut `1 ≤ j < d`,
-the rank of the `j`-th unfolding of the base-`W` prime indicator equals
-`min (W^j) (φ(W) * W^(d-j-1) + 1)`.
-
-This is the closed form proved (informally) in
-`novel/mps_bond_dimension.md` and saturated empirically for
-`W ∈ {2, 6, 30, 210}` and `d` up to 20.
--/
-theorem mps_bond_dim
-    (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
-    (unfolding W d j).rank =
-      min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) := by
-  sorry
-
 /-!
 ## Decomposition of the proof
 
-The informal proof in `novel/mps_bond_dimension.md` splits into two
-inequalities, separated as `upper_bound` and `lower_bound` below. The
-main theorem then follows by `Nat.le_antisymm` plus a small case split on
-which of the two arguments to `min` is the active one.
+The main theorem `mps_bond_dim` (stated and proved at the bottom of this
+file) splits into two inequalities:
+
+* **Upper bound:** `rank ≤ φ(W)·W^(d-j-1) + 1` (`upper_bound`).
+* **Trivial ceiling:** `rank ≤ W^j` (`rank_le_min_dim`), giving
+  `rank ≤ min(W^j, φ(W)·W^(d-j-1) + 1)`.
+* **Lower bound:** `min(W^j, φ(W)·W^(d-j-1) + 1) ≤ rank` (`lower_bound`).
+
+Putting them together with `Nat.le_antisymm` yields the main equality.
+The lemmas come first; the main theorem closes the file.
 -/
 
 /-!
@@ -155,77 +146,119 @@ theorem live_columns_count
         (fun k => Nat.gcd (k.val + 1) W = 1)).card =
       Nat.totient W * W ^ (d - j - 1) := by
   have hdj : 1 ≤ d - j := Nat.sub_pos_of_lt hj_hi
-  -- Step 1: the predicate `n ↦ gcd(n+1, W) = 1` is W-periodic.
-  have hP_periodic :
-      Function.Periodic (fun n => Nat.gcd (n + 1) W = 1) W := fun x => by
-    show (Nat.gcd (x + W + 1) W = 1) = (Nat.gcd (x + 1) W = 1)
-    rw [show x + W + 1 = (x + 1) + W from by ring, Nat.gcd_add_self_left]
-  -- Step 2: convert the Fin-indexed cardinality to `Nat.count`.
-  have step_fin_to_count :
+  have hWpos : 0 < W := by omega
+  -- Step 1: convert the Fin-indexed filter to a `Finset.range`-indexed filter
+  -- via the value-injection bijection `k ↦ k.val`.
+  have step_fin_to_range :
       ((Finset.univ : Finset (Fin (W ^ (d - j)))).filter
           (fun k => Nat.gcd (k.val + 1) W = 1)).card =
-        Nat.count (fun n => Nat.gcd (n + 1) W = 1) (W ^ (d - j)) := by
-    rw [Nat.count_eq_card_filter_range, Finset.card_eq_sum_ones,
-        Finset.card_eq_sum_ones, Finset.sum_filter, Finset.sum_filter,
-        Fin.sum_univ_eq_sum_range]
-  rw [step_fin_to_count]
-  -- Step 3: split W^(d-j) = W * W^(d-j-1).
-  have W_pow : W ^ (d - j) = W * W ^ (d - j - 1) := by
-    have h : (d - j - 1) + 1 = d - j := Nat.sub_add_cancel hdj
-    calc W ^ (d - j)
-        = W ^ ((d - j - 1) + 1) := by rw [h]
-      _ = W * W ^ (d - j - 1) := by rw [pow_succ, mul_comm]
-  rw [W_pow]
-  -- Step 4: multi-block periodicity. count P (W * m) = m * count P W.
-  have block_count : ∀ m,
-      Nat.count (fun n => Nat.gcd (n + 1) W = 1) (W * m) =
-        m * Nat.count (fun n => Nat.gcd (n + 1) W = 1) W := by
-    intro m
-    induction m with
-    | zero => simp
-    | succ k ih =>
-      have step_a : W * (k + 1) = W * k + W := by ring
-      rw [step_a, Nat.count_add (W * k) W]
-      -- The shifted predicate counts the same number of survivors as P over W
-      -- by W-periodicity (W * k is a multiple of W).
-      have shift :
-          Nat.count (fun n => Nat.gcd (W * k + n + 1) W = 1) W =
-            Nat.count (fun n => Nat.gcd (n + 1) W = 1) W := by
-        rw [Nat.count_eq_card_filter_range, Nat.count_eq_card_filter_range]
-        congr 1
-        apply Finset.filter_congr
-        intros n _
-        rw [show W * k + n + 1 = n + k * W + 1 from by ring]
-        exact Iff.of_eq (hP_periodic.nat_mul k n)
-      rw [shift, ih]
-      ring
-  rw [block_count]
-  -- Step 5: count over a single W-block equals totient W.
-  have base_count :
-      Nat.count (fun n => Nat.gcd (n + 1) W = 1) W = Nat.totient W := by
-    rw [Nat.count_eq_card_filter_range, ← Nat.filter_coprime_Ico_eq_totient W 1]
-    refine Finset.card_bij' (fun n _ => n + 1) (fun m _ => m - 1) ?_ ?_ ?_ ?_
-    · intro n hn
-      rw [Finset.mem_filter, Finset.mem_range] at hn
-      rw [Finset.mem_filter, Finset.mem_Ico]
-      refine ⟨⟨Nat.succ_le_succ (Nat.zero_le _), by omega⟩, ?_⟩
-      show Nat.Coprime W (n + 1)
-      rw [Nat.Coprime, Nat.gcd_comm]; exact hn.2
-    · intro m hm
-      rw [Finset.mem_filter, Finset.mem_Ico] at hm
+        ((Finset.range (W ^ (d - j))).filter
+          (fun n => Nat.gcd (n + 1) W = 1)).card := by
+    refine Finset.card_bij (fun (k : Fin _) _ => k.val) ?_ ?_ ?_
+    · intros k hk
+      rw [Finset.mem_filter] at hk
       rw [Finset.mem_filter, Finset.mem_range]
-      have hm_pos : 1 ≤ m := hm.1.1
-      refine ⟨by omega, ?_⟩
-      have m_eq : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
-      rw [m_eq]
-      show Nat.gcd m W = 1
-      rw [Nat.gcd_comm]; exact hm.2
-    · intros a _; omega
-    · intro m hm
-      rw [Finset.mem_filter, Finset.mem_Ico] at hm
-      have : 1 ≤ m := hm.1.1
-      omega
-  rw [base_count]
+      exact ⟨k.isLt, hk.2⟩
+    · intros k1 _ k2 _ h
+      exact Fin.ext h
+    · intros n hn
+      rw [Finset.mem_filter, Finset.mem_range] at hn
+      refine ⟨⟨n, hn.1⟩, ?_, rfl⟩
+      rw [Finset.mem_filter]
+      exact ⟨Finset.mem_univ _, hn.2⟩
+  rw [step_fin_to_range]
+  -- Step 2: prove the multi-block count formula by induction on the number
+  -- of W-blocks. For every M:
+  --   |{n ∈ range(W * M) : gcd(n+1, W) = 1}| = M * φ(W).
+  have multi_block : ∀ M : ℕ,
+      ((Finset.range (W * M)).filter
+          (fun n => Nat.gcd (n + 1) W = 1)).card = M * Nat.totient W := by
+    intro M
+    induction M with
+    | zero => simp
+    | succ M ih =>
+      -- Split range(W*(M+1)) = range(W*M) ∪ Ico(W*M)(W*M+W).
+      have hsplit_range : Finset.range (W * (M + 1)) =
+          Finset.range (W * M) ∪ Finset.Ico (W * M) (W * M + W) := by
+        ext n
+        simp only [Finset.mem_union, Finset.mem_range, Finset.mem_Ico]
+        have : W * (M + 1) = W * M + W := by ring
+        omega
+      have hdisj : Disjoint (Finset.range (W * M))
+          (Finset.Ico (W * M) (W * M + W)) := by
+        rw [Finset.disjoint_left]
+        intros n hn1 hn2
+        rw [Finset.mem_range] at hn1
+        rw [Finset.mem_Ico] at hn2
+        omega
+      rw [hsplit_range, Finset.filter_union,
+          Finset.card_union_of_disjoint
+            (hdisj.mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)),
+          ih]
+      -- block_count: count over Ico(W*M)(W*M+W) of gcd(n+1, W) = 1 equals φ(W).
+      -- Bijection to ((Ico 1 (1+W)).filter (Nat.Coprime W)) via n ↔ n + 1 - W*M.
+      have block_count : ((Finset.Ico (W * M) (W * M + W)).filter
+          (fun n => Nat.gcd (n + 1) W = 1)).card = Nat.totient W := by
+        rw [← Nat.filter_coprime_Ico_eq_totient W 1]
+        refine Finset.card_bij' (fun (n : ℕ) _ => n + 1 - W * M)
+            (fun (m : ℕ) _ => m + W * M - 1) ?_ ?_ ?_ ?_
+        · -- forward maps into target filter
+          intros n hn
+          rw [Finset.mem_filter, Finset.mem_Ico] at hn
+          change n + 1 - W * M ∈
+            (Finset.Ico 1 (1 + W)).filter (fun x => Nat.Coprime W x)
+          rw [Finset.mem_filter, Finset.mem_Ico]
+          have hWM_le_n : W * M ≤ n := hn.1.1
+          have hn_lt : n < W * M + W := hn.1.2
+          refine ⟨⟨by omega, by omega⟩, ?_⟩
+          -- Goal: Nat.Coprime W (n + 1 - W * M).
+          show Nat.Coprime W (n + 1 - W * M)
+          have h_eq : n + 1 = (n + 1 - W * M) + M * W := by
+            rw [Nat.mul_comm M W]; omega
+          have h_gcd : Nat.gcd (n + 1) W = Nat.gcd (n + 1 - W * M) W := by
+            conv_lhs => rw [h_eq]
+            rw [Nat.gcd_add_mul_right_left]
+          unfold Nat.Coprime
+          rw [Nat.gcd_comm, ← h_gcd]
+          exact hn.2
+        · -- inverse maps into source filter
+          intros m hm
+          rw [Finset.mem_filter, Finset.mem_Ico] at hm
+          change m + W * M - 1 ∈
+            (Finset.Ico (W * M) (W * M + W)).filter (fun x => Nat.gcd (x + 1) W = 1)
+          rw [Finset.mem_filter, Finset.mem_Ico]
+          have hm_lo : 1 ≤ m := hm.1.1
+          have hm_hi : m < 1 + W := hm.1.2
+          refine ⟨⟨by omega, by omega⟩, ?_⟩
+          -- Goal: Nat.gcd ((m + W * M - 1) + 1) W = 1.
+          show Nat.gcd ((m + W * M - 1) + 1) W = 1
+          have h1 : m + W * M - 1 + 1 = m + W * M := by omega
+          rw [h1]
+          have h2 : m + W * M = m + M * W := by ring
+          rw [h2, Nat.gcd_add_mul_right_left]
+          have hCop : Nat.Coprime W m := hm.2
+          rw [Nat.gcd_comm]
+          exact hCop
+        · -- left_inv: ((n + 1) - W*M) + W*M - 1 = n
+          intros n hn
+          rw [Finset.mem_filter, Finset.mem_Ico] at hn
+          change n + 1 - W * M + W * M - 1 = n
+          have : W * M ≤ n := hn.1.1
+          omega
+        · -- right_inv: (m + W*M - 1) + 1 - W*M = m
+          intros m hm
+          rw [Finset.mem_filter, Finset.mem_Ico] at hm
+          change m + W * M - 1 + 1 - W * M = m
+          have : 1 ≤ m := hm.1.1
+          omega
+      rw [block_count]
+      ring
+  -- Step 3: apply multi_block with M = W^(d-j-1).
+  have hpow_split : W ^ (d - j) = W * W ^ (d - j - 1) := by
+    conv_lhs => rw [show (d - j) = (d - j - 1) + 1 from
+                      (Nat.sub_add_cancel hdj).symm]
+    rw [pow_succ, mul_comm]
+  rw [hpow_split, multi_block]
   ring
 
 /--
@@ -237,7 +270,87 @@ Row `i = 0` adds at most one further linearly independent direction.
 theorem upper_bound
     (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
     (unfolding W d j).rank ≤ Nat.totient W * W ^ (d - j - 1) + 1 := by
-  sorry
+  classical
+  have hWpos : 0 < W := by omega
+  have hWj_pos : 0 < W ^ j := Nat.pow_pos hWpos
+  -- Index 0 in `Fin (W^j)`.
+  let i₀ : Fin (W ^ j) := ⟨0, hWj_pos⟩
+  -- Row-0 unit vector in `Fin (W^j) → ℚ`.
+  let e0 : Fin (W ^ j) → ℚ := Pi.single i₀ (1 : ℚ)
+  -- The "live" / good column index set.
+  let GoodCols : Finset (Fin (W ^ (d - j))) :=
+    (Finset.univ : Finset _).filter (fun k => Nat.gcd (k.val + 1) W = 1)
+  have hGoodCard : GoodCols.card = Nat.totient W * W ^ (d - j - 1) :=
+    live_columns_count W d j hW hj_hi
+  -- Generating set: row-0 unit vector together with the good-column images.
+  let S : Finset (Fin (W ^ j) → ℚ) :=
+    insert e0 (GoodCols.image (unfolding W d j).col)
+  have hS_card : S.card ≤ Nat.totient W * W ^ (d - j - 1) + 1 := by
+    have h1 : S.card ≤ (GoodCols.image (unfolding W d j).col).card + 1 :=
+      Finset.card_insert_le _ _
+    have h2 : (GoodCols.image (unfolding W d j).col).card ≤ GoodCols.card :=
+      Finset.card_image_le
+    omega
+  -- For every "bad" column k (`gcd(k+1, W) ≠ 1`) and every row index `i ≠ i₀`,
+  -- the matrix entry vanishes — by `row_support_coprime`.
+  have hcol_zero_outside :
+      ∀ (k : Fin (W ^ (d - j))) (_ : Nat.gcd (k.val + 1) W ≠ 1)
+        (i : Fin (W ^ j)) (_ : i ≠ i₀),
+        (unfolding W d j).col k i = 0 := by
+    intro k hk i hi
+    have hi_pos : 1 ≤ i.val := by
+      rcases Nat.eq_zero_or_pos i.val with hi0 | hipos
+      · exact (hi (Fin.ext hi0)).elim
+      · exact hipos
+    change (unfolding W d j) i k = 0
+    by_contra hne
+    exact hk (row_support_coprime W d j hW hj_hi i hi_pos k hne)
+  -- A bad column is a scalar multiple of `e0` (only the i = i₀ entry survives).
+  have hbad_col_form :
+      ∀ (k : Fin (W ^ (d - j))) (_ : Nat.gcd (k.val + 1) W ≠ 1),
+        (unfolding W d j).col k = ((unfolding W d j) i₀ k) • e0 := by
+    intro k hk
+    funext i
+    by_cases hi : i = i₀
+    · subst hi
+      change (unfolding W d j) i₀ k = ((unfolding W d j) i₀ k) * e0 i₀
+      simp [e0]
+    · have h_lhs : (unfolding W d j).col k i = 0 := hcol_zero_outside k hk i hi
+      have h_rhs : (((unfolding W d j) i₀ k) • e0) i = 0 := by
+        change ((unfolding W d j) i₀ k) * e0 i = 0
+        simp [e0, hi]
+      rw [h_lhs, h_rhs]
+  -- Every column lies in `Submodule.span ℚ (S : Set _)`.
+  have hcol_in_span : ∀ k : Fin (W ^ (d - j)),
+      (unfolding W d j).col k ∈ Submodule.span ℚ (S : Set (Fin (W ^ j) → ℚ)) := by
+    intro k
+    by_cases hk : Nat.gcd (k.val + 1) W = 1
+    · -- Good column: in S directly.
+      apply Submodule.subset_span
+      change (unfolding W d j).col k ∈ (S : Set _)
+      have hmem : (unfolding W d j).col k ∈ S := by
+        apply Finset.mem_insert_of_mem
+        refine Finset.mem_image.mpr ⟨k, ?_, rfl⟩
+        exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hk⟩
+      exact_mod_cast hmem
+    · -- Bad column: scalar multiple of e0 ∈ S.
+      rw [hbad_col_form k hk]
+      apply Submodule.smul_mem
+      apply Submodule.subset_span
+      change e0 ∈ (S : Set _)
+      exact_mod_cast (Finset.mem_insert_self e0 _)
+  -- Conclude: rank ≤ |S| ≤ φ(W) · W^(d-j-1) + 1.
+  rw [Matrix.rank_eq_finrank_span_cols]
+  have h_le : Submodule.span ℚ (Set.range (unfolding W d j).col)
+            ≤ Submodule.span ℚ (S : Set (Fin (W ^ j) → ℚ)) := by
+    rw [Submodule.span_le]
+    rintro v ⟨k, rfl⟩
+    exact hcol_in_span k
+  calc Module.finrank ℚ (Submodule.span ℚ (Set.range (unfolding W d j).col))
+      ≤ Module.finrank ℚ (Submodule.span ℚ (S : Set (Fin (W ^ j) → ℚ))) :=
+        Submodule.finrank_mono h_le
+    _ ≤ S.card := finrank_span_finset_le_card S
+    _ ≤ Nat.totient W * W ^ (d - j - 1) + 1 := hS_card
 
 /--
 Lower bound. Empirically saturated at every measured `(W, d, j)`. The
@@ -264,5 +377,27 @@ theorem rank_le_min_dim
     (W d j : ℕ) :
     (unfolding W d j).rank ≤ W ^ j :=
   Matrix.rank_le_height (unfolding W d j)
+
+/--
+**Main theorem (E2.1).** For every `W ≥ 2` and every cut `1 ≤ j < d`,
+the rank of the `j`-th unfolding of the base-`W` prime indicator equals
+`min (W^j) (φ(W) * W^(d-j-1) + 1)`.
+
+This is the closed form proved (informally) in
+`novel/mps_bond_dimension.md` and saturated empirically for
+`W ∈ {2, 6, 30, 210}` and `d` up to 20.
+
+The proof is a direct `Nat.le_antisymm` of `upper_bound` (combined with
+`rank_le_min_dim` via `Nat.le_min`) and `lower_bound`. Once `lower_bound`
+loses its `sorry`, this theorem is automatically closed without
+modification.
+-/
+theorem mps_bond_dim
+    (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
+    (unfolding W d j).rank =
+      min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) :=
+  Nat.le_antisymm
+    (Nat.le_min.mpr ⟨rank_le_min_dim W d j, upper_bound W d j hW hj_lo hj_hi⟩)
+    (lower_bound W d j hW hj_lo hj_hi)
 
 end E2_1

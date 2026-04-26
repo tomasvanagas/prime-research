@@ -1,0 +1,181 @@
+
+=== Run #71 — Mode: novelty — Sun Apr 26 18:04:44 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    1	# Novelty Challenges — Active Research Targets
+    2	
+    3	This file holds the active research questions for sessions targeting
+    4	**B-grade work** (substantive refinement or ambitious failure of a
+    5	single-session attack — see CLAUDE.md "Novelty Bar").
+    6	
+    7	**For A-grade work, read `ATTACK_VECTORS.md` first.** That file holds
+    8	the frontier targets — the only way to produce genuinely novel
+    9	mathematics. The challenges below are ranked B-grade because they are
+    10	single-session-tractable; the trade-off is that even when they succeed,
+    11	they produce refinements rather than discoveries.
+    12	
+    13	**Pick one challenge per session.** Time-budget the work. If you can't
+    14	finish, write the partial state into RESEARCH_AGENDA.md and halt.
+    15	
+    16	The framework's grading discipline (CLAUDE.md): a session that
+    17	completes a NOVELTY_CHALLENGES.md target with a clean refinement is
+    18	B-grade. A session that *attempts* an ATTACK_VECTORS.md target and
+    19	fails informatively is also B-grade. A session that completes 5
+    20	NOVELTY_CHALLENGES targets in one sitting is *not* A-grade — it's 5×B,
+    21	and a single A-grade attempt would have been more valuable.
+    22	
+    23	---
+    24	
+    25	## §0. Pointer to Frontier Attacks (A-grade work)
+    26	
+    27	**`ATTACK_VECTORS.md` §A through §F** holds the project's frontier
+    28	targets. If your session has 1+ hour available and you are not in
+    29	the middle of an arc, pick from there instead. The frontier sections:
+    30	
+    ... (303 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1	# Research Agenda — Long-Horizon Arcs
+    2	
+    3	This file holds **multi-session research arcs**. Each arc is a research
+    4	direction that takes more than one session to pursue. Arcs survive
+    5	across sessions, accumulate state, and have explicit next-actions.
+    6	
+    7	This file is for *continuity*. NOVELTY_CHALLENGES.md is for *targets*.
+    8	EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
+    9	
+    10	---
+    11	
+    12	## Active arcs
+    13	
+    14	### Arc 1 — Three-Barriers Paper (synthesis)
+    15	**Status:** NOT STARTED
+    16	**Owner:** any agent who picks it up
+    17	**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 into
+    18	a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+    19	
+    20	**Milestones:**
+    21	- [ ] Outline the four sections (one per closure family).
+    22	- [ ] Write precise statement of each family-level closure as a theorem
+    23	  (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
+    24	  E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
+    25	  exhaustion).
+    26	- [ ] Write a unified introduction framing the four as "structural
+    27	  barriers to polylog π(x)".
+    28	- [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
+    29	  Bombieri-Vinogradov, the Aggarwal optimum.
+    30	- [ ] First full draft.
+    ... (231 more lines)
+I'll start by reading the active state of the L1 Lean formalisation since it's been the focus of several recent sessions and only has one `sorry` left.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    1	# L1 — E2.1 MPS bond-dim identity (Lean 4 formalisation, in progress)
+    2	
+    3	**Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
+    4	**Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
+    5	**Build status:** `lake build` succeeds. **1 `sorry` placeholder remains** (down from 3 after S76 closed `upper_bound` and reduced `mps_bond_dim` to a term application of the lemmas).
+    6	**No `axiom` introductions.**
+    7	
+    8	## What this file formalises
+    9	
+    10	The identity from `novel/mps_bond_dimension.md`:
+    11	
+    12	> For `chiP : [1, W^d] → {0,1}` the prime indicator and `M^(j)` the
+    13	> `(W^j × W^(d-j))` unfolding via base-`W` reshape, for every `W ≥ 2`
+    14	> and every cut `1 ≤ j < d`:
+    15	>
+    16	>     rank M^(j)  =  min ( W^j ,  φ(W) · W^(d-j-1) + 1 ).
+    17	
+    18	EDGES.md edge: **E2.1**. Empirically saturated in `novel/mps_bond_dimension.md`
+    19	for `W ∈ {2, 6, 30, 210}` and `d` up to 20.
+    20	
+    21	## Lean layout
+    22	
+    23	The proof is decomposed into 6 declarations:
+    24	
+    25	| name                   | role                                       | status   |
+    26	|------------------------|--------------------------------------------|----------|
+    27	| `chiP`                 | prime indicator `ℕ → ℚ`                    | def      |
+    28	| `unfolding`            | the `(W^j × W^(d-j))` matrix over `ℚ`      | def      |
+    29	| `rank_le_min_dim`      | trivial ceiling `rank ≤ W^j`               | **done** |
+    30	| `row_support_coprime`  | nonzero entries imply `gcd(k+1, W) = 1`    | **done** |
+    ... (92 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    1	/-
+    2	# E2.1: MPS bond dimension of the prime indicator (statement-only)
+    3	
+    4	Formalisation of the theorem in `novel/mps_bond_dimension.md`:
+    5	
+    6	  For chi_P : [1, W^d] -> {0,1} the prime indicator, viewed as a tensor of
+    7	  shape (W, W, ..., W) (d copies) by base-W reshape, for every cut
+    8	  1 <= j < d and every integer W >= 2:
+    9	
+    10	      rank M^(j) = min ( W^j ,  phi(W) * W^(d-j-1) + 1 )
+    11	
+    12	  where phi is Euler's totient and M^(j) is the (W^j x W^(d-j)) unfolding.
+    13	
+    14	Stage 1: theorem statement only. The proof is a `sorry`. The next stage
+    15	splits the proof into upper and lower bounds, each via separate lemmas.
+    16	-/
+    17	
+    18	import Mathlib
+    19	
+    20	open Matrix Nat
+    21	
+    22	namespace E2_1
+    23	
+    24	/--
+    25	The prime indicator, embedded in `ℚ`. We use `ℚ` (a field) because matrix
+    26	`rank` is most informative over a field.
+    27	-/
+    28	noncomputable def chiP (n : ℕ) : ℚ := if Nat.Prime n then 1 else 0
+    29	
+    30	/--
+    ... (374 more lines)
+Now let me look at relevant edges to understand what's already established for tensor-network compression of χ_P.
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    1	# EDGES.md — Mathematical Cracks in the sqrt(x) Wall
+    2	
+    3	Vulnerability-research-style catalogue of every **real** mathematical edge,
+    4	identity, structural deviation, or partial signal that AI agents have
+    5	surfaced over 49 sessions / 690+ closed paths. Listed individually with
+    6	exact provenance, then chained into hypothetical attack scenarios.
+    7	
+    8	Conventions:
+    9	- **Edge** = a verified mathematical fact, identity, or measurable statistical
+    10	  deviation from what a "fully random" object would give. Even if it has
+    11	  already failed in isolation, it is recorded here because its value in a
+    12	  *chain* is what matters.
+    13	- **EVS** (Edge-Value Score, qualitative): H = high (could be a primary
+    14	  primitive), M = medium (useful in conjunction), L = low (probably noise but
+    15	  recorded for completeness).
+    16	- Sources cited as `file:line` or `Sxx` for session number; consult
+    17	  `status/CLOSED_PATHS.md` for individual closure entries.
+    18	
+    19	---
+    20	
+    21	## 0. The frame the chain has to fit through
+    22	
+    23	Every chain must address all four targets simultaneously, because a chain that
+    24	misses any one of them lands in a known closed path:
+    25	
+    26	T1. **Smooth target (~50% of bits):** R^{-1}(n) gives the top ~60% of the
+    27	    bit-length of p(n) in O(polylog) (carry-propagation boundary, S40,
+    28	    `novel/carry_propagation_boundary.md`). Any chain that only delivers
+    29	    these bits is a duplicate of R^{-1}(n).
+    30	T2. **Oscillatory bits (~40%):** the remaining bits encode the GUE-random
+    ... (70 more lines)
+  [Grep] ^### E2\.1|^### E1\.9|^### E6\.3|^### E2\.|tensor.network|tensor.train|MERA|hierarchical Tucker|CP rank|CP decomposition
+    253:### E1.9 — phi(x,a) 2D rank: 22nd pseudorandomness measure       [EVS L]
+    328:### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    349:> tensor-network language.
+    365:### E2.2 — Liouville/parity identity                                [EVS M (was H, downgraded S55)]
+    416:### E2.3 — Ono / van Ittersum / Craig partition identity            [EVS L]
+    427:### E2.4 — Cloitre 2025 effective analytic recurrence               [EVS L]
+    440:### E2.5 — pi(x) is a multilinear polynomial of degree N             [EVS M]
+    456:### E2.6 — Higher-order finite differences of pi(x) are tiny         [EVS M]
+    489:### E2.7 — Rank deficiency of communication matrix is *exactly* +2  [EVS M]
+    523:### E2.8 — chi_P is 25-35% simpler than random in tensor rank       [EVS L]
+    539:### E2.10 — Free identity: L(x) mod 2 = x mod 2                     [EVS L]
+    553:### E2.11 — Higher-order finite differences of f(x)=pi(x)-R(x) GROW like white noise [EVS M]
+    591:### E2.12 — Chebyshev psi link captures 91% of f(x) variance       [EVS L]
+    617:### E2.9 — F_2 Fourier weight is BELOW random for d ≥ 2             [EVS L]
+    956:is the Mertens product on the prime side, the other its tensor-network
+    1228:### E6.3 — DCT of delta(n) is 99% sparse                              [EVS L]

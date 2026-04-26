@@ -3151,3 +3151,63 @@ failure). F2 pseudorandomness-battery side: still open if anyone wants
 to apply the 35-measure battery to pi(x) mod 4 / 8 / 16 explicitly.
 Frame-shift Arc 5 is one milestone closer; F4 (pi_BD = pi - pi_smooth)
 or F6 (parametric pi(2^k)) are the suggested next-target frame-shifts.
+
+## Session 71 — Wild Swing: §C1 BK probe at Odlyzko's high-height tables (CLOSED)
+
+**Mode:** Wild swing (one-shot ambitious frontier attack from
+ATTACK_VECTORS.md §C1).
+**Self-grade:** B — ambitious failure with structural reason.
+
+Re-ran the S49 Bogomolny-Keating arithmetic-correction probe on
+Odlyzko's published tables `zeros4` (10⁴ zeros at index 10²¹+1..10²¹+
+10⁴, height T ≈ 1.4·10²⁰, L ≈ 44.6) and `zeros5` (10⁴ zeros at index
+10²²+1..10²²+10⁴, T ≈ 1.4·10²¹, L ≈ 46.8). New methodological
+contribution: a **random-prime null** (BK template with primes
+replaced by uniform pseudo-primes in [2, 50]), which controls for
+template shape rather than gap distribution — cleaner than S49's
+gap-shuffled null at high L.
+
+Empirical Pearson with the BK template: +0.063 (zeros4), +0.035
+(zeros5). Random-prime null: μ = +0.063 / +0.035, std ≈ 2-4·10⁻⁴.
+**z-scores: −0.94σ and +0.93σ — statistically indistinguishable from
+random-frequency template of the same shape.** Direct sanity check:
+prime-frequency Fourier amplitudes (median 0.0141, 0.0100) are NOT
+enhanced over random frequencies (0.0148, 0.0101).
+
+**New quantitative obstruction (sharpens E7.1, E1.10, E3.13):**
+empirical fits give `|BK_pred|_max · L² ≈ 13.6` (invariant across
+L ∈ {7, 44.6, 46.8}, confirming the predicted 1/L² scaling) and
+`pair_rms ≈ 4/√N` (verified across N ∈ {2000, 8000, 10000}). Detection
+threshold for κ-σ Pearson:
+
+```
+  N_required(L; κ) ≥ (4κ / 13.6)² · L⁴ ≈ 0.09 κ² · L⁴
+```
+
+At κ=3: detection at L=44.6 needs N ≥ 3.5·10⁵ (Odlyzko: 10⁴, 35×
+short); at L=80 needs ≥3·10⁷ (hopeless). **L⁴ scaling is structural
+— doubling height L requires 16× more zeros to compensate.** The
+asymptotic regime *suppresses* the BK signal faster than data
+accumulation can compensate.
+
+Closes ATTACK_VECTORS §C1. Strengthens E3.13 from "BK absent at
+N=8000" to "BK absent through T ≈ 10²¹, AND requires N ≥ 0.81 L⁴
+zeros for any future detection — a hard scaling barrier independent
+of computational budget." First quantitative version of the
+"BK-asymptotically-too-weak" obstruction.
+
+The previously-large gap-shuffled-null +30σ "signal" exposed as null-
+bias artefact: gap-shuffled has Poisson-leakage in long-range tail
+that anti-correlates with any oscillatory template, with the bias
+*growing* in L. Re-confirms E1.10's warning at much higher L.
+
+### Files
+
+- `experiments/analytic/zeta_structure/odlyzko_high_height/odlyzko_bk_probe.py`
+  + `odlyzko_bk_probe_results.md` + `.json`
+- `data/odlyzko/zeros4`, `data/odlyzko/zeros5` (10000 lines each;
+  Odlyzko's tabulated heights at extreme indices)
+- `archive/sessions/session71_c1_odlyzko_bk_probe.md` (synthesis)
+- `EDGES.md` — E3.13 extended with S71 sub-section + L⁴ obstruction
+- `ATTACK_VECTORS.md` — §C1 moved to "Closed attacks" section
+- `status/CLOSED_PATHS.md` — closure row added at line ~748

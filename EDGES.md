@@ -348,6 +348,20 @@ product prod_{p ≤ W}(1 - 1/p)** in disguise.
 > sqrt(x), but it gives an exact algebraic handle on the wheel-W sieve in
 > tensor-network language.
 
+**S74 free-probability refinement (C2):** the squared-singular-value
+distribution of `M^(j)` decomposes as **MP(c = φ(W)/W) bulk + O(N^{0.42})
+spike outliers + finite structural peak**. The MP-bulk rate equals
+`φ(W)/W = ∏_{p≤W}(1 − 1/p)` (the Mertens product). After projecting out
+the spike band (`k* ∝ R^{0.85}` on W=2 d=14..22), the bulk free cumulants
+match the MP standardized identity `κ_r = c^{r-1}` within 5–10% across
+W ∈ {2, 3, 5, 6, 30}. Matched-active iid Bernoulli baseline matches MP
+from drop_1; chi_P needs `O(R^{0.85})` drops — the difference is the new
+content. **Algorithmic implication:** any spectral compression of `M^(j)`
+faithful at the second-moment level (i.e., reproducing κ_2) needs rank
+Ω(N^{0.42}). Polynomial-in-N barrier recovered from a free-probabilistic
+angle independent of the explicit-formula machinery.
+See `experiments/constructions/free_cumulants_chi_p/`.
+
 ### E2.2 — Liouville/parity identity                                [EVS M (was H, downgraded S55)]
 
 S46, S55; `experiments/proposals/proposal25_liouville_parity_check.py`
@@ -884,6 +898,51 @@ local-GUE behaviour with the same finite-N artefacts as a matched null.
 
 This is a *negative* analytic edge: it doesn't open a chain, it closes
 the BK-correction-extraction route up to current scale. Pairs with E7.1.
+
+**S71 extension to Odlyzko's high-height tables (T ~ 10²⁰-10²¹):**
+re-ran the BK probe at zero indices 10²¹+1..10²¹+10⁴ (`zeros4`,
+L=44.6) and 10²²+1..10²²+10⁴ (`zeros5`, L=46.8). With a **proper
+random-prime null** (template-shape-matched but with frequencies drawn
+uniformly from [2,50]), the empirical BK Pearson is statistically
+indistinguishable from the null:
+
+| Block | L | empirical Pearson | random-prime null μ ± σ | z |
+|-------|---|--------------------|----------------------------|---|
+| zeros4_T1e20 | 44.6 | +0.0628 | +0.0630 ± 0.00021 | −0.94σ |
+| zeros5_T1e21 | 46.8 | +0.0349 | +0.0345 ± 0.00037 | +0.93σ |
+
+Direct sanity check: prime-frequency |Fourier amplitude| medians
+(0.0141, 0.0100) are **not enhanced** over random-frequency amplitudes
+in the same band (0.0148, 0.0101).
+
+The previously-large gap-shuffled-null z-scores (~+30σ) at high height
+are an artefact of E1.10's known bias inflated even further at large
+L (Poisson-leakage in the gap-shuffled long-range tail anti-correlates
+strongly with any oscillatory template — the inflation grows with L).
+
+**Quantitative obstruction (E7.1 / E1.10 / E3.13 sharpening, S71):**
+Empirical fit confirms `|BK_pred|_max · L² ≈ 13.6` (invariant across
+L=44.6, 46.8) and `pair_rms ≈ 4/√N` (verified across N ∈ {2000, 8000,
+10000}). Detection threshold for κ-σ Pearson:
+
+```
+  N_required(L; κ) ≥ (4κ / 13.6)² · L⁴ ≈ 0.09 κ² L⁴
+```
+
+At κ=3 detection: L=10 → N ≥ 10⁴; L=20 → N ≥ 1.5·10⁵;
+L=44.6 → N ≥ 3.5·10⁵ (Odlyzko gives 10⁴, **35× short**); L=80 →
+N ≥ 3·10⁷ (hopeless for any tabulated source). **L⁴ scaling is
+structural** — doubling height requires 16× more zeros; the asymptotic
+regime suppresses the BK signal faster than data accumulation can
+compensate.
+
+> Strengthens this edge from "empirically absent at N=8000" to
+> "empirically absent at all heights through T ≈ 10²¹, AND requires
+> N ≥ 0.81 L⁴ zeros for any future detection — a hard scaling barrier
+> independent of computational budget."
+
+This is the first quantitative version of the "BK-asymptotically-too-
+weak" obstruction. Closes ATTACK_VECTORS §C1.
 
 ---
 
