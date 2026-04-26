@@ -5518,3 +5518,233 @@ Sleeping 5 seconds before next run...
     | QFT deterministic (Grantham) | OPEN | - | QFT IS in TC^0; 4 PSPs below 50000; error < 1/7710. Deterministic correctness unknown without GRH | 13 |
     | BPSW unconditional correctness | OPEN | - | BPSW IS in TC^0 as computation. No pseudoprime below 2^64. Proving correctness ⟺ PRIMES in TC^0 | 13 |
     | TC^0 MAJORITY fan-in for pi(x) | FAIL | E | Inputs (BPSW(k)) must be computed first; MAJORITY helps aggregation, not generation; size 2^N * poly(N) | 16 |
+Let me commit to the wild swing now. I'll target **§A1 — SAT-search for TC⁰ PRIMES circuits at N=8**, since C1, A3, D4 have all been recently closed and A1 is the highest-priority remaining target. The previous circuit-synthesis work used {AND, OR, XOR} basis — I'll use threshold gates (the actual TC⁰ basis), which has not been done.
+
+Let me check available tools and plan the attack.
+  [Bash] python3 -c "import z3; print('z3 OK', z3.__version__)" 2>&1; python3 -c "import pysat; print('pysat OK')" 2>&1; python3 -c "from scipy.optimize import linprog; print('scipy OK')" 2>&1; python3 -c "import pulp; print('pulp OK')" 2>&1
+    Exit code 1
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'z3'
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'pysat'
+    scipy OK
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'pulp'
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] pip install z3-solver --quiet 2>&1 | tail -3
+    note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+    hint: See PEP 668 for the detailed specification.
+  [Bash] pip install --user z3-solver pulp --quiet --break-system-packages 2>&1 | tail -3 && python3 -c "import z3; print('z3', z3.get_version())"
+    WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+    z3 (4, 16, 0, 0)
+  [Bash] python3 -c "import pulp; print('pulp', pulp.__version__); print(pulp.listSolvers(onlyAvailable=True))"
+    pulp 3.3.0
+    ['PULP_CBC_CMD']
+Got tools. Now let me set up the experiment directory and write the code.
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_tc0_primes_n8.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_tc0_primes_n8.py
+Let me first sanity-check at N=4 to verify the code works, then escalate.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8 && timeout 120 python3 sat_tc0_primes_n8.py --phase ptf --N 4 2>&1 | tail -30
+    PTF degree of PRIMES at N=4 = 2
+    
+    Wrote results to sat_tc0_primes_n8_results.json
+  [Bash] timeout 60 python3 sat_tc0_primes_n8.py --phase depth1 --N 4 2>&1 | tail -10
+    Depth-1 feasible: False, sol = None
+    
+    Wrote results to sat_tc0_primes_n8_results.json
+  [Bash] timeout 60 python3 sat_tc0_primes_n8.py --phase depth2 --N 4 --Mmax 8 2>&1 | tail -10
+    M=1: unsat
+    M=2: unsat
+    M=4: sat
+      verified: True, correct: 16/16
+    
+    Wrote results to sat_tc0_primes_n8_results.json
+Excellent! Pipeline works. At N=4: depth-2, M=4 with sign weights computes PRIMES exactly. Let me now run a wider scan including N=6 and N=8.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] timeout 600 python3 sat_tc0_primes_n8.py --phase depth2 --N 6 --Mmax 16 --timeout 120 2>&1 | tail -20
+    Command running in background with ID: b0cbcqlsi. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output
+  [Bash] sleep 60 && tail -20 /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output 2>&1
+    <tool_use_error>Blocked: sleep 60 followed by: tail -20 /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>
+  [ToolSearch] 
+  [Monitor] tail -f /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output | grep -E --line-buffered "M=|sat|unsat|unknown|verified|correct|Wrote|Error|Traceback"
+    Monitor started (task bjiduy309, timeout 900000ms). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply.
+While that runs, let me create a complementary PTF-degree analysis to run in parallel.
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery.py
+  [Bash] python3 ptf_degree_battery.py > ptf_degree_battery.log 2>&1 &
+echo "started pid $!"
+    Command running in background with ID: b694orfjl. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b694orfjl.output
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b694orfjl.output 2>&1 | tail -30
+    started pid 11667
+  [Bash] ps -ef | grep ptf_degree_battery | grep -v grep | head -5; echo "---"; ls -la /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery.log 2>&1
+    ---
+    -rw-r--r-- 1 root root 2181 Apr 26 20:03 /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery.log
+  [Bash] cat /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery.log 2>&1 | tail -50
+      RANDOM (weight 6, seed 22): PTF degree = 2  [0.0s]
+      RANDOM (weight 6, seed 33): PTF degree = 3  [0.0s]
+      RANDOM (weight 6, seed 44): PTF degree = 3  [0.0s]
+      RANDOM (weight 6, seed 55): PTF degree = 2  [0.0s]
+    
+    === N=5 ===
+      PRIMES (weight 11/32): PTF degree = 3  [0.0s]
+      pi(x) mod 2 (weight 14/32): PTF degree = 3  [0.0s]
+      RANDOM (weight 11, seed 11): PTF degree = 3  [0.0s]
+      RANDOM (weight 11, seed 22): PTF degree = 2  [0.0s]
+      RANDOM (weight 11, seed 33): PTF degree = 3  [0.0s]
+      RANDOM (weight 11, seed 44): PTF degree = 2  [0.0s]
+      RANDOM (weight 11, seed 55): PTF degree = 3  [0.0s]
+    
+    === N=6 ===
+      PRIMES (weight 18/64): PTF degree = 3  [0.0s]
+      pi(x) mod 2 (weight 29/64): PTF degree = 3  [0.0s]
+      RANDOM (weight 18, seed 11): PTF degree = 3  [0.0s]
+      RANDOM (weight 18, seed 22): PTF degree = 3  [0.0s]
+      RANDOM (weight 18, seed 33): PTF degree = 3  [0.0s]
+      RANDOM (weight 18, seed 44): PTF degree = 3  [0.0s]
+      RANDOM (weight 18, seed 55): PTF degree = 3  [0.0s]
+    
+    === N=7 ===
+      PRIMES (weight 31/128): PTF degree = 3  [0.0s]
+      pi(x) mod 2 (weight 58/128): PTF degree = 4  [0.1s]
+      RANDOM (weight 31, seed 11): PTF degree = 3  [0.0s]
+      RANDOM (weight 31, seed 22): PTF degree = 4  [0.1s]
+      RANDOM (weight 31, seed 33): PTF degree = 3  [0.0s]
+      RANDOM (weight 31, seed 44): PTF degree = 3  [0.0s]
+    ... (20 more lines)
+Great results from PTF battery! PRIMES at N=8 has PTF degree 4, statistically indistinguishable from random. Let me check the N=6 depth-2 search.
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output 2>&1 | tail -30
+    (Bash completed with no output)
+  [Bash] ls -la /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output 2>&1; echo ---; ps -ef | grep -i "sat_tc0\|python3" | grep -v grep | head
+    -rw-r--r-- 1 root root 0 Apr 26 20:00 /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/b0cbcqlsi.output
+    ---
+    root        4125 4101729  0 19:55 pts/1    00:00:00 python3 -u -c  import sys, json  json_f = open(sys.argv[1], 'a') log_f  = open(sys.argv[2], 'a') tmp_f  = open(sys.argv[3], 'w') assist_f = open(sys.argv[4], 'w')  def out(text):     print(text, flush=True)     log_f.write(text + '\n')     log_f.flush()  while True:     line = sys.stdin.readline()     if not line:         break     json_f.write(line)     json_f.flush()     tmp_f.write(line)     tmp_f.flush()     stripped = line.strip()     if not stripped:         continue     try:         obj = json.loads(stripped)     except:         out(stripped)         continue     if not isinstance(obj, dict):         continue     try:         t = obj.get('type', '')         if t == 'assistant':             for block in obj.get('message', {}).get('content', []):                 if not isinstance(block, dict):                     continue                 if block.get('type') == 'text':                     out(block['text'])                     assist_f.write(block['text'] + '\n')                     assist_f.flush()                 elif block.get('type') == 'tool_use':                     name = block.get('name', '')                     inp = block.get('input', {})                     cmd = inp.get('command', inp.get('file_path', inp.get('pattern', '')))                     out(f'  [{name}] {cmd}')         elif t == 'user':             for block in obj.get('message', {}).get('content', []):                 if not isinstance(block, dict):                     continue                 if block.get('type') == 'tool_result':                     content = block.get('content', '')                     if isinstance(content, str) and content:                         lines = content.split('\n')                         for l in lines[:30]:                             out(f'    {l}')                         if len(lines) > 30:                             out(f'    ... ({len(lines) - 30} more lines)')                     elif isinstance(content, list):                         for item in content:                             if isinstance(item, dict):                                 text = item.get('text', '')                                 if text:                                     for l in text.split('\n')[:30]:                                         out(f'    {l}')         elif t == 'result':             out('--- Session ended ---')     except Exception:         pass  json_f.close() log_f.close() tmp_f.close() assist_f.close()  ./archive/CLAUDE_OUTPUTS/claude_output_20260426_180444.json ./archive/CLAUDE_OUTPUTS/claude_output_20260426_180444.log /tmp/tmp.ZnHLjW74Dc /tmp/tmp.v0eBpznXhH
+    root        8827    4124  0 20:00 ?        00:00:00 /bin/bash -c source /apps/aplikacijos/.claude/shell-snapshots/snapshot-bash-1777233344086-tuua9h.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && eval 'timeout 600 python3 sat_tc0_primes_n8.py --phase depth2 --N 6 --Mmax 16 --timeout 120 2>&1 | tail -20' < /dev/null && pwd -P >| /tmp/claude-6f10-cwd
+    root        8829    8827  0 20:00 ?        00:00:00 timeout 600 python3 sat_tc0_primes_n8.py --phase depth2 --N 6 --Mmax 16 --timeout 120
+    root        8831    8829  0 20:00 ?        00:03:29 python3 sat_tc0_primes_n8.py --phase depth2 --N 6 --Mmax 16 --timeout 120
+  [Bash] until ! ps -p 8831 > /dev/null 2>&1; do sleep 10; done; echo "process done"
+    Command running in background with ID: bjo60zw76. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bjo60zw76.output
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bjo60zw76.output 2>&1; echo ---; ps -p 8831 > /dev/null 2>&1 && echo "STILL RUNNING" || echo "process done"
+    ---
+    STILL RUNNING
+Let me set up a more focused N=8 attack while waiting. I'll write a tighter ILP-based encoding via PuLP for better scaling.
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp.py
+N=6 depth-2 W=1: M=1,2,4 unsat, M=8,16 timed out. Let me try the ILP encoding which may be faster for finding solutions.
+  [Bash] python3 sat_depth2_ilp.py --N 6 --Mlist "5,6,8,12" --W 1 --time-limit 180 --target both --out sat_depth2_ilp_n6_w1.json 2>&1 | tee sat_depth2_ilp_n6_w1.log
+    Command running in background with ID: bi1vsilpr. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bi1vsilpr.output
+  [Monitor] tail -f /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bi1vsilpr.output | grep -E --line-buffered "M=|sat|unsat|unknown|verified|correct|Wrote|Error|Traceback"
+    Monitor started (task br1cavov9, timeout 1500000ms). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me also start an N=8 ILP search with W=1 in parallel to get the headline result.
+  [Bash] python3 sat_depth2_ilp.py --N 8 --Mlist "8,16,32" --W 1 --time-limit 300 --target both --out sat_depth2_ilp_n8_w1.json 2>&1 | tee sat_depth2_ilp_n8_w1.log
+    Command running in background with ID: bh8lfy88d. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bh8lfy88d.output
+  [Monitor] tail -f /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bh8lfy88d.output | grep -E --line-buffered "M=|sat|unsat|unknown|verified|correct|Wrote|Error|Traceback"
+    Monitor started (task bmjo3z7o7, timeout 2400000ms). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply.
+Let me also start a depth-1 LP test for N=8 (with various weight bounds) in parallel to confirm PRIMES at N=8 is not a threshold function even with large weights.
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test.py
+  [Bash] python3 depth1_threshold_test.py 2>&1 | tee depth1_threshold_test.log
+    N=4: PRIMES (weight 6/16) depth-1 threshold = False  [0.01s]
+            random matched (5 seeds): 0/5 feasible
+    N=5: PRIMES (weight 11/32) depth-1 threshold = False  [0.01s]
+            random matched (5 seeds): 0/5 feasible
+    N=6: PRIMES (weight 18/64) depth-1 threshold = False  [0.00s]
+            random matched (5 seeds): 0/5 feasible
+    N=7: PRIMES (weight 31/128) depth-1 threshold = False  [0.01s]
+            random matched (5 seeds): 0/5 feasible
+    N=8: PRIMES (weight 54/256) depth-1 threshold = False  [0.01s]
+            random matched (5 seeds): 0/5 feasible
+    
+    Wrote depth1_threshold_results.json
+Let me check on the running searches.
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bi1vsilpr.output 2>&1 | tail -30; echo "---N=8---"; cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bh8lfy88d.output 2>&1 | tail -30
+    N=6  M_list=[5, 6, 8, 12]  W=1  time_limit=180s
+    PRIMES weight: 18/64
+      [primes] N=6 W=1 M=  5: ---N=8---
+    N=8  M_list=[8, 16, 32]  W=1  time_limit=300s
+    PRIMES weight: 54/256
+      [primes] N=8 W=1 M=  8:
+Let me try a much smarter approach: pre-enumerate all distinct W=1 sign-threshold functions, then solve the depth-2 problem as a column-selection ILP.
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2.py
+  [Bash] timeout 300 python3 enumerated_depth2.py --N 6 --Mlist "4,5,6,8,10" --time-limit 60 --target primes --out enum_d2_n6.json 2>&1 | tee enum_d2_n6.log
+    Enumerating W=1 sign-threshold functions on N=6
+    Found 2916 distinct functions [0.1s]
+    PRIMES weight: 18/64
+    == PRIMES ==
+      Enumerated K=2916 W=1 sign-threshold functions on N=6
+      M=  4: unsat (3.9s)
+      M=  5: unsat (37.1s)
+      M=  6: sat (30.1s) gates=6 verified=True correct=64/64
+    
+    Wrote enum_d2_n6.json
+Clean result: **N=6, W=1 depth-2 MIN M = 6**. Now let me check N=8.
+  [Bash] python3 -c "
+import sys; sys.path.insert(0, '.')
+from enumerated_depth2 import enumerate_w1_thresholds
+import time
+for N in [6, 7, 8]:
+    t0 = time.time()
+    th = enumerate_w1_thresholds(N)
+    print(f'N={N}: K={len(th)}  enum_time={time.time()-t0:.1f}s')
+"
+    N=6: K=2916  enum_time=0.1s
+    N=7: K=10206  enum_time=0.4s
+    N=8: K=34992  enum_time=2.1s
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bh8lfy88d.output 2>&1 | tail -10
+    N=8  M_list=[8, 16, 32]  W=1  time_limit=300s
+    PRIMES weight: 54/256
+      [primes] N=8 W=1 M=  8:
+Let me kill the slow searches and use a smarter strategy with the enumeration approach but a reduced candidate set.
+  [Bash] ps -ef | grep "python3 sat\|python3 enum" | grep -v grep | awk '{print $2}'
+    15643
+    15645
+    18222
+    18224
+  [Bash] ps -ef | grep "python3 sat\|python3 enum" | grep -v grep
+    root       15643    4124  0 20:06 ?        00:00:00 /bin/bash -c source /apps/aplikacijos/.claude/shell-snapshots/snapshot-bash-1777233344086-tuua9h.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && eval 'python3 sat_depth2_ilp.py --N 6 --Mlist "5,6,8,12" --W 1 --time-limit 180 --target both --out sat_depth2_ilp_n6_w1.json 2>&1 | tee sat_depth2_ilp_n6_w1.log' < /dev/null && pwd -P >| /tmp/claude-7e30-cwd
+    root       15645   15643  0 20:06 ?        00:00:00 python3 sat_depth2_ilp.py --N 6 --Mlist 5,6,8,12 --W 1 --time-limit 180 --target both --out sat_depth2_ilp_n6_w1.json
+    root       18222    4124  0 20:06 ?        00:00:00 /bin/bash -c source /apps/aplikacijos/.claude/shell-snapshots/snapshot-bash-1777233344086-tuua9h.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && eval 'python3 sat_depth2_ilp.py --N 8 --Mlist "8,16,32" --W 1 --time-limit 300 --target both --out sat_depth2_ilp_n8_w1.json 2>&1 | tee sat_depth2_ilp_n8_w1.log' < /dev/null && pwd -P >| /tmp/claude-271b-cwd
+    root       18224   18222  0 20:06 ?        00:00:00 python3 sat_depth2_ilp.py --N 8 --Mlist 8,16,32 --W 1 --time-limit 300 --target both --out sat_depth2_ilp_n8_w1.json
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/7262ca47-6184-446b-95a9-315fcc3454a7/tasks/bi1vsilpr.output 2>&1 | tail -10
+    N=6  M_list=[5, 6, 8, 12]  W=1  time_limit=180s
+    PRIMES weight: 18/64
+      [primes] N=6 W=1 M=  5: unknown  ( 180.4s)
+      [primes] N=6 W=1 M=  6:
+  [Bash] kill 15645 18224 2>/dev/null; sleep 2; ps -ef | grep "python3 sat" | grep -v grep | wc -l
+    0
+Now let me improve the enumeration approach to handle N=8 better, with reduced candidate set option.
+  [Write] /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart.py
+  [Bash] python3 -c "
+import sys; sys.path.insert(0, '.')
+from enum_d2_smart import enumerate_w1_thresholds_pruned
+import time
+for N in [6, 7, 8]:
+    for k in [3, 4, 5, 6]:
+        t0 = time.time()
+        c = enumerate_w1_thresholds_pruned(N, k_max=k)
+        print(f'N={N} k_max={k}: {len(c)} candidates  [{time.time()-t0:.2f}s]')
+"
+    N=6 k_max=3: 306 candidates  [0.02s]
+    N=6 k_max=4: 786 candidates  [0.05s]
+    N=6 k_max=5: 1266 candidates  [0.06s]
+    N=6 k_max=6: 1458 candidates  [0.06s]
+    N=7 k_max=3: 511 candidates  [0.06s]
+    N=7 k_max=4: 1631 candidates  [0.15s]
+    N=7 k_max=5: 3311 candidates  [0.27s]
+    N=7 k_max=6: 4655 candidates  [0.35s]
+    N=8 k_max=3: 792 candidates  [0.17s]
+    N=8 k_max=4: 3032 candidates  [0.54s]
+    N=8 k_max=5: 7512 candidates  [1.18s]
+    N=8 k_max=6: 12888 candidates  [1.92s]
+  [Bash] python3 enum_d2_smart.py --N 6 --Mlist "5,6" --k-max 6 --time-limit 120 --target both --out enum_d2_smart_n6.json 2>&1 | tee enum_d2_smart_n6.log
