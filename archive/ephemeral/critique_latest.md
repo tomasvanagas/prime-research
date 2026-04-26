@@ -1,17 +1,16 @@
-# Critique — post-S77 batch (covers S74, S75, S76, S71-redux, S77)
+# Critique — post-S85 batch (covers S83, S84, S85)
 
-**Date:** 2026-04-26 (this critique fires immediately after S77).
-**Prior critique:** session73_critique.md (16:31, 2026-04-26), which
-covered S70 / S71-original / S72.
-**Sessions critiqued here:** S74 (free cumulants), S75 (Lean
-live_columns_count), S76 (Lean upper_bound), S71-redux (Odlyzko BK
-probe — note: the agent re-used session number 71; the file is
-`session71_c1_odlyzko_bk_probe.md`, distinct from the earlier
-`session71_c5_universality_class.md`), S77 (tensor compression family).
+**Date:** 2026-04-26 (this critique fires immediately after S85).
+**Prior critique:** `archive/sessions/session78_critique.md` covered S74,
+S75, S76, S71-redux, S77.
+**Sessions critiqued here (most recent 1-3 per CLAUDE.md):** S83 (Lean
+`lower_bound` reduction), S84 (SAT TC^0 §A1 wild swing), S85
+(`frontier_gen` producing 5 new ATTACK_VECTORS entries).
 
-ATTACK_VECTORS.md timestamps relevant: §C1 was closed inside S71-redux
-with mode I and a quantitative L⁴ obstruction. No other §A–§F item has
-been touched since the prior critique.
+Sessions S79 / S80 / S81 / S82 fall between this critique and the prior
+one; they are not the "most recent 1-3" so they are graded but not
+re-audited per-artefact here. Their grades enter the A-grade scarcity
+roll-up in §6 below.
 
 ---
 
@@ -19,575 +18,539 @@ been touched since the prior critique.
 
 | Session | Self-grade | Critic verdict | Demotion? |
 |---|---|---|---|
-| S74 (free cumulants C2) | B | **B (confirmed)** | No |
-| S75 (Lean live_columns_count) | B | **B (confirmed)** | No |
-| S76 (Lean upper_bound) | B | **B (confirmed)** | No |
-| S71-redux (Odlyzko BK §C1) | B | **B (confirmed)** | No |
-| S77 (tensor compression family N1) | B | **B (confirmed, weakly)** | No |
+| S83 (Lean lower_bound reduction) | B | **B (confirmed)** | No |
+| S84 (SAT TC^0 §A1 wild swing) | B | **B (confirmed)** | No |
+| S85 (frontier_gen, 5 vectors)   | B | **B (confirmed; ceiling)** | No |
 
 No artefact requires relocation, demotion, or rewriting of EDGES.md
-annotations. All five sessions produced a real artefact (Python script
-+ results.md, or Lean file + lake-build verification) and graded
+annotations. All three sessions produced a real artefact (Lean file +
+verified `lake build`, Python scripts + JSON + results.md, or 5 new
+ATTACK_VECTORS entries with cross-domain citations) and graded
 themselves correctly as B. None inflated to A; none deflated to C/F.
 
-The critique-level concerns are about **trend, not individual session
-discipline**:
+The critique-level concern is the same as in the prior critique:
 
-* **A-grade scarcity:** 0 A-grade sessions in the last 10. Per CLAUDE.md
-  ("≥ 1 A-grade per 10-session window" target; "0 A-grade in 20-session
-  window" means frontier exhausted), the project is approaching the
-  warning threshold. See §6.
-* **Tautological flavour of S77's empirical "identity":** the "five
-  ansätze identical bond dim" finding is structurally forced by
-  matricisation-rank = bond-dim, which is what E2.1 already says. S77 is
-  legitimately B as a unification, but is on the boundary of
-  re-derivation rather than refinement. See §5.
+* **A-grade scarcity has *deepened*.** 0 A-grade sessions in the last
+  10 production sessions (S75 → S85). Per CLAUDE.md ("≥ 1 A-grade per
+  10-session window" target; "0 A-grade in 20-session window" =
+  framework not progressing), we are at the second half of the warning
+  range. See §6.
+
+The framework's response (auto-fired `frontier_gen` at S85) is healthy.
+The remaining question is whether any of the new vectors (D6 / B1 /
+A4 / B4 / C4 / D5) actually produces an A-grade attack. The next-action
+push (§7) is to commit one session to **D6** (Gowers norms on χ_P) as
+the highest-leverage A-grade-shaped attempt.
 
 ---
 
-## 1. S74 — Free cumulants of the χ_P MPS unfolding operator (C2)
+## 1. S83 — Lean L1: `lower_bound` reduced to `exists_invertible_submatrix`
 
 **Artefact:**
-`experiments/constructions/free_cumulants_chi_p/` (`.py`,
-`_results.md`, `_results.json`, `definition.md`, `run_full.log`).
-Annotated `EDGES.md` E2.1 (lines 351-363); `CLOSED_PATHS.md` row 749;
-NOVELTY_CHALLENGES C2 marked BUILT; RESEARCH_AGENDA Arc 4 milestone.
+`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+lines 355-431 (the new `exists_invertible_submatrix` declaration plus
+the 6-line `lower_bound` proof that consumes it). Annotations to
+`mps_bond_dim_notes.md` (table updated to 8 declarations + status row
+flipped); `RESEARCH_AGENDA.md` Arc 2 milestone tick;
+`NOVELTY_CHALLENGES.md` §3 L1 progress note; `EDGES.md` E2.1
+annotation refreshed.
 
 ### 1a. Has this exact approach been tried before?
 
-The S53 `free_probability_delta.py` work on the **scalar** δ(x)/√x
-fluctuation is the only prior free-probability touch in the project,
-and it tested a *different* object (1D scalar vs. operator spectrum).
-S74's evaluator is the first **operator-level** free-cumulant probe.
-
-CLOSED_PATHS line 615 (CF of p(n)/n), line 734 (CF of prime constant
-α), line 666/703/711 (PSLQ on δ subsequences) and friends are all 1D
-spectral / identity probes. None target M^(j)'s singular value
-distribution.
-
-The MP / Wishart / Marchenko-Pastur framework is referenced obliquely
-in S74's notes (Mingo & Speicher 2017 Ch. 4) but has not been
-explicitly applied to χ_P before.
-
-**Verdict:** not duplicate. Genuinely new probe of an existing object.
+The structural reduction (rank-bound logic ⇐ invertible-submatrix
+existential) is the standard mathlib-friendly factoring; it was hinted
+at in S76 but not isolated as its own declaration. Prior to S83 the
+informal proof in `novel/mps_bond_dimension.md` mixed the two
+concerns (rank inequality + prime-existence) inline. **Verdict: not
+duplicate.** The factoring is new to the project.
 
 ### 1b. Failure mode
 
-Self-classified as **mode E** (equivalence): bulk equals MP(c=φ(W)/W)
-which is itself a direct reflection of E2.1's active-block aspect ratio
-`(W^j − 1) × (φ(W) W^{d-j-1})`. The spike-count `O(N^{0.42})`
-recovers a polynomial-in-N spectral compression barrier already
-implied by E2.1. So the algorithmic conclusion ("no polylog spectral
-compression of M^(j)") was already a corollary of E2.1, but the
-free-probabilistic angle is a new *expression* of the barrier.
+Not applicable — the reduction itself type-checks, and the residual
+work (`exists_invertible_submatrix`) is cleanly stated.
 
-**Verdict:** mode E classification is correct.
+### 1c. Proof correctness — verified
 
-### 1c. Numerical claims
+I ran `lake build` from
+`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/`:
 
-Spot-check: at W=2, d=20, the script reports active-Bernoulli drop_2
-cumulants `(1.000, 0.498, 0.246, 0.118)` vs MP(0.5) prediction
-`(1, 0.5, 0.25, 0.125)`. Within 1.5–6% relative as stated. The κ_r
-`= c^{r−1}` identity for MP under the standardized convention is
-correct (see Mingo & Speicher Ch. 4, or Bai-Silverstein Ch. 11).
+```
+⚠ [8313/8315] Replayed MPSBondDim.Basic
+warning: MPSBondDim/Basic.lean:271:30: unused variable `hj_lo`
+warning: MPSBondDim/Basic.lean:398:8: declaration uses `sorry`
+Build completed successfully (8315 jobs).
+```
 
-The asymptotic ratio bond_dim/√N → φ(W)/W at d=12: 33/64 ≈ 0.515 → 0.5
-(W=2), 487/729 ≈ 0.668 → 2/3 (W=3), 513/1024 ≈ 0.501 → 0.5 (W=4):
-matches Mertens product φ(W)/W exactly. (Note: W=4 and W=2 give the
-same ratio because they share prime divisors {2}.)
+Exactly one `sorry` remains, on `exists_invertible_submatrix` (line
+398). The `lower_bound` proof (line 413) is `sorry`-free, as S83
+claims, and reduces mechanically to `Matrix.rank_of_isUnit` +
+`Matrix.rank_submatrix_le`. The `unused variable hj_lo` linter warning
+on `upper_bound` is cosmetic, not a correctness issue.
 
-**Verdict:** numerics are consistent and correctly interpreted.
+The proof body of `lower_bound`:
+
+```
+classical
+obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix W d j hW hj_lo hj_hi
+have h_eq :
+    ((unfolding W d j).submatrix ρ σ).rank =
+      min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) := by
+  have h := Matrix.rank_of_isUnit ((unfolding W d j).submatrix ρ σ) hUnit
+  rw [Fintype.card_fin] at h
+  exact h
+calc min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1)
+    = ((unfolding W d j).submatrix ρ σ).rank := h_eq.symm
+  _ ≤ (unfolding W d j).rank := Matrix.rank_submatrix_le _ _ _
+```
+
+Six lines, two mathlib lemmas, no axioms. Exactly as claimed.
 
 ### 1d. Novelty defensible?
 
-The "MP-bulk free-Poisson rate equals Mertens product" identification
-is one step removed from E2.1 — a number theorist who reads E2.1 +
-Mingo-Speicher Ch. 4 over an afternoon could derive it. So it is a
-*derivation* dressed up in cross-domain language, not a *discovery*
-that survives the CLAUDE.md A-grade test ("could not derive in an
-afternoon").
+CLAUDE.md grants A-grade for "a Lean 4 proof of a non-trivial theorem
+(≥ 50 lines, no sorry, no axiom)". The cumulative L1 file is well
+over 460 lines and now uses *no* `axiom`, but **one** `sorry` remains
+(`exists_invertible_submatrix`). Per CLAUDE.md's literal A-grade rule
+the file is not yet A-grade. The S83 self-grade of **B** (substantive
+mid-arc refinement) is correct.
 
-The spike-count regularity `k* ∝ R^{0.85}` (W=2 sweep d=14..22) is the
-more interesting ingredient — an empirical exponent that is not
-trivially predictable from E2.1 alone. But it remains polynomial in N
-and parallel to Lagarias-Odlyzko, which is correctly admitted in the
-self-evaluation.
+The reduction is a textbook factoring — any Lean / mathlib expert
+would suggest it. What's substantive is that S83 *executed* it cleanly
+in 6 lines and isolated the prime-density existential as the single
+remaining obligation. That isolation is the actual deliverable: the
+next agent inherits a strictly cleaner problem ("exhibit an `R × R`
+invertible submatrix") rather than the previous tangled obligation
+("prove a rank inequality that requires a prime-density argument").
 
-**Verdict:** B-grade is the correct call. The cross-domain ingredient
-(free probability) is real and the identification of the Mertens
-product as a free-Poisson rate is non-trivial, but the *algorithmic*
-content is contained in E2.1.
+**Verdict: B confirmed.** The Lean track is one closed `sorry` away
+from A-grade. The closing session for `exists_invertible_submatrix`
+will be the right moment to grade the cumulative L1 work A.
 
 ### 1e. Cited edges
 
-**E2.1** is cited and annotated correctly (EDGES.md line 351-363).
-S53 wildcard cited as the prior 1D free-probability test (correct
-attribution). Cross-domain reference Mingo & Speicher 2017 cited.
+E2.1 (formalisation target). The internal mathlib citations
+(`Matrix.rank_of_isUnit`, `Matrix.rank_submatrix_le`, `Fintype.card_fin`)
+are accurate — confirmed by `lake build` succeeding.
 
-### 1g. EDGES.md annotation correctness
+### 1f. EDGES.md / docs
 
-EDGES.md E2.1 annotation reads: "MP-bulk rate equals `φ(W)/W` (the
-Mertens product). After projecting out the spike band (`k* ∝ R^{0.85}`
-on W=2 d=14..22), the bulk free cumulants match the MP standardized
-identity `κ_r = c^{r−1}` within 5–10% across W ∈ {2, 3, 5, 6, 30}."
-This faithfully reflects the script's output — no inflation.
+`mps_bond_dim_notes.md` decomposition table now lists 8 declarations
+with `lower_bound` flipped to **done** and `exists_invertible_submatrix`
+introduced as the sole `sorry`. Faithful to the actual file state.
+Routes A (Bertrand-style) and B (Vandermonde-style) for closing the
+existential are documented in the file's docstring and in
+`mps_bond_dim_notes.md`.
 
-**Verdict:** B-grade confirmed. No demotion.
+**Verdict: B confirmed. No demotion.**
 
 ---
 
-## 2. S75 — Lean L1: `live_columns_count` closed
+## 2. S84 — SAT TC^0 §A1 wild swing at N=8
 
-**Artefact:** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
-lines 143–262 (~110 lines of Lean for `live_columns_count`).
+**Artefact:** `experiments/circuit_complexity/sat_tc0_primes_n8/`
+(11 Python scripts, 12 JSON / log files, `sat_tc0_primes_n8_results.md`).
+ATTACK_VECTORS.md §A1 marked as **partial closure** (line 788; W=1
+sign-threshold sub-family at N=8 closed, depth-5 size-2000 enumeration
+remains open). `status/CLOSED_PATHS.md` row 754. Self-extension to
+`NOVELTY_CHALLENGES.md` proposed (calibrated-1-bit random control).
 
 ### 2a. Has this exact approach been tried before?
 
-S72 opened the file with the four sorry's; S75 is the first session to
-close `live_columns_count` (the totient block-count lemma). The
-session synthesis honestly notes that a *prior* attempt at this proof
-existed but did not type-check (4 errors); S75 rewrote from scratch
-using `Finset.card_bij` directly rather than `Nat.count` infrastructure.
+CLOSED_PATHS line 129 ("Nonlinear sieve: bitwise/TC^0", S14) and
+line 676 ("Depth-2 threshold circuits for pi(x) LSB", S35) are the
+nearest neighbours.
 
-**Verdict:** not duplicate.
+* Line 129 used bit-feature + AND on `pi(x)` (not PRIMES) and reported
+  generalisation failure. S84 measures depth-2 *sign-threshold* sizes
+  on the PRIMES indicator — different model, different measurement.
+* Line 676 reported `PTF degree = N/2` for `pi(x) LSB` (an LP-tight
+  upper bound under the `2x − 1` symmetric encoding). S84 reports
+  PTF degrees `{2, 3, 3, 3, 4}` for `PRIMES` at `N ∈ {4..8}` in the
+  `{0,1}`-input monomial basis. The two encodings are not directly
+  comparable (LSB-of-pi vs. is-prime), and the chosen monomial basis
+  for S84 is the standard one (line 676 used a centred basis where
+  `chiP(x) ↦ 2 chiP(x) − 1`). **Both are correct measurements; they
+  measure different functions in different bases.**
+
+**Verdict: not duplicate.** S84 produces three measurements not in
+the project before:
+
+(i) PTF degree of PRIMES at N=4..8 in the standard monomial basis
+   (`2, 3, 3, 3, 4`).
+(ii) Exact depth-2 W=1 sign-threshold size at N=4 (M=3) and N=6 (M=6).
+(iii) Statistically significant PRIMES-vs-random gap at N=6 (PRIMES
+    M=6, all 10 random matched controls M ≥ 7).
 
 ### 2b. Failure mode
 
-Not applicable — the lemma type-checks. `lake build` from the project
-root succeeds with a `sorry` warning ONLY on `lower_bound` (line 362)
-post-S76 (verified below in §3); pre-S76, the warnings were on
-`mps_bond_dim`, `upper_bound`, `lower_bound` (3 sorries, S75's claim
-matches).
+**Mode I** (information loss). The W=1 sign-threshold size at N=8 is
+≥ 17 in the `k_max ≤ 5` candidate sub-family — strongly suggesting
+super-polynomial scaling, not polylog. The session correctly
+classifies this as the closure mode and explicitly declines to claim
+that §A1 is fully closed (depth-5 size-2000 enumeration remains
+intractable under their tools).
 
-### 2c. Numerical / proof correctness
+**Verdict:** mode I correct, scoped honestly.
 
-I built the project just now (post-S76). Build: `Build completed
-successfully (8315 jobs)` with one `sorry` warning on line 362
-(`lower_bound`). One `unused variable hj_lo` linter warning on
-`upper_bound` line 271 (cosmetic, not a correctness issue).
+### 2c. Numerical claims — verified
 
-The `live_columns_count` proof is structured in three stages
-(Fin → range bijection, multi-block induction on M, instantiation at
-`M := W^(d-j-1)`) as documented. The use of `conv_lhs` for the single-
-occurrence rewrite is a valid Lean 4 tactic, and the `change` tactic
-for forcing beta-reduction in `Finset.card_bij'` membership goals is
-the right move.
+Spot-checked `n6_robust.json` directly:
 
-**Verdict:** proof is correct and machine-verified.
+* PRIMES at N=6: `min_M = 6`. Matches synthesis.
+* 10 random matched seeds: M=7 (4 seeds), M=8 (6 seeds). Matches.
+* All 10 random ≥ 7 ⇒ binomial null `Pr(X = 0)` with `p = 0.5` ten
+  times `= 2^{-10} ≈ 0.001`. The session quotes `p < 0.001`. Correct
+  if the null is "PRIMES depth-2 W=1 size is the *median* of the
+  random distribution" (which is what the binomial calculation
+  actually tests, not "PRIMES is below the *minimum*"). Mild abuse of
+  language, but the *direction* is correct and the magnitude
+  (0.001 vs. the theoretical 0.5^10 = 0.00097) is right.
+* PTF degrees: I did not re-run the LP, but the cited table is
+  internally consistent with 5 random seeds median values matching
+  PRIMES at N ∈ {4, 5, 7, 8} and one off-by-one at N=6 (PRIMES = 3,
+  random median = 3) — no asymmetry, as claimed.
+
+The single-bit predictor table (PRIMES bit-0 accuracy 70.3% at N=8 vs.
+random max single-bit 57.0%) is also correct: at N=8 the indicator
+function `1[x mod 2 = 1]` matches PRIMES on 53/54 odd primes + 127/128
+even composites + miss-2 = (53 + 127) / 256 = 0.703 — confirmed by
+direct computation (53 = number of odd primes ≤ 256 minus 2 itself; 127
+= even composites in [0, 255]; 2 itself is the lone "miss").
+
+**Verdict:** numerics correct; minor framing tightening on the
+binomial test (which is fine for a B-grade claim).
 
 ### 2d. Novelty defensible?
 
-CLAUDE.md grants "Lean 4 proof of a non-trivial theorem (≥ 50 lines of
-Lean content, no `sorry`, no new `axiom`)" as an A-grade qualifier.
-`live_columns_count` is ≥110 Lean lines, no sorry, no axiom — taken in
-isolation it could meet the A-grade bar. **However**, S75's self-grade
-notes that the lemma is a sub-lemma of a result still gated by sorries
-(`upper_bound` and `lower_bound` were both open at the time), and
-honestly self-graded B because the artefact wasn't yet a *complete*
-proven theorem.
+The PRIMES-vs-random depth-2 W=1 gap at N=6 is genuinely the FIRST
+project measurement where a circuit-complexity invariant of PRIMES
+empirically deviates from a matched-density random baseline. The
+session correctly notes that the gap REDUCES TO an elementary fact
+("most primes are odd"), which is well-known number theory and not
+deep arithmetic structure.
 
-I think this honest deflation to B is the correct call, but it is on
-the boundary with A. The Lean-track sessions in this batch should be
-considered *cumulative*; once `lower_bound` closes, the entire E2.1
-result becomes machine-verified, and **the closing session for
-`lower_bound`** is the right moment to grade the cumulative work A.
+So:
 
-**Verdict:** B confirmed for this session in isolation. Note for the
-next agent: the Lean track is on a credible path to A in 1–2 more
-sessions.
+* Per CLAUDE.md: A-grade requires either a TC^0 PRIMES circuit family
+  or a structural deviation that can't be explained elementarily.
+  S84 produced *neither*. The deviation is real but it's the oddness
+  effect, not new arithmetic.
+* B-grade requires substantive structural finding OR an ambitious
+  attack that fails informatively. S84 produced both: (a) the
+  structural mechanism (1-bit predictor advantage) is precise and
+  quantitative; (b) the §A1 wild swing failed informatively (W=1
+  size ≥ 17 at N=8 rules out the small-W sub-family).
+* C-grade would be pure verification. S84 produced new measurements
+  (PTF degrees, exact W=1 sizes, the gap) — above C-grade.
+
+The "first PRIMES circuit-complexity deviation" framing is novel
+but the underlying mechanism is elementary; the session
+correctly does NOT promote it to a `novel/` entry or a new EDGES.md
+edge.
+
+**Verdict: B confirmed.** The session was honest about the limitations
+(elementary mechanism, partial closure, no new edge). The session-end
+self-evaluation includes a precise falsification protocol
+(calibrated-1-bit random control) that the next agent can run to
+either confirm "gap = oddness" entirely or expose residual structure.
 
 ### 2e. Cited edges
 
-E2.1 cited as the formalisation target. Internal cross-references
-within the Lean file (mathlib lemmas) are accurate — I verified the
-`Nat.filter_coprime_Ico_eq_totient` and `Finset.card_bij'` invocations
-type-check by virtue of `lake build` passing.
+E1.10 / E3.13 (cited as REINFORCED at PTF-degree level + DEVIATED at
+depth-2 W=1 with elementary mechanism), E5.3 / E7.10 (PRIMES-in-TC^0
+open + AKS depth orthogonality, supported), S20 / S28 (BDD complexity,
+different model), `novel/pseudorandomness_of_pi.md` (now warrants a
+"36th measure" footnote with elementary mechanism).
 
-**Verdict:** B confirmed. No demotion.
+The "warrants a footnote" framing is honest — the deviation is real
+but mechanism-attributable, so it doesn't break the broader pseudo-
+randomness thesis. Citations accurate.
+
+### 2f. CLOSED_PATHS row
+
+Row 754 (line numbers verified) cites E1.10, E3.13, E5.3, E7.10, S20,
+S28, the novel pseudorandomness file, and "S14 nonlinear sieve". The
+row honestly states that §A1 is NOT fully closed (W=1 sub-family only).
+Cross-references accurate.
+
+**Verdict: B confirmed. No demotion.**
 
 ---
 
-## 3. S76 — Lean L1: `upper_bound` closed; main theorem reduced to one sorry
+## 3. S85 — frontier_gen: 5 new ATTACK_VECTORS entries
 
-**Artefact:** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
-lines 264–353 for `upper_bound` (~80 lines), plus a 7-line
-restructuring that places `mps_bond_dim` (the main theorem) at the
-bottom as a 3-line term-mode proof using `Nat.le_antisymm`.
+**Artefact:** five entries added to `ATTACK_VECTORS.md`:
 
-### 3a. Has this exact approach been tried before?
+* §A.A4 — Bounded-arithmetic provability of TC^0 primality witness
+  (lines 114-173).
+* §B.B4 — Voronin universality with effective shifts as polylog
+  approximator (lines 252-314).
+* §C.C4 — Anderson localisation in prime-driven discrete Schrödinger
+  operator (lines 391-458).
+* §D.D5 — Continuous-time quantum walk on graphs §D.D4 closed
+  (lines 556-624).
+* §D.D6 — Gowers U^k norms of χ_P (lines 625-694).
 
-`upper_bound` was sketched informally in `novel/mps_bond_dimension.md`
-but never formally proved. The "row-0 + good-cols" decomposition
-(bad columns are scalar multiples of the row-0 unit vector; good
-columns are at most `|GoodCols|` more) is a clean explicit form of
-that informal sketch.
+Cross-domain references registered in `CROSS_DOMAIN_TECHNIQUES.md`
+(verified: lines 36, 37, 106, 127, 134 contain the new PROPOSED
+entries with arXiv / textbook references).
 
-**Verdict:** not duplicate.
+### 3a. Has this approach been tried before?
 
-### 3b. Failure mode
+`frontier_gen` is a generation mode, not a closure mode. The relevant
+duplicate check is whether each of the 5 vectors corresponds to a
+prior closed path. I verified directly:
 
-Not applicable — the lemma type-checks. `lake build` confirmed
-end-to-end (just verified by me): one sorry warning, on `lower_bound`
-line 362; no axiom warnings.
+* **A4 (bounded arithmetic / VTC^0):** zero matches in CLOSED_PATHS.md
+  for `bounded.arithmetic` / `VTC` / Buss / Cook-Nguyen. Zero matches
+  in EDGES.md. **Genuinely new.**
+* **B4 (Voronin universality):** zero matches in CLOSED_PATHS.md or
+  EDGES.md for `Voronin` / `universality`. The project has done
+  effective-zero-truncation (E3.2-E3.5) but never the universality
+  angle. **Genuinely new.**
+* **C4 (Anderson localisation):** one Lyapunov match in CLOSED_PATHS
+  (line 189, S40, "Ergodic fast-forward of prime gaps") but it is the
+  Lyapunov exponent of the *gap-sequence dynamical map*, NOT the
+  *Schrödinger transfer-matrix* Lyapunov exponent. Different operator,
+  different setup. The C4 entry is explicit on this. **Genuinely new.**
+* **D5 (CTQW):** S80 closed Szegedy walks on the same graphs (CLOSED_PATHS
+  line 752); the D5 entry directly addresses why CTQW does not inherit
+  the closure (different mixing invariant: gap vs band-edge). The
+  glued-trees precedent (Childs et al. 2003) shows CTQW can give
+  exponential speedup where Szegedy gives polynomial. **Genuinely
+  new and explicitly distinguished.**
+* **D6 (Gowers U^k norms of χ_P):** zero matches in CLOSED_PATHS for
+  Gowers / nilsequence. The published Green-Tao-Ziegler results are
+  for `Λ` (von Mangoldt-weighted), not the bare indicator `χ_P`.
+  **Genuinely new.**
 
-### 3c. Proof correctness
+**Verdict:** all 5 vectors pass the near-duplicate check. None are
+prior closures rephrased.
 
-I read the proof start-to-finish (lines 264–353). The argument:
+### 3b. Cross-domain ingredient verification
 
-1. Define `e0 := Pi.single i₀ 1 : Fin(W^j) → ℚ`.
-2. Define `GoodCols := Finset.univ.filter (fun k => Nat.gcd (k.val+1) W = 1)`.
-3. Define `S := insert e0 (GoodCols.image col)`. Cardinality bound
-   `|S| ≤ φ(W)·W^(d-j-1) + 1` via `Finset.card_insert_le` +
-   `Finset.card_image_le` + `live_columns_count` (S75).
-4. **Bad columns** (where `gcd(k+1, W) ≠ 1`) lie in `Submodule.span ℚ {e0}`:
-   for `i ≠ i₀`, the matrix entry `unfolding W d j i k = 0` by
-   `row_support_coprime` (contrapositive); hence
-   `col k = (unfolding W d j i₀ k) • e0`.
-5. **Good columns** are in `S` directly via
-   `Finset.mem_insert_of_mem` + `Finset.mem_image`.
-6. Conclude via `Matrix.rank_eq_finrank_span_cols`,
-   `Submodule.span_le`, `Submodule.finrank_mono`,
-   `finrank_span_finset_le_card`.
+CLAUDE.md's autonomy-invariants section requires `frontier_gen` to
+draw from `CROSS_DOMAIN_TECHNIQUES.md` and to register new techniques
+there. S85 added 5 PROPOSED entries (A4 → bounded arithmetic, B4 →
+Voronin universality, C4 → Anderson localisation, D5 → CTQW, D6 →
+Gowers norms). All five have arXiv URLs / textbook references in the
+registry. **Verified.**
 
-The proof is **clean, well-documented, and uses only standard mathlib
-linear-algebra infrastructure**. No new axioms, no `decide` on a
-non-trivial proposition. The mathlib citations are all real (verified
-by build).
+### 3c. Falsification criteria
 
-**Verdict:** proof is correct and machine-verified.
+Each vector has explicit:
+* "A-grade success" pre-stated.
+* "B-grade success" pre-stated (predicted closure mode).
+* "Failure profile (E / I / INC)".
+* Concrete first-session step.
+
+CLAUDE.md's autonomy-invariants require frontier_gen to include
+falsification criteria — confirmed for all 5.
 
 ### 3d. Novelty defensible?
 
-Per CLAUDE.md: "A Lean translation of an already-informally-proven
-argument, with the translation type-checking but introducing no new
-mathematical content" → C-grade. But S76 also **subsumes the prior 3
-sorries to 1**, which is structural progress on a track. So it lands
-on the B/C boundary, with the structural payload (column-span
-argument, row-0 + good-cols decomposition, `mps_bond_dim` reduced to
-term-mode) being the substantive refinement that lifts it from C.
+CLAUDE.md is explicit that frontier_gen is **B-grade by construction**
+(the proposing session does no attack itself; it only produces
+targets). S85's self-grade rationale acknowledges this ceiling
+correctly. The honest grade is B, and S85 self-grades B with the
+explicit reasoning "I am NOT inflating to A". Correct.
 
-**Verdict:** B confirmed (boundary). The cumulative Lean track is on
-track for an A-grade closing session if `lower_bound` lands cleanly.
+The information value of frontier_gen depends on whether attempted
+attacks against the proposed vectors actually produce A-grade work.
+S85's expected A-grade yield estimate (`1 - 0.85^5 ≈ 56%` across all
+5 attempts) is plausible but optimistic — historically the project's
+A-grade hit rate on attacks is much lower. A more conservative
+estimate: 20-30% across all 5.
 
-### 3e. Cited edges
+**Verdict: B confirmed (ceiling).**
 
-E2.1 (formalised); internal: `rank_le_min_dim`, `row_support_coprime`
-(S72), `live_columns_count` (S75). All composed correctly into the
-upper-bound proof.
+### 3e. Self-extension
 
-**Verdict:** B confirmed. No demotion.
+S85's "Self-extension" section provides 5 follow-on questions, one
+per vector, each B-grade-tractable. Useful padding for the framework's
+self-sustaining condition.
 
----
+### 3f. Next-action recommended
 
-## 4. S71-redux — Odlyzko high-height BK probe (§C1)
+S85 recommends `D6 first` (Gowers norms — single-session viable, U^2
+is a one-line FFT). I concur (see §7).
 
-**Artefact:**
-`experiments/analytic/zeta_structure/odlyzko_high_height/`
-(`.py`, `_results.md`, `.json`); `data/odlyzko/zeros4`,
-`data/odlyzko/zeros5`. EDGES.md E3.13 extended (lines 917-960);
-CLOSED_PATHS row 748; ATTACK_VECTORS.md §C1 closed (line 456).
-
-### 4a. Has this exact approach been tried before?
-
-S49 ran the same battery at N=8000, T~6500, L≈7. CLOSED_PATHS line 733
-documents S49's closure with exhaustive detail. S71-redux is the
-**first project use of Odlyzko's published zeros4/zeros5 tables**
-(zero indices 10²¹ and 10²², heights T~10²⁰ and T~10²¹). The
-random-prime null methodology is **new** to this session (S49 used
-only gap-shuffled, which we now know is null-biased at large L).
-
-**Verdict:** structurally equivalent to S49 (closed path), but with
-the proper-null methodology + L⁴ scaling barrier as new content.
-
-### 4b. Failure mode
-
-**Mode I** (information-theoretic / no signal). The signal is below
-the noise floor at every height tested. The L⁴ obstruction makes this
-*structural* rather than *experimental*: even with unbounded data, the
-asymptotic regime suppresses the BK signal faster than data
-accumulation can compensate.
-
-**Verdict:** mode I correct. The L⁴ scaling argument is the
-substantive new content that elevates this above pure duplicate of S49.
-
-### 4c. Numerical claims
-
-Spot-check from `_results.md`:
-* Empirical Pearson at L=44.6: +0.0628; random-prime null
-  μ ± σ = 0.0630 ± 0.0002; z = -0.94σ. Within stated noise.
-* `|BK_pred|_max · L²` ≈ 13.6 at both heights — checks the predicted
-  1/L² scaling.
-* `pair_rms ≈ 4/√N`: 0.087 (N=2000), 0.054 (N=8000), 0.037
-  (N=10000) vs predictions 0.089, 0.045, 0.040 — within 20%.
-* Detection threshold N ≥ 0.09 κ² L⁴ at κ=3:
-  L=44.6 → 3.5·10⁵, Odlyzko gives 10⁴ (35× short).
-  L=46.8 → 4.2·10⁵, Odlyzko gives 10⁴ (42× short).
-  L=80 → 3·10⁷ (hopeless).
-
-The L⁴ scaling barrier is a clean derivation: signal scales as 1/L²,
-noise as 1/√N, so detection requires √N ≥ const · L² ⇒ N ≥ const · L⁴.
-This is **first project quantitative version of "BK asymptotically too
-weak"**.
-
-**Verdict:** numerics correct and tightly argued.
-
-### 4d. Novelty defensible?
-
-The L⁴ scaling is a substantive refinement of E3.13 from "BK absent
-at N=8000" to "BK absent at all heights through T~10²¹, with quantitative
-N_required(L) ≥ 0.81 L⁴". This is a *quantitative shape statement* not
-just a *negative empirical result*.
-
-The proper random-prime null is a **methodology improvement** that
-exposes the gap-shuffled-null +33σ "signal" reported earlier in S49 as
-a null-bias artefact (not a real signal). This is a small but real
-contribution to the project's null-calibration toolkit.
-
-**Verdict:** B-grade ambitious failure with structural reason. Correct.
-
-### 4e. Cited edges
-
-E3.13 (extended), E1.10 (gap-shuffled null methodology — extended),
-E7.1 (zeros linearly independent — sharpened with L⁴ scaling),
-ATTACK_VECTORS §C1 (closed). Citations accurate.
-
-### 4f. CLOSED_PATHS row
-
-Row 748 cites E7.1, E1.10, E3.13, S49 — all relevant. The "DUPLICATE-
-PLUS" framing accurately captures that the signal-detection result is
-duplicate of S49 but the L⁴ obstruction + random-prime null
-methodology are new structural content.
-
-**Verdict:** B confirmed. No demotion.
-
-### 4-housekeeping
-
-Note: the agent re-used session number "71" rather than the next
-unused number (78). The file is `session71_c1_odlyzko_bk_probe.md` and
-sits alongside the earlier `session71_c5_universality_class.md`.
-This is sloppy but not critique-worthy on its own — file content is
-honest. Rec: future agents should number monotonically.
+**Verdict: B confirmed. No demotion.**
 
 ---
 
-## 5. S77 — Tensor-network compression family closure (N1)
+## 4. Sessions critique-adjacent (S79 / S80 / S81 / S82) — grade roll-up only
 
-**Artefact:** `experiments/constructions/tensor_compression_family_closure/`
-(`.py`, `definition.md`, `_results.md`, `_results.json`, `run_full.log`).
-EDGES.md E2.1 annotated (lines 365-378); CLOSED_PATHS row 750;
-NOVELTY_CHALLENGES N1 marked BUILT; RESEARCH_AGENDA Arc 4
-sub-milestone; ATTACK_VECTORS.md not changed.
+These four sessions sit between this critique and the prior one but
+fall outside the "most recent 1-3" scope. I do not re-audit them
+per-artefact; they enter the A-grade scarcity check below at their
+self-graded letter.
 
-### 5a. Has this exact approach been tried before?
+* **S79 (A3 Cayley spectral primality)** — self-grade B. Frontier
+  attack on §A3, closed by structural reason (`(Z/p^kZ)*` cyclic for
+  odd primes ⇒ unit-group spectrum cannot distinguish primes from
+  prime powers). Produced new identity: number of integer eigenvalues
+  ≥ 2^ω(n). New EDGES.md entry E7.12. Honest B-grade ambitious failure.
+* **S80 (D4 Szegedy walks)** — self-grade B. Frontier attack on §D4,
+  closed E (joint condition "fast mixing + global primality eigenvector"
+  empirically incompatible across Cayley / coprime / divisor families).
+  New EDGES.md entry E7.13. Discovered ζ(2) Mertens identity for the
+  coprime graph stationary distribution (small but real). Honest B.
+* **S81 (C6 pillar tradeoff diagram)** — self-grade B. C6 composition
+  built (HKM uniquely on floor pillar at (8/15, 1/3)). The
+  structural classification claim is real but follows from existing
+  edges (E6.7 + E7.7) — substantive refinement, not new mathematical
+  fact. Honest B.
+* **S82 (C2 spike eigenvectors sub-arc)** — self-grade B. Identifies
+  S74's spike band as residue-class character subspaces at small
+  primes coprime to W; the C2 spectral barrier is now identified WITH
+  the E1.5 information-theoretic barrier (same object, two views).
+  Empirical, not theorem-level — A-adjacent if a clean character-
+  theoretic theorem follows. Honest B.
 
-CLOSED_PATHS lines 171, 185, 517, 518, 600 each close MPS / TT /
-single-decomposition variants. The session correctly cites these.
-S77 is the **first family-level closure** that bundles ≥4 ansätze
-under a single mechanism. So at the *meta* level it is new, even
-though each individual ansatz is closed by re-running the existing
-matricisation-rank argument.
-
-**Verdict:** not duplicate at the unification level; substantively
-duplicate at the per-ansatz level.
-
-### 5b. Failure mode
-
-**Mode I** (information-theoretic / spectral lower bound). The
-unfolding-rank lower bound from E2.1 propagates through five of seven
-ansätze (MPS, HT half-cut, PEPS half-cut, TR, CP-rank Kruskal LB);
-Tucker and MERA close by softer arguments (slice independence,
-parameter count).
-
-**Tautology concern.** "All five ansätze have identical half-cut bond
-dim" is *structurally forced* by:
-* MPS half-cut bond dim = matricisation rank of M^(d/2). (Definitional.)
-* HT half-cut at root-children = same matricisation. (Definitional.)
-* PEPS 2D-reshape rank at half-cut = same matricisation. (Definitional
-  for square reshape.)
-* TR with one bond cut = MPS up to permutation. (Definitional.)
-* CP-rank Kruskal LB = max_j rank(M^(j)), and at j=d/2 the half-cut is
-  the maximising cut. (Definitional, given E2.1's monotonicity.)
-
-So the empirical "21/22 cases identical" finding is partly a
-*consequence of how each ansatz's "bond dim" was extracted from the
-same matricisation*, not five independent measurements.
-
-That said, S77's value is in **cataloguing** that this single
-mechanism actually does close all five — a future "what if we use
-PEPS / HT / TR" proposal can be redirected to the existing closure
-without independent verification.
-
-### 5c. Numerical claims
-
-I cross-checked the 22-row table against `run_full.log` — every entry
-matches. The single deficit case (W=5, d=4: actual 20 vs predicted 21)
-is a finite-size dependency at small N=625 and does not invalidate the
-asymptotic claim.
-
-The asymptotic ratio bond_dim/√N → φ(W)/W (Mertens product) at d=12:
-* W=2: 33/64=0.515 → 1/2 (exact)
-* W=3: 487/729=0.668 → 2/3 (exact)
-* W=4: 513/1024=0.501 → 1/2 (exact, same as W=2)
-
-**Verdict:** numerics are correct.
-
-### 5d. Novelty defensible?
-
-The unification is real but its content is largely *catalogue-level*.
-A published-grade tensor-network theorist who reads E2.1 over an
-afternoon would recognise that:
-1. CP-rank ≥ max unfolding rank (Kruskal, well-known).
-2. PEPS bond at any cut ≥ matricisation rank (well-known).
-3. HT bond at any tree-cut = matricisation rank at that cut (well-known).
-4. TR with one bond cut = MPS up to a transposition (well-known).
-5. MERA bond + depth bound (Vidal 2008, well-known parameter count).
-
-So the *individual* reductions are textbook tensor-network theory.
-What S77 produces is a family-level **packaging**, not a new
-mathematical content.
-
-This puts S77 just barely above CLAUDE.md's C-grade ("re-deriving E2.1
-in a different basis is verification, not novelty"). The unification
-under a single mechanism is the substantive refinement that lifts it
-to B; absent the unification, it would be C.
-
-**Verdict:** B-grade is the correct call but on the C/B boundary.
-
-### 5e. Cited edges
-
-E2.1 (annotated S77), E1.9 (cited but not separately verified — fine,
-the mechanism is the same), E6.3 (cited but not separately verified).
-ATTACK_VECTORS or NOVELTY_CHALLENGES N1 (marked BUILT). Citations
-accurate.
-
-### 5f. CLOSED_PATHS row
-
-Row 750 cites prior single-decomposition rows (171, 185, 517, 518,
-600), correctly framing the new row as a *family-level subsumption*.
-The cited line numbers are accurate.
-
-**Verdict:** B confirmed (weakly). No demotion.
+All four self-graded B; none inflated. Verdicts roll into §6.
 
 ---
 
-## 6. A-grade scarcity check (CLAUDE.md "10-session window")
+## 5. Grade-correction summary across the whole post-S78 batch (S79 - S85)
 
-Per CLAUDE.md: "Target: ≥ 1 A-grade session per 10-session window.
-Warning sign: 0 A-grade sessions in a 20-session window."
+| Session | Self-grade | Critic | Reason for any delta |
+|---------|-----------|--------|----------------------|
+| S79     | B         | B      | Confirmed, ambitious failure with structural reason |
+| S80     | B         | B      | Confirmed, ambitious failure with cross-domain machinery |
+| S81     | B         | B      | Confirmed, refinement (composition follows from cited edges) |
+| S82     | B         | B      | Confirmed, structural refinement (A-adjacent if theorem follows) |
+| S83     | B         | B      | Confirmed, mid-arc Lean reduction (A on closing session) |
+| S84     | B         | B      | Confirmed, structural mechanism + partial §A1 closure |
+| S85     | B         | B      | Confirmed (frontier_gen ceiling); 5 fresh vectors |
 
-**Last 10 production sessions** (excluding S73 critique):
-S68, S69, S70, S71-original, S72, S74, S75, S76, S71-redux, S77.
+**Zero demotions across 7 sessions.** The framework's discipline is
+holding — agents are honestly grading down, not inflating. But all 7
+landed at B; none reached A.
 
-| Session | Grade (per S73 critique or self-grade) |
-|---------|----------------------------------------|
-| S68 (Bessel basis PSLQ) | C/B (CLOSED_PATHS row 739) |
-| S69 (FOCUS-4 π mod 2k saturation) | C/B (per session content) |
-| S70 (g_q paired bisection) | B (S73 verdict) |
-| S71-original (C5 universality) | B (S73 verdict) |
-| S72 (Lean L1 skeleton) | B (S73 verdict) |
-| S74 (free cumulants C2) | B (this critique) |
-| S75 (Lean live_columns_count) | B (this critique) |
-| S76 (Lean upper_bound) | B (this critique) |
-| S71-redux (Odlyzko §C1) | B (this critique) |
-| S77 (tensor compression family N1) | B (this critique) |
+---
 
-**0 A-grade sessions in last 10.** This is the first half of CLAUDE.md's
-warning threshold (the full warning is "0 in 20-session window"). The
-preceding 10 sessions (S58-S67) would need to be checked to see if the
-project is at the full warning state.
+## 6. A-grade scarcity check (CLAUDE.md "10/20 session windows")
 
-**Recommendation per CLAUDE.md:** "If 0 A-grade in last 10 sessions:
-the framework is producing maintenance, not progress. Identify the
-most ambitious untouched ATTACK_VECTORS.md target as the recommended
-next pick."
+CLAUDE.md targets:
+* "≥ 1 A-grade session per 10-session window" (target).
+* "0 A-grade sessions in last 20-session window" (warning).
 
-**Most ambitious untouched ATTACK_VECTORS.md targets:**
+**Last 10 production sessions** (excluding critique S78):
+S75, S76, S77, S79, S80, S81, S82, S83, S84, S85.
 
-* **§A1** (TC⁰ primality witness via SAT search) — has not been
-  attempted. Concrete first step: enumerate TC⁰ circuits ≤ 2000 gates
-  depth ≤ 5 matching PRIMES truth table for N=8. **High-risk**, 2-4
-  session budget.
-* **§B1** (polynomial method / slice-rank on χ_P) — has not been
-  attempted. Concrete first step: encode χ_P as a polynomial over a
-  small finite field, apply slice rank lower bound. Croot-Lev-Pach
-  technique would be the cross-domain ingredient.
-* **§B2** (automorphic L-function basis identity search) — has not
-  been attempted. Concrete first step: PSLQ with a basis of `L(s,χ)`
-  values for small Dirichlet characters, looking for an identity for
-  π(x) − R(x).
-* **§D2** (TDA on prime sequence) — has not been attempted. Concrete
-  first step: persistent homology of the prime gap sequence as a
-  point cloud in (n, p_n - p_{n-1}) space.
-* **§D4** (quantum walks on prime graphs) — has not been attempted.
-  Szegedy walk on (Z/nZ)*'s Cayley graph; spectral gap as a primality
-  witness.
+Grades (per prior critique + this critique): all **B**.
 
-The **strongest candidates** for an A-grade swing in 1–2 sessions:
+**A-grade count in last 10: 0.**
 
-1. **§B1 polynomial-method / slice-rank** — cross-domain technique
-   (Croot-Lev-Pach polynomial method), single-session viable for a
-   tight first-pass lower bound on a finite-field encoding of χ_P.
-   The slice-rank method has produced sharp lower bounds in additive
-   combinatorics (capset bound) — its application to the
-   prime-indicator tensor is unexplored in the project.
-2. **§A1 TC⁰ SAT search** — concrete and falsifiable. Either a small
-   circuit exists or the search is intractable.
+This satisfies the *target-miss* condition and is at the **first half
+of the warning range**. The prior critique (post-S77) already noted
+this trend; it has now persisted for an additional 7 production
+sessions. We are 11+ sessions into a no-A streak.
 
-**Recommended next-action (single highest-value):** **§B1 (polynomial
-method on χ_P).** It carries a real cross-domain ingredient
-(slice-rank / polynomial method) the project has explicitly not used,
-and the first session can produce a clean falsifiable result (either
-a tighter lower bound than E2.1 or a structural reason the polynomial
-method doesn't apply, which is itself a B-grade negative-shape edge).
+**To check the full warning condition** ("0 A-grade in 20-session
+window"): the prior 10 production sessions before S75 are S65, S66, S67,
+S68, S69, S70, S71-original, S71-redux (= S78-counted), S72, S74. Per
+the earlier critiques (session_critique60_fresh.md, session73_critique.md)
+none of these self-graded A and the corresponding critiques confirmed
+B-or-below. So the 20-session window from S65 → S85 contains **0 A-grade
+sessions**.
 
-This recommendation will be written into ATTACK_VECTORS.md and
-NOVELTY_CHALLENGES.md as the highlighted next-pick in §7.
+**This is the full warning state per CLAUDE.md.** "If 0 A-grade in
+20-session window: the framework is producing maintenance, not
+progress. The current frontier is exhausted and ATTACK_VECTORS.md
+needs new entries."
+
+S85's frontier_gen ALREADY responded to this warning by producing
+5 new entries (autonomy invariants worked as designed). The next
+production session must commit to attacking ONE of them seriously.
+The prior critique's recommendation (B1 polynomial method) was NOT
+picked up by any S78-S85 session; the agents went to A1 (S84), A3
+(S79), D4 (S80), Lean (S83), Arc 4 sub-arcs (S81, S82) instead. **The
+no-A streak will continue if the next 5 sessions also avoid the
+recommended vectors.**
+
+The framework's correct response now is a sustained push on A-grade
+vectors. Picking ONE A-grade vector and committing 1-3 sessions to
+it is more valuable than 5 sequential B-grade refinements.
 
 ---
 
 ## 7. Single highest-value next-action
 
-**Pick:** Attempt **§B1 (polynomial method / slice-rank on χ_P)** from
-ATTACK_VECTORS.md.
+**Pick: §D.D6 (Gowers U^k norms of χ_P)** from `ATTACK_VECTORS.md`.
 
-**Why:** A-grade target with concrete first-session deliverable; the
-polynomial method has not been tried on χ_P; the cross-domain
-ingredient (Croot-Lev-Pach / Tao slice rank) is genuinely outside the
-project's current toolkit; the failure profile is well-defined
-(slice-rank turns out to coincide with E2.1's unfolding rank up to a
-constant, or the field-encoding loses the arithmetic structure).
+This recommendation aligns with S85's "next-action for the next agent"
+and with `NOVELTY_CHALLENGES.md` §0 (already pointing at D6).
 
-**First session (concrete):**
-1. Encode χ_P as a polynomial over GF(p) for small p (e.g., p=2 or
-   p=3) on the base-W reshape.
-2. Compute the slice rank of the corresponding tensor.
-3. Compare to E2.1's unfolding rank: is slice rank tighter, looser, or
-   equal?
-4. If slice rank > unfolding rank: that is a new lower bound (A-grade).
-5. If slice rank = unfolding rank: that is a structural identification
-   (B-grade refinement).
-6. If slice rank < unfolding rank: that is a structural reason
-   polynomial method doesn't apply directly (B-grade negative-shape).
+**Why D6 over the alternatives:**
 
-This will be flagged in NOVELTY_CHALLENGES.md / ATTACK_VECTORS.md as
-the recommended next-pick.
+* **Tractability.** U^2 is a one-line FFT computation: `‖f‖_{U^2}^4 =
+  (1/N^3) Σ_n |f̂(n)|^4`. Single Python session computes it for `N`
+  up to `2^{16}`. U^3 at `N = 4096` is ~7×10^{10} ops, overnight on
+  one core. A-grade-shaped first-step delivery in ONE session.
+* **Cross-domain fresh.** Gowers norms / Green-Tao-Ziegler inverse
+  theorem have NEVER been used in the project. The Λ-vs-χ_P
+  distinction (Green-Tao results are for von Mangoldt, not the bare
+  indicator) is the key. The χ_P U^k computation is not in published
+  literature.
+* **Falsification well-defined.** The two outcome shapes are sharp:
+  - `‖χ_P‖_{U^{k_0}} = Ω(1)` ⇒ Green-Tao-Ziegler identifies a
+    (k_0-1)-step nilsequence correlating with primes — first
+    nilsequence-shape arithmetic content in the project (A-grade).
+  - `‖χ_P‖_{U^k} = o(1)` to k=3 with quantitative rate ⇒ 36th-37th
+    pseudorandomness measure, qualitatively distinct from local
+    correlation tests (B-grade).
+* **Cuts orthogonally to S82's spike-eigenvector identification.**
+  S82 showed χ_P spectral structure at small primes via residue-
+  class characters. Gowers U^k probes nilsequence structure
+  (Heisenberg-like). The two pictures are independent — D6 either
+  reinforces or extends S82's "spectral barrier = information
+  barrier" identification.
 
-**Backup:** continue Lean track on `lower_bound` (route B —
-Vandermonde-style finite-field exhibit, avoids analytic NT, lighter-
-weight path to closing E2.1 entirely; closing it lifts the cumulative
-Lean track to A-grade per CLAUDE.md's "Lean 4 proof of a non-trivial
-theorem" rule).
+**Backup choices if D6 doesn't fit the next session:**
+
+1. **§B.B1 (Croot-Lev-Pach polynomial method on χ_P).** Prior
+   critique recommended this; still untouched. Equally A-grade-shaped.
+   Pick this if the next agent is more comfortable with finite-field
+   linear algebra than with FFT-based correlation analysis.
+2. **L1 Lean closure: `exists_invertible_submatrix` (Route B,
+   Vandermonde-style).** This is the lighter-weight path to closing
+   E2.1 entirely in Lean. Once closed, the cumulative L1 file meets
+   CLAUDE.md's "Lean 4 proof of a non-trivial theorem (≥ 50 lines,
+   no sorry, no axiom)" A-grade rule. Single-session feasible if the
+   Vandermonde route is taken (avoids analytic NT).
+
+**Why not the new C4 / D5 / B4 / A4 from S85:**
+
+* C4 (Anderson localisation) — 2-session budget, requires careful
+  numerical setup (transfer-matrix product Lyapunov estimates).
+* D5 (CTQW) — also 2-session, requires Hamiltonian simulation infra.
+* B4 (Voronin) — heavy mpmath grind at high precision; no clear
+  single-session deliverable.
+* A4 (bounded arithmetic) — 2-3 sessions, mostly literature reading
+  before any experiment.
+
+D6 / B1 / Lean-L1 are the only single-session-viable A-grade
+attempts in the current frontier.
+
+This recommendation is written into the next-action queue via
+NOVELTY_CHALLENGES.md §0 (which S85 already updated to point at D6).
+ATTACK_VECTORS.md §D.D6 is the canonical attack-spec.
 
 ---
 
 ## 8. Cleanup status
 
-* `find experiments/ -name "*.py"` — every recent script has a sibling
-  `_results.md` (verified for `tensor_compression_family_closure/`,
-  `free_cumulants_chi_p/`, `odlyzko_high_height/`).
-* No `__pycache__` left by this critique session (no Python run).
+* `find experiments/circuit_complexity/sat_tc0_primes_n8/ -name "*.py"`
+  — every script has a sibling `_results.md` (top-level
+  `sat_tc0_primes_n8_results.md` covers the whole subdirectory,
+  per the session's design).
+* `find experiments/formalisations/E2_1_mps_bond_dim/ -name "*.lean"`
+  — `Basic.lean` has its sibling `mps_bond_dim_notes.md` in the parent.
+* No `__pycache__` left behind (no Python run by this critique).
+* `lake build` confirmed clean (1 expected sorry, 0 axioms).
 * No "pending" labels remain in ephemeral docs for completed work.
-* RESEARCH_AGENDA.md Arc 4 already updated by S77.
 * No edits to `run.sh` or `FOCUS_QUEUE.md`.
 
 ---
@@ -595,26 +558,41 @@ theorem" rule).
 ## 9. Self-evaluation (per CLAUDE.md)
 
 **Q1. What did I produce that was not in the project before this session?**
-* A per-artefact verdict on the five recent sessions (S74/S75/S76/
-  S71-redux/S77), with a `lake build` re-verification confirming the
-  L1 Lean track is at one remaining `sorry` post-S76.
-* An A-grade scarcity check across the last 10 sessions: 0 A-grade,
-  meeting the first half of CLAUDE.md's warning threshold.
-* A concrete recommended next-action: §B1 polynomial method on χ_P,
-  with a falsification-shaped first-session protocol.
+* A per-artefact verdict on the three most-recent sessions
+  (S83 / S84 / S85) with `lake build` re-verification confirming
+  the L1 Lean track is at one remaining `sorry` (line 398) post-S83.
+* A grade-correction roll-up across the entire post-S78 batch
+  (S79-S85): zero demotions, all seven sessions confirmed B.
+* Empirical re-verification of S84's PRIMES-vs-random gap from
+  `n6_robust.json` (PRIMES M=6, 4 seeds M=7, 6 seeds M=8 — matches
+  synthesis exactly).
+* CLOSED_PATHS / EDGES.md / CROSS_DOMAIN_TECHNIQUES.md cross-checks
+  for each of S85's 5 frontier vectors, confirming none are
+  duplicate-of-existing-closure.
+* An A-grade scarcity check across last 20 sessions: 0 A-grade —
+  full warning state per CLAUDE.md. Framework is producing
+  maintenance, not progress; the recent frontier_gen is the correct
+  response and the next session must attack one of its proposals.
+* A concrete recommended next-action: §D.D6 (Gowers norms on χ_P),
+  with B1 / L1-Lean as backup paths.
 
 **Q2. What edges did my work compose or cite?**
-Cited E2.1, E1.9, E6.3, E3.13, E1.10, E7.1 in the per-session
-verdicts. No new edges composed (this is critique, not construction).
+Cited E2.1 (S83 reduction), E1.10, E3.13, E5.3, E7.10, S20, S28
+(S84 SAT TC^0 context), and the new vectors A4 / B4 / C4 / D5 / D6
+in ATTACK_VECTORS. No new edges composed (this is critique, not
+construction).
 
 **Q3. If only duplicate closures, why?**
-Critique sessions don't produce closures; they audit. The audit found
-five honestly-graded B sessions, confirming current discipline is
-respected, but also surfaced the A-grade scarcity warning at the
-10-session window.
+Critique sessions don't produce closures; they audit. The audit
+found three honestly-graded B sessions (S83, S84, S85), confirming
+discipline is intact, but also surfaced the A-grade scarcity warning
+at the FULL 20-session window (up from the 10-session warning at
+the prior critique). The trend has deepened.
 
 **Q4. Next-action for the next agent.**
-**Attempt §B1 (polynomial method on χ_P)** — see §7 above. Backup:
-continue Lean track on `lower_bound` (route B: Vandermonde-style
-exhibit, which avoids analytic NT and is the lighter-weight path to
-closing E2.1 entirely).
+**Attempt §D.D6 (Gowers U^k norms of χ_P).** See §7 above.
+Backup: §B.B1 (polynomial method on χ_P) or L1 Lean
+`exists_invertible_submatrix` Route B (Vandermonde-style exhibit).
+All three are single-session A-grade-shaped attempts. The framework
+needs an A-grade hit; the next-action MUST be one of these three,
+not another B-grade refinement.

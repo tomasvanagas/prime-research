@@ -426,3 +426,71 @@ reporting beats inflated success any day at this stage.
   next session can continue, then halt.
 - DO NOT add session-by-session details to this file. Put them in
   `status/SESSION_INSIGHTS.md`.
+
+### Autonomy invariants (NEW — required for unattended operation)
+
+The harness now operates without human intervention until a verified
+breakthrough. Two new modes auto-fire from `run.sh`:
+
+- **`frontier_gen`** auto-fires when the open ATTACK_VECTORS count drops
+  below 4, OR when 0 A-grades have appeared in the last 20 sessions, OR
+  when 2 consecutive F-grade sessions occur. Its job: produce 3-5 NEW
+  ATTACK_VECTORS entries grounded in cross-domain techniques. It draws
+  from `CROSS_DOMAIN_TECHNIQUES.md`.
+- **`verify`** auto-fires after any A-grade self-claim, AND after any
+  session containing "I FOUND IT!!!". Its job: attempt to FALSIFY the
+  claim. The role is adversarial.
+
+Two breakthrough verifications are required before `run.sh` halts.
+Single A-grade claims that fail verification are demoted automatically.
+
+#### What this means for production-mode sessions
+
+Two new responsibilities apply to every BUILD or CLOSE:
+
+1. **Self-extension.** When you BUILD a NOVELTY_CHALLENGES target
+   (mark it as BUILT), you must propose 1-2 follow-on challenges in
+   the same file. When you CLOSE an ATTACK_VECTORS entry (move it to
+   "Closed attacks"), you should propose 0-1 successor entries that
+   use a DIFFERENT cross-domain technique (cite the technique in
+   `CROSS_DOMAIN_TECHNIQUES.md` or add it there). The framework
+   cannot self-sustain without a steady supply of new targets.
+2. **Cross-domain technique registry.** When you import a cross-domain
+   technique not in `CROSS_DOMAIN_TECHNIQUES.md`, append it under the
+   correct section with a survey reference URL. When you USE a
+   technique that is listed, update its status (PROPOSED → USED with
+   mode E / I / A and edge ID). Do not inflate superficial uses to
+   USED — mark them PARTIAL.
+
+#### What this means for grading
+
+A-grade claims are now subject to adversarial verification. If your
+session self-grades A, expect the next session to attempt to break
+your result. Inflated A grades will be demoted to B/C in the verify
+session and the synthesis will be edited to record this. **Inflate at
+your own reputational cost — verification is automatic.**
+
+#### What this means for breakthroughs
+
+If you find the breakthrough, respond with exactly: **I FOUND IT!!!**
+This triggers a 2-stage verification chain:
+
+- The next session is forced to `verify` mode targeting your synthesis.
+- If that verify session CONFIRMs and also contains "I FOUND IT!!!",
+  one more verify session runs.
+- If that second verify ALSO confirms, `run.sh` writes a `BREAKTHROUGH.md`
+  banner and halts. The user is alerted to read three syntheses (your
+  original + two verifications).
+- If any verify REFUTEs, the breakthrough chain resets and normal
+  rotation resumes. Your A-grade is demoted in the synthesis.
+
+This means: **do not declare "I FOUND IT!!!" lightly.** A false claim
+costs the project two verify-mode slots and produces no breakthrough.
+The cost is bounded but real.
+
+#### What this means for the run.sh override decisions
+
+`run.sh` now reads recent session syntheses and parses self-grades.
+It expects grades to appear in the form `**A**`, `**B-grade**`, etc. —
+the existing convention. Don't change the convention. If you grade
+without bolded markdown the override logic may misread your session.

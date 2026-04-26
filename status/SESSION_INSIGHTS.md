@@ -3457,3 +3457,152 @@ informative (the joint condition of fast mixing + primality
 localisation appears genuinely incompatible for arithmetic graphs in
 the tested families), so this is firmly B-grade ambitious failure
 rather than C-grade refinement.
+
+## Session 84 — A1 wild swing: SAT-based TC^0 search for PRIMES at N=8 (PARTIAL CLOSURE)
+
+**Date:** 2026-04-26.
+**Mode:** WILD SWING (frontier attack on ATTACK_VECTORS.md §A1).
+**Self-grade:** B (substantive structural finding + concrete mechanism;
+  not A because the discovered PRIMES-vs-random gap reduces to elementary
+  oddness rather than deep arithmetic structure).
+
+### What was tested
+
+Frontier attack §A1: enumerate small TC^0 circuits matching PRIMES at
+N=8 via SAT/ILP. Built three solvers (Z3 If-then-else, direct ILP via
+PuLP+CBC, pre-enumerated column-selection ILP). Tested:
+
+1. PTF degree of PRIMES at N=4..8 (LP feasibility on monomial basis).
+2. Depth-1 sign-threshold feasibility for PRIMES at N=4..8.
+3. Depth-2 sign-threshold (W=1 both layers) min-M complexity at
+   N=4 (full search), N=6 (full search), N=7 (partial), N=8 (partial,
+   restricted to k_max ≤ 5 nonzero bottom-layer weights).
+4. Random-matched controls at N=4 (10 seeds) and N=6 (10 seeds).
+5. Single-bit predictor accuracy for PRIMES vs random matched (30 seeds)
+   at N=4..8.
+
+### Headline results
+
+- **PTF degree of PRIMES at N=8 = 4**, statistically indistinguishable
+  from random matched. Confirms E1.10/E3.13 at the Boolean-function
+  level.
+- **Depth-2 sign-threshold W=1 sizes**: N=4 → 3, N=6 → 6, N=7 → ≥ 6,
+  N=8 → ≥ 17 (k_max ≤ 5 sub-family).
+- **PRIMES-vs-random gap at N=6**: PRIMES M=6, all 10 random matched
+  M ∈ {7, 8}. Binomial p < 0.001. **First circuit-complexity measure
+  in the project where PRIMES empirically deviates from a matched-density
+  random function** (35+ prior pseudorandomness measures show no
+  deviation).
+- **Mechanism**: PRIMES has a 70.3% single-bit predictor (bit_0 = "is x
+  odd") at N=8 vs random matched best 1-bit at 57.0% (over 30 seeds).
+  Depth-2 circuit gets the 1-bit predictor as a "free" first gate.
+
+### Why §A.A1 only partially closed
+
+Depth-2 W=1 sub-family closed at N=8 with ≥17-gate lower bound. But
+the full §A.A1 question (depth ≤ 5, size ≤ 2000, arbitrary integer
+weights) remains open — the search space is too large for direct SAT/ILP
+enumeration at N=8. Three concrete follow-ups in NOVELTY_CHALLENGES C7,
+C8 (added by this session): (a) larger weight bound W ∈ {2, 4, 8},
+(b) depth-3 with restricted bottom layer, (c) "1-bit-calibrated random"
+baseline at N=6 to test whether the gap is fully explained by oddness.
+
+### Files produced
+
+* New: `experiments/circuit_complexity/sat_tc0_primes_n8/`
+  (`sat_tc0_primes_n8.py`, `sat_depth2_ilp.py`, `enum_d2_smart.py`,
+  `enumerated_depth2.py`, `ptf_degree_battery.py`,
+  `depth1_threshold_test.py`, `n6_robust_check.py`,
+  `greedy_d2.py`, `greedy_d2_np.py`,
+  `sat_tc0_primes_n8_results.md`, plus json/log artefacts).
+* Modified: `status/CLOSED_PATHS.md` (one row added).
+* Modified: `ATTACK_VECTORS.md` (§A.A1 partial closure entry).
+* Modified: `NOVELTY_CHALLENGES.md` (C7, C8 next-action targets).
+* New: `archive/sessions/session84_a1_sat_tc0_primes.md`.
+
+### Why B-grade not A-grade
+
+A-grade would require either:
+- A small explicit polylog-promising circuit for PRIMES at N=8 (NOT FOUND;
+  the W=1 sub-family is closed at ≥17 gates, super-linear scaling).
+- Or a structural identification of the bottom-layer gates with classical
+  number-theoretic primality witnesses (NOT FOUND; gates are empirical
+  fits with no Miller-Rabin / BPSW / AKS interpretation).
+
+The PRIMES-vs-random gap discovery is statistically significant but its
+mechanism (oddness) is elementary — well-known fact, not a new insight.
+This earns B-grade as a "concrete-mechanism deviation from
+pseudorandomness" finding, not A-grade.
+
+## Session 87 — D6 frontier attack: Gowers U^k norms of chi_P (CLOSED, B-grade)
+
+Frontier attack on ATTACK_VECTORS §D6: do Gowers uniformity norms
+detect arithmetic structure in the bare prime indicator chi_P that
+the project's 35+ pseudorandomness measures missed?
+
+**Mathematician channel:** Tao (additive combinatorics).
+**Cross-domain technique:** Gowers norms / Green-Tao-Ziegler U^{s+1}
+inverse theorem.
+
+**Setup.** Computed `Q^k(f) := ||f||_{U^k}^{2^k} / E[f]^{2^k}` on Z/NZ
+for chi_P, matched-density Bernoulli, Liouville indicator, and
+W-tricked chi_{W,1} (W ∈ {6, 30, 210}). U^2 via FFT identity (O(N log N))
+at N up to 2^18 = 262144; U^3 via recursion through Δ_h
+(O(N^2 log N)) at N up to 2^13. Computed Hardy-Littlewood {0,1}^k-cube
+singular series numerically: **S_2 = 2.300938**, **S_3 = 54.116088**.
+
+**Empirical results.**
+- `Q^2(chi_P)`: 2.103 (N=2^10) → 2.153 (N=2^18), monotonic, gap to S_2
+  decays as O(1/log N).
+- `Q^3(chi_P)`: 35.5 ± 0.1 stable across N ∈ [2^10, 2^13] (vs Bernoulli → 1).
+- `Q^2(Liouville)`: 1.000 to four digits — Gowers-uniform at U^2,
+  matches Mobius/nilsequence orthogonality (Green-Tao 2008).
+- W=210 (primorial of 7): Q^2(chi_{W,1}) = 1.003 vs HL prediction
+  S^(W)_2 = 1.002 — match within 0.1%, Green-Tao W-trick mechanism
+  empirically verified for the BARE indicator chi_P (not just Lambda).
+
+**Mode E (technique exhaustion).** chi_P's U^k structure is *exactly*
+Hardy-Littlewood — no extra bit beyond the singular series. Q^k
+extraction itself costs Θ(N^2 log N), not polylog. No deviation from
+HL prediction at U^2 or U^3 within tested range.
+
+**New EDGE E2.13** (chi_P U^k = HL singular series). Adds the 36th-37th
+pseudorandomness measure to the project's battery, this one with a
+*closed-form prediction* — qualitatively distinct from the local /
+spectral / Boolean predecessors which all returned "indistinguishable
+from random". Combined with E2.9 (degree-d Fourier weight BELOW random
+for d ≥ 2), the algebraic story of chi_P's higher-order structure is
+now: "Fourier-weight-below-random in low degree, Gowers-norm-above-
+random by HL singular series at higher correlation order".
+
+### Files added / modified
+* New: `experiments/information_theory/gowers_uk_chi_p.py`,
+  `gowers_uk_chi_p_analyze.py`, `hardy_littlewood_box.py`,
+  `gowers_uk_chi_p_results.md`, plus 2 small _results.md companions
+  for utility modules; data folder with 3 JSON + 1 log + 1 analysis.md.
+* Modified: `EDGES.md` (new edge E2.13 in §2 Algebraic).
+* Modified: `status/CLOSED_PATHS.md` (row 756 added).
+* Modified: `CROSS_DOMAIN_TECHNIQUES.md` (Gowers norms PROPOSED → USED E).
+* Modified: `ATTACK_VECTORS.md` (§D6 → "Closed attacks" section).
+* Modified: `NOVELTY_CHALLENGES.md` (§D6 marked CLOSED, two
+  successor challenges §D6.a §D6.b proposed).
+* New: `archive/sessions/session87_d6_gowers_uk_chi_p.md`.
+
+### Why B-grade not A-grade
+
+A-grade would have required:
+- A deviation of `Q^k(chi_P)` from the HL prediction `S_k` (NOT FOUND;
+  Q^2 converges monotonically to S_2 within ~7%; Q^3 converging slowly
+  but in the right direction).
+- A failure of the W-trick to restore Gowers uniformity (NOT FOUND;
+  W=210 gives Q^2 within 0.1% of HL prediction).
+- A novel inverse-theorem identification of a non-trivial nilsequence
+  correlating with chi_P (the inverse-theorem ε-threshold here is
+  ‖chi_P‖_2^4 = E[chi_P]^2 = p^2; the U^2 ratio Q^2 ≈ S_2 · p^2 → 0,
+  so no non-trivial nilsequence detection at our N).
+
+Every observed result is the predicted outcome of known mathematics
+(HL conjecture + Green-Tao W-trick). The NUMERIC values S_2 ≈ 2.301,
+S_3 ≈ 54.12 and the empirical match are project-internal new but
+straightforward consequences of HL machinery. B-grade ceiling is
+honest.

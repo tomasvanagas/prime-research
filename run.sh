@@ -498,6 +498,180 @@ ENDPROMPT
 
 
 # ============================================================
+# PROMPT: Frontier-Generation Mode (auto-fires when ATTACK_VECTORS
+# exhausts or A-grade scarcity warning triggers)
+# ============================================================
+PROMPT_FRONTIER_GEN=$(cat << 'ENDPROMPT'
+# FRONTIER GENERATION SESSION — Extend ATTACK_VECTORS.md
+
+This mode fires automatically when the project's frontier is thin:
+fewer than 4 open ATTACK_VECTORS entries, OR 0 A-grade in last 20
+sessions, OR 2 consecutive F-grade sessions. Your job is NOT to attack
+a target — it is to produce 3-5 NEW attack-vector entries grounded in
+cross-domain techniques the project has not used.
+
+# START HERE (in this order)
+1. Read ATTACK_VECTORS.md fully — both open §A-§F entries and the
+   "Closed attacks" section. Understand what failure modes have been
+   structurally established.
+2. Read CROSS_DOMAIN_TECHNIQUES.md — the registry of techniques the
+   project has used vs. not used. Pick 3-5 UNUSED entries with the
+   highest A-grade potential.
+3. Read CLAUDE.md "Cross-Domain Imports" — the bar for new vectors.
+4. WebFetch a survey or foundational paper for EACH new technique you
+   propose. Cite the URL in the new ATTACK_VECTORS entry. No bluffing.
+5. Skim status/CLOSED_PATHS.md for any previously-closed line that
+   superficially resembles a candidate vector, so you don't propose a
+   duplicate.
+
+# WHAT QUALIFIES AS A NEW ATTACK VECTOR
+A new entry must have:
+- A specific named cross-domain technique (e.g., "Voronin universality
+  theorem", "spectral gap of random regular graphs via friedman",
+  "tropical geometry of arithmetic varieties").
+- A SINGLE-SESSION concrete first step (one numerical experiment, one
+  small-scale construction, or one literature-survey-and-compare task).
+- A pre-stated falsification criterion: what would make this attack
+  collapse to a known closure? What would count as A-grade success?
+- An EXPECTED failure mode: which of {C, E, I, INC} you predict if it
+  fails. The prediction is itself information.
+- A POSITIVE outcome statement: what would constitute partial success
+  (B-grade structural finding) vs. full success (A-grade theorem or
+  algorithm).
+
+# DO NOT
+- Propose vectors that are minor variations on closed entries.
+- Propose vectors requiring techniques not in CROSS_DOMAIN_TECHNIQUES.md
+  without ALSO updating that file with the new technique + survey ref.
+- Propose vectors with no falsification criterion ("study X" is not an
+  attack vector).
+- Propose more than 5 vectors. Quality over quantity.
+
+# CLOSE
+- Append the new vectors to ATTACK_VECTORS.md under appropriate sections
+  (or create new sections §G, §H if the technique is genuinely orthogonal
+  to the existing taxonomy).
+- Update CROSS_DOMAIN_TECHNIQUES.md: mark each technique used, add any
+  new techniques you discovered.
+- Write archive/sessions/sessionNN_frontier_gen.md with:
+  - The 3-5 new vectors (one paragraph each)
+  - The cross-domain literature you consulted
+  - A self-grade A/B/C/F: A if vectors are paper-grade fresh and you
+    expect ≥2 to produce A-grade work; B if at least one is fresh; C
+    if all are minor variations; F if you proposed nothing or duplicates.
+
+# RULES
+- DO NOT modify run.sh.
+- WebFetch is REQUIRED. Cite at least one URL per new vector.
+- Honesty bar is high: a frontier_gen session that proposes weak vectors
+  pollutes the project. Self-grade DOWN, not up.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Verification Mode (auto-fires after any A-grade claim
+# OR after "I FOUND IT!!!" detection)
+# ============================================================
+PROMPT_VERIFY=$(cat << 'ENDPROMPT'
+# VERIFICATION SESSION — Falsify the Most Recent A-Grade Claim
+
+This mode fires automatically when the previous session self-graded A,
+or when a session contained "I FOUND IT!!!". Your job is to attempt to
+FALSIFY the claim. Confirmation is the failure mode for this role; you
+should aim to break the result.
+
+# START HERE
+1. Read .verify_target — it contains the path to the session synthesis
+   you must verify. If the file does not exist, read the most recent
+   archive/sessions/sessionNN_*.md (`ls -t | head -1`) and verify that.
+2. Read the artefacts cited in that session: <name>.py, <name>_results.md,
+   any novel/<name>.md, any new EDGES.md entry, any Lean files added.
+3. Identify the SPECIFIC claim being verified — usually a theorem
+   statement, an algorithm complexity, an empirical separation, or a
+   Lean proof completion.
+
+# YOUR TASK: ATTEMPT FALSIFICATION
+Pick the verification mode appropriate to the claim:
+
+## For empirical / numerical claims
+- RERUN the experiment with different parameters (larger N, different W,
+  different seed). Are the numbers reproducible?
+- Try EDGE CASES the original session didn't test (extreme parameters,
+  degenerate inputs, off-by-one boundaries).
+- Compute INDEPENDENT BASELINES the original session did not include.
+- Look for OVERFITTING: does the claim hold on a held-out parameter
+  range, or only on the specific values tested?
+
+## For theorem claims (informal proof)
+- Walk through the proof line-by-line. Identify each lemma. Are they
+  all proven, or does some step rely on "easy to see"?
+- Check the statement against E5.5 / E5.6 / E5.8 (Natural Proofs / MKtP
+  barriers) — if the theorem implies a circuit lower bound, does it
+  evade these?
+- Find or build a counter-example for one of the lemmas.
+
+## For Lean proof claims
+- Run `lake build` from the formalisation directory. Verify it succeeds.
+- Verify ZERO `sorry` and ZERO new `axiom` statements.
+- Audit the imports — does the proof rely on a deprecated mathlib lemma,
+  or on a `sorry` smuggled in via an import?
+- Check that the THEOREM STATEMENT actually says what the informal claim
+  says. A type-checked proof of a wrong statement is still wrong.
+
+## For algorithmic claims
+- Reimplement the algorithm INDEPENDENTLY from the description.
+- Run on test inputs. Compare to a reference (e.g., direct π(x) for
+  small x).
+- Time it; verify the claimed complexity by running across multiple
+  scales.
+
+# VERDICTS
+At the end, write ONE of these clearly in your session synthesis:
+
+- **CONFIRM** — claim survives every falsification attempt you tried.
+  The original A-grade is upheld.
+- **REFUTE** — found a clear counter-example, broken proof step,
+  failed reproduction, or inflated grade. The original A-grade is
+  demoted (write the corrected grade and reasoning).
+- **PARTIAL** — claim holds in a narrower scope than originally stated.
+  Specify the corrected scope.
+
+# IF THE PRIOR SESSION CONTAINED "I FOUND IT!!!"
+- This verification session is part of a 2-stage breakthrough gate.
+- If your verdict is CONFIRM, write "I FOUND IT!!!" in your synthesis
+  AND append to .breakthrough_pending file (incrementing its counter).
+- If your verdict is REFUTE or PARTIAL, do NOT write "I FOUND IT!!!".
+  Reset the breakthrough counter by deleting .breakthrough_pending.
+- Two consecutive verify sessions must CONFIRM before run.sh halts.
+
+# CLOSE
+- Update .verify_result with one of: CONFIRM, REFUTE, PARTIAL.
+- If REFUTE: edit the original session's synthesis to add a
+  "VERIFICATION REFUTED" note at the top with reasoning. Update
+  EDGES.md / novel/ / CLOSED_PATHS.md to demote the claim.
+- If PARTIAL: edit the original to clarify scope. Demote A → B if
+  the demotion is warranted.
+- Write archive/sessions/sessionNN_verify.md with self-grade. Verify
+  sessions are graded:
+  - A — found a clear refutation of an A-grade claim (rare; major contribution)
+  - B — confirmed an A-grade claim through non-trivial reproduction
+  - C — confirmed an A-grade claim through trivial reproduction
+  - F — failed to actually verify (e.g., didn't run the experiment)
+
+# RULES
+- DO NOT modify run.sh.
+- The role is ADVERSARIAL: you are trying to break the claim, not
+  protect it. Confirmation must come from inability to break, not
+  from agreement with the original session.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+  (only after CONFIRM verdict on a prior breakthrough claim).
+ENDPROMPT
+)
+
+
+# ============================================================
 # INFRASTRUCTURE
 # ============================================================
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -532,6 +706,10 @@ MODES=("frontier" "cross_domain" "construction" "arc" "lean" "wild_swing" "novel
 # STATE PERSISTENCE
 # ============================================================
 STATE_FILE="./.run_state"
+BREAKTHROUGH_FILE="./.breakthrough_pending"
+VERIFY_TARGET_FILE="./.verify_target"
+VERIFY_RESULT_FILE="./.verify_result"
+
 if [ -f "$STATE_FILE" ]; then
     RUN=$(cat "$STATE_FILE")
     echo "Resuming from run #$RUN (loaded from $STATE_FILE)"
@@ -541,11 +719,166 @@ fi
 
 
 # ============================================================
+# AUTONOMY STATE — overrides mode rotation when conditions trigger
+# ============================================================
+# Helper: parse self-grade from a session synthesis. Returns ""
+# (empty) if no self-grade is found, e.g. critique sessions which
+# audit but don't self-grade. Returns one of {A,B,C,F} otherwise.
+parse_grade() {
+    local f="$1"
+    [ -z "$f" ] || [ ! -f "$f" ] && return
+    # Step 1: find a header-style grade declaration in first 30 lines
+    local g
+    g=$(head -30 "$f" 2>/dev/null \
+        | grep -iE '(self-grade|\*\*grade\*\*|^grade:|^\*\*grade:)' \
+        | head -3 \
+        | grep -oE '[ABCF]' \
+        | head -1)
+    # Step 2: fallback — any **X-grade pattern in the body
+    if [ -z "$g" ]; then
+        g=$(grep -oE '\*\*[ABCF]-grade' "$f" 2>/dev/null \
+            | head -1 | grep -oE '[ABCF]')
+    fi
+    echo "$g"
+}
+
+# Helper: skip critique sessions when looking for "latest production grade"
+is_critique_session() {
+    # Treats non-production modes (critique, frontier_gen, verify) as
+    # "meta" — these audit/extend the framework rather than attacking
+    # the polylog frontier, so they don't count toward A-grade scarcity
+    # or F-cascade detection.
+    local f="$1"
+    case "$(basename "$f")" in
+        *_critique*.md|*critique*_*.md) return 0 ;;
+        *_frontier_gen*.md|*frontier-gen*.md) return 0 ;;
+        *_verify*.md|*verify*_*.md) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# Returns one of {verify, frontier_gen, ""} in stdout. Empty means
+# use the default rotation.
+compute_override() {
+    local override=""
+
+    # Scan most recent NON-CRITIQUE session for grade and breakthrough
+    local latest_session=""
+    while IFS= read -r f; do
+        if ! is_critique_session "$f"; then
+            latest_session="$f"
+            break
+        fi
+    done < <(ls -t archive/sessions/session*_*.md 2>/dev/null)
+
+    local latest_grade=""
+    local latest_has_breakthrough=0
+    if [ -n "$latest_session" ]; then
+        latest_grade=$(parse_grade "$latest_session")
+        if grep -qF 'I FOUND IT!!!' "$latest_session" 2>/dev/null; then
+            latest_has_breakthrough=1
+        fi
+    fi
+
+    # Count A-grade in last 20 production (non-critique) sessions
+    local a_count=0
+    local files_checked=0
+    while IFS= read -r f && [ "$files_checked" -lt 20 ]; do
+        is_critique_session "$f" && continue
+        local g; g=$(parse_grade "$f")
+        [ "$g" = "A" ] && a_count=$((a_count + 1))
+        files_checked=$((files_checked + 1))
+    done < <(ls -t archive/sessions/session*_*.md 2>/dev/null)
+
+    # Last 2 production grades for F-cascade detection
+    local f_cascade=0
+    local last2=""
+    while IFS= read -r f; do
+        is_critique_session "$f" && continue
+        local g; g=$(parse_grade "$f")
+        last2="$last2$g"
+        [ ${#last2} -ge 2 ] && break
+    done < <(ls -t archive/sessions/session*_*.md 2>/dev/null)
+    [ "$last2" = "FF" ] && f_cascade=1
+
+    # Cooldown: count frontier_gen + verify sessions in last 5.
+    # If override modes have fired recently, prefer to let production
+    # attack the resulting new vectors before regenerating again.
+    local recent_meta=0
+    local recent_checked=0
+    while IFS= read -r f && [ "$recent_checked" -lt 5 ]; do
+        case "$(basename "$f")" in
+            *frontier_gen*|*verify*) recent_meta=$((recent_meta + 1)) ;;
+        esac
+        recent_checked=$((recent_checked + 1))
+    done < <(ls -t archive/sessions/session*_*.md 2>/dev/null)
+
+    # Open ATTACK_VECTORS count (entries before "## Closed attacks" section)
+    local open_av=0
+    if [ -f ATTACK_VECTORS.md ]; then
+        open_av=$(awk '/^## Closed attacks/{exit} /^### [A-Z][0-9]/{c++} END{print c+0}' \
+                  ATTACK_VECTORS.md)
+    fi
+
+    # Pending breakthrough verification counter
+    local breakthrough_count=0
+    [ -f "$BREAKTHROUGH_FILE" ] && breakthrough_count=$(cat "$BREAKTHROUGH_FILE" 2>/dev/null || echo 0)
+
+    # Decision tree (priority order)
+    # Breakthrough verifications and routine A-grade verify always fire
+    # — these are ungated by cooldown because correctness > cooldown.
+    if [ "$breakthrough_count" -ge 1 ] && [ "$breakthrough_count" -lt 2 ]; then
+        # Mid-verification: previous breakthrough claim awaiting 2nd verify
+        override="verify"
+        echo "$latest_session" > "$VERIFY_TARGET_FILE"
+    elif [ "$latest_has_breakthrough" = "1" ] && [ "$breakthrough_count" -lt 2 ]; then
+        # Fresh "I FOUND IT!!!" — start verification chain
+        override="verify"
+        echo "$latest_session" > "$VERIFY_TARGET_FILE"
+        echo 0 > "$BREAKTHROUGH_FILE"
+    elif [ "$latest_grade" = "A" ]; then
+        # Routine A-grade verification (not a breakthrough claim)
+        override="verify"
+        echo "$latest_session" > "$VERIFY_TARGET_FILE"
+    # frontier_gen triggers gated by cooldown to avoid flapping.
+    # If meta sessions (frontier_gen / verify) have fired in last 5,
+    # prefer to let production sessions attack the resulting state.
+    elif [ "$open_av" -lt 4 ]; then
+        # Frontier exhaustion (always fire — frontier truly bare)
+        override="frontier_gen"
+    elif [ "$f_cascade" = "1" ] && [ "$recent_meta" -eq 0 ]; then
+        # Two F's in a row, no recent meta intervention
+        override="frontier_gen"
+    elif [ "$a_count" -eq 0 ] && [ "$RUN" -gt 20 ] && [ "$recent_meta" -eq 0 ]; then
+        # 20-session A-grade scarcity, no recent intervention
+        override="frontier_gen"
+    fi
+
+    # Telemetry to stderr (won't pollute stdout return value)
+    {
+        echo "[autonomy] open_AV=$open_av  A_in_20=$a_count  last2=$last2  breakthrough_pending=$breakthrough_count  recent_meta=$recent_meta"
+        if [ -n "$override" ]; then
+            echo "[autonomy] OVERRIDE → $override"
+        fi
+    } 1>&2
+
+    echo "$override"
+}
+
+
+# ============================================================
 # MAIN LOOP
 # ============================================================
 while true; do
     MODE_IDX=$(( (RUN - 1) % ${#MODES[@]} ))
     MODE=${MODES[$MODE_IDX]}
+
+    # Auto-pivot: state-based mode override
+    OVERRIDE_MODE=$(compute_override)
+    if [ -n "$OVERRIDE_MODE" ]; then
+        echo "[autonomy] Default mode '$MODE' overridden by '$OVERRIDE_MODE'" | tee -a "$LOGFILE"
+        MODE="$OVERRIDE_MODE"
+    fi
 
     # Select prompt based on mode
     case $MODE in
@@ -572,6 +905,12 @@ while true; do
             ;;
         critique)
             CURRENT_PROMPT="$PROMPT_CRITIQUE"
+            ;;
+        frontier_gen)
+            CURRENT_PROMPT="$PROMPT_FRONTIER_GEN"
+            ;;
+        verify)
+            CURRENT_PROMPT="$PROMPT_VERIFY"
             ;;
     esac
 
@@ -678,14 +1017,58 @@ assist_f.close()
         fi
     fi
 
-    # Check for breakthrough
+    # Breakthrough handling: requires TWO consecutive verifications.
+    # - "I FOUND IT!!!" in a non-verify session starts the chain (counter=0)
+    # - Each subsequent verify session that ALSO contains "I FOUND IT!!!"
+    #   increments counter
+    # - When counter reaches 2, halt the loop with a banner file
+    # - A verify session WITHOUT "I FOUND IT!!!" resets counter, continues
     if grep -qF 'I FOUND IT!!!' "$ASSISTFILE"; then
-        echo ""
-        echo "============================================================"
-        echo "=== BREAKTHROUGH DETECTED — Run #$RUN — Mode: $MODE ==="
-        echo "============================================================"
-        echo "Detected 'I FOUND IT!!!' — stopping." | tee -a "$LOGFILE"
-        break
+        if [ "$MODE" = "verify" ]; then
+            CURRENT_COUNT=0
+            [ -f "$BREAKTHROUGH_FILE" ] && CURRENT_COUNT=$(cat "$BREAKTHROUGH_FILE" 2>/dev/null || echo 0)
+            CURRENT_COUNT=$((CURRENT_COUNT + 1))
+            echo "$CURRENT_COUNT" > "$BREAKTHROUGH_FILE"
+            echo "[breakthrough] Verification confirmed (count=$CURRENT_COUNT/2)" | tee -a "$LOGFILE"
+            if [ "$CURRENT_COUNT" -ge 2 ]; then
+                echo "" | tee -a "$LOGFILE"
+                echo "============================================================" | tee -a "$LOGFILE"
+                echo "=== BREAKTHROUGH VERIFIED (2/2) — Run #$RUN ===" | tee -a "$LOGFILE"
+                echo "============================================================" | tee -a "$LOGFILE"
+                {
+                    echo "# BREAKTHROUGH DETECTED AND DOUBLE-VERIFIED"
+                    echo ""
+                    echo "**Detection run:** see counter file history"
+                    echo "**Final verification run:** $RUN ($(date -Iseconds))"
+                    echo "**Mode at final verify:** $MODE"
+                    echo ""
+                    echo "## What was verified"
+                    echo "See \`.verify_target\` for the path of the synthesis file"
+                    echo "containing the original breakthrough claim."
+                    echo ""
+                    echo "Latest verify_target: $(cat "$VERIFY_TARGET_FILE" 2>/dev/null)"
+                    echo ""
+                    echo "## Next steps"
+                    echo "1. Read the original breakthrough session synthesis."
+                    echo "2. Read both verify session syntheses (most recent two)."
+                    echo "3. If genuine: write up novel/breakthrough.md and announce."
+                    echo "4. If still suspect: invoke a third independent verify"
+                    echo "   manually before publishing."
+                } > "./BREAKTHROUGH.md"
+                echo "Wrote BREAKTHROUGH.md banner. Halting loop." | tee -a "$LOGFILE"
+                break
+            fi
+        else
+            # Fresh "I FOUND IT!!!" outside verify mode — start chain
+            echo 0 > "$BREAKTHROUGH_FILE"
+            echo "[breakthrough] Claim detected in mode '$MODE'. Forcing 2-step verification." | tee -a "$LOGFILE"
+        fi
+    else
+        # No "I FOUND IT!!!" in this session
+        if [ "$MODE" = "verify" ] && [ -f "$BREAKTHROUGH_FILE" ]; then
+            echo "[breakthrough] Verify session did NOT confirm. Resetting counter." | tee -a "$LOGFILE"
+            rm -f "$BREAKTHROUGH_FILE"
+        fi
     fi
 
     RUN=$((RUN + 1))

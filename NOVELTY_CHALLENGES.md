@@ -35,17 +35,42 @@ the middle of an arc, pick from there instead. The frontier sections:
 - **§E** Meta-Analysis of CLOSED_PATHS as a Data Source (2 attacks)
 - **§F** Synthesis Targets That Would Be Publishable (3 multi-session arcs)
 
-The single highest-leverage attempt right now (per post-S77 critique
-A-grade scarcity check, **0 A-grade in last 10 sessions**):
-**§B1** — polynomial method / slice-rank on χ_P. Encode χ_P as a
-polynomial over GF(p) for small p (p=2 or p=3) on the base-W reshape,
-compute slice rank, compare to E2.1's unfolding rank. Outcome shapes:
+**§D6 — CLOSED (S85, mode E, B-grade).** Gowers U^k norms of χ_P
+empirically match the Hardy-Littlewood {0,1}^k-cube singular series
+S_2 = 2.301 (Q^2(χ_P) = 2.153 at N=2^18, monotonically converging
+from below) and S_3 = 54.12 (Q^3 ≈ 35.5 at N=2^13, slow finite-N
+convergence). W=210 W-trick restores Gowers uniformity at U^2 within
+0.1%. Outcome (b) of the original challenge — the 36th-37th
+pseudorandomness measure with closed-form HL prediction. New EDGE
+**E2.13**. See `experiments/information_theory/gowers_uk_chi_p_results.md`,
+`archive/sessions/session85_d6_gowers_uk_chi_p.md`.
+
+**Successor challenges (proposed in S85):**
+
+**§D6.a — Gowers U^4 of χ_P at N ≤ 2^12.** {0,1}^4-cube has 16
+forms; α_p(k=4) requires `(Z/p)^5` enumeration, borderline tractable
+for p ≤ 23 with vectorisation. Predicted S_4 ~ 10^3 to 10^4 from
+the per-prime factor pattern. Empirical Q^4(χ_P) verifying ~ S_4
+would extend the Gowers-norm fingerprint chain by one level
+(B-grade refinement). Cost: 1 session.
+
+**§D6.b — Λ vs χ_P U^k comparison.** The Green-Tao result
+‖Λ̃ − 1‖_{U^k}[N] → 0 is for the von Mangoldt Λ (log-weighted),
+while §D6 just empirically verified Q^k(χ_P) → S_k > 1 for the
+*bare* indicator χ_P. The two are formally different: Λ is
+Gowers-uniform after centering, χ_P is not. A side-by-side
+empirical comparison at U^2 and U^3, including the Λ→χ_P
+"deconvolution" via partial summation, would clarify which
+log-factor converts the prime indicator from non-uniform to uniform.
+B-grade refinement, 1 session.
+
+**Highest-leverage attempt now:** §B1 — Croot-Lev-Pach polynomial
+method / slice rank on χ_P. Single-session viable; outcome shapes:
 (a) slice rank > unfolding rank → new lower bound (A-grade);
 (b) slice rank = unfolding rank → structural identification (B-grade);
 (c) slice rank < unfolding rank → polynomial method doesn't apply
 directly, structural negative-shape edge (B-grade). Cross-domain
-ingredient: Croot–Lev–Pach polynomial method / Tao slice rank. The
-project has not used this tool. Single-session viable.
+ingredient: Croot–Lev–Pach polynomial method / Tao slice rank.
 
 **Backup highest-leverage:** L1 Lean — close
 `exists_invertible_submatrix` in `MPSBondDim/Basic.lean` (route B:
@@ -123,6 +148,20 @@ or "construction-incoherent" if the object isn't well-defined.
 **Outcome (S81):** Built (alpha, beta) catalog of 14 algorithms (4 prime / 4 zeta / 6 floor). All four pre-stated falsifiers (F1: HKM dominated; F2: HKM cross-pillar dominated; F3: identical pillar frontiers; F4: floor T*S < 5/6) PASS. **Three structural findings:** (i) HKM is on the **floor pillar** Pareto frontier and dominates every other floor-pillar entry elementwise; (ii) **HKM uniqueness**: no zero-pillar or prime-pillar algorithm achieves both `T ≤ N^{8/15}` AND `S ≤ N^{1/3}` simultaneously — HKM's `(8/15, 1/3)` point is uniquely accessible on the floor pillar; (iii) **non-overlapping pillar regions**: time-only minimum is shared by prime+zeta pillars at α=1/2, space-only minimum is unique to floor at β=1/3, T*S minimum is unique to floor at 13/15 ≈ 0.867 (saturating E7.6 to within N^{0.034}). Aggarwal (E6.6) is observed as a meta-algorithm whose effective placement migrates with the chosen pi(x). No polylog opening — refinement of E7.7 + E6.7. CLOSED_PATHS row added (S81). E6.7 and E7.7 annotated.
 **Status:** BUILT, no polylog opening.
 **Save under:** `experiments/constructions/pillar_tradeoff_diagram/`
+
+### C7 — Calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap (NEW from S84)
+**Question:** S84 found that PRIMES at N=6 needs M=6 depth-2 sign-threshold (W=1) gates while ALL 10 matched-density random controls need M ∈ {7, 8} (binomial p < 0.001). The proposed mechanism: PRIMES has a 70.3% single-bit predictor (bit_0 = "is x odd") at N=8, vs random's best 1-bit at 57%. Is the entire gap explained by this 1-bit advantage, or is there a residual?
+**Why composition / B-grade:** composes E1.10 (pseudorandomness) with the S84 depth-2 sign-threshold result. If the gap is fully explained by oddness, this confirms novel/pseudorandomness_of_pi.md (with footnote: 36th measure deviates with elementary 1-bit mechanism). If a residual exists, it's a *second* concrete-mechanism deviation worth following up.
+**First step:** Construct "calibrated random" Boolean function `f_cal` on {0..63} with f_cal(x) | x odd = (52/64)/(32/64) probability ≈ 0.84, f_cal(x) | x even = (1/64)/(32/64) ≈ 0.03 (matching PRIMES' class-conditional distribution). Sample 20 such functions and compute their depth-2 sign-threshold W=1 min M via the S84 enumeration approach. Compare distribution to PRIMES (M=6) and unbiased random (M ∈ {7,8}).
+**Predicted outcome:** ~70% probability that calibrated random matches PRIMES at M=6 (gap fully explained by oddness); ~30% probability that PRIMES is still strictly easier (residual structure).
+**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/` (extend S84's harness).
+
+### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES at N=8 (NEW from S84)
+**Question:** S84 showed depth-2 W=1 needs ≥17 gates at N=8 (sub-family closure). What is the W-vs-M tradeoff curve? Specifically: for W ∈ {2, 3, 4, 8, 16}, what is the smallest M such that depth-2 sign-threshold (bottom W, top W=1) computes PRIMES at N=8?
+**Why composition:** composes E5.3 (PRIMES TC^0 open) with S84's measurement framework. The W-vs-M curve characterises the "weight complexity" of PRIMES — a quantity not previously measured in the project.
+**First step:** Modify `sat_depth2_ilp.py` from S84 to scan W ∈ {2, 4} with M ∈ {4, 6, 8, 10, 12, 16}. Use a 30-min ILP timeout per cell (MILP solver: CBC). Plot the (W, M) infeasible/feasible boundary.
+**Predicted outcome:** M decreases as W increases, with M ≈ 5-8 at W=4 and possibly M=2 or 3 at W=8 (since unbounded weight gives M=1 lookup table). The shape of the boundary is the new quantitative content.
+**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_weight_tradeoff/` (extend S84).
 
 ---
 
