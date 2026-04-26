@@ -1,6 +1,6 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-26 (Session 67 + Session 49 FOCUS-4 closure)
+Last updated: 2026-04-26 (Session 67 + S51 FOCUS-3 closure + S49 FOCUS-4 closure)
 
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (538+ approaches across 66 sessions) and confirmed to hit one of three
@@ -11,10 +11,21 @@ FOCUS-1 sub-attacks have now closed (S47 cyclotomic-CRT line 690; S61
 non-cyclotomic ring line 714; S64 Frobenius transplant line 719; S66
 Bernstein 2003 strengthened-gcd this session). Every modulus-twist and
 gcd-strengthening of the AKS family reduces to growing-dim r×r MPOW over
-the same r ~ log²n. The only remaining escapes from Chain E are
-Brandt MKtP (FOCUS-3, un-engaged) and fundamentally new lower-bound
-techniques (open problem class) — no further AKS-style construction
-work is expected to dislodge the frontier.
+the same r ~ log²n.
+
+**S51 status update — Chain E now closed for both known technique
+families.** FOCUS-3 (Brandt MKtP) closed: Brandt 2024 (TCC, IACR ePrint
+2024/687) diagonalisation is structurally welded to MKtP itself and does
+not extend to fixed natural functions like π(x) mod 2 (E5.8). The hard
+string is an oracle-dependent Kt-random prefix, the contradiction is
+self-referential on Kt, the Chaitin-Ω density argument has no analog
+for fixed totals, and the bound is on uniform time not circuits —
+Brandt explicitly avoids the Williams/Hirahara algorithmic-method route
+that *would* yield circuit bounds, precisely because that route faces T4
+on stronger classes. With E7.10 (AKS) and E5.8 (Brandt), the only
+remaining levers on E5.3 are non-AKS TC⁰ primality tests or entirely-new
+lower-bound techniques. Construction-flavoured work in the current
+taxonomy is exhausted.
 
 **S67 status update — FOCUS-2 (concrete fourth-encoding sweep) closed.**
 The E2.11 finite-difference pre-test ruled out 9 candidate intermediate
@@ -69,14 +80,15 @@ This is the largest unexplored gap in complexity theory for a natural problem.
 - Growing-dimension matrix powering in TC^0 (genuine frontier; Chain E open primitive E5.3)
 - Exploiting commutativity of polynomial ring multiplication
 - A fundamentally new intermediate quantity not based on floor values or zeta zeros
-- Brandt MKtP-style diagonalization for natural functions (FOCUS-3, un-engaged)
+- Brandt MKtP-style diagonalization for natural functions — **CLOSED S51 (E5.8)**: technique structurally welded to MKtP, does not extend to π(x) mod 2
 
-**S66 — Chain E status:** computationally cornered. All three AKS-family
-sub-attacks closed (modulus-twist, gcd-strengthening, ring-replacement
-all reduce to the same growing-dim MPOW primitive at the same r). The
-Chain-E open frontier E5.3 is unchanged but no construction-style attack
-within the AKS framework remains. Brandt MKtP and pure new-technique
-work are the only open levers.
+**S66/S51 — Chain E status:** closed for both known technique families.
+All three AKS-family sub-attacks closed (S61/S64/S66, E7.10) and Brandt
+2024 MKtP-diagonalisation closed (S51, E5.8). The Chain-E open frontier
+E5.3 is unchanged, but no construction-style attack in either the AKS
+or diagonalisation-via-meta-complexity family remains. Pure new-technique
+work (non-AKS TC⁰ primality tests, fundamentally new lower-bound
+techniques) is the only remaining lever.
 
 ---
 

@@ -1,12 +1,14 @@
-# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 31 Measures
+# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 33 Measures
 
-**Status:** Novel synthesis. Individual measures from Sessions 17-55.
+**Status:** Novel synthesis. Individual measures from Sessions 17-56 plus
+two adjacent representations (S48 Dirichlet character spectrum of chi_P;
+S51 regular CF of the prime constant alpha=Σ 2^{-p}).
 No published work examines this many independent complexity measures on a single natural function.
 
 ## Summary
 
 pi(x) mod 2 is indistinguishable from a random Boolean function under every
-structural complexity measure tested in this project (31). This is the
+structural complexity measure tested in this project (33). This is the
 project's strongest collective finding.
 
 The 2 measures added in S55 (A(x) mod 2, C_3(x) mod 2) probe the COMPONENTS of
@@ -73,6 +75,8 @@ pseudorandom under all known structural tests.
 | 29 | A_chi(x) mod 2 over chi mod 7 (worst of 6 chars, orders 1,2,3,3,6,6) | LFSR/N=0.4998, h_8=7.89/8, AC=0.57 (density), max MI w/ pi(x;7,a)=9.5e-6 bits | density-bias-comparable | S56 |
 | 30 | A_chi(x) mod 2 over chi mod 11 (worst of 10 chars, orders include 5,10) | LFSR/N=0.4995, h_8=7.96/8, AC=0.46 (density), max MI w/ pi(x;11,a)=5.6e-6 bits | density-bias-comparable | S56 |
 | 31 | A_chi(x) mod 2 over chi mod 13 (worst of 12 chars, orders include 3,4,6,12) | LFSR/N=0.5000, h_8=7.97/8, AC=0.54 (density), max MI w/ pi(x;13,a)=9.5e-6 bits | density-bias-comparable | S56 |
+| 32 | Dirichlet character spectrum of chi_P mod q in {11..97} | L1/L2 ratio = 0.85*sqrt(phi(q)) (white-noise expectation), 5-15% above mean+2sigma | white-noise-comparable | S48 |
+| 33 | Regular continued-fraction quotients of prime constant alpha = sum_{p prime} 2^{-p} (depth 1500) | K_0 = 2.7336 (Khintchine 2.6854), Levy = 1.2056 (1.1866), max\|AC[1..10]\| = 0.013, 1/f^{-0.09} (white), k-automaticity ratio < 0.012 for k in {2,3,5,7,10}, Shannon entropy 3.26 b/quotient | Khintchine-typical | S51 |
 
 ### Notes on Individual Measures
 

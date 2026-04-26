@@ -2932,3 +2932,43 @@ where L = log(T/(2π)).  This is the leading non-universal correction to GUE pai
 - `EDGES.md` — new edge E1.10 (gap-shuffled-zeros null methodology)
 - `archive/sessions/session49_focus4_large_n_zeta.md` — session synthesis
 - `.run_state` advanced to 49
+
+---
+
+## Session 51 — FOCUS-3 closure: Brandt 2024 MKtP-diagonalisation vs pi(x) mod 2 (deep-focus, last untouched FOCUS-N)
+
+**Verdict:** CLOSED — mode E. Brandt 2024 (TCC, IACR ePrint 2024/687) `MKtP not in DTIME[O(n)]` is structurally welded to MKtP itself and does not extend to natural functions like pi(x) mod 2.  New edge E5.8.  With E7.10 + E5.8, **Chain E is closed for both known technique families** on E5.3 (AKS-style and diagonalisation-via-meta-complexity).
+
+### Goal
+
+FOCUS-3 (TODO.md): read Brandt 2024 carefully, identify the diagonalisation skeleton, ask whether the technique extends to a circuit (or even uniform-time) lower bound on pi(x) mod 2.  If yes, that would be the first non-trivial circuit lower bound the project has produced.  If no, document rigorously and close.
+
+### What ran
+
+Built `experiments/constructions/brandt_mktp/`:
+- `brandt_mktp.py` — bounded-Kt simulator (3-bit-op stack VM, L_MAX=12 program length, T_MAX=4096 step cap) implements TRAVERSE on a finite-Kt oracle, computes Kt_bounded(pi_N) for N=3..10, and encodes pi_N as MKtP queries.  Runs in 1.0 s.
+- `brandt_mktp_results.md` — full closure with quoted theorems, four obstructions to extension, suggested EDGES + CLOSED_PATHS entries.
+- `definition.md` — formal signatures (MKtP, pi_N, the bounded VM, the falsified conjectured extension).
+
+### Key findings
+
+- **Technique skeleton (verified from Brandt pages 1–14 of the PDF):** assume Pi_Kt decides MKtP in linear time; build TM running TRAVERSE that descends on Kt-random strings (queried via Pi_Kt) and right-steps on compressible strings.  Lemma 2 uses 1-Kt-randomness of Chaitin's Omega prefixes to prevent wrap-around.  Lemma 1 bounds the visit count infinitely often by `2^l / (l ln l)`, which contradicts the Kt definition.
+- **Bypassing T4:** Brandt's proof relativizes (page 2: "our lower bounds relativize can be taken as a hint that relativizing techniques might be strong enough").  No probabilistic ensemble, no large/efficiently-computable property of MKtP — Razborov-Rudich does not apply.  This *is* the genuinely-new ingredient.
+- **Why it does not extend to pi(x) mod 2:**
+  - (O1) The hard string z is an oracle-dependent Kt-random prefix, not a fixed natural function.
+  - (O2) The contradiction `Kt(z) >= |z|` ∧ `Kt(z) <= |M| + log_2 t` uses self-referential Kt on both sides.  No analog of "f-hardness(z) >= |z|" for a fixed Boolean function.
+  - (O3) Lemma 2's Chaitin-Omega density argument has no analog for fixed total functions.
+  - (O4) Brandt produces UNIFORM-TIME bounds, not circuit bounds.  E5.3 needs a circuit bound.  Brandt explicitly avoids the Williams/Hirahara algorithmic-method route on page 4 — that route IS subject to Natural Proofs on stronger classes.  Price of relativisation: no circuit bound.
+- **E1.9 does not save the argument:** the 33-measure pseudorandomness of pi_N is consistent with Kt(pi_N) being near-maximal but proving that asymptotically would itself face T4.
+
+### Verdict
+
+**CLOSED, FAIL/E.** FOCUS-3 closes the last untouched construction-flavoured attack on the only open problem.  The cumulative Chain-E picture: E7.10 (S61/S64/S66) closes the AKS family; E5.8 (this session) closes the Brandt / meta-complexity-diagonalisation family.  Remaining levers on E5.3 are non-AKS TC⁰ primality tests (no candidate currently identified) and entirely-new circuit lower-bound techniques.
+
+### Files
+
+- `experiments/constructions/brandt_mktp/{brandt_mktp.py, brandt_mktp_results.md, definition.md}`
+- `status/CLOSED_PATHS.md` — S51 row appended
+- `EDGES.md` — E5.8 added; footer updated
+- `TODO.md` — FOCUS-3 marked CLOSED; critical-path section emptied
+- `archive/sessions/session51_brandt_mktp.md` — session synthesis

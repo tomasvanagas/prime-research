@@ -1034,6 +1034,39 @@ MR({2, 3, 5, 7, ..., 37}) is deterministic for n < 3.317 x 10^{24}
 **for fixed input length**, not asymptotic. Useful in any chain with
 explicit small-x precomputation steps.
 
+### E5.8 — Brandt 2024 is structurally welded to MKtP                 [EVS shape]
+
+S51; `experiments/constructions/brandt_mktp/`;
+`status/CLOSED_PATHS.md` last row (S51 Brandt).
+
+Brandt 2024 (TCC, IACR ePrint 2024/687) proves `MKtP ∉ DTIME[O(n)]`
+unconditionally via a length-monotonic depth-first traversal that
+diagonalises against any candidate linear-time Kt-decider, using
+1-Kt-randomness of Chaitin's Ω prefixes as the unique ingredient
+that bypasses the black-box barrier (page 5 of the paper). The
+proof relativizes and **does** thread the Natural Proofs barrier (T4).
+
+> However it does NOT extend to fixed natural functions like
+> pi(x) mod 2.  The hard string z is an oracle-dependent Kt-random
+> prefix, not a fixed function; the contradiction uses self-referential
+> Kt on both sides (`Kt(z) ≥ |z|` vs `Kt(z) ≤ |M| + log₂ t`); the
+> Chaitin-Ω density argument has no analog for fixed totally-defined
+> functions; and the bound is on uniform time (linear; conditional
+> super-linear), not on circuits.  Brandt explicitly contrasts himself
+> (page 4) with the Williams/Hirahara algorithmic-method approach that
+> *would* yield circuit bounds and *is* subject to Natural Proofs on
+> stronger classes — i.e., the price of relativisation is no circuit
+> lower bound out of this technique.
+
+Why this is shape-revealing: it is a **family-level closure on
+diagonalisation-via-meta-complexity** approaches to Chain E (E5.3),
+parallel to E7.10 (AKS modulus-twist orthogonality, AKS family) and
+E7.11 (linear post-processing of zero sums, analytic family).  With
+E7.10 + E5.8, Chain E is now closed for **both** known technique
+families: AKS-style and diagonalisation-via-meta-complexity.  The
+remaining unconstrained levers on E5.3 are non-AKS TC⁰ primality
+tests or entirely-new lower-bound techniques.
+
 ---
 
 ## 6. Computational / oracle-style edges
@@ -1589,4 +1622,9 @@ arithmetic correction empirically absent at N=8000, z=-10.85σ) as the
 content companion to E1.10's methodology entry; refined E2.6 with the
 S48-fresh forward-difference signature as the fourth independent
 witness of the 2^{N/2} wall.
+Extended: 2026-04-26 post-S51 (FOCUS-3 closure) — added E5.8 (Brandt 2024
+TCC MKtP-diagonalisation is structurally welded to MKtP and does not
+extend to natural functions like π(x) mod 2). With E7.10 + E5.8,
+**Chain E is closed for both known technique families** (AKS-style and
+diagonalisation-via-meta-complexity).
 This document is alive — extend it with new edges as they appear.*

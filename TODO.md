@@ -5,67 +5,51 @@
 > edge across 67+ sessions, tagged with IDs (E1.x .. E7.x). Cite edge IDs
 > by name in CLOSED_PATHS entries and session syntheses (CLAUDE.md step 10).
 >
-> **Active critical path is FOCUS-3 (Brandt MKtP).** It is the only
-> construction-flavoured attack still untouched on the only open problem.
-> Pick this up in the next focused-mode session.
+> **No active critical-path item.** All four FOCUS-N construction lines
+> are now closed. Brandt MKtP (FOCUS-3) was closed in S51 — see E5.8
+> in EDGES.md and the S51 row in `status/CLOSED_PATHS.md`.
 >
 > Recurring lightweight tasks: FOCUS-5 (literature watch).
 >
 > Recently closed and removed from active work: FOCUS-1 (S61, S64, S66 —
 > AKS sub-attacks → E7.10), FOCUS-2 (S67 — fourth-encoding sweep, E2.11
-> pre-test), FOCUS-4 (S49 — large-N zeta correlation + BK probe → E1.10,
-> E3.13). Closure details are in `status/CLOSED_PATHS.md` and the named
-> session syntheses; the EDGES.md footer logs all recent edge additions.
+> pre-test), FOCUS-3 (S51 — Brandt 2024 MKtP-diagonalisation does not
+> extend to natural functions like π(x) mod 2 → E5.8), FOCUS-4 (S49 —
+> large-N zeta correlation + BK probe → E1.10, E3.13). Closure details
+> are in `status/CLOSED_PATHS.md` and the named session syntheses; the
+> EDGES.md footer logs all recent edge additions.
+>
+> With E7.10 + E5.8 closing both known technique families on Chain E
+> (AKS-style and diagonalisation-via-meta-complexity), the open problem
+> on E5.3 now requires either a non-AKS TC⁰ primality test or an
+> entirely-new circuit lower-bound technique. Construction-flavoured
+> work is therefore exhausted in the current taxonomy.
 
 ---
 
 # === CRITICAL PATH ===
 
-## [FOCUS-3] Brandt MKtP framework deep dive
+## [FOCUS-3] Brandt MKtP framework deep dive — CLOSED in S51 (E5.8)
 
-**Why this is THE critical item.** With FOCUS-1 (AKS) and FOCUS-2
-(4th-encoding sweep) and FOCUS-4 (large-N zeta correlations) all closed,
-Brandt is the only remaining *construction-flavoured* attack on the only
-open problem (circuit complexity of π(x), per `status/OPEN_PROBLEMS.md`).
+**Verdict (S51):** FAIL/E. Brandt 2024 (TCC, IACR ePrint 2024/687)
+proves MKtP ∉ DTIME[O(n)] (Thm 1, unconditional) plus three sharper
+conditional results, via length-monotonic depth-first traversal that
+uses 1-Kt-randomness of Chaitin Ω prefixes to bypass the black-box
+barrier (page 5).  The technique relativizes and **does** thread T4.
 
-Brandt 2024 (TCC) proved `MKtP ∉ DTIME[O(n²)]` via a diagonalisation
-that **bypasses Natural Proofs**. S30 flagged this as "the only known
-technique that could lead to unconditional superpolynomial lower bounds
-without hitting the barriers." S39 confirmed no follow-up papers
-through April 2026. The project has logged Brandt for 30+ sessions
-without anyone engaging with the technique.
+**However it does NOT extend to π(x) mod 2** for four orthogonal
+reasons documented in `experiments/constructions/brandt_mktp/`: (O1)
+the hard string is an oracle-dependent Kt-random prefix, not a fixed
+function; (O2) the contradiction uses self-referential Kt on both
+sides; (O3) the Chaitin-Ω density argument has no analog for fixed
+naturals; (O4) the bound is on uniform time, not on circuits — and
+Brandt explicitly avoids the Williams/Hirahara algorithmic-method
+route precisely because that route IS subject to Natural Proofs on
+stronger circuit classes.
 
-### Concrete actions
-
-1. **Read Brandt 2024 carefully.** TCC proceedings or arXiv listing.
-   Identify the diagonalisation skeleton: what is being diagonalised
-   against, what natural-function class is the result for, what
-   exact ingredient bypasses Razborov-Rudich.
-2. **Adapt to π(x) mod 2.** This function is total, computable in
-   sub-exponential time O(x^{2/3}), conjectured outside TC⁰, and
-   pseudorandom in 22+ measures (`novel/pseudorandomness_of_pi.md`).
-   Does Brandt's hypothesis class admit π mod 2 as a natural target,
-   or does the construction require an artificially-defined function
-   (like MKtP itself) that doesn't extend to natural NT?
-3. **Even a *conditional* Brandt-style lower bound on π(x) mod 2
-   would be the first non-trivial circuit lower bound the project has
-   produced.** If Brandt's hypothesis only applies to artificial
-   classes, document this rigorously as the closure mode and elevate
-   to `proven/circuit_size_barrier.md`.
-4. Save analysis at `experiments/circuit_complexity/brandt_mktp/`
-   (theory dump + any concrete computations on small N).
-5. Cite EDGES IDs in the closure: this is a Chain E attempt against
-   E5.3 via a non-AKS technique; T4 (Natural Proofs) is the constraint
-   to thread.
-
-This is exploratory — most likely closure mode is "Brandt's hypothesis
-doesn't extend to natural functions like π mod 2", but the upside is
-unique among the remaining options. **It is also the only critical-path
-work that satisfies CLAUDE.md's "Construction is encouraged" rebalance**:
-even a careful theoretical construction (formal definitions + small-N
-simulation) qualifies. Save under `experiments/constructions/brandt_mktp/`
-if the work produces a concrete object/circuit, otherwise the
-`brandt_mktp/` path above.
+Files: `experiments/constructions/brandt_mktp/{brandt_mktp.py,
+brandt_mktp_results.md, definition.md}`. Edge: E5.8. Closure row in
+`status/CLOSED_PATHS.md` (S51).
 
 ---
 
