@@ -142,6 +142,49 @@ H(C_3) = 1.00000 bits) and **statistically independent** (mutual info
 > handles A mod 2 cheaply, then C_3 mod 2 is the entire residual problem
 > (not "a fraction of the residual"). The split is informationally clean.
 
+### E1.7 — delta(n) long-range correlation is INDIRECT (AR(7) + Hurst crossover) [EVS M]
+
+S20, S36; `experiments/information_theory/kt_complexity/SYNTHESIS.md`,
+`experiments/information_theory/kt_complexity/kt_deep_analysis_results.md`.
+
+The 1/f^{1.69} spectrum of delta(n) (E3-side characterisation, see also
+`novel/delta_spectrum.md`) initially looks like genuine long-memory. PACF
+analysis at N = 100 000 corrects this:
+
+* **PACF drops to 0.056 at lag 2** despite ACF(200) = 0.84.
+* BIC model-selects **AR(7)** as direct memory order; PACF ~ k^{-1.33}
+  (alpha > 1, summable).
+* DFA Hurst exponent **H = 1.31 with crossover at scale ~572**: H_small =
+  1.41 (scales < 572), H_large = 1.19 (scales > 572) — two regimes.
+* Total Kt(1..N) ~ 5.58 N + 0.023 N log N — **EXTENSIVE** (linear),
+  negligible log correction.
+* Transfer entropy: **TE(n -> delta) = 0.013 bits, TE(delta -> delta) =
+  0.051 bits.** Past delta values are 4x more informative than n itself;
+  n mod 30 contributes only 0.003 bits.
+
+> Why this is an edge: the apparent long memory is a *short-range AR
+> process viewed at distance*. Indirect correlation is **not** the
+> signature of an exploitable hidden state — only ~7 lags of direct
+> dependence, then independence. Combined with TE(n -> delta) ≈ 0,
+> this rules out *any* recurrence-based shortcut from n to delta(n)
+> (a recurrence of order > 7 would have non-zero PACF at higher lags).
+
+### E1.8 — Spectral reconstruction of delta needs 82% of all modes [EVS M]
+
+S36; `experiments/information_theory/kt_complexity/spectral_algebraic_structure_results.md`.
+
+For exact recovery (RMSE < 1) of delta(n) at N = 100 000, the Fourier
+basis needs **41 182 of 50 001 modes (~82%)**; max error < 1 requires
+**ALL modes**. The spectrum is a smooth continuum — no discrete spectral
+lines, no algebraic relations among coefficients (PSLQ on top peaks: zero).
+Spectral peaks weakly correlate with zeta zeros (4/10 top peaks match at
+5% error, well within chance given 1000 candidate zeros).
+
+> Why this is an edge: it is the **frequency-domain analogue of E2.7**
+> (communication rank deficiency = +2). The "+2" of E2.7 corresponds to
+> the ~18% of modes that are NOT needed; the remaining 82% is irreducible.
+> Closes the "Fourier sparsity in delta" attack route at scale.
+
 ### E1.4 — N/2 universality                                        [EVS M]
 
 `novel/pseudorandomness_of_pi.md` table; `novel/approx_degree_prime.md`;
@@ -339,6 +382,57 @@ on all 2 × 10⁶ tested x.
 > Liouville-route primitives are L(x) mod 4 (= A(x) mod 2) and C_3(x)
 > mod 2 — see E1.6.
 
+### E2.11 — Higher-order finite differences of f(x)=pi(x)-R(x) GROW like white noise [EVS M]
+
+S29; `experiments/algebraic/identity_search/RESULTS_SUMMARY.md`,
+`experiments/algebraic/identity_search/wz_definite_sum.py`.
+
+Iterated finite-difference operator Delta^k applied to f(x) = pi(x) - R(x)
+on x ∈ [2, 100 000]:
+
+* RMS of Delta^k f **grows monotonically** with k, ratio between
+  successive RMS values converging to **exactly 2.0** as k increases.
+  This is the signature of an i.i.d. Gaussian-like sequence: each Delta^k
+  doubles variance.
+* No finite-order linear difference operator annihilates f.
+* Hankel matrix of K(x) = f(x)·x·log(x) has **full rank 250/250**
+  (incompressible — no Padé / continued-fraction representation).
+* Wilf-Zeilberger definite-sum certificate fit: total variance explained = 0.
+
+> Why this is an edge: contrasts with **E2.6** (low higher-order ANF
+> diffs of pi(x)'s integer multilinear representation, max=15 at order
+> 7). E2.6 says pi(x) the *function-on-bits* is ANF-sparse; E2.11 says
+> the residual after subtracting the smooth part R(x) is *fully white*
+> in the difference operator. So the smooth part R(x) absorbs all the
+> ANF-sparse piece exactly. **This pins R(x) as the precise smooth/random
+> separator** — there is no third "intermediate" piece to peel off.
+
+### E2.12 — Chebyshev psi link captures 91% of f(x) variance       [EVS L]
+
+S29; `experiments/algebraic/identity_search/algebraic_relations.py`.
+
+Define `g(x) = psi(x) - x` (Chebyshev's prime-power summatory minus its
+PNT mean). Then `g(x)/log(x)` and `f(x) = pi(x) - R(x)` satisfy
+
+```
+   Pearson correlation r(g(x)/log(x), f(x)) = 0.996,
+   variance of f explained by g/log = 91%.
+```
+
+This is the **partial-summation identity** between pi and psi made
+quantitative — but psi(x) costs O(x) to compute exactly, so the link
+yields no algorithmic shortcut. Recorded because it is the *only*
+non-trivial correlation found across 7 algebraic-relation experiments
+(Bernoulli numbers, zeta(2..7), Dirichlet L(1,chi), Ramanujan tau,
+LLL minimal polynomials, ODE/integral-equation fits all returned
+zero correlation or x-specific spurious fits).
+
+> Why this is an edge: it singles out g(x)/log(x) as the *unique*
+> universal predictor of f(x) in the project's tested basis. Any
+> fundamentally new identity must either improve on 91% (very hard,
+> the residual is GUE-noise) or beat the O(x) computation cost of psi —
+> the latter is the actual barrier.
+
 ### E2.9 — F_2 Fourier weight is BELOW random for d ≥ 2             [EVS L]
 
 S31; `experiments/circuit_complexity/f2_correlation_profile.py`.
@@ -528,6 +622,24 @@ knowing pi(x) is circular.
 > Bridging them would require a structural rule for **which** zeros matter
 > at which x — a problem effectively as hard as pi(x) itself, but
 > conceptually cleaner than zero-summation as a target.
+
+### E3.12 — Pascadi 2025 unconditional x^{5/8} equidistribution     [EVS M]
+
+`literature/aggarwal_2025_analysis.md`; arXiv 2025 (Pascadi).
+
+The unconditional level-of-distribution exponent for primes in arithmetic
+progressions has improved from x^{1/2} (Bombieri-Vinogradov) toward the
+conjectural x^{1/2+epsilon} ceiling. **Pascadi 2025: x^{5/8}**, achieved
+without assuming the Selberg eigenvalue conjecture (which previously was
+needed for any improvement past Bombieri-Vinogradov via Friedlander-Iwaniec).
+
+> Why this is an edge: x^{5/8} = 0.625, vs the algorithmic threshold of
+> x^{2/3} ≈ 0.667 — analytic level-of-distribution is now within 0.04
+> of the algorithmic Meissel-Lehmer barrier. If unconditional level-of-
+> distribution reaches x^{2/3+epsilon}, several conditional pi(x)
+> algorithms (Lagarias-Odlyzko under GRH, etc.) would become unconditional.
+> Not a polylog edge, but the **direction of analytic progress** for the
+> first time creeps toward the algorithmic boundary.
 
 ### E3.10 — Cully-Hugill–Lee improved error term                     [EVS L]
 
@@ -787,6 +899,21 @@ In the DCT basis, 99% of delta(n) energy lives in 10.4% of coefficients.
 delta(n) (mode C), and the dominant indices change with N. Wavelet 99%
 sparsity scales as N^{0.75} — sublinear, but not polylog.
 
+**S24 follow-up (CRITICAL caveat):** the DCT compressibility is a
+**finite-size effect that vanishes asymptotically**:
+
+* At N = 5000, exact rounding of delta(n) needs 17.3% of coefficients
+  (867/4999), with index spread spanning the full spectrum (median
+  index 597).
+* Hybrid K zeros + DCT: K=10 reduces needed coefficients from 867 to
+  442; K=50 makes it WORSE (510). Mean residual stays ~2.5 regardless
+  of K.
+* FRI sampling density: **14.8% at small scale → 100% at x ~ 10^{100}**.
+* Cross-scale correlation of DCT coefficients: only 0.742, NOT predictable.
+
+So the 90/10 sparsity "edge" is illusory at our target scale x ~ 10^{100}.
+This invalidates compressed-sensing / DCT-recovery chains for delta(n).
+
 ### E6.4 — 90/10 split in sieve update spectrum                      [EVS L]
 
 S20; `experiments/wildcard/sieve_function_compression.py`.
@@ -807,6 +934,80 @@ combinatorial side. ~400x slower than primecount in practice but **matches
 analytic-side asymptotics with no zeta zeros**. A chain that combines
 HKM with E5.1 (BPSW-TC^0) and E1.3 (carry-boundary) is the closest the
 project gets to a believable polylog architecture.
+
+### E6.7 — HKM time-space tradeoff curve O~(N^{8/15}) / O~(N^{1/3}) [EVS M]
+
+`literature/aggarwal_2025_analysis.md`; arXiv:2212.09857 (Helfgott-Kessler-
+Mendlovic).
+
+HKM is not just a single point at O~(sqrt(x)) (E6.5); it is a tradeoff curve.
+With NTT-based fast multiplication on Dirichlet series:
+
+```
+   time = O~(N^{8/15})  using  space = O~(N^{1/3}).
+```
+
+This is the **only known sub-x^{2/3} time achievable simultaneously with
+sub-x^{1/2} space** for pi(x). Beats Meissel-Lehmer (x^{2/3} time / x^{1/3}
+space) on time AND beats classical analytic (x^{1/2+eps} time / x^{1/2}
+space) on space.
+
+> Why this is an edge: it is the **first elementary algorithm to do strictly
+> better than both classical sieve and explicit-formula on a Pareto axis**.
+> The 8/15 = 0.533 exponent is between 1/2 and 2/3. Combined with the
+> Meissel-Lehmer pebbling lower bound T*S >= Omega(x^{5/6}/ln x) (E7.6):
+> HKM achieves T*S ~ x^{8/15+1/3} = x^{13/15} = x^{0.867}, almost matching
+> the lower bound x^{5/6} = x^{0.833}. **The sieve route is asymptotically
+> tight up to x^{0.034}.** Polylog cannot come from any further
+> sieve-pebbling improvement.
+
+### E6.8 — Dusart bracketing: p_n in interval of width n            [EVS M]
+
+`literature/aggarwal_2025_analysis.md`; Dusart 2010, 2018.
+
+For n >= 6:
+
+```
+   n (log n + log log n - 1)  <=  p_n  <=  n (log n + log log n).
+```
+
+The bracket width is exactly **n** (logarithmically narrow on the scale
+of p_n). This is what allows Aggarwal-style binary search (E6.6) to take
+**only O(log n) calls to pi(x)** rather than O(log p_n) ~ O(log x) calls,
+saving an extra log factor.
+
+> Why this is an edge: it is the only published explicit bracket of width
+> not depending on log x. Combined with E1.3 (4-bit sigmoid carry boundary)
+> and the carry-propagation theorem: the *bit-level* structure of p_n
+> within the Dusart bracket is what determines the polylog gap. A polylog
+> p(n) algorithm needs to *navigate* this n-wide window in polylog time;
+> Dusart guarantees the window itself is polylog-describable, the navigation
+> is the bottleneck.
+
+### E6.9 — primecount asymptotic hierarchy                          [EVS L]
+
+`literature/primecount_analysis.md`; Lucy 2008, Walisch primecount.
+
+The state-of-art combinatorial sieve sequence:
+
+| Algorithm | Time | Space | Engineering |
+|-----------|------|-------|-------------|
+| Lucy DP basic | O(x^{3/4}) | O(sqrt x) | direct DP |
+| Lucy + Fenwick | O(x^{2/3} log^{1/3} x) | O(sqrt x) | log update |
+| Gourdon variant | O(x^{2/3} / log^2 x) | O(sqrt x) | two-param family |
+| primecount production | same Big-O | O(sqrt x) | POPCNT counter, mod-240 wheel, multi-level (O(log log x) per event) |
+
+Combined ~10^5 asymptotic constant-factor improvement over naive Lucy DP.
+Mod-240 wheel encoding (8 bits/byte for residues mod 30) is the **concrete
+realisation of E2.1 / E4.1's wheel-W = phi(W)/W bond-dim theorem** — a 4x
+storage compression equal to phi(30)/30 * 30/8 = 8/30 * 30/8 = 1, with the
+factor coming from 8 residues per primorial.
+
+> Why this is an edge: it is the **engineering ceiling of the entire
+> sieve route**. primecount/kim-walisch is within the polylog factor
+> log^{1/3}(x) of HKM (E6.7); breaking past requires NOT a sieve speedup
+> (those have been wrung dry) but a fundamentally different algorithmic
+> structure.
 
 ### E6.6 — Aggarwal 2025 binary search optimality                     [EVS H]
 
@@ -898,6 +1099,46 @@ Lehmer-style sieve algorithm.
 > for any specific pi(x) algorithm**, but **algorithm-specific** — a
 > non-sieve approach could in principle bypass this DAG entirely.
 > Establishes that the sieve route is provably stuck at sqrt(x)-class.
+
+### E7.8 — Curve-encoding cost is at least O(g^2) Frobenius        [EVS shape]
+
+S24; `experiments/wildcard/etale_counting_results.md`.
+
+To represent p(n) as a Frobenius eigenvalue of a curve over F_2, the curve
+must have genus
+
+```
+   g >= p(n) / (2 sqrt 2)             (Hasse-Weil bound saturation)
+```
+
+For x = 10^{100}, g ~ 10^{102}; computing Frobenius eigenvalues of a
+genus-g curve costs O(g^2) by Schoof-Pila or O(g log g) by Couveignes-Lercier
+in the best case. **Either way, exceeds the trivial sqrt(x) by many orders
+of magnitude.**
+
+> Why this is shape-revealing: closes the *entire algebraic-geometry route*
+> (via Weil conjectures / etale cohomology / curve point counting) by a
+> simple counting argument. Any curve big enough to encode pi(x) has too
+> many points to count quickly. **Algebraic geometry is at least as hard
+> as direct sieving for our problem.** Pairs with E7.2 (floor-division
+> not a ring homomorphism) to close most "structured arithmetic" routes.
+
+### E7.9 — Hierarchical Phi recursion calls/x ratio is constant     [EVS shape]
+
+S24; `experiments/wildcard/hierarchical_sieve_results.md`.
+
+For the Meissel-Lehmer recursion `Phi(x, a) = Phi(x, a-1) - Phi(x/p_a, a-1)`,
+the number of recursive calls per unit x is **0.03-0.04, constant in x** for
+x up to 10^9. This is the *fast-multipole hope* (analytic far-field +
+exact near-field) made empirical: there is **no fast-multipole-style
+constant-factor compressibility beyond what the recursion already exploits**.
+The sub-tree sparsity (7.5% non-trivial Möbius terms at N=1000) **does NOT
+scale**: Psi(10^100, 10^50) ≈ 10^100 — the smooth-part shortcut works only
+when the smoothness parameter y << x.
+
+> Why this is shape-revealing: rules out the Greengard-Rokhlin "FMM-for-
+> primes" analogy at the **constant scaling level**, not just on technical
+> grounds. The recursion is Theta(x), not o(x), in calls.
 
 ### E7.7 — Three-pillars meta-theorem (informational closure)        [EVS shape]
 
@@ -1024,6 +1265,13 @@ removed.
 
 - **The big picture:** `novel/info_computation_gap.md`,
   `novel/failure_taxonomy.md`, `novel/pseudorandomness_of_pi.md`.
+- **delta(n) deep structure (E1.7, E1.8, E2.11):**
+  `experiments/information_theory/kt_complexity/SYNTHESIS.md`,
+  `experiments/algebraic/identity_search/RESULTS_SUMMARY.md`.
+- **HKM time-space curve & Aggarwal-Dusart bracket (E6.7, E6.8):**
+  `literature/aggarwal_2025_analysis.md`.
+- **Engineering ceiling of sieve route (E6.9):**
+  `literature/primecount_analysis.md`.
 - **What's proven hard:** `proven/circuit_size_barrier.md`,
   `proven/uniformity_barrier.md`,
   `proven/convergence_acceleration_barrier.md`,
@@ -1042,4 +1290,7 @@ removed.
 ---
 
 *Compiled: 2026-04-25, scanning Sessions 1-49 (690+ closed paths).
+Extended: 2026-04-26 deep file-by-file review — added E1.7, E1.8, E2.11,
+E2.12, E3.12, E6.7, E6.8, E6.9, E7.8, E7.9 plus the finite-size DCT
+caveat to E6.3.
 This document is alive — extend it with new edges as they appear.*

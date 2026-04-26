@@ -12,7 +12,14 @@
 >
 > Recently closed and removed from this file: Connes operator scaling
 > (S53), pi(x) mod q for q in {2..13} via Liouville (S55+S56), Borel+Fejer
-> hybrid (S52), 3-point GUE correlation (S57), N=2000 zeta structure (S45).
+> hybrid (S52), 3-point GUE correlation (S57), N=2000 zeta structure (S45),
+> Helfgott-Thompson M(x) benchmark (S60, sieve route shown tight via E6.7+E7.6).
+>
+> S60 EDGES extension added 10 new edges (E1.7, E1.8, E2.11, E2.12, E3.12,
+> E6.7, E6.8, E6.9, E7.8, E7.9). Effect on this file: FOCUS-2 gains an
+> E2.11 pre-disqualification test (5s vs 30s per candidate); FOCUS-5 gains
+> level-of-distribution as a tracked literature category; the H-T benchmark
+> is removed. FOCUS-1 / FOCUS-3 / FOCUS-4 unchanged.
 
 ---
 
@@ -97,6 +104,27 @@ encodings of pi(x) are known: prime positions, zeta zeros, floor values.
 closed (S15, S16). The *space of additive number-theoretic functions*
 has not been enumerated systematically.
 
+### Pre-test (fail-fastest, **NEW from S60 EDGES extension**)
+
+E2.11 pins R(x) as the **exact** smooth/random separator: iterated finite
+differences of `f(x) = pi(x) - R(x)` grow as white noise with RMS ratio
+→ 2.0 per Δ-application; Hankel rank is full (250/250). So:
+
+> **Pre-disqualification:** for each candidate `T_i`, compute its known
+> leading asymptotic `A_i(x)`. Iterate `Delta^k (T_i - A_i)` for k = 1..7
+> on x ∈ [10^4, 10^6]. **If RMS ratio Delta^{k+1}/Delta^k → 2.0**, the
+> residual is GUE-type and `T_i` is just another encoding of the same
+> information — close immediately, no PSLQ run needed (~5 seconds, not 30).
+> Only candidates whose residual difference operator is **non-white**
+> (ratio bounded away from 2, or annihilated at finite order) advance to
+> the PSLQ stage.
+
+Expected outcome from the pre-test: candidates 1, 2, 4, 5, 6 below all have
+closed-form leading terms whose residuals empirically look GUE-type — they
+should pre-disqualify in seconds. Only candidate 3 (Psi(x, log^c x))
+plausibly survives because the smooth/random split for *smooth-number
+counts* is genuinely different from R(x)'s split.
+
 ### Concrete candidates (test in this order, fail-fast)
 
 1. **Sum of log Gamma fractional part:** `T_1(x) = sum_{n<=x} {log Gamma(n)}`.
@@ -106,7 +134,9 @@ has not been enumerated systematically.
    `T_3(x) = sum_{n<=x} H_n^2`. Both have closed-form leading terms;
    residuals never PSLQ'd against pi(x).
 3. **Smooth-number count Psi(x, B) for varying B:** S26 partially tested
-   B = sqrt(x); B = log^c(x) regime untested.
+   B = sqrt(x); B = log^c(x) regime untested. **Most likely to survive
+   the E2.11 pre-test** — the Dickman/Buchstab piece is structurally
+   different from R(x).
 4. **Divisor function sigma_k summatories (k = 1, 2, 3):** the
    Dirichlet series structures are different from zeta(s); cross-PSLQ
    never run against pi(x) - R(x).
@@ -116,7 +146,7 @@ has not been enumerated systematically.
 6. **Jacobi totient phi(n) summatory:** `T_6(x) = sum_{n<=x} phi(n)`.
    Closed-form leading 3 x^2 / pi^2; residual periodicity untested.
 
-For each, the test is:
+For each candidate that passes the pre-test:
 - Compute `T_i(x)` exactly for x up to 10^6.
 - PSLQ at 60 dps against `{pi(x), pi(x)/log(x), li(x), R(x), x, sqrt(x)}`
   with cross-validation at 4 distinct x values.
@@ -125,9 +155,10 @@ For each, the test is:
 
 Save under `experiments/algebraic/fourth_encoding_search/<candidate>/`.
 
-**Each test is fail-fast** (~30 seconds wall-clock). Six candidates
-per session is feasible. Most likely outcome: 6/6 closures, but the
-search-space narrowing is itself valuable.
+**Each pre-test is ~5 seconds; full PSLQ is ~30 seconds.** With the E2.11
+pre-test, six candidates take well under one focused session. Most likely
+outcome: 5/6 pre-disqualify, 1/6 (Psi) reaches PSLQ and closes there,
+but the search-space narrowing is itself valuable.
 
 ## [FOCUS-3] Brandt MKtP framework deep dive
 
@@ -191,6 +222,14 @@ Sources to scan:
 - ECCC TR2026 for TC^0/NC^1 separations and **Brandt MKtP follow-ups**
 - Connes / Yakaboylu / van Ittersum / Ono author streams
 - primecount / kim-walisch GitHub for new releases
+- **Unconditional level-of-distribution past x^{5/8} (NEW from S60 EDGES
+  extension).** Pascadi 2025 (E3.12) reached x^{5/8} = 0.625 unconditionally,
+  within 0.04 of the algorithmic Meissel-Lehmer threshold x^{2/3} ≈ 0.667.
+  Any unconditional improvement past x^{2/3+epsilon} would convert several
+  conditional pi(x) algorithms (Lagarias-Odlyzko under GRH, etc.) into
+  unconditional ones — this is a publishable status-change for our project.
+  Watch for: Pascadi follow-ups, Maynard streams, Bombieri-Vinogradov
+  improvements, Friedlander-Iwaniec extensions.
 
 Note: most months produce zero algorithmic deltas. Absence of news is
 itself information.
@@ -213,9 +252,10 @@ Rule 11 says no duplicate scripts. Suspects flagged S39, awaiting human review:
 
 Each pair has a companion `_results.md`. Do NOT delete without human approval.
 
-## [BENCHMARK] Helfgott-Thompson O(x^{3/5}) for M(x)
-
-`experiments/sieve/mertens_speedup.py` references H-T (2021). Transfer to
-pi(x) fails (signed -> unsigned barrier, S16), but the M(x) algorithm
-itself was never benchmarked. Won't help pi(x) directly. Useful only if
-some sister-summatory route (M and L) is revisited.
+> **Removed S60:** `[BENCHMARK] Helfgott-Thompson O(x^{3/5}) for M(x)`
+> dropped from this file. E6.7 (HKM time-space curve O~(N^{8/15}) /
+> O~(N^{1/3})) combined with E7.6 (Lucy-DAG pebbling lower bound
+> Omega(x^{5/6}/ln x)) shows the sieve route is asymptotically tight to
+> within x^{0.034}. H-T sits inside this Pareto frontier and benchmarking
+> it would not change project status. The script `experiments/sieve/
+> mertens_speedup.py` remains in place for archival reference.

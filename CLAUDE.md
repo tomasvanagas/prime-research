@@ -51,6 +51,10 @@ experiments/                 <-- ALL experiments organized by topic.
   analytic/ algebraic/ quantum/ ml/ information_theory/
   dynamical/ topological/ sieve/ circuit_complexity/ other/
   wildcard/ proposals/
+  constructions/             <-- NEW (S60): purpose-built mathematical objects
+                                 (custom circuits, rings, transforms, representations,
+                                 algorithms). Each subdir has <name>.py +
+                                 <name>_results.md, optionally definition.md.
   Each .py MUST have a companion <name>_results.md alongside it.
 data/                        <-- Zeta zeros (200/300/500/1000).
 archive/
@@ -89,17 +93,88 @@ FOCUS_QUEUE.md               <-- Deep-dive tasks for focused sessions.
    COMPLETED or add new tasks — do not delete completed task descriptions.
 9. If you find the breakthrough, respond with exactly: I FOUND IT!!!
 
+### Construction is encouraged, not just measurement (S60)
+
+**Strategic note:** the project is heavy on measurement (test, batter,
+PSLQ, close) and light on construction. After 58+ sessions, most work has
+been "measure existing object X and report whether it deviates from random."
+Genuine construction work — *building* a new circuit, algebraic object,
+transform, representation, or algorithm — is welcome and may now be the
+highest-leverage path forward.
+
+**You have explicit permission to invent new mathematical objects** if
+you see how they could help. Examples of what counts as construction:
+
+- **New circuits:** prototype a TC^0 / NC^1 / AC^0 circuit for a specific
+  primitive (e.g., the three FOCUS-1 sub-attacks: Bernstein 2003 smaller-r
+  AKS, non-cyclotomic ring AKS, Healy-Viola Frobenius transplant — none
+  of which has yet been built).
+- **New algebraic objects:** define a custom ring, polynomial system,
+  module, or representation tailored to pi(x). E.g., a non-cyclotomic
+  quotient `Z_n[x]/f(x)` with a designed splitting structure; a custom
+  L-function whose zero set encodes pi(x) less wastefully than zeta;
+  a custom group action whose orbits separate primes from composites.
+- **New transforms:** invent an integral / discrete transform purpose-built
+  for the prime indicator (not just DCT/Fourier/wavelet). The bar is that
+  it must have a concrete forward+inverse computation, not be hand-wavy.
+- **New representations:** alternative encodings of pi(x) — tensor
+  networks, spectral triples, sheaves, simplicial complexes — provided
+  you build an evaluator that produces a number, not just a definition.
+- **New algorithms:** combinations of existing primitives in non-obvious
+  ways (Newton + bisection + Miller-Rabin walks etc. is the model).
+- **New lower-bound techniques:** apply Brandt-MKtP-style diagonalisation,
+  pebbling arguments on non-DAG models, or invent your own.
+
+**Construction rules (so it stays disciplined):**
+
+1. **Each construction MUST produce code that runs**, even if the object
+   is "theoretical." A circuit prototype: write a Python simulator that
+   evaluates it on small inputs. An algebraic object: write its operations
+   and test associativity / cardinality on small parameters. A transform:
+   compute it on at least one concrete input and verify the inverse.
+2. **Each construction MUST be filed under
+   `experiments/constructions/<descriptive_name>/`** with a
+   `<name>.py`, `<name>_results.md`, and (for algebraic objects only) a
+   short `definition.md` giving the object's signature and its expected
+   relationship to pi(x).
+3. **Failed constructions are valuable.** A built-and-tried-and-broken
+   object generates a CLOSED_PATHS entry of much higher information
+   content than yet another statistical battery. File the failure mode
+   (C/E/I or "construction-incoherent" if the object turned out
+   ill-defined) with the same discipline as any other experiment.
+4. **Genuinely novel objects that turn out to work in some non-trivial
+   way** (even partially) get a `novel/<name>.md` entry describing the
+   object, its construction, what it does, and what it doesn't do. The
+   bar for `novel/` placement remains "not in published literature."
+5. **You still cannot rebuild objects that are explicit re-runs of
+   closed paths.** E.g., do not "construct" yet another DCT-of-delta
+   sparsifier (E6.3 caveat closed it). But you CAN construct a novel
+   non-DCT basis if you have a concrete reason to think it might
+   compress where DCT didn't.
+
+**The bar for speculation:** if your construction is more than ~200
+lines of prose without any code or concrete object, you are speculating.
+Either turn it into code or save it as an `archive/ephemeral/` brainstorm
+and move on.
+
 ### What to do when all paths seem closed
 The project is in a mature state. Most sessions will NOT produce breakthroughs.
-Productive work includes:
-- **Literature monitoring:** check for new 2026 publications on pi(x) complexity,
-  TC^0 lower bounds, or zeta zero computation. Update `literature/state_of_art_2026.md`.
+Productive work includes (roughly in order of expected leverage):
+- **Construction work** as described above — currently the most underweighted
+  category and the most likely path to a result. The three FOCUS-1
+  sub-attacks in `TODO.md` are explicit construction tasks none of which
+  has been attempted; FOCUS-3 (Brandt) is another.
+- **Theoretical sharpening:** tighten existing novel results (e.g., extend
+  pseudorandomness measures to larger N, prove the N/2 threshold rigorously,
+  formalise the MPS bond-dim theorem in Lean).
 - **Engineering:** improve `algorithms/v10_c_accelerated.py` (Gourdon variant,
   segmented sieve, SIMD — see BEST_ALGORITHMS.md comparison table).
-- **Theoretical sharpening:** tighten existing novel results (e.g., extend
-  pseudorandomness measures to larger N, prove the N/2 threshold rigorously).
-- **Do NOT** re-run completed experiments, propose approaches already in CLOSED_PATHS,
-  or generate speculative proposals without concrete experiments to run.
+- **Literature monitoring:** check for new 2026 publications on pi(x) complexity,
+  TC^0 lower bounds, or zeta zero computation. Update `literature/state_of_art_2026.md`.
+- **Do NOT** re-run completed experiments, OR propose approaches already in
+  CLOSED_PATHS without a *new* angle on them. (The "no speculative proposals"
+  rule from earlier sessions is **relaxed**: speculation that lands as
+  buildable code in `experiments/constructions/` is now welcome.)
 
 ### File Placement (STRICT — read carefully)
 - **Experiments** go to `experiments/<topic>/` with descriptive filenames.
@@ -120,8 +195,10 @@ Productive work includes:
 - **Results format is `.md` only.** No `.txt` or `.json` for human-readable results.
     Raw data (if needed) goes in `.json`/`.csv` but must have a `.md` summary too.
 - **`novel/`** is ONLY for genuinely original findings not in published literature.
-    - YES: new formulas, novel measurements, original theoretical connections
-    - NO: session syntheses, barrier proofs, ephemeral mode outputs, literature surveys
+    - YES: new formulas, novel measurements, original theoretical connections,
+      **new mathematical objects you constructed that turned out to do something
+      non-trivial** (S60 expansion).
+    - NO: session syntheses, barrier proofs, ephemeral mode outputs, literature surveys.
 - **Session syntheses** (per-session summaries) go to `archive/sessions/`.
 - **Proven barriers** go to `proven/`, not `novel/`.
 - **Ephemeral mode outputs** (proposals, critiques, wildcard brainstorms) go to `archive/ephemeral/`.

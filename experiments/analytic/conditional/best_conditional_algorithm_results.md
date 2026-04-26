@@ -35,6 +35,9 @@ Benchmarked against unconditional Lucy DP (O(x^{2/3})).
 
 *10^4 has persistent error of +1 with all available zeros -- needs higher-order Mobius
  corrections in R(x^rho) or more zeros for the oscillatory sum to cancel.
+ [S62 update: resolved with 2000 zeros. K_min* = 1250. Cliff effect at the
+  0.5 rounding boundary, not a missing correction term. See
+  `experiments/analytic/conditional/k_min_extended/k_min_extended_results.md`.]
 
 **10^5 gets lucky with just 3 zeros due to favorable rounding.
 

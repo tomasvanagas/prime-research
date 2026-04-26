@@ -1,38 +1,29 @@
-I'll proceed with this proposal session. Let me load the tools I'll need and start brainstorming fresh approaches.
-Got enough fresh context. Let me draft the proposals and testable experiments.
-Now I have a good sense of what's been tried. Let me design proposals that genuinely differ from the existing ones. I'll save the proposals doc first, then build runnable tests.
-Now let me build the three test scripts. I'll start with the MPS / TT one.
-Now let me run all three. First a quick smoke test to make sure they don't error before committing to a full run.
-Need to speed up `riemann_R_inverse` — at 0.1s/call, N=8192 takes ~15 min. Let me precompute and cache.
-Cached. Delta std=42, range [-176, 147] for N=8192. Let me update the three scripts to use the cache, then run them.
-Same surgery for the other two scripts:
-Now run all three in sequence.
-Morton ordering for L=13 (odd) overflows. Let me fix.
-Volume-law confirmed for every ordering. Proposal A closed. Now Proposal B.
-LASSO collapsed to zero (alpha too aggressive); OLS overfits at K≥256. Let me refine the alpha grid and add a fairer per-K test.
-LASSO confirms: zero-mode basis is not sparse for delta. Naïve "always predict 0" beats every sparse fit. Proposal B closed. Now C:
-All three closed empirically. Let me verify each `_results.md` exists and has good content, plus check the precompute script has its companion results file.
-`session49_precompute_data.py` is missing a `_results.md` companion. Let me write one + the missing-results scan.
-Let me also strengthen the auto-written results files with more detail, since the current versions are short.
-Now the missing-results scan and pycache cleanup.
-All `_results.md` companions present, pycache cleared. Final summary write-up + `.run_state`.
-Session 49 done. Three fresh proposals tested, all closed by negative empirical results.
+I'll skip CLAUDE.md and CLOSED_PATHS.md as instructed, and generate fresh proposals. Let me first check the workspace structure.
+Many topics have been explored already. Let me brainstorm genuinely fresh angles and write them up. I'll plan four distinct proposals and run small tests.
+Let me check a couple of related-sounding existing files, to make sure my proposals are sufficiently distinct.
+Now I have enough sense of the prior work. Let me commit to four genuinely novel proposals and write code for each.
+Now P1: D-finite recurrence hunt for δ(n).
+The "potential" finds at d=4 are likely conditioning artifacts (matrix entries span 12 orders of magnitude). Let me harden the test: column-normalize, oversample rows, and validate any candidate recurrence on held-out data.
+The "decreasing test residual" is normalization scaling, not a real signal. Let me use the natural test: use the recurrence to predict δ(n+L) on held-out data and compare to actual.
+P1 is decisively negative. Let me write up its results and move to P2.
+Now P2: mollifier-corrected explicit formula. I need zeta zeros — let me check what's available.
+P2 fails: the mollifier weighting actually *worsens* the partial sums. Let me write up.
+P3's predictor passes (RMSE 0.33 < 0.5), but the algorithm is circular: computing Δ in the window requires knowing π values, which is the original problem. Let me write up.
+Now P4: iterated Newton with progressive zero-budget.
+P4 is mostly negative — Newton works for tiny n but stalls at the scale of prime gaps for n ≥ 1000.
+Verify all session63fresh scripts have results files, clean up __pycache__, then write run state.
+All results files present, no `__pycache__` to clean. Now write the run state.
+## Session 63 — Proposal Session Summary
 
-**Proposals attacked:**
-- **A. Reordered TT compression of delta(n)** — tested 7 orderings (identity, bit-reversal, Gray, Morton, 2-adic, sort-by-R^{-1}, random). All saturate the volume-law bond ceiling 64 = √8192/2, matching gaussian noise. No ordering helps.
-- **B. LASSO compressed-sensing in zero-mode basis** — across alpha sweep {1e-6,…,1e-1} and K up to 1024 zeros (γ ≤ 1447), LASSO selects nnz=0 as best test-RMSE solution at every K. OLS overfits catastrophically at K≥256.
-- **C. Learned residues at fixed zeros** — ridge/OLS at K up to 2000 zeros never exceeds the 1.1% naive R^{-1} round-recovery rate. Learned coefficients fail to absorb the truncation tail.
+Four fresh proposals tested, all closed with three useful by-products:
 
-All three close by **failure mode I (information loss)**: delta(n) is empirically indistinguishable from GUE-random in every basis tested.
+| # | Proposal | Verdict | Failure mode |
+|---|----------|---------|--------------|
+| P1 | D-finite recurrence hunt for δ(n) | CLOSED | I — held-out skill 0.5–1.3 (no signal) up to (L=4, d=4) |
+| P2 | Mollifier-corrected explicit formula | CLOSED | E — mollifier kills first K zeros but weighted sum is *worse* than sharp |
+| P3 | RMT local-moment predictor for Δ(x) | CLOSED (circular) | C — predictor passes (RMSE 0.33), but obtaining the window is the original problem |
+| P4 | Newton with progressive 2^k zero-budget | CLOSED | I — converges at n=100 (6 zeros, error 0.016) but oscillates for n≥1000 because π_K noise ≈ prime gaps |
 
-**Files written:**
-- `archive/ephemeral/proposals_session.md` — three fresh proposals
-- `experiments/proposals/session49_{precompute_data,mps_delta_orderings,compressed_sensing_zeros,neural_zero_residue}.py` + matching `_results.md`
-- `experiments/proposals/session49_data.npz` — cache of p(n), R^{-1}(n), delta(n) for n=1..8192
-- `.run_state` set to 30.
+**By-products worth keeping:** P1's methodology lesson (validate null-space relations via held-out prediction, not training SVD), P3's confirmation that Δ is locally smooth (std(Δ) < 2 over 200-windows), and P4's quantitative obstruction (π_K-noise × log(x) > prime gap for n ≥ 1000).
 
-**Sources:**
-- [Cramér's conjecture / efficient algorithm conditional](https://michaelnielsen.org/polymath/index.php?title=An_efficient_algorithm_exists_if_Cramer's_conjecture_holds)
-- [Maynard-Tao sieve weights (2024 / 2025)](https://arxiv.org/abs/2403.19696)
-- [Counting primes in Õ(n^{2/3})](https://codeforces.com/blog/entry/91632)
-- [Tensor network compression survey 2026](https://arxiv.org/abs/2505.20132)
+Files: `archive/ephemeral/proposals_session.md`, `proposals_latest.md`, and four `experiments/proposals/session63fresh_*.{py,_results.md}` pairs. `.run_state` set to 40.

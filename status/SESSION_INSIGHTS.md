@@ -2142,3 +2142,289 @@ movement on it in this window. The only genuinely open research direction
 ### State of FOCUS queue / project
 No breakthrough. No closures. No new attack surfaces. Steady state
 preserved.  Next literature watch in ~3 weeks (~S70).
+
+---
+
+## Session 59 (2026-04-26, deep focus task #3 — FOCUS-6 fourth-encoding sweep)
+
+Run #33 in the rotation cycled to focused-mode Task #3 ("Novel Identity
+Search"), which was already CLOSED in S29.  Per CLAUDE.md guidance ("do not
+re-run experiments on closed paths"), this session worked the natural live
+extension: TODO.md's FOCUS-6 — exhaustive enumeration of fourth-encoding
+candidates via additive/multiplicative number-theoretic functions whose
+summatory `S_f(x) = sum_{n<=x} f(n)` might be informationally equivalent to
+π(x) up to polylog conversion.
+
+### What was tested
+21 candidate functions: {chi_P, Λ, λ, μ, Ω, ω, σ_0, σ_1, φ, J_2, log n,
+1/n, 20-smooth indicator, 20-rough indicator, base-10 digit sum, popcount,
+v_2, r_2 (sum of two squares), LPF, lpf−1, λ(n)/n}.
+
+For each, we measured on x ∈ [10³, 10⁵]:
+* polylog-evaluability of S_f(x) (analytic closed-form yes/no);
+* residual R_f(x) = S_f(x) − M_f(x) after smooth-basis fit;
+* growth slope α from log-log of |R_f|;
+* ρ = corr(R_f(x), E_π(x) = π(x) − Li(x));
+* free-identity probes mod {2, 3, 5}.
+
+### Result
+**Zero hits.** No candidate satisfies polylog ∧ |ρ| > 0.6 ∧ α > 0.4.
+The two desired properties are mutually exclusive across every candidate
+examined: either S_f is polylog by virtue of a smooth-Dirichlet closed
+form (Stirling / Hurwitz / Trollope / Dickman) and decouples from primes
+(mode I), or S_f carries prime info via a Mertens-type residual that
+needs zeta zeros (mode E) or factorisation (mode C).
+
+### Validation that the probe works
+The probe correctly reproduces the known free identity
+**L(x) mod 2 = x mod 2** (E2.10, S55) — the mod-2 column for Liouville is
+exactly 1.000.  It also flags the digit-sum-mod-3 free identity
+(`s_10(n) ≡ n mod 3`) as a 0.642 hit — a non-prime free identity that
+illustrates exactly the pitfall FOCUS-6 was designed to detect.
+
+### What this adds to the cumulative picture
+* Pre-S29: 15+ intermediate-quantity families closed (S15/S16).
+* S55-S56: Liouville + 34 character-twisted Liouville variants closed.
+* **S59 (this session): +21 candidates closed.**
+* Cumulative ≈ 70 distinct fourth-encoding routes empirically excluded.
+
+The three-pillars meta-theorem (EDGES E7.7) is reinforced: every additive/
+multiplicative encoding tested either is trivially smooth (M_f(x) is the
+entire content) or routes back to {prime positions, zeta zeros, floor
+values}.
+
+### Files
+* `experiments/algebraic/fourth_encoding_search/fourth_encoding_search.py`
+* `experiments/algebraic/fourth_encoding_search/fourth_encoding_search_results.md`
+* `experiments/algebraic/fourth_encoding_search/fourth_encoding_search_data.csv`
+* `status/CLOSED_PATHS.md` (one new entry under "Encoding / Novel Representations")
+* `archive/sessions/session59_fourth_encoding.md` (this synthesis)
+
+### State of FOCUS queue / project
+FOCUS-6 remains formally open (an exhaustive proof of "no fourth encoding
+exists" is not given), but the empirical wall is now ~70 candidates thick.
+Recommended next step on FOCUS-6: a more abstract analytic argument
+(Dirichlet-series Euler-product structure ⇒ either zeta-coupled or
+prime-decoupled), rather than further candidate enumeration.
+
+## Session 60 (2026-04-26, S35-fresh proposals + critique cycle)
+
+### Cycle structure
+A "fresh-eyes" proposal session generated four blinded proposals
+(`archive/ephemeral/proposals_session.md`) without reading CLOSED_PATHS,
+ran each as a small (N <= 16384) experiment in
+`experiments/proposals/session35fresh_*.py`, and self-reported all four
+as FAIL. This critique cycle (S60) verified the FAIL verdicts against the
+533-entry catalogue.
+
+### Proposals + verdicts
+1. **WHT sparsity of chi_P** — top-1024/16384 = 53% L^2 mass, entropy
+   10.79/14 bits. DUPLICATE of line 702 (S49 Haar) under Donoho-Stark
+   basis-invariance.
+2. **PSLQ on delta(n) with 7-feature dictionary** — 39/40 windows give
+   distinct integer signatures, residuals 10-200. Ninth PSLQ-on-delta
+   variant; strict subset of line 703 (S49) basis.
+3. **MPS bond dim of chi_P at midpoint** — empirical rank ~ 2^{0.485 L} ~
+   sqrt(N). Duplicates the W=2 specialisation of S41's closed-form theorem
+   rank = min(W^j, phi(W)*W^{d-j-1}+1) (line 518).
+4. **Dirichlet AP explicit formula mod 12** — T=40 gives 1/20 exact pi(x;q,a),
+   max diff 74. Duplicates lines 29-31 / 70 / 693 (per-character GRH error
+   x^{1/2+eps}/T inherited).
+
+### Outcome
+Four entries added to `CLOSED_PATHS.md` (now 537+). No additions to
+`OPEN_PROBLEMS.md`. No `novel/` document. Critique saved to
+`archive/ephemeral/critique_latest.md`.
+
+### Meta-observation
+At this catalogue density, blinded fresh-eyes proposals at small N tend to
+re-derive existing closures. Three of the four S35-fresh tests could have
+been recognised as duplicates from the proposal text alone. Future cycles
+should pre-screen proposals against CLOSED_PATHS before running any code.
+
+### Files
+- `archive/ephemeral/critique_latest.md`
+- `archive/sessions/session60_s35fresh_critique.md` (this synthesis)
+- `status/CLOSED_PATHS.md` (4 new entries)
+
+## Session 61 (2026-04-26, FOCUS-1 sub-attack 2 construction — non-cyclotomic ring AKS)
+
+### Construction
+Built and probed the AKS congruence
+
+```
+   (x + b)^n  ≡  x^n + b   (mod  x^d + a, n)
+```
+
+with `f(x) = x^d + a` (Eisenstein-flavour, non-cyclotomic) replacing
+the standard `x^r - 1`. Question per `TODO.md` FOCUS-1 sub-attack 2:
+does the non-cyclotomic ring decomposition (a) admit a TC^0
+irreducibility certificate, and (b) preserve AKS-style correctness?
+
+Construction discipline (CLAUDE.md S60 rules): ran on `n` up to 410041
+with multiple `(d, a, b)`, including 30 Carmichael numbers and 13
+Fermat-pseudoprimes-base-2 as adversarial cases.
+
+### Empirical finding
+Clean structural separation between cyclotomic and non-cyclotomic
+choices on Carmichael numbers:
+
+| `d` | `a=1` (cyclotomic-flavour) Carm leak | `a=2` (Eisenstein) Carm leak |
+|-----|--------------------------------------|------------------------------|
+| 3   | 19/30                                 | 0/30                         |
+| 4   | 3/30 (= Phi_8)                       | 0/30                         |
+| 5   | 2/30                                  | 0/30                         |
+| 6   | 5/30                                  | 0/30                         |
+| 8   | 0/30 (Phi_16 too restrictive)        | 0/30                         |
+| 12  | 0/30                                  | 0/30                         |
+
+Korselt's criterion for Carmichaels aligns with small cyclotomic factors
+of `x^d + 1` (e.g. Carmichaels sharing prime factor 7 leak through `d=3`);
+setting `a = 2` destroys the alignment.
+
+### Closure
+**FAIL — (E) Equivalence + (C) Circularity**.
+
+* (E) The polynomial congruence with `d = polylog(n)` requires
+  growing-dim matrix powering — *exactly* E5.3 (the only Chain-E open
+  frontier). Modulus structure is orthogonal to depth.
+* (C) Capelli-test for `x^d + a` irreducibility over `F_p` is in TC^0
+  *if* `p | n` is supplied; producing it is at least as hard as
+  primality testing.
+* No correctness theorem analog of AKS counting argument exists for
+  Eisenstein moduli.
+
+CLOSED_PATHS entry added (now 538+). FOCUS-1 sub-attack 2 closed.
+Sub-attacks 1 (Bernstein 2003 smaller-r) and 3 (Healy-Viola Frobenius
+transplant) remain.
+
+### Meta-observation
+This is a CLAUDE.md-S60-style construction failure — built an actual
+ring, ran it on adversarial inputs, found a small structural sharpening
+(a=1 vs a=2 Carmichael leak) that does NOT escalate to a breakthrough.
+Higher information content than yet another statistical battery on
+chi_P; correctly does not become a `novel/` document because the
+underlying Korselt/cyclotomic interaction is folklore. Status of
+`OPEN_PROBLEMS.md` and Chain E unchanged.
+
+### Files
+- `experiments/circuit_complexity/aks_alternative/non_cyclotomic_ring/`
+  (`non_cyclotomic_ring.py` + `non_cyclotomic_ring_results.md`)
+- `archive/sessions/session61_non_cyclotomic_aks.md` (this synthesis)
+- `status/CLOSED_PATHS.md` (1 new entry)
+
+## Session 62 (2026-04-26, deep focus task #4 — K_min extension with 2000 zeros)
+
+### Context
+Task #4 (Conditional Algorithms) was closed in Session 33 with the verdict
+that no standard conjecture (RH, GRH, EH, Cramer's, ...) reduces exact
+pi(x) below O(x^{1/2+eps}). Session 33 left one outstanding empirical loose
+end: at x = 10^4 every K from 1 to 1000 produced rounded value 1230 instead
+of the true 1229. The classical RH truncation bound at T = 1419 (1000-th
+gamma) evaluates to ~0.65, sitting on the +-0.5 rounding cliff -- so the
+Session 33 result was a suspected cliff effect, not a real anomaly.
+
+### Method
+With 2000 zeros now available (max gamma = 2515.286), we computed the full
+trajectory pi_K(x) for K = 0..2000 in a single O(K) incremental pass at 30
+dps, for x in {10^3, 10^4, 10^5, 10^6, 10^7}. Reported two K-metrics:
+K_min (first round-correct) and K_min* (first K stable for >= 50
+consecutive successes; avoids "lucky rounding").
+
+### Findings
+
+1. **Session 33 anomaly resolved.** At x = 10^4 the residual passes through
+   +0.5 around K = 1250 and stabilises at +0.010 by K = 2000. K_min* = 1250,
+   exactly the additional zeros Session 33 lacked. No hidden correction
+   term needed.
+
+2. **K_min* is wildly non-monotonic in x.** Across the trajectories:
+   x = 10^3 -> 81, x = 10^4 -> 1250, x = 10^5 -> 572,
+   x = 10^6 -> >2000 (still outside +-0.5 at K = 2000),
+   x = 10^7 -> 1912.
+   Phase alignment of the GUE-correlated zero contributions can push the
+   round-correct cliff much earlier or later than the median.
+
+3. **Empirical K_min* << classical T_min.** At x = 10^7 the classical
+   bound 2 sqrt(x) log^2 x predicts T_min ~ 1.64 * 10^6, but K_min* = 1912,
+   ~10^3-fold smaller. This is purely a constant-factor effect (loose
+   classical bound + oscillation passing through zero); it does NOT reduce
+   the asymptotic O(sqrt(x)) lower bound.
+
+4. **Naive linear fit K_min* ~ x^0.275** is misleading -- four data points
+   with two phase-luck dominated outliers. Asymptotic remains O(sqrt(x))
+   up to logs.
+
+### Closure
+**CONFIRMS Session 33 verdict.** Failure mode: Information Loss (I).
+Doubling the zero data does not change the asymptotic; constants are
+loose, exponent is tight. No new CLOSED_PATHS entry needed (the path is
+already closed); the loose end about x = 10^4 is now resolved in the
+results file.
+
+### Meta-observation
+The "K_min* is non-monotonic in x" effect deserves to be remembered: it
+means small-K_min(x) measurements at any single x are not a reliable
+estimator of the asymptotic K_min curve. Future analytic-formula
+experiments should either average over an interval of x or use the
+classical bound, not a single empirical K_min value.
+
+### Files
+- `experiments/analytic/conditional/k_min_extended/k_min_extended.py`
+- `experiments/analytic/conditional/k_min_extended/k_min_extended_results.md`
+- `experiments/analytic/conditional/k_min_extended/run.log`
+- `archive/sessions/session62_k_min_extended.md` (this synthesis)
+
+---
+
+## Session 63 — Critique of S63 fresh proposals (D-finite δ, mollifier, RMT moments, Newton zero-budget)
+**Date:** 2026-04-26
+
+### Context
+S63 (proposer) generated four fresh proposals without consulting CLOSED_PATHS.md,
+ran each, and self-closed all four. This critique session verified the verdicts
+against the 537+-entry catalogue.
+
+### Verification result
+All four self-verdicts hold up:
+- **P1 (D-finite recurrence on δ):** novel sub-test (first run of D-finite hunt
+  on δ rather than π or 1_P), confirms broader holonomic-on-prime closures
+  (lines 576, 577, 680). Mode I.
+- **P2 (Selberg Dirichlet-polynomial mollifier):** duplicate-plus of line 693
+  (Hermite/Gaussian/Riesz mollification). Different kernel shape, same
+  general-kernel tail-bound argument. Caveat: experiment uses naive M(ρ)/M(1)
+  weighting without ζ·M's M-zero/pole contributions; theoretical closure is
+  decisive regardless. Mode E.
+- **P3 (RMT local-moment predictor on Δ):** confirmed circular. Predictor
+  passes empirically (RMSE 0.33 over H=200 window) but obtaining the window
+  requires π values, which is the original problem. Mode C.
+- **P4 (Newton with progressive 2^k zero-budget):** duplicate-plus of line 685
+  (R⁻¹ fixed-point with zero correction). Different map (Newton-on-π vs
+  R⁻¹-fixed-point), identical failure mechanism (GUE-random tail noise
+  amplified by 1/π'(x) ≈ log x to prime-gap scale). Mode I.
+
+### Side-findings worth keeping
+1. **Methodology lesson (P1):** when running null-space / PSLQ / D-finite
+   searches on data with multiplicative column-scale spread, validate via
+   held-out **prediction**, not via training-side singular-value ratios.
+   Column conditioning fakes rank deficiency at 1e-13.
+2. **Δ local smoothness (P3):** std(Δ) over 200-point window < 2 even at
+   X = 5×10^4, with weighted-mean predictor RMSE 0.33. Supports Δ entropy
+   at scale X is concentrated at frequencies ≥ 1/√X. Worth a paragraph in
+   novel/pseudorandomness_of_pi.md ONLY after a Cramér-random control to
+   confirm prime-specific behavior; deferred.
+3. **Quantitative Newton obstruction (P4):** required K satisfies
+   √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog. Geometric
+   K_k = 2^k cannot break the √x barrier. Clean complement to line 685.
+
+### Closure
+Four CLOSED_PATHS entries added (S63 batch). No additions to OPEN_PROBLEMS.md.
+No additions to novel/. OPEN_PROBLEMS still has only Circuit Complexity of π(x)
+as a viable direction.
+
+### Files
+- `archive/ephemeral/critique_latest.md` (this critique)
+- `archive/sessions/session63_proposals_critique.md` (synthesis)
+- `status/CLOSED_PATHS.md` (4 new entries after line 714)
+- `experiments/proposals/session63fresh_*.{py,_results.md}` (proposer's artifacts)
+
