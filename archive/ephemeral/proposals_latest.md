@@ -1,40 +1,38 @@
-I'll search for recent papers and techniques in parallel, then develop concrete proposals.
-Good research done. Now let me develop the proposals and write test code.
-Let me check what's in the data directory for zeta zeros, and look at the existing best algorithm for reference.
-Now let me write all four proposals as testable Python code. I'll create them in parallel.
-All four proposal scripts written. Now let me run them all in parallel.
-The zeros aren't loading. Let me debug the file path issue and fix the scripts.
-The file has no index column — just one value per line. Let me re-read to confirm.
-The file has one value per line (no index column — the Read tool adds line numbers). The parser expects 2 columns but finds 1. Let me fix all scripts.
-Now run all four in parallel:
-Good results from proposals 21 and 22. Let me fix the bugs in 23 and run 23+24.
-All four proposals ran successfully. Very interesting results. Let me now write the results files and the session proposal document.
-Now let me write the session proposals document.
-Now clean up and save run state.
-## Session 36 Complete — 4 Proposals Tested
+I'll proceed with this proposal session. Let me load the tools I'll need and start brainstorming fresh approaches.
+Got enough fresh context. Let me draft the proposals and testable experiments.
+Now I have a good sense of what's been tried. Let me design proposals that genuinely differ from the existing ones. I'll save the proposals doc first, then build runnable tests.
+Now let me build the three test scripts. I'll start with the MPS / TT one.
+Now let me run all three. First a quick smoke test to make sure they don't error before committing to a full run.
+Need to speed up `riemann_R_inverse` — at 0.1s/call, N=8192 takes ~15 min. Let me precompute and cache.
+Cached. Delta std=42, range [-176, 147] for N=8192. Let me update the three scripts to use the cache, then run them.
+Same surgery for the other two scripts:
+Now run all three in sequence.
+Morton ordering for L=13 (odd) overflows. Let me fix.
+Volume-law confirmed for every ordering. Proposal A closed. Now Proposal B.
+LASSO collapsed to zero (alpha too aggressive); OLS overfits at K≥256. Let me refine the alpha grid and add a fairer per-K test.
+LASSO confirms: zero-mode basis is not sparse for delta. Naïve "always predict 0" beats every sparse fit. Proposal B closed. Now C:
+All three closed empirically. Let me verify each `_results.md` exists and has good content, plus check the precompute script has its companion results file.
+`session49_precompute_data.py` is missing a `_results.md` companion. Let me write one + the missing-results scan.
+Let me also strengthen the auto-written results files with more detail, since the current versions are short.
+Now the missing-results scan and pycache cleanup.
+All `_results.md` companions present, pycache cleared. Final summary write-up + `.run_state`.
+Session 49 done. Three fresh proposals tested, all closed by negative empirical results.
 
-All four proposals were developed, coded, tested on n < 10,000, and documented. Here's the executive summary:
+**Proposals attacked:**
+- **A. Reordered TT compression of delta(n)** — tested 7 orderings (identity, bit-reversal, Gray, Morton, 2-adic, sort-by-R^{-1}, random). All saturate the volume-law bond ceiling 64 = √8192/2, matching gaussian noise. No ordering helps.
+- **B. LASSO compressed-sensing in zero-mode basis** — across alpha sweep {1e-6,…,1e-1} and K up to 1024 zeros (γ ≤ 1447), LASSO selects nnz=0 as best test-RMSE solution at every K. OLS overfits catastrophically at K≥256.
+- **C. Learned residues at fixed zeros** — ridge/OLS at K up to 2000 zeros never exceeds the 1.1% naive R^{-1} round-recovery rate. Learned coefficients fail to absorb the truncation tail.
 
-### Results
+All three close by **failure mode I (information loss)**: delta(n) is empirically indistinguishable from GUE-random in every basis tested.
 
-| # | Proposal | Verdict |
-|---|---------|---------|
-| **21** | Zero Clustering Truncation | CLOSED — tail contributions unpredictable; each zero carries independent info |
-| **22** | Compressed Sensing on delta(n) | CLOSED — delta is NOT sparse in any tested basis; 11-16% extrapolation accuracy |
-| **23** | PSLQ Integer Relations | CLOSED — normalized delta passes Gaussian normality test; no universal formula |
-| **24** | Dequantized Grover Sieve | CLOSED — primality operator rank ~ N^{0.365}, not polylog |
+**Files written:**
+- `archive/ephemeral/proposals_session.md` — three fresh proposals
+- `experiments/proposals/session49_{precompute_data,mps_delta_orderings,compressed_sensing_zeros,neural_zero_residue}.py` + matching `_results.md`
+- `experiments/proposals/session49_data.npz` — cache of p(n), R^{-1}(n), delta(n) for n=1..8192
+- `.run_state` set to 30.
 
-### Key New Insights
-
-1. **10 zeros give O(1) accuracy** but ~1.3 average error — not enough to pin down the exact prime. The "last mile" is the hard part.
-
-2. **Normalized delta(n) is Gaussian** (p=0.19 normality test). This is strong evidence the residual is genuinely random, not just hard to compute.
-
-3. **Sieve matrix rank scales as N^{0.365}** — any rank-based approach is bounded away from polylog.
-
-4. **delta(n) is dense in all tested bases** — Fourier needs 50+ coefficients for 87% energy, zeta zero basis is 69% dense at 100 terms.
-
-### Files Created
-- 4 experiment scripts in `experiments/proposals/` (proposals 21-24)
-- 4 companion `_results.md` files
-- Session summary in `archive/ephemeral/proposals_session.md`
+**Sources:**
+- [Cramér's conjecture / efficient algorithm conditional](https://michaelnielsen.org/polymath/index.php?title=An_efficient_algorithm_exists_if_Cramer's_conjecture_holds)
+- [Maynard-Tao sieve weights (2024 / 2025)](https://arxiv.org/abs/2403.19696)
+- [Counting primes in Õ(n^{2/3})](https://codeforces.com/blog/entry/91632)
+- [Tensor network compression survey 2026](https://arxiv.org/abs/2505.20132)

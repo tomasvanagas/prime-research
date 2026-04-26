@@ -1194,3 +1194,951 @@ engineering work per CLAUDE.md guidelines.
     already in `literature/state_of_art_2026.md`.
 
 (d) **2 approaches closed, ~533 total.**
+
+---
+
+## Session 42 (Deep Focus — Base-W MPS bond dimension theorem)
+
+**Focus:** Tighten the MPS bond dimension novel finding by verifying the
+predicted base-W generalisation across several primorial reshapes.
+FOCUS_QUEUE Task 1 was already COMPLETED; session pivoted to theoretical
+sharpening of an existing novel result, per CLAUDE.md guidance.
+
+### What was done
+
+Refactored `experiments/wildcard/mps_bond_dimension.py` to support a
+`--base W` argument and ran two families:
+
+  - **Family A (replication):** W = 2, d in {10, 12, 14, 16, 18, 20}.
+    Reproduces chi_P max-rank = 2^{d/2-1} + 1 exactly. Random control
+    saturates 2^{d/2}.
+  - **Family B (base-W theorem):** W in {2, 6, 30, 210}, d up to 20.
+    Tested the precise prediction
+        rank at cut j = min(W^j, phi(W) * W^{d-j-1} + 1).
+
+### Theorem proved + verified
+
+> rank(M^{(j)} of chi_P viewed in base W)
+>   = min( W^j, phi(W) * W^{d-j-1} + 1 )
+>
+> at every cut 1 <= j < d, for every primorial W >= 2.
+
+The upper bound follows from "n > W and n prime => gcd(n, W) = 1, so
+column index k satisfies gcd(k+1, W) = 1": rows i >= 1 are supported
+on phi(W) * W^{d-j-1} columns, plus row 0. Empirically saturated at
+strict equality in all 11 tested configurations (W=2/d=10..20, W=6/d=4..8,
+W=30/d=2..4, W=210/d=2..3).
+
+### Half-cut compressibility ratio table
+
+| W   | phi(W)/W | observed chi_P / random (largest d tested) |
+|-----|----------|--------------------------------------------|
+| 2   | 0.5000   | 0.5010 at d=20                             |
+| 6   | 0.3333   | 0.3341 at d=8                              |
+| 30  | 0.2667   | 0.2678 at d=4                              |
+| 210 | 0.2286   | 0.2333 at d=2                              |
+
+Ratio asymptotes to phi(W)/W as d grows (the +1 row-0 contribution
+vanishes).
+
+### Why this still does NOT yield polylog
+
+The half-cut bond dim is exactly phi(W) * W^{d/2-1} + 1, which is
+Theta(W^{d/2}) for any fixed primorial W. To make this polylog in
+N = W^d we would need W to grow with d, but the cost of materializing
+the wheel is at least W = exp(log N / d), and the optimum cost
+exp(log N / 2) = sqrt(N) is achieved at d = 2. Same Lagarias-Odlyzko
+sqrt(N) barrier, recovered from a pure entanglement argument with no
+zeta zeros.
+
+### Files updated
+
+- `novel/mps_bond_dimension.md` — added base-W theorem section, proof,
+  saturation table for all (W, d) tested.
+- `experiments/wildcard/mps_bond_dimension_results.md` — extended with
+  Family B table, per-cut profiles for W=30/d=4 and W=6/d=8, polylog
+  obstruction analysis.
+- `novel/pseudorandomness_of_pi.md` — added Measures 22 and 23
+  (TT bond dim at base-2 half cut; TT bond dim ratio at base-W half cut).
+- `status/CLOSED_PATHS.md` — appended one row for the base-W MPS measurement.
+
+### Key insight
+
+The previous tensor experiments (S10 MPS sieve, S20 product DFA) studied
+state-count or transfer-matrix rank, not the bond dimension of the
+indicator vector itself viewed in a primorial reshape. The new theorem
+gives the FIRST clean exact identity for the entanglement-theoretic
+compressibility of chi_P:
+
+  every prime added to the wheel knocks the bond-dim ratio down by
+  (p-1)/p, mirroring the classical Mertens product
+  prod_{p<=W}(1 - 1/p) ~ e^{-gamma}/log W.
+
+So the MPS view recovers the Lagarias-Odlyzko sqrt(N) barrier
+*without* invoking the zeta zeros at all -- a cleaner derivation of why
+the analytic methods cannot break sqrt(N), framed entirely in tensor
+network language.
+
+(e) **1 approach (base-W MPS) added to CLOSED_PATHS, 534 total.**
+
+---
+
+## Session 43 (2026-04-25): Critique of TDA / J-fraction / Free probability / Reservoir / Stein-method
+
+Five fresh proposals (F1-F5 in `archive/ephemeral/proposals_session.md`) generated
+and critiqued in critic mode. **No proposal survived.** Five new entries added to
+`status/CLOSED_PATHS.md` (~539 total).
+
+### Verdicts
+
+- **F1 (Persistent homology of detrended primes, TCDP):** DUPLICATE — already
+  closed at line 199 (Session 10). Companion experiment confirms long-lived 0-dim
+  bar count is sub-(N/log N) but Cramér-model baseline is too. No inverse map from
+  barcode to p_n exists without using the original 1D ordering of n (which IS pi).
+- **F2 (J-fraction of pi(n)/n generating function, PPC):** DUPLICATE.
+  J-fraction coefficients (a_k, b_k) for k=0..11 erratic — b_3=-3, b_4=-8.28,
+  b_12=-407.4. Linear log-decay of Hankel determinants is a trivial consequence
+  of moments in [0,1], not D-finiteness. Closes related entries lines 286, 289,
+  299, 342, 435.
+- **F3 (Free-probability R-transform, FCP):** FLAWED by inspection. A_N = diag(1_P)
+  is idempotent, so empirical spectral distribution = (1-pi(N)/N)*delta_0 +
+  (pi(N)/N)*delta_1, parameterized by pi(N) alone. R-transform is closed-form
+  q/(1-qz) — encodes only pi(N) (circular).
+- **F4 (Reservoir computing on delta(n)):** DUPLICATE — strict subset of failed
+  ML methods (transformer 1.1% accuracy line 149; FNO 0.5% line 150; GP 0.45%
+  line 151; symbolic regression line 146; ML for delta line 588).
+- **F5 (Stein-method sub-Gaussian explicit-formula error, SGEFE):** FLAWED —
+  empirically falsified this session. Computed f_T(x) = R(x) - sum_{|gamma|<T}
+  2 Re R_log(rho*log x) for x in {100..10000}, T in {10..1000}, all 1000 zeros.
+  log10|err| vs T^2/log(x): slope ~-3e-6, R^2 = 0.2-0.4 — no sub-Gaussian decay.
+  Tail L^2 norm sqrt(x*logT/T) is the rate; no concentration gap to exploit.
+
+### Process notes
+
+- The F5 experiment initially had a mp.log branch-cut bug (principal log of x^rho
+  loses periods of 2*pi*i) that produced absurdly large errors. Fix: pass rho*log(x)
+  directly to Ei without going through x^rho. Lesson — when dealing with li / Ei of
+  complex argument with large imaginary part, always work in log-space.
+- F3 collapses by an *idempotence* observation that takes one paragraph; the
+  proposal spent 50 lines describing the R-transform machinery. Routine
+  novelty-of-language failure: dressing pi(x) in unfamiliar terminology does not
+  create new structure.
+
+### Remaining open direction
+
+Still only **circuit complexity of pi(x)** (`status/OPEN_PROBLEMS.md` Problem 1)
+plus Berry-Keating literature monitoring. No experiment proposed this session
+moved that forward.
+
+---
+
+## Session 44 (2026-04-25): TODO #3 -- inversion_search fixed-point iteration
+
+Stale [RESEARCH] item from `TODO.md`. Two infrastructure bugs blocked it from
+running:
+1. `experiments/sieve/inversion_search.py` inserted its own dir on `sys.path`
+   to find `riemann_explicit`, which lives in `experiments/analytic/`.
+2. `experiments/analytic/riemann_explicit.py::load_or_compute_zeros` only
+   looked in its own dir; precomputed zeros are in `data/`.
+
+Both fixed. The second fix benefits 4 other importers
+(`hybrid_correction`, `zero_scaling`, `convergence_accel`, `advanced_convergence`).
+
+### Empirical finding
+
+Fixed-point iteration `p_0 = R^{-1}(n)`, `p_{k+1} = R^{-1}(n + sum_rho R(p_k^rho))`
+is **non-contracting** -- a sharper closure than the previous "needs O(sqrt(x))
+zeros" framing. Measured at dps=30, 200 zeros, max_iter=3:
+
+| n     | k=0 err | k=1 err | k=2 err   | k=3 err | first exact |
+|------:|--------:|--------:|----------:|--------:|------------:|
+| 10    | -0.67   | -2.36   | **-0.14** | -1.89   | k=2         |
+| 100   | +4.10   | -3.92   | -3.59     | -3.68   | none        |
+| 1000  | -4.05   | **-0.16** | -0.64   | -0.57   | k=1         |
+| 10000 | -39.31  | -12.16  | -13.15    | -13.11  | none        |
+
+The iteration sometimes hits within 0.5 of p(n) at one specific k, then *drifts
+back away* at the next iteration -- the would-be fixed point is unstable. ~50%
+of tested n never converge within 3 steps (200 zeros). Increasing num_zeros is
+**non-monotone**: at n=1000 with 2-iter budget, 200 zeros converges at k=1 but
+500 zeros doesn't.
+
+### Why this is a sharper closure
+
+The map f(x) = R^{-1}(n + S(x)) where S(x) = sum_rho R(x^rho) has
+|f'(x)| ~ |S'(x) * (R^{-1})'(...)|. Near x = p(n), |S'(x)| oscillates because
+the sum has GUE-random phases, so |f'(x)| is not bounded < 1. Connects to S43's
+Stein-method finding (no martingale concentration on GUE phases) and
+CLOSED_PATHS line 24 (zero-sum acceleration is random-walk).
+
+### Files updated
+
+- `experiments/sieve/inversion_search.py` -- import path fix
+- `experiments/analytic/riemann_explicit.py` -- `load_or_compute_zeros` fallback to `data/`
+- `experiments/sieve/inversion_search_results.md` -- corrected (previous claim
+  "exact at k=0 or k=1 for most n up to 10000" empirically falsified)
+- `status/CLOSED_PATHS.md` -- new entry line 682 with non-contraction diagnosis
+- `TODO.md` -- item 3 marked DONE
+
+### Remaining open direction
+
+Unchanged from S43: **circuit complexity of pi(x)** + Berry-Keating literature
+monitoring. TODO items 2 (Helfgott-Thompson M(x) benchmark) and 1 (duplicate-
+script flagging, blocked on human review) still pending.
+
+## Session 45 (2026-04-25): Resolve S25 caveat — zeta-structure tests at N=2000
+
+**Trigger.** FOCUS_QUEUE Task #2 (Zeta Zero Structural Patterns) is marked
+COMPLETED in S25 with one explicit caveat: "we tested 1000 zeros. Structure
+might exist at scales requiring >1000 zeros to detect." This session settled
+that caveat by extending the most discriminating S25 tests to N=2000.
+
+### Method
+
+Computed zeros γ_{1001..2000} via mpmath at 30-digit precision (~7.5 min,
+~0.45 s/zero). Saved to `data/zeta_zeros_2000.txt`. Wrote single consolidated
+script `experiments/analytic/zeta_structure/zeta_structure_n2000.py` running
+six tests: pair correlation, number variance, DFT/spectral flatness vs GUE,
+mod-constant discrepancy + Weyl sums, PSLQ on the never-tested LATE block
+γ_{1001..1100} (1225 pairs + 4060 triples), and cross-block PSLQ
+(early × late, 400 pairs).
+
+### Headline numbers
+
+| Test | N=1000 (S25) | N=2000 (S45) | Verdict |
+|------|--------------|--------------|---------|
+| Pair-correlation RMS dev from GUE | ~0.10–0.12 | **0.0864** | GUE fit improves |
+| Log-power correlation vs GUE | 0.9999 | 1.0000 | identical |
+| Band 1–4 spectral flatness | 0.93–0.999 | 0.93–0.999 | identical |
+| Weyl mean / (1/√N) ratio | ~0.95 | 0.946 | identical |
+| Discrepancy ratios vs LIL | 0.3–0.8 | 0.3–0.8 | identical |
+| PSLQ pairs in LATE block | not tested | **0/1225** | no relations |
+| PSLQ triples in LATE block | not tested | **0/4060** | no relations |
+| Cross-block PSLQ (early×late) | not tested | **0/400** | no relations |
+
+### Two methodological caveats noted in writeup
+
+1. The "overall" spectral flatness 0.0065 is dominated by the smooth
+   Riemann–von Mangoldt linear-log ramp dumping power into k=0..4 (10⁴–10⁵×
+   median); the GUE-interp comparison shows the *same* effect (mean SF
+   0.0077). The trend-free bands match GUE perfectly. **No structural finding.**
+2. Number variance plateaus at Σ²(L) ≈ 0.34 for L ≥ 5 instead of growing
+   logarithmically. Cause is window-overlap in the 800-window sampling, not
+   real GUE deviation. A clean test would need disjoint windows (N ≥ 10⁴).
+   **Inconclusive at N=2000, not anomalous.**
+
+### Verdict
+
+S25 caveat **resolved negatively.** No structure emerges in 2× the data.
+Direction remains CLOSED. Probing >2000 would require Odlyzko's tabulated
+zeros (online; not pursued here). New CLOSED_PATHS entry added; SESSION_25
+SUMMARY caveat line updated; FOCUS_QUEUE Task #2 description still
+accurate (results unchanged).
+
+### Files created/updated
+
+- `data/gen_zeros_2000.py`, `data/zeta_zeros_2000.txt` (new)
+- `experiments/analytic/zeta_structure/zeta_structure_n2000.py` + `_results.md` + `_summary.json`
+- `experiments/analytic/zeta_structure/SESSION_25_SUMMARY.md` — caveat-resolution paragraph appended
+- `status/CLOSED_PATHS.md` — new row in Analytic section
+- `archive/sessions/session45_zeta_n2000.md` (new)
+
+### Remaining open direction
+
+Unchanged: **circuit complexity of pi(x)** + Berry-Keating literature
+monitoring. No new viable directions opened.
+
+## Session 46 (2026-04-25): Critique of Proposals P25–P29
+
+Same /run.sh cycle as Session 45 (post-zeta-N=2000). Critic mode evaluated five
+proposals (P25–P29) drafted in `archive/ephemeral/proposals_session.md`:
+
+| # | Name | Verdict | Mode |
+|---|------|---------|------|
+| P25 | Liouville-parity triangulation | DUPLICATE | E |
+| P26 | Cesàro–Fejér damped explicit formula | DUPLICATE + numerical bug fix | I |
+| P27 | Selberg trace + class-number recursion | DUPLICATE | E |
+| P28 | Random-multiplicative variance reduction (Harper) | FLAWED | E+I |
+| P29 | Edixhoven–Couveignes τ bilinear form | DUPLICATE | C |
+
+### Useful by-products
+
+- **P25 identity correction**: closed-form parity is π(x) = (x − L(x))/2 − C₃(x),
+  where C₃(x) counts n ≤ x with Ω(n) odd ≥ 3. Original proposal had wrong term
+  Q(x)−1; verified exactly for all x ∈ [2, 10000]. Bottleneck shifts to C₃(x),
+  parity-random vs simple proxies.
+- **P26 numerical bug fix**: `mpmath.li(x**rho)` is wrong for ρ = 1/2 + iγ;
+  silently uses principal branch and discards winding. Use
+  `mpmath.ei(rho * log_x)` instead. Worth flagging in any zeros-summation code.
+- **P26 follow-up experiment**: Fejér-recovery failures DO cluster, but only by
+  features ≥ as hard as π(x) itself: near_prime_dist (Gibbs at unit jump,
+  spread 0.86 at T=30/100) and lpf (factorisation, spread 0.65). Cheap features
+  (mod m, div count, smoothness ≤7) all spread ≤0.14 — noise floor. No useful
+  hybrid scheme.
+
+### CLOSED_PATHS entries added (4)
+
+P25 (line 684), P26 follow-up (line 685), P28 Harper (line 686), P29 Edixhoven
+(line 687). P27 covered by existing entries (199, 345, 518); no new row.
+
+### Files
+
+- `archive/ephemeral/critique_latest.md` — full critique
+- `experiments/proposals/proposal26_fejer_failure_clustering.py` (+ results.md)
+- `archive/sessions/session46_critique_p25_p29.md`
+
+### Verdict
+
+No proposal opened a new direction. Project remains in steady-state critique
+mode: every plausible lever (analytic damping, parity, trace formulas,
+ensemble averaging, modular forms) reduces to one of three known failure
+modes via routine analysis. Open direction unchanged: circuit complexity of
+π(x).
+
+
+---
+
+## Session 47 (2026-04-25, normal mode)
+
+### Goal
+Productive normal-mode work: (a) literature scan for the 3-week window since
+the previous update (2026-04-05 → 2026-04-25), (b) sharpen the only OPEN
+remaining direction — "AKS in TC^0 via growing-dim matrix powering"
+(`status/CLOSED_PATHS.md` line 232).
+
+### Literature scan (2026-04-05 → 2026-04-25)
+
+No paper in the window changes the asymptotic barrier for computing p(n).
+Checked 10 topic areas (TC^0/NC^1, IMM lower bounds, PRIMES in TC^0, π(x)
+algorithms, zeta zero summation, Hardy-Littlewood/Selberg sieves, sub-√x
+claims, Brandt MKtP follow-ups, Ono-style detection extensions, Connes /
+Yakaboylu Hilbert-Pólya updates). Two minor entries to note:
+
+- Connes "The Riemann Hypothesis: Past, Present and a Letter Through Time"
+  (arXiv:2602.04022, Feb 2026). Survey + perspective; no algorithmic
+  implications.
+- Yakaboylu Hamiltonian arXiv:2408.15135 revised to v10 with notes through
+  March 2026. Operator-theoretic RH strategy, no algorithm.
+
+### Cyclotomic CRT splitting for AKS-MPOW (sharpening the OPEN entry)
+
+Question: does Z_n[x]/(x^r-1) ≅ ∏_{d|r} Z_n[x]/Φ_d(x) reduce the maximum
+matrix-powering dimension below r? For 22 sampled n in {10²..10⁶, Carmichael
+numbers, powers of 2}, the AKS-prescribed r is **prime in 21/22 cases (95.5%)**
+because AKS picks the smallest r passing ord_r(n) > log²n and primes win
+that race. When r is prime, x^r-1 = (x-1)·Φ_r(x), so CRT gives Z_n × Φ_r-piece
+and the non-trivial factor still has dimension r-1.
+
+**Best observed max_dim/r = 0.94** (only composite r in sample, 289=17²).
+Average 0.99. **The cyclotomic shortcut is closed** as failure mode E
+(equivalence to direct r-dim MPOW). Added as line 688 in CLOSED_PATHS.
+
+The parent question "growing-dim MPOW in TC^0" (line 232) **remains OPEN** —
+this experiment closes only the cyclotomic-decomposition sub-attack on it.
+
+### Files
+- `experiments/circuit_complexity/cyclotomic_crt_splitting.py` (+ results.md)
+- `archive/sessions/session47_normal_cyclotomic.md`
+
+### Verdict
+Steady-state. One sub-attack on the only OPEN frontier closed. Literature
+delta: zero algorithmic impact in window. Project remains in monitoring +
+sharpening mode.
+
+
+---
+
+## Session 48 (2026-04-25, fresh-perspective wildcard)
+
+### Goal
+Find a wildcard angle not represented by name among the 57 existing wildcard
+scripts. Test whether the prime parity stream q(n) = 1{p(n) = 5 mod 6} has
+finite excess entropy E (a *stochastic* memory measure, strictly more
+expressive than the deterministic linear complexity over GF(2), which is
+already known to be N/2 maximal).
+
+### Brainstorm (`archive/ephemeral/session48_brainstorm.md`)
+Five fresh angles, all not present by name in `experiments/wildcard/`:
+1. Causal-state / excess-entropy of prime parity stream (selected).
+2. Higher-cumulant expansion of delta(n).
+3. Phase retrieval of pi(x) from |zeta(1/2+it)|^2 magnitude.
+4. Quasi-modular Eichler / mock-modular completion of log zeta.
+5. Multipole expansion on the prime side (Riemann-Weil dual).
+
+### Experiment
+`experiments/wildcard/causal_state_complexity.py`. N = 148 931 prime parity
+bits up to p < 2.10^6, block entropy H_L for L = 1..18, h_mu estimated from
+Delta_L = H_L - H_{L-1} averaged over L = 8..10 (avoids finite-sample bias
+that contaminates L >= 12), excess entropy E_L = H_L - L*h_mu. Compared to
+i.i.d. Bernoulli(p1) null with same single-bit bias.
+
+### Findings
+- h_mu(prime) ~ 0.97686 nats / step vs h_mu(null) = 0.99708 -> per-step
+  memory deficit ~0.020 nats, consistent with Hardy-Littlewood pair
+  correlations between consecutive primes' residues mod 6.
+- E_L plateaus at ~0.026 nats above the Bernoulli null (peak at L = 10);
+  beyond L = 12 the estimate is dominated by finite-sample bias.
+- Implies epsilon-machine size exp(E) ~ 1.026, i.e. essentially Markov-1.
+- Per-step compressibility ~3.3% below entropy ceiling: far below the
+  log_2(x) bits/step that a polylog encoding of pi(x) would need.
+
+### Files
+- `experiments/wildcard/causal_state_complexity.py` (+ `_results.md`)
+- `archive/ephemeral/session48_brainstorm.md` (5 angles)
+- `status/CLOSED_PATHS.md` (line 689 appended, S48)
+- `novel/pseudorandomness_of_pi.md` table extended to **measure #24**
+
+### Verdict
+**CLOSED**, failure mode **I**. First *stochastic-memory* measure in the
+pseudorandomness table - earlier 23 measures were deterministic / spectral /
+algebraic. Finds tiny non-zero structural deviation (~0.020 nats h_mu
+deficit, ~0.026 nats excess entropy plateau) that does not break the
+random-like narrative; refines it.
+
+---
+
+## Session 49 (2026-04-25, deep focus task #3 deepening)
+
+**Mode:** Deep focus, Task #3 (Novel Identity Search). Task was already
+COMPLETED in Session 29 with seven experiments, but three sub-bases were
+absent from that battery. Deepening run extends and re-confirms closure.
+
+### Experiment
+`experiments/algebraic/identity_search/extended_basis_search.py`. Recompute
+f(x) = pi(x) - R(x) at mp.dps=60 via Riemann's R-function and sympy.primepi.
+PSLQ with maxcoeff=1e10, maxsteps=1e4. Cross-validate every relation with
+nonzero f-coefficient at every other test point; require residual < 1e-6.
+
+Three sub-bases not covered by Session 29:
+
+  A. **Extended zeta-zero oscillation basis** (26 terms): elementary
+     functions + sin/cos(gamma_k log x) for k = 1..10. Test points
+     x in {1000, 5000, 20000, 50000}.
+  B. **Arithmetic partial sums** (9 terms): M(x) Mobius, L_lambda(x)
+     Liouville, Phi(x) totient, psi(x) Chebyshev, all normalized by
+     sqrt(x). Test points x in {1000, 2000, 5000, 10000}.
+  C. **Mahler functional** (7 terms): f(x), f(x^2), f(x^3) plus
+     transcendentals log(x), sqrt(x)/log(x), 1/log(x), log(x)^2.
+     Test points x in {10, 20, 30, 40, 46} (so x^3 <= 97336).
+
+### Findings
+- **A:** PSLQ finds tight relations at each x (residual ~ 1e-44) with
+  coeff(f) in {380, 101, 322, -139} but the integer vectors are
+  point-specific. Cross-check residuals are O(10^3) at every other point.
+  Adding eight more zeta zeros does not reveal a universal identity.
+- **B:** Only short integer relations among partial sums themselves -
+  M(2000) = 5; L_lambda(1000) = -7 M(1000); L_lambda(10000) = 4 M(10000) - 2.
+  All have coeff(f) = 0; f rejected from every short combination of
+  normalized M, L_lambda, Phi, psi.
+- **C:** Relations exist at each base point but require coefficients of
+  size 10^6 - 10^7 on f, and shatter at every other base point with
+  cross-check residuals 10^6 - 10^8. No Mahler-type self-similarity
+  f(x) <-> f(x^2) <-> f(x^3).
+
+### Files
+- `experiments/algebraic/identity_search/extended_basis_search.py` (+ `_results.md`)
+- `status/CLOSED_PATHS.md` (line 690 appended, S49)
+
+### Verdict
+**CLOSED, strengthened.** The Novel Identity Search direction (CLAUDE.md
+Open Problems #5) was already closed in Session 29 across 7 experiments;
+this adds three orthogonal sub-bases (extended zeta zeros, arithmetic
+partial sums, Mahler functional) and re-confirms closure with the same
+methodology. Failure mode **I** (Information Loss): an identity in any of
+these bases would compress the ~x^{1/2} pseudo-random oscillation into a
+polylog object, contradicting Session 25's GUE structure of the zeros and
+the Session 35 entropy lower bound. Combined Session 29 + 49 closure now
+spans: elementary functions, li-variants, 10 zeta oscillations,
+Bernoulli/zeta-value/L-value/Ramanujan-tau bases, LLL minimal polynomials,
+arithmetic partial sums, ODEs/Volterra, Mahler functional equations.
+
+## Session 50 (2026-04-25, critique mode)
+
+### Proposals critiqued
+#27 Hermite-mollified reverse explicit formula; #28 (min,+) tropical /
+Cramér-window sieve around R⁻¹(n); #29 SoS / Lasserre localisation of p(n);
+#30 cancellation-anchor density probe. Proposer ran #27, #28, #30; #29 deferred.
+
+### Verdicts
+All four DUPLICATE. None reopens prior closures.
+
+- **#27** Hermite/Gaussian/Riesz mollification: linear re-weighting of the same
+  truncated zero sum. Subsumed by lines 31, 32, 36, 519, 685.
+  Empirical: at x=100, K=800, mollification is 5–55× WORSE than unmollified
+  (Gauss σ=0.5 err=4.117 vs unmoll 0.076); at x=10⁴ best Riesz at T=50 is
+  1.21× better — partial-sum truncation luck, not asymptotic gain.
+  Linear-functional argument: any kernel w(γ) with ∑|w(γ_n)| ≥ cN(T) inherits
+  Ω(√x · √(log T/log x)) tail.
+
+- **#28** Cramér-window probe: subsumed by lines 593, 659, 661, 422.
+  Empirical fit |δ_n| = |p_n − R⁻¹(n)| ~ p^{0.505} matches RH-predicted √x;
+  max|δ_n|/log²(p_n) = 6.65 unbounded as expected. Window required to
+  bracket p_n around R⁻¹(n) is √x, not polylog.
+
+- **#29** SoS / Lasserre localisation: closed by approximate-degree theorem.
+  adeg(χ_P) = ⌈N/2⌉ (line 580 + novel/approx_degree_prime.md, S28). SoS-deg ≥
+  adeg/2 = N/4 = Ω(log x); Lasserre level-d in n^{O(d)} gives runtime ≥ x^{Ω(1)},
+  not polylog. Independent confirmation: Grigoriev/Schoenebeck SoS lower bounds
+  on random-like predicates + 25+ pseudorandomness measures.
+  **Decisive closure without an SDP run.**
+
+- **#30** Cancellation-anchor density: apparent 6–25% density of |E_K(y)| <
+  √(log x) is a small-K truncation artefact. Mean |E_K| at K=200 already
+  saturates √x at x=10⁵. Full zero sum gives density polylog/√x → 0.
+
+### Useful constant pinned
+**|p_n − R⁻¹(n)| ≤ 0.59 · √(p_n)** for n ≤ 10⁶ (better than RH's 1/(8π) on
+this range), max ratio 6.65 vs log²(p_n).
+
+### Files
+- `archive/ephemeral/critique_latest.md`
+- `archive/sessions/session50_critique_p27_p30.md`
+- `status/CLOSED_PATHS.md` (4 entries appended; now 694 lines)
+
+### Verdict
+**No proposal survived.** Square-root-cancellation barrier robust under
+linear mollification, tropical/min-plus lift, polynomial-optimisation SoS
+encoding, and anchor-density search. Open status unchanged: only circuit
+complexity of π(x) remains genuinely open per `status/OPEN_PROBLEMS.md`.
+
+---
+
+## Session 51 (2026-04-25, normal mode, no-op)
+
+### Goal
+Normal-mode startup: identify any actionable direction not already explored
+in S44–S50 (seven prior sessions on the same calendar date).
+
+### State on entry
+- 694 closed paths in `status/CLOSED_PATHS.md`.
+- Sole OPEN frontier: "AKS in TC^0 via growing-dim MPOW" (line 232).
+- S47 closed cyclotomic CRT sub-attack (the natural decomposition).
+- S48 closed causal-state stochastic-memory measure.
+- S49 strengthened identity-search closure with three orthogonal bases.
+- S50 closed proposals #27–#30 as duplicates of existing entries.
+- `EDGES.md` (untracked, compiled 2026-04-25) catalogues every structural
+  edge across 49 sessions and ranks 7 single-target objectives by impact.
+- Literature window 2026-04-05 → 2026-04-25 had zero algorithmic-impact
+  papers (S47 scan).
+
+### Sub-attacks considered for growing-dim MPOW (line 232)
+- AP-restricted binomial-sum formulation: M_a^n = Σ_j S^j · T_j with
+  T_j = Σ_{k≡j (mod r)} C(n,k) a^{n-k}. Either evaluated naively (Ω(n/r)
+  terms — exponential in N=log n) or via DFT
+  T_j = (1/r) Σ_l ω^{-jl} (a+ω^l)^n with ω = primitive r-th root in some
+  ring containing it. The DFT route is the algebraic dual of cyclotomic
+  CRT (S47, line 688) and has the same dimension r.
+- CRT-based scalar-iterated-mult lifted to matrix iterated mult:
+  scalar trick reduces exponent mod φ(n) via primes p_i. For matrices,
+  reducing exponent mod the order of GL_r(Z_n) requires factoring n
+  (circular) and the order is n^{Θ(r²)} — no polylog reduction even if
+  factorisation were free.
+- "Same-base" matrix iterated mult (A^n with all factors equal):
+  reduces to scalar exponentiation only when the matrix algebra is
+  isomorphic to a product of fields with known orders — which is again
+  cyclotomic CRT.
+None of these gives a fresh experiment; all collapse to S47's closure.
+
+### Action
+No experiment run. Hygiene verified: 390 .py / 397 _results.md (companion
+ratio ≥ 1.0), no orphan `__pycache__`, no stale "pending" labels in
+ephemeral docs. `EDGES.md` cross-checked against `status/CLOSED_PATHS.md`:
+every cited closure has a matching entry; no inconsistencies found.
+
+### Verdict
+**No-op. Project saturated for this calendar date.** Honest application of
+CLAUDE.md rule: "If no viable experiment exists... If nothing new, say so
+and stop." Next productive checkpoint: literature scan in ≥1 week
+(2026-05-02+) for new algorithmic papers on growing-dim MPOW, π(x)
+sub-√x, or PRIMES in TC^0.
+
+---
+
+## Session 52 (2026-04-25, normal mode, FOCUS-4 closure)
+
+### Goal
+TODO.md FOCUS-4: stack S46's Cesàro-Fejér window on top of S45's
+Borel-Padé regularisation and measure recovery rate of ⌊round(S)⌉ = π(x).
+
+### Setup
+8 x-values (10³..10⁵) × 4 T-values (50, 100, 300, 1000) × 3 modes
+(sharp / fejér / borel-fejér). 2000 zeros, mp.dps=30, branch-correct
+`mpmath.ei(ρ·log x)`. Borel-Padé applied to Fejér-windowed increment
+sequence; median over Padé orders (5,5)..(15,15) plus diagonals.
+
+### Recovery rate
+| mode         | T=50 | T=100 | T=300 | T=1000 |
+|--------------|-----:|------:|------:|-------:|
+| sharp        | 3/8  | 4/8   | 6/8   | 4/8    |
+| fejér        | 4/8  | 4/8   | 5/8   | **6/8**|
+| borel-fejér  | 3/8  | 3/8   | 3/8   | 3/8    |
+
+### Key finding — diagnosis of regression
+Borel-Padé locks into a T-independent asymptote when stacked on Fejér.
+At x=10000 the hybrid returns S ∈ {1229.61, 1229.70, 1229.70, 1229.70}
+across T ∈ {50, 100, 300, 1000} — identical to 4 decimals at three of
+four T. Padé fits the leading envelope of the increment sequence; the
+Borel integral ∫₀^∞ e^{−z} P/Q(z) dz extracts a tail-completion that
+depends mostly on low-order coefficients. New zeros from larger T are
+exponentially suppressed by 1/k! in the Borel transform and cannot
+move Padé's leading-order fit.
+
+### Failure-mode classification
+**E (Equivalence).** Convergence-acceleration interventions cannot be
+stacked. Each re-parametrises the same √x-bounded zero-sum information.
+Closure mechanism identical to S45's standalone Borel-Padé closure.
+
+### Bigger picture
+After S52, every documented combination of standard
+convergence-acceleration techniques on the truncated explicit formula
+has been measured: raw / Cesàro / Borel-Padé alone / Fejér alone /
+Borel-Padé × Fejér / Hermite-Gaussian-Riesz / Stein-method. None gives
+sub-√x asymptotic gain. Cesàro-Fejér at T=1000 remains the best-tested
+constant-factor improvement.
+
+### Files
+- `experiments/proposals/borel_fejer_hybrid.py` (+ `_results.md`)
+- `archive/sessions/session52_borel_fejer_hybrid.md`
+- `status/CLOSED_PATHS.md` (1 entry appended; now 695 lines)
+- `EDGES.md` §E3.7 follow-up paragraph
+- `TODO.md` FOCUS-4 marked DONE
+
+### State of FOCUS queue
+F-1 (Connes operator scaling), F-2 (π(x) mod q polylog), F-3 (Liouville
+parity polylog), F-5 (AKS growing-dim MPOW alternatives), F-6 (4th
+encoding of π(x)), F-7 (literature watch) — unchanged. **F-4 closed.**
+
+---
+
+## Session 53 (2026-04-25, normal mode, FOCUS-1 closure)
+
+### Goal
+TODO.md FOCUS-1 / EDGES.md E3.1 / Chain A step 4: measure the prime-budget
+→ zero-count scaling law for the Connes-Consani-Moscovici Nov-2025
+spectral-triple operator (arXiv:2511.22755). Determine whether
+K_accurate(B) is polylog (Chain A becomes a real polylog architecture,
+huge) or linear / sub-linear (Chain A closes via Equivalence).
+
+### Setup
+Numerical proxy (NOT a faithful CCM reproduction; see honesty notes in
+results.md): discretize scaling operator D = -i d/du on L^2([-L, L]),
+L = log(λ), x_cutoff = 10^4, in Fourier basis with N=1200 modes.
+Self-adjoint rank-one perturbation V = c|v⟩⟨v|, where v encodes primes
+≤ p_B via von-Mangoldt-weighted delta-comb in log space (best of two
+tested variants — also tested ψ-step pairing). Coupling c tuned at B=6
+to minimize median matched error (best: c = -2.0). Sweep B ∈ {1..9};
+matrix size 2401; numpy.linalg.eigvalsh.
+
+### Findings
+1. **Median matched error stays flat at 0.13–0.20 across B = 1..9.**
+   Adding 9× more primes does not improve eigenvalue accuracy.
+2. **K_accurate(<0.5, matched) saturates at 50 for ALL B including the
+   B=0 control** — comb-density artefact (unperturbed eigenvalue
+   spacing π/L ≈ 0.68; any 50 targets in [14, 270] sit within 0.5 of
+   some comb element by pigeonhole alone).
+3. **K_accurate under monotone test** (μ_K vs γ_K, not nearest):
+   K=0 for all B at threshold 0.5. Architecturally honest test.
+4. **Linear regression** K_accurate(B) = -0.000·B + 50.000 (slope 0,
+   R²=1.0). No information signal in B.
+5. **Reproduction fidelity to CCM is poor**: at B=6 the proxy gives
+   err[1] ≈ 9.1×10^{-2}, vs CCM's published 2.5×10^{-55} — off by 53
+   orders of magnitude. Could not match CCM's specific Mellin-transform
+   kernel without their detailed construction.
+
+### Closure mechanism — three independent arguments
+**E (Equivalence):**
+1. **Rank-one parameter count.** Self-adjoint rank-one perturbation
+   has ≤ B parameters (entries of v indexed by primes); by Cauchy
+   interlacing, can shift at most ~B eigenvalues substantially.
+2. **Diagonalization cost (kernel-independent).** Even granting CCM's
+   published per-zero accuracy, spectrum extraction from an N×N
+   truncation costs O(N³) = O(K³) — strictly worse than O(x^{1/2+ε})
+   summation when K = √x. Iterative methods (Lanczos) give O(K²) per
+   eigenvalue, still O(K³) for K eigenvalues.
+3. **Geometric per-zero error growth.** CCM's published B=6 → K=50
+   data range 10^{−55..−3} implies err(k) ≈ 11.3^k · 10^{−55}; thus
+   K_accurate(B=6) ≈ 53 even at face value. CCM does not extrapolate
+   K_accurate(B); literature contains no multi-B data point that
+   establishes super-linear scaling. Burden of proof rests with anyone
+   claiming polylog.
+
+### Bigger picture
+**E3.1's elevated edge value collapses to baseline analytic
+equivalence.** Chain A — the highest-EVS chain in the EDGES.md
+catalogue — is no longer a polylog architecture candidate. The
+"Connes operator gives 50 zeros from primes ≤ 13" rumour is true
+*as a one-shot fit* but not as an algorithm. The diagonalization-cost
+argument (O(K³)) is robust independent of any future faithful
+reproduction. After S53, only Chains B (π(x) mod q polylog), C
+(Liouville parity polylog), and a residual interest in growing-dim
+MPOW (Chain E) remain open as project frontiers; none has a credible
+path forward in the literature.
+
+### Files
+- `experiments/analytic/connes_operator/connes_operator_scaling.py`
+- `experiments/analytic/connes_operator/connes_operator_scaling_results.md`
+- `experiments/analytic/connes_operator/connes_operator_scaling_data.csv`
+- `archive/sessions/session53_connes_operator_scaling.md`
+- `status/CLOSED_PATHS.md` (1 entry appended; now 696 lines)
+- `TODO.md` FOCUS-1 marked DONE
+
+### State of FOCUS queue
+**F-1 closed.** F-4 closed (S52). F-2 (π(x) mod q), F-3 (Liouville
+parity), F-5 (AKS), F-6 (4th encoding), F-7 (literature watch) unchanged.
+
+## Session 54 (2026-04-26, fresh-perspective wildcard)
+**Mode:** Fresh-thinking session, BBP-style isolated-digit angle.
+
+### Brainstorm (5 unconventional ideas)
+1. **BBP-style isolated digit extraction for psi(x).** Tested.
+2. Compressed sensing on zeros via random subsets. Tested.
+3. Hierarchical-multipole sieve (FMM analog). Not run — sieve "interactions"
+   already linear, no quadratic kernel to compress.
+4. Galois-descent computation of pi(x) mod q. Already covered by S35
+   pseudorandomness findings (mod 2 random ⇒ mod q expected random too).
+5. Spectral shortcut via low-pass smoothing pi*K_T. Mathematically same
+   as truncated explicit formula → equivalent to test (1).
+
+### Experiments run
+- `experiments/wildcard/bbp_digit_freeze.py` — Empirical zero-vs-precision
+  scaling for psi(x). For x=10^7, K=2000 zeros only gives 7 digits;
+  zeros-per-digit grows ~`10^d`, not `O(d)`. **No BBP-style spigot.**
+  Anomalous x with small residuals exist but match Gaussian-tail rate
+  (1 in 1.5 expected; 1 found in 4001 samples).
+
+- `experiments/wildcard/random_zero_subset.py` — Compressed-sensing test:
+  random K-subset vs first-K. Random is **4x WORSE** (rms 404 vs 97)
+  because low-frequency zeros carry most amplitude budget (`1/|rho|`
+  weighting). First-K is near-optimal among K-subsets.
+
+### Findings
+- Both nulls re-confirm GUE-random-phases picture from `novel/pseudorandomness_of_pi.md`.
+- Empirical residual scaling matches `sqrt(x) * polylog(K) / K^a`, a~1/2.
+- Anomaly density too low (Gaussian) to support a "lucky-x" binary-search
+  shortcut; even if a polylog-many anomalous x existed, we don't get to
+  *choose* x in the original problem.
+- 2026 literature search: no new prime-counting algorithm publications;
+  state-of-art remains Deléglise-Rivat-Gourdon at O(x^{2/3}).
+
+### State of project
+No breakthrough. Bound `O(x^{2/3})` for exact, `O(polylog)` for ~50%
+digits via R^{-1}(n) — gap unchanged.
+
+## Session 55 (2026-04-26, FOCUS-2 Liouville structural decomposition)
+**Mode:** Deep focus on FOCUS-2 (pi(x) mod q for fixed q), q=2 sub-case.
+
+### New algebraic observation (free identity)
+`L(x) mod 2 = x mod 2` is trivial (sum of x ±1's parity = x parity),
+verified bit-exact on x ∈ [1, 2 × 10⁶]. So the polylog-`L(x) mod 2`
+target in TODO.md FOCUS-2 step 2 is vacuously satisfied without
+yielding pi(x) mod 2. The actual missing primitives via E2.2 are
+`L(x) mod 4` (= `A(x) mod 2`) AND `C_3(x) mod 2`, with
+`pi(x) mod 2 = A mod 2 XOR C_3 mod 2`.
+
+### Single experiment
+`experiments/sieve/pi_mod_q_fixed/liouville_modular_structure.py`
+
+### Battery on each component (x ≤ 2 × 10⁶)
+- `A(x) mod 2`: block-entropy 7.9999/8, AC max[1..30] = 0.0010,
+  FFT z = 5.5 (no spectral line), GF(2) LFSR length = N/2.
+  *More* pseudorandom than pi(x) mod 2 (no density bias).
+- `C_3(x) mod 2`: block-entropy 7.88/8, AC = 0.148 (density bias),
+  FFT z = 5.25, LFSR length = N/2.
+- Mutual info I(A; C_3) = 1.94e-5 bits — independent.
+- 11 cheap proxies all |corr| < 0.002 with pi mod 2; best XOR-fusion
+  of 4-subset = 0.4951 (worse than chance).
+
+### Findings
+- E2.2 EVS downgraded H → M (analogous to E3.1 in S53).
+- Chain C structurally exhausted at q = 2; EVS M → L.
+- 2 new measures (#25 A mod 2, #26 C_3 mod 2) added to
+  `novel/pseudorandomness_of_pi.md` (header now "26 Measures").
+- Status of pi(x) mod q: q = 2 closed at structural level; q ∈ {3,5,7,11,13}
+  still open (no Liouville-style identity available).
+
+### Files updated
+- `experiments/sieve/pi_mod_q_fixed/liouville_modular_structure.py` (new)
+- `experiments/sieve/pi_mod_q_fixed/liouville_modular_structure_results.md` (new)
+- `status/CLOSED_PATHS.md` (1 entry appended; now 700 lines)
+- `novel/pseudorandomness_of_pi.md` (measures #25, #26 added)
+- `EDGES.md` (E2.2, Chain C, priority list updated)
+- `TODO.md` (FOCUS-2 q=2 structurally closed; q≥3 next steps)
+- `archive/sessions/session55_focus2_liouville_modular_structure.md` (new)
+
+### State of FOCUS queue
+F-1 closed (S53), F-4 closed (S52), F-2 q=2 sub-case structurally closed (S55).
+F-2 q ≥ 3, F-3, F-5, F-6, F-7 unchanged.
+
+### State of project
+No breakthrough. Same `O(x^{2/3})` exact / `O(polylog)` ~50% gap. The
+Liouville-identity attack on pi(x) mod 2 is now closed at both
+identity-level (S46) and structural-pseudorandomness level (S55).
+
+## Session 56 (2026-04-26, FOCUS-2 q≥3 character-twisted Liouville)
+**Mode:** Deep focus on FOCUS-2 amendment from S55 — extending the
+Liouville-parity attack from q=2 to q ∈ {3,5,7,11,13} via
+character-twisted sums L_χ(x) = Σ λ(n)χ(n) for non-trivial Dirichlet χ.
+
+### Generalised free identity (algebraic)
+For χ mod q of order d, decomposing by residue mod q and using
+λ(n) ≡ 1 (mod 2):
+
+    L_χ(x) ≡ Σ_{r ∈ (Z/q)*} χ(r) · count_r(x)   (mod 2 Z[ζ_d])
+
+— a trivial coset-count identity, computable in O(polylog), carrying
+no prime info.  The perfect analog of S55's L(x) mod 2 = x mod 2.
+
+### Single experiment
+`experiments/sieve/pi_mod_q_fixed/character_twisted_liouville.py`
+
+### Battery (N = 10⁶, 5 q-values × 34 chars)
+- **Free identity**: verified by exact integer arithmetic in Z[ζ_d]
+  via cyclotomic-polynomial reduction.  2000/2000 sampled x match,
+  zero failures, all 34 chars. (FP-projection check appears to fail
+  for d ∈ {5,10,12} — pure rank-deficient-pinv numerical artefact.)
+- **Next-bit pseudorandomness** A_χ(x) mod 2:
+  LFSR/N ∈ [0.4995, 0.5002] (full pseudorandom rank for all 34 chars),
+  block-entropy h₈ up to 7.97/8, FFT z up to 8.5 (within 1.5σ of
+  order-statistic baseline ~4.8), AC up to 0.6 entirely from
+  coset-density bias 1/φ(d).
+- **Mutual information** I(A_χ mod 2 ; π(x;q,a) mod 2): max
+  9.55 × 10⁻⁶ bits across all (q, χ, a) — at noise floor for N=10⁶.
+
+### Findings
+- The character-twisted Liouville attack route on Chain B closes
+  uniformly across q ∈ {3,5,7,11,13} by the same dual mechanism as
+  q = 2 (free identity + pseudorandom next bit).
+- All identified attack sub-routes on Chain B are now closed (direct
+  L-function: S20/S22; q=2 Liouville: S46/S55; q≥3 character-twisted
+  Liouville: S56).  Chain B itself remains compositionally valid;
+  the missing primitive has no remaining identified attack surface.
+- 5 new pseudorandomness measures (#27..#31) added; header now
+  "31 Measures".
+
+### Files updated
+- `experiments/sieve/pi_mod_q_fixed/character_twisted_liouville.py` (new)
+- `experiments/sieve/pi_mod_q_fixed/character_twisted_liouville_results.md` (new)
+- `experiments/sieve/pi_mod_q_fixed/_run_log_S56.txt` (raw stdout)
+- `status/CLOSED_PATHS.md` (1 entry appended; line 704)
+- `novel/pseudorandomness_of_pi.md` (header 26 → 31, table rows 27..31)
+- `EDGES.md` (Chain B sub-route closure table; priority list #1 update)
+- `TODO.md` (FOCUS-2 q≥3 structurally closed)
+- `archive/sessions/session56_focus2_character_twisted_liouville.md` (new)
+
+### State of FOCUS queue
+F-1 closed (S53), F-4 closed (S52), F-2 q=2 closed (S55), **F-2 q≥3
+closed (S56)**.  F-3, F-5, F-6, F-7 unchanged.  No remaining FOCUS-2
+sub-task; future sessions should pivot to F-5 (AKS alternatives) or
+F-6 (4th encoding search).
+
+### State of project
+No breakthrough.  Same `O(x^{2/3})` exact / `O(polylog)` ~50% gap.
+Chain B's missing primitive — the project's "single missing primitive"
+— is no longer attached to any specific attack lineage; every concrete
+mechanism has been tested and closed.
+
+## Session 57 (2026-04-26, deep focus task #2 — order-3 cell of structural battery)
+
+### Context
+FOCUS_QUEUE Task #2 ("Zeta Zero Structural Patterns") was marked
+COMPLETED in S25 with the caveat "structure might exist at scales
+requiring >1000 zeros to detect," resolved negatively in S45 at
+N=2000.  Both extensions tested only orders ≤ 2.  The residual
+hypothesis "could match pair correlation while concealing higher-order
+cluster structure" had not been individually closed.
+
+### Single experiment
+`experiments/analytic/zeta_structure/triple_correlation.py`
+
+Compares the 3-point correlation R_3(s_1, s_2) of N=2000 Riemann-von
+Mangoldt-unfolded zeros to the GUE sine-kernel determinant
+ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2 K(s_1) K(s_2−s_1) K(s_2)
+on a 25×25 grid (L_max = 5 mean spacings, bin width 0.2).  Adds a
+third-cumulant rigidity test of zero count in disjoint windows of
+length L ∈ {1,2,4,8,16,32}.
+
+### Findings
+- **Bulk RMS deviation 0.0875** across the (s_2 > s_1) plane with
+  n_ref = 1995 reference zeros.  Restricted to s_1, s_2 ≥ 0.5 (away
+  from level-repulsion edge) RMS = 0.0924.  Same order as the
+  pair-correlation deviation (0.0864 at N=2000), which is the noise
+  floor at this sample size.
+- **Diagonal slice (equally-spaced triples, s_2 = 2 s_1):** RMS 0.0972.
+- **Anti-diagonal (constant 2nd-3rd gap, s_2 = s_1 + 1):** RMS 0.0884.
+- **Third-cumulant rigidity:** c_3 of zero count stays at ~10⁻³ for
+  every window size from L=1 to L=32, while a Poisson process would
+  give c_3 = L (factor 10⁴ separation at L=32).  Rigidity is the
+  highly-non-Poisson signature of GUE-class point processes.
+- Variance plateaus at ~0.45 - 0.57 across the same L range (consistent
+  with GUE's logarithmic count variance, distinct from Poisson's
+  σ² = L).
+- **Verdict: MATCH at order 3.**  No third-order non-determinantal /
+  non-Gaussian structure detected.
+
+### Implication
+Closes the last unfilled cell of the S25/S45 structural battery:
+the zeta zero point process now agrees with GUE at every k-point
+correlation order tested up to 3, and the cumulant rigidity holds for
+all tested window sizes.  Confirms (does not contradict) the existing
+Task-2 closure; eliminates the residual "higher-order cluster"
+hypothesis as a hiding place for structure.
+
+### Files updated
+- `experiments/analytic/zeta_structure/triple_correlation.py` (new)
+- `experiments/analytic/zeta_structure/triple_correlation_results.md` (new)
+- `experiments/analytic/zeta_structure/SESSION_25_SUMMARY.md` (S57 update block)
+- `status/CLOSED_PATHS.md` (1 entry appended under Analytic / Zeta Zeros)
+- `status/SESSION_INSIGHTS.md` (this entry)
+- `archive/sessions/session57_focus2_triple_correlation.md` (new)
+
+### State of FOCUS queue / project
+No breakthrough.  Task 2 remains CLOSED; this entry strengthens the
+closure rather than reopening it.  No change to FOCUS-3..7 status.
+
+
+## Session 58 (2026-04-26, normal mode, FOCUS-7 literature watch)
+
+### Verdict
+**NO-DELTA.**  Window 2026-04-05 → 2026-04-26 (since S47 watch).
+
+### What was checked
+- arXiv math.NT recent submissions: all 245 entries for April 2026 scanned;
+  targeted searches on `pi(x)`, `nth prime`, `zeta zeros`, `explicit
+  formula`, `Riemann hypothesis`, `sieve`, `prime distribution`,
+  `Hardy-Littlewood`, `Selberg`.
+- ECCC TR2026: TR26-040 through TR26-061 (current max).
+- Author streams: Connes (no new April submission post-2602.04022),
+  Yakaboylu (still v15 of 2408.15135), van Ittersum, Ono, Granville, Tao
+  (no relevant April 2026 papers).
+- GitHub: kimwalisch/primecount (master ahead of v8.4 with ~30 commits;
+  v8.5 imminent), PrimeCounting/PrimeCounting (still inactive).
+
+### Findings
+Four minor catalog entries appended to `literature/state_of_art_2026.md`,
+none of which changes the asymptotic landscape:
+1. Inoue arXiv:2604.05733 — μ < 0.50895 under RH (was 0.515). Zero-gap
+   statistic, no algorithmic impact.
+2. primecount post-v8.4 master — lockfree thread balancer, more accurate
+   zeta-zero use in nth_prime, Brun–Titchmarsh dist_approx. Constant-
+   factor only.
+3. Kakkar arXiv:2604.02383 — "Neural Prime Sieves." Confirms §5.4 ML
+   barrier; no exactness, no asymptotic change.
+4. Li arXiv:2604.14596 — speculative 103-page lone-author RH preprint.
+   Same profile as the debunked Kilictas-Alpay paper. Flagged for
+   completeness; no peer review, no algorithm.
+
+### Implication
+Mature-state hypothesis from S47 holds. Brandt MKtP (S30) remains the only
+identified theoretical technique that could in principle bypass Natural
+Proofs en route to circuit lower bounds for π(x), and there is no follow-up
+movement on it in this window. The only genuinely open research direction
+(circuit complexity of π(x) per `status/OPEN_PROBLEMS.md`) is unchanged.
+
+### Files updated
+- `literature/state_of_art_2026.md` (S58 update block + header date bump)
+- `status/SESSION_INSIGHTS.md` (this entry)
+- `archive/sessions/session58_literature_watch.md` (new)
+
+### State of FOCUS queue / project
+No breakthrough. No closures. No new attack surfaces. Steady state
+preserved.  Next literature watch in ~3 weeks (~S70).

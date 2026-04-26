@@ -1,0 +1,1001 @@
+
+=== Run #3 — Mode: focused — Sat Apr 25 21:19:22 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/FOCUS_QUEUE.md
+    1	# Focus Queue: Deep Dive Research Tasks
+    2	
+    3	Each focused session works on exactly ONE task from this list.
+    4	The task number rotates automatically across sessions.
+    5	
+    6	**NOTE (S37):** All 4 original tasks below are COMPLETED. Do NOT re-run them.
+    7	
+    8	**To add a new task:** Copy the format below (Goal, Experiments, Key question,
+    9	Save to) and append it as Task 5, 6, etc. New tasks should target the ONLY
+    10	remaining open direction: circuit complexity of pi(x). See `status/OPEN_PROBLEMS.md`.
+    11	
+    12	**If no concrete experiment can be formulated:** Do not invent busywork. Instead,
+    13	check `literature/state_of_art_2026.md` for new publications or improve existing
+    14	algorithms (see BEST_ALGORITHMS.md comparison table for known gaps vs primecount).
+    15	
+    16	---
+    17	
+    18	## Task 1: Kt Complexity of delta(n) — COMPLETED (Sessions 20, 36)
+    19	
+    20	**Results:** `experiments/information_theory/kt_complexity/SYNTHESIS.md`
+    21	
+    22	Key findings: Kt(delta) ~ 5.58*N (linear, incompressible). Entropy rate 5.8 bits/value.
+    23	Transfer entropy n->delta is 0.013 bits (n adds no info). AR(7) captures direct memory.
+    24	1/f^1.70 spectrum real but not exploitable. 82% of Fourier modes needed.
+    25	**Verdict: delta(n) is incompressible. Attack path CLOSED (S35).**
+    26	
+    27	---
+    28	
+    29	## Task 2: Zeta Zero Structural Patterns — COMPLETED (Session 25)
+    30	
+    ... (29 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    1	# Open Problems: Viable Research Directions
+    2	
+    3	Last updated: 2026-04-05 (Session 37)
+    4	
+    5	These are the ONLY directions not yet proven closed. Everything else has been
+    6	tested (525+ approaches across 37 sessions) and confirmed to hit one of three
+    7	failure modes: Circularity, Equivalence, or Information Loss.
+    8	
+    9	**Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
+    10	well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
+    11	a sum of ~x^{1/2} cancelling terms), not information-theoretic. This reframes the problem:
+    12	find algebraic structure in the zero sum enabling bulk cancellation.
+    13	
+    14	**Pseudorandomness (S37 synthesis):** pi(x) mod 2 is indistinguishable from random under
+    15	21 independent structural measures. See `novel/pseudorandomness_of_pi.md`.
+    16	
+    17	---
+    18	
+    19	## 1. Circuit Complexity of pi(x) [ONLY REMAINING DIRECTION]
+    20	
+    21	**Question:** What is the circuit complexity of the prime-counting function?
+    22	
+    23	**The gap:** Omega(log x) proven lower bound vs O(x^{1/2+epsilon}) best upper bound.
+    24	This is the largest unexplored gap in complexity theory for a natural problem.
+    25	
+    26	**Equivalence:** "Is pi(x) in NC?" is EQUIVALENT to our polylog target (S12).
+    27	
+    28	**What's known:**
+    29	- PRIMES is in P (AKS), NOT in AC^0 or AC^0[p] (Allender-Saks-Shparlinski 2001)
+    30	- PRIMES is in NONUNIFORM TC^0 unconditionally (S13)
+    ... (76 more lines)
+  [Read] /apps/aplikacijos/prime-research/TODO.md
+    1	# TODO
+    2	
+    3	## [HOUSEKEEPING] 1. Flag duplicate scripts (NON-BLOCKING)
+    4	
+    5	Rule 11 says no duplicate scripts. Known suspects:
+    6	- `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py`
+    7	- `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+    8	
+    9	Action: List duplicates in this file below. Human will review before deletion.
+    10	**This is non-blocking — proceed to research after listing them.**
+    11	
+    12	Duplicates found (Session 39):
+    13	- [ ] `experiments/analytic/weil_optimized.py` vs `weil_optimized_v2.py` vs `weil_optimized_v3.py` (v3 same size as v1, possible revert)
+    14	- [ ] `experiments/sieve/ht_transfer_attempt.py` vs `ht_signed_transfer_v2.py`
+    15	- [ ] `experiments/circuit_complexity/k_party_nof.py` vs `k_party_nof_v2.py`
+    16	- [ ] `experiments/circuit_complexity/approx_degree.py` + `approx_degree_quick.py` + `approx_degree_small.py` + `approx_degree_prime.py` + `approx_degree_counting.py` (5 scripts; may be distinct experiments but violates one-script-per-experiment rule)
+    17	- [ ] `experiments/information_theory/information_shortcut.py` vs `information_shortcut_v2.py`
+    18	- [ ] `experiments/other/breakthrough_attempt_v2.py` (no v1 exists)
+    19	- [ ] `experiments/other/self_correcting_v2.py` (no v1 exists)
+    20	Human review needed before merging/deleting. All have companion _results.md files.
+    21	
+    22	---
+    23	
+    24	## [RESEARCH] 2. Benchmark Helfgott-Thompson O(x^{3/5}) for M(x)
+    25	
+    26	`experiments/sieve/mertens_speedup.py` references H-T (2021). Transfer to pi(x) fails
+    27	(signed->unsigned barrier, S16), but the M(x) algorithm itself was never benchmarked.
+    28	Won't help pi(x), but establishes the constant-factor landscape.
+    29	
+    30	---
+    ... (7 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/BEST_ALGORITHMS.md
+    1	# Best Working Algorithms
+    2	
+    3	All algorithms here are **100% exact** and **verified**. Listed by performance.
+    4	
+    5	---
+    6	
+    7	## 1. V10: C-Accelerated Hybrid (BEST)
+    8	
+    9	**File:** `algorithms/v10_c_accelerated.py`
+    10	**Complexity:** O(p(n)^{2/3})
+    11	**Dual mode:** exact + approximate
+    12	
+    13	### Exact Mode
+    14	
+    15	| n | p(n) | Time |
+    16	|---|------|------|
+    17	| 10^3 | 7,919 | 0.000s |
+    18	| 10^5 | 1,299,709 | 0.006s |
+    19	| 10^7 | 179,424,673 | 0.034s |
+    20	| 10^8 | 2,038,074,743 | 0.140s |
+    21	| 10^9 | 22,801,763,489 | 0.175s |
+    22	
+    23	### Approximate Mode (R^{-1} only)
+    24	
+    25	| n | Time | Total Digits | Correct Digits |
+    26	|---|------|-------------|---------------|
+    27	| 10^10 | 1.5s | 12 | ~5 |
+    28	| 10^50 | 0.14s | 53 | ~25 |
+    29	| 10^100 | 0.32s | 103 | ~50 |
+    30	| 10^200 | 1.15s | 203 | ~99 |
+    ... (147 more lines)
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    1	# State of the Art: Prime Computation (2024-2026)
+    2	
+    3	Consolidated survey of all developments relevant to computing p(n) exactly.
+    4	Deduplicated from 6 overlapping source files.
+    5	
+    6	Last updated: 2026-04-05 (Session 38 critique)
+    7	
+    8	---
+    9	
+    10	## 1. Prime Counting Algorithms
+    11	
+    12	### 1.1 Combinatorial Methods (Best Practical)
+    13	
+    14	**Current best asymptotic:** O(x^{2/3} / log^2 x) -- Deleglise-Rivat / Gourdon (1996/2001)
+    15	
+    16	**Best implementation:** Kim Walisch's primecount library
+    17	- Version 8.4 released 2026-04-01
+    18	- Implements Gourdon's algorithm with SIMD acceleration (AVX512, ARM SVE)
+    19	- primecount 8.3 (March 2026): bidirectional clustered easy leaves, faster compression
+    20	- primecount 8.1 (January 2026): 15% faster AC.cpp
+    21	- primecount 8.0 (December 2025): new 128-bit API
+    22	- pi(10^25) computed in 330 CPU core hours on AMD EPYC Zen4
+    23	- The SIMD-accelerated Gourdon D formula in v8.4 vectorizes the hard special leaves bottleneck, estimated 2-4x speedup on modern CPUs
+    24	
+    25	**Relevance to project:** This is the engine behind our best practical approach (binary search on pi(x)). Constant-factor improvements continue but no asymptotic breakthrough.
+    26	
+    27	**Does it change the barrier?** No. Still O(x^{2/3}).
+    28	
+    29	### 1.2 Hirsch-Kessler-Mendlovic: Elementary O~(sqrt(N)) (2022/2024)
+    30	
+    ... (498 more lines)
+  [Read] /apps/aplikacijos/prime-research/novel/mps_bond_dimension.md
+    1	# Tensor-Train Bond Dimension of the Prime Indicator
+    2	
+    3	**Status:** Tight identity proved + empirically saturated at k = 10..20.
+    4	**Practical impact:** Confirms pseudorandomness with a clean entanglement-
+    5	theoretic measurement. One-bit compressibility, no polylog.
+    6	
+    7	## Theorem
+    8	
+    9	Let `chi_P : [1, 2^d] -> {0, 1}` be the prime indicator and view it as a
+    10	state vector in `(C^2)^{otimes d}` via the natural binary tree reshape
+    11	`chi_P -> T in C^{2 x 2 x ... x 2}`. For each cut `j` with `1 <= j < d`,
+    12	the unfolding rank (= TT bond dimension at cut j) satisfies
+    13	
+    14	> rank `M^{(j)}` = min( 2^j, 2^{d-j-1} + 1 ),  exact equality empirically.
+    15	
+    16	The upper bound follows from the elementary fact that for `i >= 1`,
+    17	`i * 2^{d-j} + k + 1` is even iff `k` is odd, and even integers > 2 are not
+    18	prime. Hence rows `i = 1, ..., 2^j - 1` of the unfolded matrix have support
+    19	contained in the `2^{d-j-1}` even columns; row 0 contributes at most one
+    20	extra rank.
+    21	
+    22	## Empirical saturation
+    23	
+    24	Verified by full SVD for k = 10, 12, 14, 16, 18, 20:
+    25	
+    26	| k  | observed half-cut rank | predicted 2^{k/2-1}+1 | random ceiling 2^{k/2} |
+    27	|----|------------------------|------------------------|-------------------------|
+    28	| 10 | 17                     | 17                     | 32                      |
+    29	| 12 | 33                     | 33                     | 64                      |
+    30	| 14 | 65                     | 65                     | 128                     |
+    ... (54 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension_results.md
+    1	# MPS / Tensor-Train Bond Dimension of the Prime Indicator
+    2	
+    3	**Script:** `mps_bond_dimension.py`
+    4	**Date:** 2026-04-25
+    5	**Verdict:** CLOSED — Bond dimension of chi_P is exactly 2^{d/2-1}+1 (one bit
+    6	below the random ceiling). No polylog MPS representation exists.
+    7	
+    8	## What was tested
+    9	We view the binary prime indicator chi_P(n) for n in [1, 2^k] as a state vector
+    10	in (C^2)^{otimes k} and measure its tensor-train (matrix-product-state) bond
+    11	dimension at every bipartite cut. A polylog MPS would mean polylog-time exact
+    12	computation of pi(N) and p(n). We compared against:
+    13	  (i) a random binary vector at the same density,
+    14	  (ii) the cumulative pi(n) (smooth),
+    15	  (iii) the residual pi(n) - li(n) (oscillatory part).
+    16	
+    17	This is a NEW measurement for this project. Earlier work studied:
+    18	  - product DFA states (`tensor_sieve.py`) — primorial blowup, different object;
+    19	  - the divisibility matrix M[n, p] (`sieve_matrix_rank.py`) — different tensor;
+    20	  - wavelet sparsity (`wavelet_*`) — single-mode basis, not multipartite.
+    21	
+    22	## Headline numbers
+    23	
+    24	| k  | N        | chi_P max-rank | random max-rank | half-cut bound 2^{k/2} |
+    25	|----|----------|----------------|-----------------|------------------------|
+    26	| 10 | 1024     | 17             | 32              | 32                     |
+    27	| 12 | 4096     | 33             | 64              | 64                     |
+    28	| 14 | 16384    | 65             | 128             | 128                    |
+    29	| 16 | 65536    | 129            | 256             | 256                    |
+    30	| 18 | 262144   | 257            | 512             | 512                    |
+    ... (108 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    1	# Closed Paths: Master Lookup (533+ Approaches)
+    2	
+    3	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    4	
+    5	Last updated: 2026-04-05 (Sessions 1-41, 197+ sub-agents)
+    6	
+    7	## Failure Modes
+    8	- **C** = Circularity (needs primes to compute primes)
+    9	- **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    10	- **I** = Information Loss (smooth approximation loses critical bits)
+    11	
+    12	---
+    13	
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    19	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    20	| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    21	| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    22	| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    23	| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    24	| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    25	| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    26	| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    27	| Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
+    28	| Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
+    29	| Explicit formula + 30 zeros | PARTIAL | E | 10% exact, best analytic | 10 |
+    30	| Weil explicit + Gaussian kernel | FAIL | I | Uncertainty principle: resolution * bandwidth >= const | 4 |
+    ... (50 more lines)
+  [Grep] MPS|tensor.train|bond.dimension|tensor_network
+    169:| MPS / tensor network | FAIL | I | Bond dimension ~ N^{0.49}, volume-law entanglement | 10 |
+    183:| Tensor sieve (MPS of divisibility DFAs) | FAIL | I | Transfer matrices full rank, volume-law SV entropy, no compression | 20 |
+    514:| Tensor network / MPS sieve | FAIL | I | Bond dim = primorial (volume-law entanglement); exponential | 20 |
+    596:| Tensor network (MPS) Legendre sieve contraction | FAIL | I | Bond dim ~ 2^(0.33-0.43 * a), exponential in #primes. Sieve 5-20x more structured than random but still exponential. Dominant SV is rank-1 (floor(x)), corrections full-rank. O(sqrt(x)) unique floors don't help: non-local assignment to bipartitions. Confirms S10/S20 | 26 |
+    675:[Omitted long matching line]
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+    <system-reminder>Warning: the file exists but is shorter than the provided offset (1). The file has 1 lines.</system-reminder>
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+    <system-reminder>Warning: the file exists but is shorter than the provided offset (1). The file has 1 lines.</system-reminder>
+  [Bash] ls -la /apps/aplikacijos/prime-research/archive/ephemeral/ && wc -c /apps/aplikacijos/prime-research/archive/ephemeral/*.md
+    total 48
+    drwxr-xr-x 2 root root  4096 Apr 25 21:04 .
+    drwxr-xr-x 6 root root  4096 Apr 25 21:04 ..
+    -rw-r--r-- 1 root root 11246 Apr 25 21:04 critique_latest.md
+    -rw-r--r-- 1 root root     0 Apr 25 21:19 proposals_latest.md
+    -rw-r--r-- 1 root root  6697 Apr 25 21:04 proposals_session.md
+    -rw-r--r-- 1 root root 19146 Apr 25 21:04 wildcard_findings.md
+    11246 /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+        0 /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+     6697 /apps/aplikacijos/prime-research/archive/ephemeral/proposals_session.md
+    19146 /apps/aplikacijos/prime-research/archive/ephemeral/wildcard_findings.md
+    37089 total
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_session.md
+    1	# Session 36 Proposals — Fresh Approaches to Computing p(n) Exactly
+    2	
+    3	**Date:** 2026-04-05
+    4	**Method:** Web search for 2025-2026 papers + 4 concrete proposals with computational tests
+    5	
+    6	---
+    7	
+    8	## Summary
+    9	
+    10	Four fresh proposals were developed, coded, and tested on n < 10,000. All four illuminate WHY O(polylog) is hard, but none achieves it. Key findings:
+    11	
+    12	| # | Proposal | Core Idea | Result | New Insight? |
+    13	|---|---------|-----------|--------|-------------|
+    14	| 21 | Zero Clustering Truncation | Group zeta zeros by proximity, use GUE statistics | Tail contribution unpredictable; O(sqrt(x)) zeros still needed | Confirms zero independence |
+    15	| 22 | Compressed Sensing on delta(n) | Sparse recovery of residual in zeta zero basis | delta is NOT sparse: 50+ coefficients for 87% energy | Quantifies non-sparsity |
+    16	| 23 | PSLQ Integer Relations | Search for algebraic formula for delta(n) | Normalized delta ≈ Gaussian; PSLQ finds spurious point-wise relations only | Normality test passed |
+    17	| 24 | Dequantized Grover Sieve | Low-rank decomposition of primality operator | Sieve rank ~ N^{0.365}, Fourier rank ~ N^{0.94} | Quantifies "hardness" of prime indicator |
+    18	
+    19	---
+    20	
+    21	## Proposal 21: Zero Clustering Truncation
+    22	
+    23	### Mathematical Idea
+    24	The Riemann explicit formula requires summing over all nontrivial zeta zeros:
+    25	π(x) = R(x) − Σ_ρ R(x^ρ)
+    26	
+    27	If zeros exhibit correlated contributions due to GUE spacing statistics, we can group them into clusters and represent each cluster by a weighted representative. If cluster count grows as O(log(x)^C), we achieve polylog.
+    28	
+    29	### Key Conjecture
+    30	The oscillatory sum S(x) = Σ_γ x^{iγ}/ρ converges within O(1) using O(log(x)^C) representative zeros.
+    ... (96 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    1	# Critique Session — Session 38
+    2	
+    3	**Date:** 2026-04-05
+    4	**Evaluating:** Session 36 proposals (proposals 21-24) + literature scan for 2025-2026 papers
+    5	
+    6	---
+    7	
+    8	## Proposals Evaluated
+    9	
+    10	### Proposal 21: Zero Clustering Truncation
+    11	**Claimed idea:** Group zeta zeros by GUE proximity, represent clusters by weighted representatives. If cluster count grows as O(log(x)^C), achieve polylog.
+    12	
+    13	**Verdict: DUPLICATE / FLAWED — Confirmed CLOSED**
+    14	
+    15	- **CLOSED_PATHS match:** "Zeta zero compression/FMM" (S9), "Convergence acceleration of zero sum" (S32), "Zero-count scaling analysis" (S11), "Randomized zeta zero sampling" (S15), "Zeta zero reordering/weighting" (S13)
+    16	- **Failure mode:** E + I. The core conjecture (O(log^C) cluster representatives suffice) is falsified by the experiment itself: tail contributions are unpredictable (ratio varies -3.4 to +3.3). This is consistent with N_min ~ 0.35 * x^{0.27} (S13) — a power law, not polylog.
+    17	- **Mathematical obstacle:** GUE statistics describe *spacing* correlations, not *amplitude* correlations. Even though zeros repel in spacing, their contributions x^{iγ}/ρ to pi(x) are effectively independent due to the random-like phases γ*ln(x). Clustering by proximity cannot capture amplitude cancellation.
+    18	- **Specific flaw in complexity analysis:** The claim "if cluster count ~ O(log^C)" is unjustified. GUE spacing ~ 2π/ln(T) means O(T/ln(T)) clusters of O(ln(T)) zeros each in any bounded window. At T ~ sqrt(x), this is O(sqrt(x)/log(x)) clusters — still sublinear but NOT polylog.
+    19	- **What S36 added:** Quantified the 10-zero accuracy limit (~1.3 mean error). This is a useful refinement of S11's "K_min power law" but doesn't change the fundamental picture.
+    20	- **Critique grade: C-** (mostly replication with minor quantitative refinement)
+    21	
+    22	---
+    23	
+    24	### Proposal 22: Compressed Sensing on delta(n)
+    25	**Claimed idea:** If delta(n) = p(n) - R^{-1}(n) is k-sparse in some transform domain, compressed sensing recovers it from O(k log(n/k)) measurements.
+    26	
+    27	**Verdict: DUPLICATE / FLAWED — Confirmed CLOSED**
+    28	
+    29	- **CLOSED_PATHS match:** "Compressed sensing on K zeros" (S7), "Matching pursuit (K zeros)" (S7), "SVD low-rank approx of delta" (S20), "Fourier correction" (S3), "DFT spectral structure of zeros" (S25)
+    30	- **Failure mode:** I. delta is NOT sparse — 69/100 zeta zero coefficients significant, 50+ Fourier coefficients for 87% energy. This is fully consistent with prior findings: spectral flatness 0.91 (S9), 82% of modes needed (S36b), 1/f^{1.69} smooth continuum (S20).
+    ... (122 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/wildcard_findings.md
+    1	# Fresh Perspective Session: Wildcard Findings (Session 20)
+    2	
+    3	## Date: 2026-04-04
+    4	
+    5	## Approach
+    6	Started from first principles WITHOUT reading CLOSED_PATHS.md.
+    7	Brainstormed 10+ unconventional ideas from analogies with breakthroughs
+    8	in other fields. Implemented and tested each one experimentally.
+    9	
+    10	## Ideas Tested (10 experiments, 6 parallel agents + 4 manual)
+    11	
+    12	### 1. CRT Modular Prime Counting
+    13	**Idea**: Compute π(x) mod m for small moduli, reconstruct via CRT.
+    14	**Result**: CLOSED. π(x) mod m behaves as a random walk with step
+    15	probability ~1/ln(x). No exploitable non-random structure. Computing
+    16	π(x) mod m requires computing π(x) — circular. CRT adds overhead
+    17	rather than reducing it.
+    18	
+    19	### 2. Tensor Network / Automata Sieve
+    20	**Idea**: Represent the sieve as a tensor network; exploit low entanglement.
+    21	**Result**: CLOSED. The minimized DFA for "coprime to primorial(y)" has
+    22	EXACTLY primorial(y) states — exponential growth. Bond dimension equals
+    23	primorial, confirming volume-law entanglement. The sieve function is
+    24	"maximally complex" in the tensor network sense. Switching number bases
+    25	(binary → mixed-radix) trades one source of non-locality for another.
+    26	
+    27	### 3. Spectral Shortcut via Trace Formulas
+    28	**Idea**: Compute the zero sum Σ Li(x^ρ) without individual zeros.
+    29	**Result**: CLOSED. The trace formula relates zero sums to prime sums —
+    30	this IS the explicit formula, and it's circular. Computing ζ'/ζ on a
+    ... (30 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension.py
+    1	"""
+    2	MPS Bond Dimension of the Prime Indicator
+    3	==========================================
+    4	
+    5	Quantum-inspired complexity test. View the binary prime indicator
+    6	chi_P(n) for n in [1..2^k] as a state vector in (C^2)^{otimes k}.
+    7	A state with low entanglement has small TT (matrix-product-state)
+    8	bond dimension, hence O(k * chi_max^2) = polylog storage and many
+    9	linear-algebraic operations in polylog. If primes had small bond
+    10	dimension, exact pi(N) and p(n) would follow in polylog.
+    11	
+    12	This is DIFFERENT from:
+    13	  - tensor_sieve.py: studied product DFA (primorial blowup), not
+    14	    the bond dimension of the indicator vector itself.
+    15	  - sieve_matrix_rank.py: studied the divisibility matrix M[n,p],
+    16	    not the chi_P state.
+    17	  - wavelet_*: tested basis sparsity, not multipartite entanglement.
+    18	
+    19	We measure:
+    20	  (a) Exact TT bond dimensions (full SVD spectrum at each cut).
+    21	  (b) Approximate bond dim at relative eps = 1e-2, 1e-1.
+    22	  (c) "Half-cut" entanglement entropy S = -sum sigma_i^2 log sigma_i^2
+    23	      after normalization.
+    24	  (d) Same measurements for the CUMULATIVE pi(n) and the residual
+    25	      delta(n) = pi(n) - li(n).
+    26	  (e) Control: a random binary string at the same density.
+    27	
+    28	Predictions to test:
+    29	  - Random control should have entropy near k/2 * log(2) and full
+    30	    cut rank ~ 2^{k/2}.
+    ... (203 more lines)
+I'll work on tightening the recently-discovered MPS bond dimension result by testing its predicted base-W generalization. Let me check the pseudorandomness file first.
+  [Read] /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md
+    1	# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 20+ Measures
+    2	
+    3	**Status:** Novel synthesis. Individual measures from Sessions 17-36.
+    4	No published work examines this many independent complexity measures on a single natural function.
+    5	
+    6	## Summary
+    7	
+    8	pi(x) mod 2 is indistinguishable from a random Boolean function under every
+    9	structural complexity measure tested in this project (20+). This is the
+    10	project's strongest collective finding.
+    11	
+    12	Each measure probes a different aspect of Boolean function complexity --
+    13	algebraic structure, communication complexity, approximation theory,
+    14	circuit size, spectral properties, information content -- and in every
+    15	case, pi(x) mod 2 lands within the range expected for a random function
+    16	on N = log2(x) variables. The consistency across independent measures
+    17	constitutes strong empirical evidence that pi(x) mod 2 is cryptographically
+    18	pseudorandom under all known structural tests.
+    19	
+    20	## The Measures
+    21	
+    22	| # | Measure | pi(x) mod 2 | Random baseline | Session |
+    23	|---|---------|-------------|-----------------|---------|
+    24	| 1 | Approximate degree (L-inf, eps=0.49) | ceil(N/2) | N/2 | S28 |
+    25	| 2 | Communication matrix rank (2-party) | 2^{N/2-1} + 2 | 2^{N/2} | S17 |
+    26	| 3 | GF(2) ANF sparsity (fraction of nonzero monomials) | 0.5000 exactly (N=4..20) | 0.50 | S13, S35 |
+    27	| 4 | GF(2) SLP complexity (CSE savings) | 59.5% at N=10 | 58.5% at N=10 | S35 |
+    28	| 5 | Boolean Fourier noise sensitivity | ~0.9 | ~1.0 | S17 |
+    29	| 6 | Boolean Fourier total influence ratio | ~0.92 | ~1.0 | S17 |
+    30	| 7 | BDD (OBDD) size | 2^{0.72*N} (c=0.719) | 2^{0.80*N} (c=0.796) | S20 |
+    ... (50 more lines)
+  [Read] /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md
+    80	
+    81	**Measure 17: Smooth continuum.** Session 36 confirmed the 1/f^{1.69} spectrum
+    82	has no discrete spectral lines. Exact reconstruction of delta(n) requires 82%
+    83	of all Fourier modes. No algebraic relations exist among the spectral coefficients.
+    84	
+    85	**Measure 21: The one deviation.** Truth table compressibility is the single
+    86	measure where pi(x) mod 2 deviates from random. At N=20, gzip achieves 2.6x
+    87	compression vs 1.0x for random. However, this reflects only LOCAL structure:
+    88	the prime density 1/ln(x) creates long runs of zeros in the truth table (ordered
+    89	by binary input). Block entropy analysis confirms this is trivial density bias,
+    90	not exploitable for circuit construction.
+    91	
+    92	## The N/2 Universality
+    93	
+    94	Five independent measures converge on the same threshold:
+    95	
+    96	| Measure | Value at boundary | Interpretation |
+    97	|---------|------------------|----------------|
+    98	| Approximate degree | N/2 | Polynomial needs degree >= N/2 to approximate |
+    99	| Communication rank | 2^{N/2-1} + 2 | Communication protocol needs N/2 bits |
+    100	| PTF degree | N/2 | Threshold polynomial needs degree N/2 |
+    101	| LFSR complexity | N/2 | Linear recurrence needs length N/2 |
+    102	| Per-bit R-correlation crossover | bit N/2 | Smooth approximation accurate above bit N/2 |
+    103	
+    104	This universality suggests a fundamental information-theoretic divide:
+    105	the top N/2 bits of p(n) are determined by the smooth part R^{-1}(n)
+    106	(computable in O(polylog) time), while the bottom N/2 bits encode
+    107	oscillatory contributions from ~10^48 zeta zeros with GUE-random phases.
+    108	
+    109	## Implications
+    ... (68 more lines)
+Now I understand the picture. Today's wildcard session produced the MPS bond dimension result for base-2 binary tree, with a predicted (but unrun) base-W generalization saying half-cut rank ratio = phi(W)/W. I'll refactor the existing script to test that prediction at W=6, W=30, W=210, then update the novel finding with the verified theorem.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/wildcard/
+    adelic_prime_count.py
+    adelic_prime_count_results.md
+    algebraic_shortcut.py
+    algebraic_shortcut_results.md
+    automata_prime_count.py
+    automata_prime_count_results.md
+    batch_mobius_sieve.py
+    batch_mobius_sieve_results.md
+    carry_propagation_boundary.py
+    carry_propagation_boundary_results.md
+    contour_integral_zerosum.py
+    contour_integral_zerosum_results.md
+    convolution_sieve.py
+    convolution_sieve_results.md
+    crt_modular_counting.py
+    crt_modular_counting_results.md
+    crt_prime_locator.py
+    crt_prime_locator_results.md
+    crt_reconstruction.py
+    crt_reconstruction_results.md
+    dynamical_fast_forward.py
+    dynamical_fast_forward_results.md
+    dynamical_gaps.py
+    dynamical_gaps_results.md
+    dynamical_prime_orbit.py
+    dynamical_prime_orbit_results.md
+    ergodic_fast_forward.py
+    ergodic_fast_forward_results.md
+    etale_counting.py
+    etale_counting_results.md
+    ... (74 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension.py
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension.py has been updated successfully.
+Now let me run the experiment, starting with quick mode to verify it works.
+  [Bash] python experiments/wildcard/mps_bond_dimension.py --quick 2>&1 | head -120
+    /bin/bash: line 1: python: command not found
+  [Bash] which python3 && python3 -c "import numpy, sympy, mpmath; print('ok')"
+    /usr/bin/python3
+    ok
+  [Bash] python3 experiments/wildcard/mps_bond_dimension.py --quick 2>&1 | tee /tmp/mps_quick.log | head -120
+    ==============================================================================
+    Family A: base-2 sweep (replicates the original W=2 measurement)
+    ==============================================================================
+    
+    k=10  (N=1024, density=0.1680, time=0.07s)  theorem: MATCH
+      chi_P            N=     1024  max-rank=   17/32     ( 53.1% of half-cut bound) H_half=2.211/3.466 nats
+          eps=1e-2 max-rank=17/32  eps=1e-1 max-rank=17/32
+      random@dens      N=     1024  max-rank=   32/32     (100.0% of half-cut bound) H_half=2.773/3.466 nats
+          eps=1e-2 max-rank=31/32  eps=1e-1 max-rank=29/32
+      cum pi(n)        N=     1024  max-rank=   17/32     ( 53.1% of half-cut bound) H_half=0.001/3.466 nats
+          eps=1e-2 max-rank=5/32  eps=1e-1 max-rank=2/32
+      pi(n)-li(n)      N=     1024  max-rank=   22/32     ( 68.8% of half-cut bound) H_half=0.043/3.466 nats
+          eps=1e-2 max-rank=17/32  eps=1e-1 max-rank=7/32
+    
+    k=12  (N=4096, density=0.1377, time=0.23s)  theorem: MATCH
+      chi_P            N=     4096  max-rank=   33/64     ( 51.6% of half-cut bound) H_half=2.788/4.159 nats
+          eps=1e-2 max-rank=33/64  eps=1e-1 max-rank=33/64
+      random@dens      N=     4096  max-rank=   64/64     (100.0% of half-cut bound) H_half=3.461/4.159 nats
+          eps=1e-2 max-rank=62/64  eps=1e-1 max-rank=57/64
+      cum pi(n)        N=     4096  max-rank=   33/64     ( 51.6% of half-cut bound) H_half=0.000/4.159 nats
+          eps=1e-2 max-rank=2/64  eps=1e-1 max-rank=2/64
+      pi(n)-li(n)      N=     4096  max-rank=   38/64     ( 59.4% of half-cut bound) H_half=0.034/4.159 nats
+          eps=1e-2 max-rank=30/64  eps=1e-1 max-rank=9/64
+    
+    k=14  (N=16384, density=0.1160, time=0.88s)  theorem: MATCH
+      chi_P            N=    16384  max-rank=   65/128    ( 50.8% of half-cut bound) H_half=3.396/4.852 nats
+          eps=1e-2 max-rank=65/128  eps=1e-1 max-rank=64/128
+      random@dens      N=    16384  max-rank=  128/128    (100.0% of half-cut bound) H_half=4.149/4.852 nats
+          eps=1e-2 max-rank=126/128  eps=1e-1 max-rank=115/128
+      cum pi(n)        N=    16384  max-rank=   65/128    ( 50.8% of half-cut bound) H_half=0.000/4.852 nats
+    ... (42 more lines)
+Quick run works — theorem matches at every cut for all tested (W, d). Now let me run the full sweep including larger d values.
+  [Bash] time python3 experiments/wildcard/mps_bond_dimension.py 2>&1 | tee /tmp/mps_full.log
+    ==============================================================================
+    Family A: base-2 sweep (replicates the original W=2 measurement)
+    ==============================================================================
+    
+    k=10  (N=1024, density=0.1680, time=0.07s)  theorem: MATCH
+      chi_P            N=     1024  max-rank=   17/32     ( 53.1% of half-cut bound) H_half=2.211/3.466 nats
+          eps=1e-2 max-rank=17/32  eps=1e-1 max-rank=17/32
+      random@dens      N=     1024  max-rank=   32/32     (100.0% of half-cut bound) H_half=2.773/3.466 nats
+          eps=1e-2 max-rank=31/32  eps=1e-1 max-rank=29/32
+      cum pi(n)        N=     1024  max-rank=   17/32     ( 53.1% of half-cut bound) H_half=0.001/3.466 nats
+          eps=1e-2 max-rank=5/32  eps=1e-1 max-rank=2/32
+      pi(n)-li(n)      N=     1024  max-rank=   22/32     ( 68.8% of half-cut bound) H_half=0.043/3.466 nats
+          eps=1e-2 max-rank=17/32  eps=1e-1 max-rank=7/32
+    
+    k=12  (N=4096, density=0.1377, time=0.21s)  theorem: MATCH
+      chi_P            N=     4096  max-rank=   33/64     ( 51.6% of half-cut bound) H_half=2.788/4.159 nats
+          eps=1e-2 max-rank=33/64  eps=1e-1 max-rank=33/64
+      random@dens      N=     4096  max-rank=   64/64     (100.0% of half-cut bound) H_half=3.461/4.159 nats
+          eps=1e-2 max-rank=62/64  eps=1e-1 max-rank=57/64
+      cum pi(n)        N=     4096  max-rank=   33/64     ( 51.6% of half-cut bound) H_half=0.000/4.159 nats
+          eps=1e-2 max-rank=2/64  eps=1e-1 max-rank=2/64
+      pi(n)-li(n)      N=     4096  max-rank=   38/64     ( 59.4% of half-cut bound) H_half=0.034/4.159 nats
+          eps=1e-2 max-rank=30/64  eps=1e-1 max-rank=9/64
+    
+    k=14  (N=16384, density=0.1160, time=0.83s)  theorem: MATCH
+      chi_P            N=    16384  max-rank=   65/128    ( 50.8% of half-cut bound) H_half=3.396/4.852 nats
+          eps=1e-2 max-rank=65/128  eps=1e-1 max-rank=64/128
+      random@dens      N=    16384  max-rank=  128/128    (100.0% of half-cut bound) H_half=4.149/4.852 nats
+          eps=1e-2 max-rank=126/128  eps=1e-1 max-rank=115/128
+      cum pi(n)        N=    16384  max-rank=   65/128    ( 50.8% of half-cut bound) H_half=0.000/4.852 nats
+    ... (87 more lines)
+All 11 configurations confirm the theorem exactly. Let me update the novel finding and results documents.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/novel/mps_bond_dimension.md
+    The file /apps/aplikacijos/prime-research/novel/mps_bond_dimension.md has been updated successfully.
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension_results.md
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/mps_bond_dimension_results.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Edit] /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md
+    The file /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md
+    The file /apps/aplikacijos/prime-research/novel/pseudorandomness_of_pi.md has been updated successfully.
+Now update CLOSED_PATHS.md and SESSION_INSIGHTS.md.
+  [Bash] grep -n "Tensor network / MPS" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    514:| Tensor network / MPS sieve | FAIL | I | Bond dim = primorial (volume-law entanglement); exponential | 20 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    510	
+    511	| Approach | Verdict | Mode | Key Finding | Session |
+    512	|----------|---------|------|-------------|---------|
+    513	| CRT modular π(x) mod m reconstruction | FAIL | C | π(x) mod m = random walk with step ~1/ln(x); no structure | 20 |
+    514	| Tensor network / MPS sieve | FAIL | I | Bond dim = primorial (volume-law entanglement); exponential | 20 |
+    515	| Automata-theoretic sieve (DFA product) | FAIL | I | Minimized DFA has exactly primorial(y) states; exponential | 20 |
+    516	| Trace formula / spectral shortcut | FAIL | E | Trace formula IS explicit formula (circular); O(T^{3/2}) | 20 |
+    517	| Heat kernel smoothing of zero sum | FAIL | I | Smoothing introduces O(√x) bias; no free lunch | 20 |
+    518	| Fast-forwardable dynamical system on gaps | FAIL | I | Gaps ~90% random; MI(g_n;g_{n+1})~0.3 bits; no attractor | 20 |
+    519	| HMM / substitution morphism for gaps | FAIL | I | LZ complexity near-random; no finite-state generator | 20 |
+    520	| Finite field lifting F_q→Z via q→1 | FAIL | E | q→1 degenerates to 0; virtual curve needs genus ~√x | 20 |
+    521	| F₁ (field with one element) for primes | FAIL | E | No meaningful polynomial ring; produces PNT not exact | 20 |
+    522	| Z[i]/Z[ω] prime counting shortcut | FAIL | E | Reduces to rational primes + congruence; MORE zeros | 20 |
+    523	| Sieve matrix SVD / low-rank | FAIL | I | Matrix has FULL rank = #primes; SVs don't decay fast | 20 |
+    524	| Lucy_Hedgehog S(v,p) compression | FAIL | I | Binary step function; Fourier NOT sparse; 90/10 split | 20 |
+    525	| Log-Fourier sieve (multiplicative → translation) | FAIL | I | 90% energy in 10 modes BUT 99% needs ~70% of modes | 20 |
+    526	| Iterative zero-sum with self-correction | FAIL | E | Sensitivity <1 (converges), but to value ~√x from exact | 20 |
+    527	| Wilson's theorem batch computation | FAIL | C | Computing (k-1)! mod k IS primality testing | 20 |
+    528	| Determinant/permanent sieve formulation | FAIL | E | Reduces to Möbius inclusion-exclusion with 2^k terms | 20 |
+    529	| Cyclotomic polynomial prime encoding | FAIL | C | Φ_n(1)=p iff n=p^k, but evaluation requires factoring | 20 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now the session insights. Let me check the SESSION_INSIGHTS file.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (30 more lines)
+  [Bash] grep -c "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md && tail -40 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    29
+    All FOCUS_QUEUE tasks were already COMPLETED; session pivoted to productive
+    engineering work per CLAUDE.md guidelines.
+    
+    ### Experiments
+    
+    1. **Lehmer method vs Lucy DP** (`experiments/sieve/lehmer_vs_lucy.py`)
+       Three C implementations benchmarked: Lucy DP, Lehmer (recursive phi + P2),
+       Meissel-Lehmer (P3 term). All verified 100% correct to 10^10.
+       RESULT: Lucy DP is 5-13x FASTER than naive Lehmer. Recursive phi inclusion-exclusion
+       with hash memoization has worse cache behavior than Lucy's sequential array access.
+       The Deleglise-Rivat/Gourdon speedup comes from segmented sieve for phi, not the
+       decomposition itself.
+    
+    2. **Wheel-30 + prefetch Lucy DP** (`experiments/sieve/segmented_lucy.py`)
+       Wheel mod 30 (skip p=2,3,5) + __builtin_prefetch hints on C Lucy DP.
+       RESULT: Only 2-35% speedup. Hardware prefetcher already optimal for sequential access.
+       The 100-1000x gap to primecount is algorithmic (Gourdon variant), not parameter tweaking.
+    
+    ### Novel Finding Documented
+    
+    - **Carry-propagation boundary** from S40 written up in `novel/carry_propagation_boundary.md`.
+      Per-bit difficulty of p(n) has a sharp 4-bit sigmoid transition from EASY (R^{-1}
+      determines) to HARD (coin flip) at ~60% of bit positions. Genuinely novel measurement
+      not in published literature.
+    
+    ### Key Insights
+    (a) **Naive Lehmer is SLOWER than Lucy DP.** The standard textbook Lehmer decomposition
+        only helps when phi is computed via segmented sieve, not recursion. This explains why
+        primecount's speed comes from infrastructure (SIMD, segmented sieve, OpenMP), not
+    ... (11 more lines)
+  [Bash] grep -n "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    732:## Session 31 (Novel Circuit Complexity Measures)
+    788:## Session 32: Fresh Perspective (2026-04-05)
+    812:## Session 33: Deep Focus — Conditional Algorithms (2026-04-05)
+    866:## Session 35
+    928:## Session 36 — Fresh Perspective (Analogies from Other Fields)
+    990:## Session 36b — Deep Focus: Kt Complexity of delta(n) (2026-04-05)
+    1042:## Session 38 (Critique)
+    1070:## Session 39 — Literature Monitoring + Depth Profile (2026-04-05)
+    1109:## Session 40: Fresh Perspective (2026-04-05)
+    1154:## Session 41 (Engineering + Novel Write-up)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1154	## Session 41 (Engineering + Novel Write-up)
+    1155	
+    1156	**Focus:** Engineering improvements to v10 + novel finding documentation.
+    1157	All FOCUS_QUEUE tasks were already COMPLETED; session pivoted to productive
+    1158	engineering work per CLAUDE.md guidelines.
+    1159	
+    1160	### Experiments
+    1161	
+    1162	1. **Lehmer method vs Lucy DP** (`experiments/sieve/lehmer_vs_lucy.py`)
+    1163	   Three C implementations benchmarked: Lucy DP, Lehmer (recursive phi + P2),
+    1164	   Meissel-Lehmer (P3 term). All verified 100% correct to 10^10.
+    1165	   RESULT: Lucy DP is 5-13x FASTER than naive Lehmer. Recursive phi inclusion-exclusion
+    1166	   with hash memoization has worse cache behavior than Lucy's sequential array access.
+    1167	   The Deleglise-Rivat/Gourdon speedup comes from segmented sieve for phi, not the
+    1168	   decomposition itself.
+    1169	
+    1170	2. **Wheel-30 + prefetch Lucy DP** (`experiments/sieve/segmented_lucy.py`)
+    1171	   Wheel mod 30 (skip p=2,3,5) + __builtin_prefetch hints on C Lucy DP.
+    1172	   RESULT: Only 2-35% speedup. Hardware prefetcher already optimal for sequential access.
+    1173	   The 100-1000x gap to primecount is algorithmic (Gourdon variant), not parameter tweaking.
+    1174	
+    1175	### Novel Finding Documented
+    1176	
+    1177	- **Carry-propagation boundary** from S40 written up in `novel/carry_propagation_boundary.md`.
+    1178	  Per-bit difficulty of p(n) has a sharp 4-bit sigmoid transition from EASY (R^{-1}
+    1179	  determines) to HARD (coin flip) at ~60% of bit positions. Genuinely novel measurement
+    1180	  not in published literature.
+    1181	
+    1182	### Key Insights
+    1183	(a) **Naive Lehmer is SLOWER than Lucy DP.** The standard textbook Lehmer decomposition
+    ... (14 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -10
+    session29_fresh_perspective.md
+    session31_tensor_discrepancy.md
+    session32_fresh_perspective.md
+    session33_conditional_algorithms.md
+    session36b_kt_deep_focus.md
+    session37_housekeeping.md
+    session38_critique.md
+    session39_literature_depth.md
+    session40_fresh_perspective.md
+    session41_engineering.md
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null && echo "---" && ls -la /apps/aplikacijos/prime-research/.run_state 2>/dev/null
+    3
+    ---
+    -rw-r--r-- 1 root root 2 Apr 25 21:19 /apps/aplikacijos/prime-research/.run_state
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session42_mps_baseW.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session42_mps_baseW.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find /apps/aplikacijos/prime-research/experiments -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+    MISSING: /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2_results.md
+  [Bash] git log --oneline -- experiments/information_theory/wheel_scaling.py experiments/information_theory/zeros_convergence_test.py experiments/information_theory/zeros_convergence_v2.py 2>&1 | head -20
+    ca90003 Manual
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling.py /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test.py /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2.py
+    -rw-r--r-- 1 root root 9513 Apr 25 21:04 /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling.py
+    -rw-r--r-- 1 root root 5302 Apr 25 21:04 /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test.py
+    -rw-r--r-- 1 root root 4430 Apr 25 21:04 /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2.py
+Pre-existing missing _results.md from earlier sessions. Let me read each and write minimal companion files, per CLAUDE.md enforcement.
+  [Read] /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling.py
+    1	"""
+    2	Wheel Scaling Analysis
+    3	=======================
+    4	How many bits does the wheel constrain as we add more and more primes?
+    5	Using 6 primes (mod 30030) gave only 2.4 bits. What about 100? 1000? ALL primes?
+    6	
+    7	Uses Mertens' theorem: ∏(1-1/p) ≈ e^{-γ}/ln(y) for primes p ≤ y.
+    8	Bits constrained = -log2(∏(1-1/p)) = log2(1/∏(1-1/p))
+    9	
+    10	Session 41.
+    11	"""
+    12	
+    13	import math
+    14	
+    15	def sieve_primes(limit):
+    16	    is_prime = bytearray([1]) * (limit + 1)
+    17	    is_prime[0] = is_prime[1] = 0
+    18	    for i in range(2, int(limit**0.5) + 1):
+    19	        if is_prime[i]:
+    20	            is_prime[i*i::i] = bytearray(len(is_prime[i*i::i]))
+    21	    return [i for i in range(2, limit + 1) if is_prime[i]]
+    22	
+    23	def main():
+    24	    print("=" * 70)
+    25	    print("WHEEL SCALING: How many bits do K wheels constrain?")
+    26	    print("=" * 70)
+    27	
+    28	    primes = sieve_primes(100000)
+    29	    EULER_GAMMA = 0.5772156649
+    30	
+    ... (20 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test.py
+    1	"""
+    2	Zero Convergence Test
+    3	======================
+    4	For p(1000) = 7919, add zeta zeros one at a time and watch
+    5	pi(x) converge to the correct value. How many zeros until exact?
+    6	
+    7	Uses mpmath for reliable complex arithmetic.
+    8	
+    9	Session 41.
+    10	"""
+    11	
+    12	import math
+    13	import sys
+    14	
+    15	try:
+    16	    import mpmath
+    17	    mpmath.mp.dps = 25
+    18	except ImportError:
+    19	    print("ERROR: mpmath required. Install with: pip install mpmath")
+    20	    sys.exit(1)
+    21	
+    22	def sieve_primes(limit):
+    23	    is_prime = bytearray([1]) * (limit + 1)
+    24	    is_prime[0] = is_prime[1] = 0
+    25	    for i in range(2, int(limit**0.5) + 1):
+    26	        if is_prime[i]:
+    27	            is_prime[i*i::i] = bytearray(len(is_prime[i*i::i]))
+    28	    return [i for i in range(2, limit + 1) if is_prime[i]]
+    29	
+    30	def R_real(x):
+    ... (10 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2.py
+    1	"""
+    2	Zero Convergence Test v2
+    3	=========================
+    4	Use the standard explicit formula with proper li(x^rho) computation.
+    5	
+    6	pi(x) = R(x) - sum_{gamma>0} 2*Re(li(x^{1/2+i*gamma})) - 1/ln(2) + small terms
+    7	
+    8	Session 41.
+    9	"""
+    10	
+    11	import math
+    12	import mpmath
+    13	
+    14	mpmath.mp.dps = 30
+    15	
+    16	def sieve_primes(limit):
+    17	    is_prime = bytearray([1]) * (limit + 1)
+    18	    is_prime[0] = is_prime[1] = 0
+    19	    for i in range(2, int(limit**0.5) + 1):
+    20	        if is_prime[i]:
+    21	            is_prime[i*i::i] = bytearray(len(is_prime[i*i::i]))
+    22	    return [i for i in range(2, limit + 1) if is_prime[i]]
+    23	
+    24	def R_real(x):
+    25	    """Gram series for R(x)."""
+    26	    x = mpmath.mpf(x)
+    27	    ln_x = mpmath.log(x)
+    28	    result = mpmath.mpf(1)
+    29	    term = mpmath.mpf(1)
+    30	    for n in range(1, 200):
+  [Bash] timeout 60 python3 experiments/information_theory/wheel_scaling.py 2>&1 | tail -50
+                     7,919     0.06254408            3.9990               0.400%
+                   104,729     0.04857281            4.3637               0.436%
+                 1,299,709     0.03988304            4.6481               0.465%
+                15,485,863     0.03391390            4.8820               0.488%
+    
+    ======================================================================
+    3. PRIMES NEEDED TO CONSTRAIN K BITS
+    ======================================================================
+    
+     Target bits  Primes needed  Largest prime     Primorial ~
+               1              1              2            10^0
+               2              4              7            10^2
+               3             22             79           10^31
+               4            996           7879         10^3377
+               5       ~3534856      ~63509716            huge
+               6 ~112248864857988 ~4033484140430828            huge
+               7 ~226377008093029153371808858112 ~16268994311107017089114693435392            huge
+               8 ~1841463128415458921400803677888191467680422476565881471107072 ~264680175894832466279120235714400286607790625227031229916774400            huge
+               9 ~243699392366426069500122617033173552865313271524274715091151348885225026479558347082143619554507793610912493408847319269376 ~70055595511719452117437528133097242673839227573404342757224986520145654574772730330348108766238139298716071967905167041363968            huge
+              10 ~8536253029037078430645393506896799567029536605361438309138876241647108584480645024505836472606678252965045385276408992281808332690396474264481650308929240038036524340046440649713642566780557575634465222823016618377091141113736379740859836282175488 ~4907786462501647254465785921636172586855538773781427320364130492716987759358504662820033770034984408848921246087800334772530581655641517666415889651035352373654047263852886287598783234135051807320963320901083730738244521872095506203829949202362793984            huge
+              15        ~e^2^14   ASTRONOMICAL    ASTRONOMICAL
+              20        ~e^2^19   ASTRONOMICAL    ASTRONOMICAL
+              50        ~e^2^49   ASTRONOMICAL    ASTRONOMICAL
+             100        ~e^2^99   ASTRONOMICAL    ASTRONOMICAL
+             500       ~e^2^499   ASTRONOMICAL    ASTRONOMICAL
+    
+    ======================================================================
+    4. FULL SIEVE: All primes up to √x (= the sieve of Eratosthenes)
+    ======================================================================
+    
+    ... (20 more lines)
+  [Write] /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/information_theory/wheel_scaling_results.md
+  [Bash] timeout 60 python3 experiments/information_theory/zeros_convergence_test.py 2>&1 | tail -30
+           9  +466.659404  9528.546452 -471.453548   9529     
+          10  +395.643854  9599.562002 -400.437998   9600     
+          15  +679.512121  9315.693735 -684.306265   9316     
+          20  +838.697929  9156.507927 -843.492073   9157     
+          25 +1046.425905  8948.779951 -1051.220049   8949     
+          30 +1224.553521  8770.652335 -1229.347665   8771     
+          40 +1746.311373  8248.894483 -1751.105517   8249     
+          50 +1978.095505  8017.110351 -1982.889649   8017     
+          75 +2406.046894  7589.158962 -2410.841038   7589     
+         100 +3071.498693  6923.707163 -3076.292837   6924     
+         150 +4176.158486  5819.047370 -4180.952630   5819     
+         200 +5976.172656  4019.033200 -5980.966800   4019     
+         300 +10161.461207  -166.255351 -10166.255351   -166     
+         500 +15451.699673 -5456.493817 -15456.493817  -5456     
+         750 +20613.358760 -10618.152904 -20618.152904 -10618     
+        1000 +28414.269707 -18419.063851 -28419.063851 -18419     
+    
+      ✗ NOT exact with 1000 zeros (error: -28419.0639)
+    
+    ======================================================================
+    SUMMARY: Zeros needed for exact p(n)
+    ======================================================================
+    
+             n       p(n)    √p(n)  Zeros needed
+           100        541     23.3         >1000
+           500       3571     59.8         >1000
+          1000       7919     89.0         >1000
+          2000      17389    131.9         >1000
+          5000      48611    220.5         >1000
+         10000     104729    323.6         >1000
+  [Write] /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_test_results.md
+  [Bash] timeout 60 python3 experiments/information_theory/zeros_convergence_v2.py 2>&1 | tail -30
+           8      -1.9086    9997.1588    -2.8412   9997     
+           9      -0.8415    9996.0917    -3.9083   9996     
+          10      -1.3200    9996.5702    -3.4298   9997     
+          15      -2.2733    9997.5235    -2.4765   9998     
+          20      -2.0749    9997.3251    -2.6749   9997     
+          25      -2.9411    9998.1913    -1.8087   9998     
+          30      -1.7588    9997.0090    -2.9910   9997     
+          40      -1.0220    9996.2722    -3.7278   9996     
+          50      -0.8253    9996.0755    -3.9245   9996     
+          75      +0.3462    9994.9040    -5.0960   9995     
+         100      +1.0652    9994.1850    -5.8150   9994     
+         150      -1.9433    9997.1935    -2.8065   9997     
+         200      -2.3697    9997.6199    -2.3801   9998     
+         300      -1.2432    9996.4934    -3.5066   9996     
+         500      -2.4101    9997.6603    -2.3397   9998     
+         750      -1.7868    9997.0370    -2.9630   9997     
+        1000      -1.7832    9997.0334    -2.9666   9997     
+    
+      ✗ Not exact with 1000 zeros (error: -2.9666)
+    
+    ======================================================================
+    SUMMARY
+    ======================================================================
+    
+             n       p(n)    √p(n)  Zeros needed
+           100        541     23.3         >1000
+           500       3571     59.8         >1000
+          1000       7919     89.0         >1000
+          5000      48611    220.5             2
+         10000     104729    323.6         >1000
+  [Write] /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/information_theory/zeros_convergence_v2_results.md
+  [Bash] find /apps/aplikacijos/prime-research/experiments -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "DONE"
+    DONE
+  [Bash] find /apps/aplikacijos/prime-research -name "__pycache__" -type d 2>/dev/null
+    (Bash completed with no output)
+  [Bash] echo 4 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    4
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session complete. Summary of what was done:
+
+**Task #1 was already COMPLETED, so I pivoted to theoretical sharpening of the recently-discovered MPS bond dimension finding (the only unrun prediction in `novel/mps_bond_dimension.md`).**
+
+## Theorem proved + verified
+
+For chi_P : [1, W^d] → {0,1} viewed as a state in (C^W)^⊗d:
+
+> rank(M^(j)) = min(W^j, φ(W) · W^(d-j-1) + 1)
+
+at every cut j, for every primorial W tested.
+
+## Verification (11/11 configs match exactly)
+
+Tested W ∈ {2, 6, 30, 210}, d up to 20. Half-cut chi_P/random ratio asymptotes to φ(W)/W: 0.501 (W=2,d=20), 0.334 (W=6,d=8), 0.268 (W=30,d=4), 0.233 (W=210,d=2). Convergence is monotone from above with the +1 row-0 term vanishing as d grows.
+
+## Key derivation
+
+The MPS view recovers the **Lagarias-Odlyzko √N barrier without invoking zeta zeros**: the optimum cost over (W, d) with W^d = N is achieved at d=2, giving bond dim Θ(√N).
+
+## Files written/updated
+
+- `experiments/wildcard/mps_bond_dimension.py` (refactored with --base flag)
+- `experiments/wildcard/mps_bond_dimension_results.md` (extended)
+- `novel/mps_bond_dimension.md` (added base-W theorem + proof + saturation table)
+- `novel/pseudorandomness_of_pi.md` (added Measures 22, 23)
+- `status/CLOSED_PATHS.md` (one new row, 534 total)
+- `status/SESSION_INSIGHTS.md` (Session 42 entry)
+- `archive/sessions/session42_mps_baseW.md` (session synthesis)
+- 3 pre-existing missing `_results.md` files for `experiments/information_theory/` filled in
+- `.run_state` set to 4
+--- Session ended ---
+Sleeping 600 seconds before next run...

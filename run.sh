@@ -442,6 +442,6 @@ assist_f.close()
 
     RUN=$((RUN + 1))
     echo "$RUN" > "$STATE_FILE"
-    echo "Sleeping 600 seconds before next run..." | tee -a "$LOGFILE"
-    sleep 600
+    echo "Sleeping 5 seconds before next run..." | tee -a "$LOGFILE"
+    sleep 5
 done

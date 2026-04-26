@@ -1,13 +1,34 @@
-# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 20+ Measures
+# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 31 Measures
 
-**Status:** Novel synthesis. Individual measures from Sessions 17-36.
+**Status:** Novel synthesis. Individual measures from Sessions 17-55.
 No published work examines this many independent complexity measures on a single natural function.
 
 ## Summary
 
 pi(x) mod 2 is indistinguishable from a random Boolean function under every
-structural complexity measure tested in this project (20+). This is the
+structural complexity measure tested in this project (31). This is the
 project's strongest collective finding.
+
+The 2 measures added in S55 (A(x) mod 2, C_3(x) mod 2) probe the COMPONENTS of
+the Liouville-identity decomposition pi(x) = (x - L(x))/2 - C_3(x) (E2.2). They
+strengthen the picture: even after splitting pi(x) mod 2 = A(x) mod 2 XOR
+C_3(x) mod 2, EACH of the two halves is independently pseudorandom and the
+two are mutually independent (I(A; C_3) ≈ 2 × 10⁻⁵ bits).  In particular
+A(x) mod 2 (equivalently L(x) mod 4 modulo the trivial L mod 2 = x mod 2)
+is *more* pseudorandom than pi(x) mod 2 itself — its only nontrivial
+auto-structure (sparse density bias) is removed because Omega(n) is odd for
+exactly half of n.
+
+The 5 measures added in S56 (#27..#31) extend the same picture to
+character-twisted Liouville sums L_chi(x) for all 34 non-trivial Dirichlet
+characters across q in {3, 5, 7, 11, 13}.  Each char twists by a different
+primitive d-th root of unity for d = ord(chi) in {1, 2, 3, 4, 5, 6, 10, 12}.
+The next bit A_chi(x) mod 2 of every twisted sum is structurally
+pseudorandom (LFSR/N = 0.5000±0.0003 across all 34 chars) and has
+mutual info < 10^-5 bits with pi(x; q, a) mod 2 for every a in (Z/q)*.
+Combined with a generalised free identity in Z[zeta_d]/2 (analog of
+L(x) mod 2 = x mod 2), this closes the entire family of
+character-twisted-Liouville attack routes on Chain B's missing primitive.
 
 Each measure probes a different aspect of Boolean function complexity --
 algebraic structure, communication complexity, approximation theory,
@@ -42,6 +63,16 @@ pseudorandom under all known structural tests.
 | 19 | Per-bit influence gradient | LSB-half ~2x MSB-half influence | similar gradient | S28 |
 | 20 | SVD spectral decay of delta(n) | S_k ~ k^{-1.1} (power-law, not exponential) | power-law | S20 |
 | 21 | Truth table compressibility (gzip) | 2.0-2.6x vs random (N=12..20, increasing) | 1.0x | S35 |
+| 22 | TT bond dim at base-2 half cut (chi_P, d=20) | 2^{d/2-1}+1 (factor 1/2 below random) | 2^{d/2} | S41 |
+| 23 | TT bond dim at base-W half cut, ratio | phi(W)/W exact (W=6,30,210 verified) | 1 | S41 |
+| 24 | Excess entropy E of prime parity (mod 6) stream | E ~ +0.026 nats (plateaus at L=10) | 0 | S48 |
+| 25 | A(x) mod 2 = (x-L(x))/2 mod 2 (Liouville-odd-Omega-count parity) | block-entropy 7.9999/8, AC[1..30]=0.001, FFT z=5.5, LFSR/N=0.500 | 8.0, 0, ~5.0, 0.5 | S55 |
+| 26 | C_3(x) mod 2 = #{n<=x: Omega(n) odd, >=3} mod 2 (Liouville-non-prime odd component) | block-entropy 7.88/8, AC=0.148 (density bias), FFT z=5.25, LFSR/N=0.500 | density-bias-comparable | S55 |
+| 27 | A_chi(x) mod 2 over chi mod 3 (worst of 2 chars, principal + Legendre) | LFSR/N=0.5000, h_8=6.87/8, AC=0.33 (density), max MI w/ pi(x;3,a)=1.6e-6 bits | density-bias-comparable | S56 |
+| 28 | A_chi(x) mod 2 over chi mod 5 (worst of 4 chars, orders 1,2,4,4) | LFSR/N=0.5000, h_8=7.71/8, AC=0.60 (density), max MI w/ pi(x;5,a)=5.6e-6 bits | density-bias-comparable | S56 |
+| 29 | A_chi(x) mod 2 over chi mod 7 (worst of 6 chars, orders 1,2,3,3,6,6) | LFSR/N=0.4998, h_8=7.89/8, AC=0.57 (density), max MI w/ pi(x;7,a)=9.5e-6 bits | density-bias-comparable | S56 |
+| 30 | A_chi(x) mod 2 over chi mod 11 (worst of 10 chars, orders include 5,10) | LFSR/N=0.4995, h_8=7.96/8, AC=0.46 (density), max MI w/ pi(x;11,a)=5.6e-6 bits | density-bias-comparable | S56 |
+| 31 | A_chi(x) mod 2 over chi mod 13 (worst of 12 chars, orders include 3,4,6,12) | LFSR/N=0.5000, h_8=7.97/8, AC=0.54 (density), max MI w/ pi(x;13,a)=9.5e-6 bits | density-bias-comparable | S56 |
 
 ### Notes on Individual Measures
 
@@ -88,6 +119,17 @@ compression vs 1.0x for random. However, this reflects only LOCAL structure:
 the prime density 1/ln(x) creates long runs of zeros in the truth table (ordered
 by binary input). Block entropy analysis confirms this is trivial density bias,
 not exploitable for circuit construction.
+
+**Measures 22-23: TT bond dimension at primorial bases.** Viewing chi_P as a
+state in `(C^W)^{otimes d}` via base-W reshape, the unfolded matrix rank at
+every cut j is *exactly* `min(W^j, phi(W) * W^{d-j-1} + 1)`, verified by full
+SVD for W in {2, 6, 30, 210} and d up to 20. The half-cut chi_P/random ratio
+asymptotes to phi(W)/W: 0.501 (W=2, d=20), 0.334 (W=6, d=8), 0.268 (W=30, d=4),
+0.233 (W=210, d=2). This is a constant-factor compressibility savings exactly
+equal to the wheel-W sieve gain -- a "wheel-W in MPS language" theorem. It
+does NOT separate primes from random in any nontrivial sense: the savings is
+always factor `phi(W)/W ~ e^{-gamma}/log W`, never polylog. See
+`novel/mps_bond_dimension.md` for proof and tables.
 
 ## The N/2 Universality
 

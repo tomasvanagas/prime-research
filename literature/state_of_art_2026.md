@@ -3,7 +3,7 @@
 Consolidated survey of all developments relevant to computing p(n) exactly.
 Deduplicated from 6 overlapping source files.
 
-Last updated: 2026-04-05 (Session 38 critique)
+Last updated: 2026-04-26 (Session 58 literature watch -- NO-DELTA)
 
 ---
 
@@ -521,7 +521,63 @@ The problem of computing p(n) in polylogarithmic time remains open in the strong
 
 **Key takeaway:** Brandt's MKtP diagonalization is the only genuinely new theoretical technique found that could eventually impact the prime computation barrier question. Everything else confirms existing understanding.
 
+**April 2026 session 47 search update (window 2026-04-05 -> 2026-04-25):**
+
+Targeted 10-topic scan (TC^0/NC^1, IMM lower bounds, PRIMES in TC^0, pi(x)
+algorithms, zeta zero summation, Hardy-Littlewood/Selberg sieves, sub-sqrt(x)
+claims for pi(x)/p_n, Brandt MKtP follow-ups, Ono partition-detection extensions,
+Connes/Yakaboylu Hilbert-Polya updates).
+
+Two minor catalog entries added (no algorithmic impact):
+- **Connes (Feb 2026), arXiv:2602.04022:** "The Riemann Hypothesis: Past, Present
+  and a Letter Through Time" -- survey + perspective on the Letter approach.
+- **Yakaboylu arXiv:2408.15135 v10 (March 2026):** Hamiltonian-construction RH
+  strategy revised; community has not validated. Even if accepted, yields no
+  pi(x) algorithm.
+
+No paper in the window changes the asymptotic barrier. Aggarwal (October 2025)
+remains the most recent direct statement on n-th-prime complexity.
+
+**April 2026 session 58 search update (window 2026-04-05 -> 2026-04-26):**
+
+Verdict: NO-DELTA. 245 arXiv math.NT entries scanned, ECCC TR26-040..061
+checked, author streams (Connes, Yakaboylu, van Ittersum, Ono, Granville, Tao)
+checked. Four minor catalog additions, none changes the barrier:
+
+- **Inoue, arXiv:2604.05733 (April 2026):** "Small gaps between consecutive
+  zeros of the Riemann zeta-function." Resonance-correlation method combining
+  Montgomery pair-correlation with Montgomery-Odlyzko approach. Proves μ <
+  0.50895 under RH (down from 0.515). Statistic on zero gaps; no algorithmic
+  impact.
+- **primecount post-v8.4 (master, April 15-25, 2026):** ~30 commits including
+  lockfree thread load balancer (#114), more accurate zeta zero use in
+  nth_prime path, Brun-Titchmarsh-based dist_approx improvement. v8.5 release
+  imminent. Constant-factor only.
+- **Kakkar, arXiv:2604.02383 (April 2026, ML category):** "Neural Prime Sieves"
+  -- PrimeFamilyNet for prime-family classification. ~60-90% search-space
+  reduction with >95% recall. Confirms §5.4 barrier (no exactness). No
+  asymptotic impact.
+- **Li, arXiv:2604.14596 (April 2026, 103-page lone-author preprint):**
+  "Prime-Zero Duality: Fractal Geometry, Renormalization-Group Flow, and
+  an Information-Ontological Framework for Number Theory." Speculative;
+  author acknowledges core claim unproven. Same profile as the debunked
+  Kilictas-Alpay TG kernel (§2.5d) -- no peer review, no institutional
+  affiliation, no computational pathway. Flagged for completeness.
+
+Other notable in-window items with no project relevance: González-Negrín
+arXiv:2604.15396 (Salem integral RH equivalence note), arXiv:2604.03051
+(CUE moment computation), arXiv:2604.16530 (zeta deficiency identity),
+ECCC TR26-061 (Raz, non-commutative ABP lower bound), ECCC TR26-056
+(Frick et al., Z₂-topological sign-rank framework -- conceptually adjacent
+to χ_P sign-rank but no number-theoretic application), ECCC TR26-051
+(Liu-Mazor-Pass, time-bounded Kolmogorov / Pessiland; adjacent to Brandt
+MKtP line but no direct π(x) connection).
+
+No paper in the window changes the asymptotic barrier. The mature-state
+hypothesis from S47 holds: most weeks produce no relevant news. Absence
+of news is itself information.
+
 ---
 
-Generated: 2026-04-05
+Generated: 2026-04-05; revised 2026-04-25 (session 47), 2026-04-26 (session 58)
 Consolidated from: latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md, session20_internet_search, session30_internet_search

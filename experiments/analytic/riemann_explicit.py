@@ -39,12 +39,20 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def load_or_compute_zeros(count):
     """Load precomputed zeta zeros from disk, computing if needed."""
-    fname = os.path.join(SCRIPT_DIR, f"zeta_zeros_{count}.txt")
-    if os.path.exists(fname):
-        with open(fname) as f:
-            zeros = [line.strip() for line in f if line.strip()]
-        if len(zeros) >= count:
-            return zeros[:count]
+    REPO_DATA = os.path.normpath(os.path.join(SCRIPT_DIR, "..", "..", "data"))
+    candidates = [
+        os.path.join(SCRIPT_DIR, f"zeta_zeros_{count}.txt"),
+        os.path.join(REPO_DATA, f"zeta_zeros_{count}.txt"),
+    ]
+    for size in (200, 300, 500, 1000):
+        if size >= count:
+            candidates.append(os.path.join(REPO_DATA, f"zeta_zeros_{size}.txt"))
+    for fname in candidates:
+        if os.path.exists(fname):
+            with open(fname) as f:
+                zeros = [line.strip() for line in f if line.strip()]
+            if len(zeros) >= count:
+                return zeros[:count]
 
     print(f"Computing {count} Riemann zeta zeros (one-time cost)...")
     zeros = []

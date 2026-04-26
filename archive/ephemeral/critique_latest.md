@@ -1,151 +1,251 @@
-# Critique Session — Session 38
+# Critique — Session 49 Round 2 (Proposals A–C, TT/LASSO/learned-residue)
 
-**Date:** 2026-04-05
-**Evaluating:** Session 36 proposals (proposals 21-24) + literature scan for 2025-2026 papers
+Critic-mode evaluation of the three NEW Session 49 proposals (proposals_session.md):
+- **A** — Reordered tensor-train compression of `delta(n)` across 7 orderings;
+- **B** — LASSO compressed-sensing of `delta(n)` in the zero-mode basis;
+- **C** — Learned (ridge) residues at fixed zeta zeros.
 
----
+The proposer self-reported all three CLOSED with empirical numbers. This
+critique:
 
-## Proposals Evaluated
-
-### Proposal 21: Zero Clustering Truncation
-**Claimed idea:** Group zeta zeros by GUE proximity, represent clusters by weighted representatives. If cluster count grows as O(log(x)^C), achieve polylog.
-
-**Verdict: DUPLICATE / FLAWED — Confirmed CLOSED**
-
-- **CLOSED_PATHS match:** "Zeta zero compression/FMM" (S9), "Convergence acceleration of zero sum" (S32), "Zero-count scaling analysis" (S11), "Randomized zeta zero sampling" (S15), "Zeta zero reordering/weighting" (S13)
-- **Failure mode:** E + I. The core conjecture (O(log^C) cluster representatives suffice) is falsified by the experiment itself: tail contributions are unpredictable (ratio varies -3.4 to +3.3). This is consistent with N_min ~ 0.35 * x^{0.27} (S13) — a power law, not polylog.
-- **Mathematical obstacle:** GUE statistics describe *spacing* correlations, not *amplitude* correlations. Even though zeros repel in spacing, their contributions x^{iγ}/ρ to pi(x) are effectively independent due to the random-like phases γ*ln(x). Clustering by proximity cannot capture amplitude cancellation.
-- **Specific flaw in complexity analysis:** The claim "if cluster count ~ O(log^C)" is unjustified. GUE spacing ~ 2π/ln(T) means O(T/ln(T)) clusters of O(ln(T)) zeros each in any bounded window. At T ~ sqrt(x), this is O(sqrt(x)/log(x)) clusters — still sublinear but NOT polylog.
-- **What S36 added:** Quantified the 10-zero accuracy limit (~1.3 mean error). This is a useful refinement of S11's "K_min power law" but doesn't change the fundamental picture.
-- **Critique grade: C-** (mostly replication with minor quantitative refinement)
+1. cross-checks each against `status/CLOSED_PATHS.md` (705 lines / 533+ entries),
+   citing the exact prior closures (most are pre-Session-49);
+2. flags **Proposal C's basis misspecification** (cos(γ log n)/√n uses prime
+   *index* n, but the explicit-formula basis is in prime *value* p(n));
+3. runs the corrected basis and confirms the negative verdict survives;
+4. preserves the bond-profile saturation pattern and LASSO `nnz=0` finding
+   so future sessions can reference them;
+5. adds three CLOSED_PATHS entries that pin the new measurements.
 
 ---
 
-### Proposal 22: Compressed Sensing on delta(n)
-**Claimed idea:** If delta(n) = p(n) - R^{-1}(n) is k-sparse in some transform domain, compressed sensing recovers it from O(k log(n/k)) measurements.
+## A — Reordered TT compression of delta(n)
 
-**Verdict: DUPLICATE / FLAWED — Confirmed CLOSED**
+**Verdict: DUPLICATE — the multi-ordering test is a refinement, not a new
+mechanism. All seven orderings produce identical volume-law saturation,
+confirming line 171's S10 closure is ordering-independent.**
 
-- **CLOSED_PATHS match:** "Compressed sensing on K zeros" (S7), "Matching pursuit (K zeros)" (S7), "SVD low-rank approx of delta" (S20), "Fourier correction" (S3), "DFT spectral structure of zeros" (S25)
-- **Failure mode:** I. delta is NOT sparse — 69/100 zeta zero coefficients significant, 50+ Fourier coefficients for 87% energy. This is fully consistent with prior findings: spectral flatness 0.91 (S9), 82% of modes needed (S36b), 1/f^{1.69} smooth continuum (S20).
-- **Mathematical obstacle:** Compressed sensing requires sparsity or compressibility. delta(n) has been confirmed dense in: Fourier (S3,S22), zeta zero basis (S22), SVD (S20), wavelet (S5), and LFSR (S28). This is the information-theoretic barrier: ~5.8 bits/value entropy rate, ~5.58*N total Kt complexity.
-- **What S36 added:** Explicit compressed sensing / LASSO formulation confirms what was known qualitatively. The 11-16% extrapolation accuracy is new but consistent with S6's 0.3% test generalization and S3's 0% Fourier generalization.
-- **Critique grade: C** (formalized the sparsity question, but answer was predictable)
+**CLOSED_PATHS adjacency:**
 
----
+| Line | Entry | Match |
+|------|-------|-------|
+| 171  | MPS / tensor network — FAIL/I; bond dim ~ N^{0.49}, volume-law (S10) | EXACT mechanism (natural ordering only) |
+| 185  | Tensor sieve (MPS of divisibility DFAs) — FAIL/I (S20) | Adjacent: DFA-product variant |
+| 516  | Tensor network / MPS sieve — FAIL/I; bond = primorial (S20) | Adjacent: sieve-not-delta variant |
+| 517  | MPS bond dim of chi_P at base-W half cut — FAIL/E; theorem gives rank = min(W^j, φ(W)·W^{d-j-1}+1) (S41) | Theorem-level closure for any base |
+| 599  | Tensor network MPS Legendre sieve contraction — FAIL/I; bond ~ 2^{0.33-0.43·a} (S26) | Adjacent: sieve-state target |
 
-### Proposal 23: PSLQ/LLL Integer Relation Discovery
-**Claimed idea:** Use PSLQ/LLL to discover algebraic formula delta(n) = P(log n, log log n, ...) + O(1).
+**The new measurement.** At N=2^13=8192, eps_rel=1e-3 SVD truncation, **all
+seven orderings** (identity, bit-reversal, Gray, Morton, 2-adic, sort_by_R^{-1},
+random) plus Gaussian noise produce **identical** bond profiles
+`[2, 4, 8, 16, 32, 64, 64, 32, 16, 8, 4, 2]`. The smooth-cosine positive
+control achieves bond-dim 2 throughout, confirming the SVD pipeline is
+sensitive to structure when present.
 
-**Verdict: DUPLICATE — Confirmed CLOSED**
+**Why the new test does not break the closure.** The bond profile
+`[2, 4, 8, 16, 32, 64, 64, 32, …, 2]` is the *mathematical maximum* at each
+cut for a binary L=13 TT (cut k bonded by min(2^k, 2^{L-k})). Saturating
+this at threshold 1e-3 is necessary but not sufficient for volume-law; the
+gaussian-noise baseline saturates the same ceiling, indicating delta is
+indistinguishable from GUE noise at this resolution. Tighter thresholds
+(1e-6, 1e-9) would still fail to expose structure: line 24 (S25) shows
+DFT spectral flatness 0.93–0.999 on zeros, so any reorthogonalization of
+delta inherits a flat singular-value spectrum.
 
-- **CLOSED_PATHS match:** "PSLQ/LLL exhaustive identity search" (S18,S19), "LLL lattice reduction for algebraic relations" (S29), "Symbolic regression/PSLQ" (S5), "Polynomial in ln(n)" (S3)
-- **Failure mode:** I. Polynomial regression R² ≈ 0.001 — delta is uncorrelated with ALL smooth functions of n. This exactly replicates S29's finding ("f(x)=pi(x)-R(x) is algebraically independent of all tested bases") and S20's Kt finding ("n adds NO info beyond delta history").
-- **Mathematical obstacle:** Transfer entropy TE(n→delta) = 0.013 bits (S36b). The index n is informationally irrelevant to the residual. Any formula delta(n) = f(n) for computable f is impossible.
-- **What S36 added:** The Gaussian normality test (p=0.19) on normalized delta is a genuine refinement — quantifying that δ̂(n) = δ(n)·log(p)/√p is approximately Gaussian. This strengthens the pseudorandomness picture from S28-37.
-- **Novel component:** The normality test result is a minor addition to the pseudorandomness evidence (Measure 22, if we were counting). It's not sufficient for a new entry in novel/ but worth noting in the pseudorandomness synthesis.
-- **Critique grade: C+** (Gaussian normality test is the one genuinely new observation)
+**Independent re-derivation.** Theorem in line 517 establishes the chi_P
+bond-dim at every cut for any base-W half-cut; the new test is the same
+formula instantiated for W=2 with index permutations, all of which give
+the W=2 ceiling 2^min(j, L-j). Bit-reversal/Gray/Morton are 2-adic
+isomorphisms of the binary cube and cannot change the half-cut min;
+sort_by_R^{-1} reorders R^{-1}(n) into a near-monotone curve but the
+*residual* delta = p(n) - R^{-1}(n) is GUE-random regardless of how the
+indices are sorted. The 7-ordering test cannot succeed because the
+residual after smooth subtraction is invariant under any
+order-preserving sort applied to the sum, and bit-permutation orderings
+permute *labels* without changing the SVD spectrum of the multilinear
+contraction.
 
----
+**Useful refinement to keep.** The seven-ordering identical-saturation
+result is the most explicit statement of "volume-law is ordering-independent
+under binary TT" the project has on record. **Bond profile
+`[2,4,8,16,32,64,64,32,16,8,4,2]` is the binary-TT volume-law fingerprint**
+across N=8192 and all seven tested orderings.
 
-### Proposal 24: Dequantized Grover Sieve
-**Claimed idea:** If the primality operator M has low effective rank, dequantization of quantum algorithms gives classical O(polylog).
+**Failure mode:** I (information-theoretic).
 
-**Verdict: PARTIALLY NOVEL — Core confirmed CLOSED**
-
-- **CLOSED_PATHS match:** "Grover on Deleglise-Rivat sieve" (S7), "MPS / tensor network" (S10), "Sieve matrix SVD / low-rank" (S20), "Tensor sieve (MPS of divisibility DFAs)" (S20)
-- **Failure mode:** I. Sieve matrix rank ~ N^{0.365} ≈ π(√N). Fourier 90% rank ~ N^{0.943}. SVD spectrum decays slowly. These quantitatively confirm S20's findings.
-- **Mathematical obstacle:** The primality indicator has polynomial rank in all decompositions. The N^{0.365} exponent matches the theoretical prediction from Meissel-Lehmer: the effective dimensionality IS π(√N), the number of sieve primes. No dequantization trick can reduce this below O(x^{1/3}).
-- **Novel component:** The **specific connection to dequantization literature** (Tang 2019, Chia 2020, Jethwani 2025) is new framing. The rank measurements themselves mostly replicate S20. The Fourier rank exponent 0.943 is a new number.
-- **Why dequantization can't help (not noted in S36):** Dequantization results (e.g., Tang's recommendation system) exploit *low-rank structure* in the input. They convert quantum algorithms that sample from low-rank matrices into classical algorithms with polynomial overhead. For the primality operator, the rank is N^{0.365} — dequantization would give at best O(N^{0.365 * c}) for some constant c, still polynomial, not polylog.
-- **Critique grade: B-** (good framing, quantitative measurements, but result was predictable from S7+S20)
-
----
-
-## Cross-Proposal Assessment
-
-### The S36 proposals share a common deficiency:
-All four attempt to compress or sparsify the oscillatory contribution of zeta zeros. This is the **Information Loss** failure mode — the most frequently triggered barrier (180+ approaches). Sessions 25, 28, 35, and 36b have definitively established that delta(n) is:
-
-1. **Dense** in every tested basis (Fourier, zeta zero, SVD, wavelet, LFSR)
-2. **Incompressible** (Kt ~ 5.58*N, entropy rate 5.8 bits/value)
-3. **Independent of n** (TE(n→delta) = 0.013 bits)
-4. **Gaussian-distributed** when normalized (p=0.19)
-5. **Spectrally smooth** (1/f^{1.69}, no discrete lines, 82% modes needed)
-
-Any future proposal that attempts to compress, sparsify, extrapolate, or learn delta(n) should be immediately rejected unless it provides a specific mathematical mechanism explaining HOW it bypasses all 5 properties above.
-
-### What remains genuinely open:
-Per OPEN_PROBLEMS.md, the ONLY viable direction is **circuit complexity of pi(x)** — specifically whether #TC^0 ⊆ NC. This is a complexity theory question, not a compression question. No proposal in S36 addressed it.
-
----
-
-## Literature Scan: 2025-2026
-
-### New papers found:
-
-1. **Aggarwal (2025), arXiv:2510.16285: "A Note on Algorithms for Computing p_n"**
-   - Analyzes binary search approach: O(√n · (log n)^4) for p_n using pi(x) oracle
-   - Conditional on RH + Cramér: sieve-based O(√n · (log n)^{7/2} · log log n)
-   - **Relevance:** Confirms the current landscape. No polylog claim. The improvement is in the binary search / interval sieve step AFTER pi(x) is computed, not in computing pi(x) itself.
-   - **Status:** Does NOT change any barriers. Worth adding to literature/state_of_art_2026.md.
-
-2. **Tao-Gafni (2025): "Rough numbers between consecutive primes"**
-   - Resolves an Erdős question on rough numbers in prime gaps
-   - **Relevance:** Interesting number theory but does NOT address pi(x) computation.
-
-3. **Zeta zero computation methods (2025-2026):**
-   - Valley Scanner algorithm (arXiv:2512.09960): Real-to-complex parametrization, stable to t ~ 10^20
-   - Variational approach for Hardy Z-function zeros (ScienceDirect, January 2026)
-   - **Relevance:** Better methods for LOCATING individual zeros, but our barrier is SUMMING over ~10^48 zeros, not locating them. Faster individual zero computation helps only if we need fewer zeros — but we need O(sqrt(x)) zeros regardless (S11, S15).
-
-4. **Kim Walisch primecount v8.4 (April 2026):**
-   - SIMD-accelerated Gourdon D formula, estimated 2-4x speedup
-   - Still O(x^{2/3}) asymptotic
-   - **Relevance:** Practical engineering improvement only. Already tracked in state_of_art_2026.md.
-
-5. **Scientific American "Top 10 Math Discoveries of 2025":**
-   - Mentions a new method for estimating prime density in intervals
-   - Also notes a LIMIT to how precise any estimate can be
-   - **Relevance:** The limit result aligns with our barrier findings. No polylog claim.
-
-6. **TC^0/NC^1 circuit complexity (2025-2026):**
-   - No new separation results found. TC^0 ≠ NC^1 remains open and central.
-   - RoPE-based Transformer circuit complexity bounds (EMNLP 2025) — tangential.
-   - **Relevance:** The frontier has not moved. Our OPEN_PROBLEMS.md is current.
-
-### Verdict on literature:
-**No 2025-2026 paper proposes or achieves polylog computation of pi(x) or p(n).** The state of the art remains O(x^{2/3}) practical (Gourdon/primecount) and O(x^{1/2+ε}) analytic (Lagarias-Odlyzko). The Aggarwal paper is the most relevant new work but addresses binary search efficiency, not the pi(x) oracle itself.
+**Action:** add CLOSED_PATHS entry sharpening line 171 with the seven-ordering
+identical-saturation result.
 
 ---
 
-## Proposals Surviving Critique
+## B — LASSO compressed-sensing on zero-mode basis
 
-**NOVEL proposals:** None. All four S36 proposals are confirmed closed.
+**Verdict: DUPLICATE — direct hit on TWO existing CLOSED_PATHS entries.**
 
-**PARTIALLY novel observations worth recording:**
-1. Normalized delta Gaussian normality (p=0.19) — minor addition to pseudorandomness evidence
-2. Sieve matrix rank exponent 0.365 — matches theoretical prediction, useful calibration number
-3. Fourier rank exponent 0.943 — new measurement
-4. Dequantization framing — new perspective on an old result
+**CLOSED_PATHS adjacency (in age order):**
 
-None of these warrant entries in novel/ or OPEN_PROBLEMS.md.
+| Line | Entry | Match |
+|------|-------|-------|
+| 350  | Compressed sensing on K zeros — PARTIAL/I; "lucky cancellations small x, doesn't scale" (S7) | EXACT mechanism, original closure |
+| **699** | **Compressed-sensing recovery of psi(x) via random K-subset of zeta zeros** — FAIL/E; first-K is near-optimal among K-subsets, signal DENSE in zero basis with smoothly-decaying amplitudes (S54) | **EXACT mechanism, last-session closure** |
+| 623  | Compressed sensing on prime indicator — FAIL/C; "99% energy in 1.25% Fourier components but those ARE zeta zero frequencies. Circular." (S29) | Adjacent: prime-indicator target |
+| 472  | Goldreich-Levin / list decoding for pi(x) — FAIL/I; commrank 2^{N/2} blocks any sparse Fourier recovery (S18) | Structural: blocks any sparse-basis route |
+| 240  | Wavelet/Fourier compression of correction C(x) — FAIL/I; 99.9% energy needs N^{0.75} coefs (S40) | Adjacent: same target signal |
+| 653  | Contour integral evaluation of zero sum — FAIL/E; "99% energy needs 133/500 components. No sparse representation in any basis." (S32) | Adjacent: same basis, different fitness |
+
+**The new measurement.** At N=4096, K_max=1024, alpha sweep
+{1e-6, …, 1e-1}, the LASSO best-test-RMSE solution at every K and every
+alpha is **nnz=0** (predict delta=0). OLS overfits catastrophically at
+K≥256 (test RMSE blows up to 1e10). The naive `round(R^{-1})` baseline
+matches the all-zero LASSO at 1.1% prime recovery.
+
+**Independent verification of the proposer's negative.**
+Line 699 last session ran a closely-related test: random K=50 subsets of
+2000 zeros for psi(x) recovery, finding random-subsets STRICTLY WORSE than
+first-K (rms 404 vs 97, 4× worse). Conclusion: signal is dense in zero
+basis with 1/|rho_k|-decaying amplitudes, **not K-sparse**. LASSO on the
+same basis with no amplitude prior simply discovers the same fact in a
+weaker form: every coefficient must scale ~1/|rho_k| to match the
+analytic explicit formula, so L1-promoting sparsity is unable to prefer
+any small subset.
+
+The sklearn LASSO at alpha=1e-1 is sufficiently aggressive to zero
+everything. At alpha=1e-6, the model approaches OLS and overfits as soon
+as K > N_train/2 = 1024. There is no mid-alpha sweet spot because there
+is no actual sparsity to discover.
+
+**Failure mode:** I (information-theoretic) reinforced by E (signal has no
+sparse basis representation by line 699 evidence).
+
+**Action:** add CLOSED_PATHS entry refining line 350 with the LASSO
+all-zero outcome and line 699 cross-reference.
 
 ---
 
-## Recommendations for Next Session
+## C — Learned (ridge) residues at fixed zeta zeros
 
-1. **Circuit complexity remains the only open direction.** Any productive session must engage with #TC^0 ⊆ NC? or TC^0 vs NC^1.
+**Verdict: DUPLICATE + FLAWED BASIS — the proposer's basis
+`cos(γ log n)/√n` uses the prime *index* n, but the explicit-formula's
+natural variable is the prime *value* p(n). The qualitative conclusion
+survives the correction (verified empirically below), but the experiment
+as written does not test what it claims.**
 
-2. **Specific actionable tasks:**
-   - Monitor for new TC^0/NC^1 separation results (ECCC, CCC 2026)
-   - Investigate growing-dimension matrix powering in TC^0 (the one genuinely open sub-question from S11)
-   - Add Aggarwal arXiv:2510.16285 to literature/state_of_art_2026.md
+### The basis-misspecification flaw
 
-3. **Do NOT propose:** Any approach based on compressing, sparsifying, learning, or extrapolating delta(n). The information-theoretic evidence against this is overwhelming (21+ measures, 5 conclusive properties listed above).
+The explicit formula gives
+`f(x) = π(x) − R(x) ≈ −2√x/log x · Σ_k cos(γ_k log x − φ_k)/|ρ_k|`.
 
-4. **Engineering:** Track primecount v8.4 SIMD benchmarks when available.
+Inverting around the prime sequence: for `δ(n) = p(n) − R^{-1}(n)`,
+linearizing R^{-1} at n gives
+`δ(n) ≈ f(p_n) · log(p_n) ≈ −2√p_n · Σ_k cos(γ_k log p_n − φ_k)/|ρ_k|`.
+
+The natural ridge basis is therefore **`{√p_n · cos(γ_k log p_n),
+√p_n · sin(γ_k log p_n)}`** — uses prime *value* p_n (not index n) and
+amplitude `√p_n` (not `1/√n`). The proposer used `cos(γ log n)/√n`, which
+is the *wrong* basis: amplitude scales like `1/√n` ≈ `1/√(N/log N)`
+instead of the correct `√p_n` ≈ `√(N log N)` (a factor of N off).
+
+### Critic experiment with corrected basis
+
+`experiments/proposals/critique49_basis_misspec.py` runs ridge regression
+under both bases at K ∈ {32, 128, 512, 2000} on the same train/test split.
+
+| K | orig acc | correct acc | orig test RMSE | correct test RMSE |
+|---|---|---|---|---|
+| 32 | 0.015 | 0.014 | 37.40 | **25.32** |
+| 128 | 0.011 | 0.017 | 37.39 | **23.66** |
+| 512 | 0.012 | 0.000 | 38.12 | 1670.74 |
+| 2000 | 0.011 | 0.000 | 38.27 | 795.42 |
+
+Naive baseline: 0.011.
+
+**Findings:**
+- Correct basis gives strictly lower test RMSE at K=32, 128 (25.3 vs 37.4;
+  23.7 vs 37.4) — the correct basis IS more informative.
+- Correct basis catastrophically overfits at K ≥ 512 — same overfitting
+  pattern as OLS, regularization cannot save it.
+- **Even the most-informative correct basis at K=128 gives 1.7% recovery,
+  ≈naive 1.1%** — RMSE 23.7 means predictions are off by ±24 on average,
+  far above the 0.5 rounding threshold.
+
+**The basis misspecification did NOT hide a positive result.** Proposal C
+closes under both the original and the corrected basis.
+
+### CLOSED_PATHS adjacency for the underlying mechanism
+
+| Line | Entry | Match |
+|------|-------|-------|
+| 145  | Deep ML (ridge/AR) — FAIL/I; 5.4% test exact (S8) | Direct mechanism: ML on delta |
+| 561  | ML (Ridge/kNN) prediction of delta(n) — FAIL/I; 0% exact on 1000 test cases (S21) | EXACT: ridge on delta |
+| 622  | Polynomial empirical correction to R(x) — FAIL/I; "Polynomial in 1/log(x) reduces error 60-80% but cross-validation confirms overfitting" (S29) | Adjacent: learned coefficients on a fixed basis |
+| 664  | Spectral truncation / adaptive zero selection — FAIL/E; "1000 zeros insufficient for n≥500" (S33) | Adjacent: same basis, no learned coefs |
+| **691** | **Extended PSLQ basis for f(x) — 10 zeta-zero modes** — FAIL/I; cross-check residuals 4e2-6e3 (S48) | EXACT basis structure |
+| **692** | **Hermite/Gaussian/Riesz mollification of explicit formula** — FAIL/E; mollification at most 1.21x better (S48) | Direct: re-weighted-coefficient variant |
+| **702** | **PSLQ + structured zeta-zero/log basis on delta(n) (8th PSLQ-on-delta)** — FAIL/I+E (S49 round 1) | Direct: PSLQ-coefficient variant of same atoms |
+
+**Why no learned-coefficient choice can break the bound (re-derivation).**
+The truncation tail beyond K zeros has L^2 norm
+`≥ Σ_{k>K} 1/(γ_k^2) ~ 1/(K log K)`. Multiplying by the `√p_n` amplitude
+gives an irreducible test-RMSE floor of `Ω(√(p_n)/(√K · √log K))`. At
+N=4096, p_N≈40000, K=2000, this floor is `~ √40000/√(2000·7.6) ~ 1.6`, so
+ridge plateaus near naïve no matter what coefficients are learned within
+the kept-K subspace.
+
+The "learned coefficients can absorb tail energy" hypothesis is
+**provably false in L^2**: the tail energy is orthogonal to the kept-K
+subspace, so the L^2-optimal kept-K coefficients are exactly the analytic
+1/ρ residues, and any data-fit deviates further from the truth on the
+test window. This is why the proposer found **at most 0.4pp** gap
+between analytic and ridge: that gap is finite-sample noise.
+
+**Failure mode:** I (information-theoretic) — same as line 691, 692.
+
+**Action:** add CLOSED_PATHS entry refining lines 691 and 692 with the
+ridge-vs-analytic null gap and the basis-misspecification correction.
 
 ---
 
-*Critique completed: 2026-04-05, Session 38*
+## Summary
+
+| Proposal | Verdict   | Failure Mode | Strict prior closure | New CLOSED_PATHS entry? |
+|----------|-----------|--------------|----------------------|--------------------------|
+| **A — Reordered TT** | DUPLICATE | I | line 171 (S10) | YES (refines: 7 orderings identically saturate volume-law ceiling at N=8192) |
+| **B — LASSO on zero modes** | DUPLICATE | I | lines 350 (S7), **699 (S54)** | YES (refines: LASSO best-test-RMSE = nnz=0 at every K, alpha) |
+| **C — Learned residues** | DUPLICATE + FLAWED BASIS | I | lines 561 (S21), 691/692 (S48), 702 (S49 R1) | YES (refines: corrected `√p_n · cos(γ log p_n)` basis still plateaus at naïve) |
+
+**No proposal survived critique with a polylog or sub-√x route to π(x).**
+All three close to entries that pre-date this session — Proposal B's mechanism
+was last closed *last session* (line 699, S54), suggesting the proposer-mode
+prompt failed to surface the most recent CLOSED_PATHS entries.
+
+**Process note.** Proposal A's seven-ordering test is the strongest empirical
+"ordering-independent volume-law" demonstration on record — preserve as a
+refinement. Proposal B's LASSO discovers L1-sparsity is impossible by getting
+nnz=0 — duplicate of S54 line 699 but worth recording. Proposal C contains
+a basis-misspecification flaw (uses prime index n instead of prime value
+p_n); critic re-ran the corrected basis and confirms the closure stands.
+
+**Open status unchanged.** The only genuinely open avenue per
+`status/OPEN_PROBLEMS.md` is **circuit complexity of π(x)** (Berry–Keating /
+TC^0 lower-bound monitoring). All three proposals attack the analytic /
+information-loss side; none addresses circuit complexity.
+
+**Process recommendation.** The proposer wrote `cos(γ log n)/√n` from
+memory, not from the explicit-formula derivation. A pre-flight check that
+"the basis used matches the basis derived from the explicit formula" would
+have caught this. The result happens to be correct (closure verified by
+critic experiment), but on a future iteration the misspecification could
+hide a positive signal in a different proposal.
+
+## Files written this session
+
+- `archive/ephemeral/critique_latest.md` (this file).
+- `experiments/proposals/critique49_basis_misspec.py` + `_results.md`
+  (corrected-basis ridge test for Proposal C).
+- Three entries appended to `status/CLOSED_PATHS.md`.
+
+## Files NOT written
+
+- No new `novel/` files — every proposal is a strict duplicate.
+- No new `experiments/proposals/session49_*.py` — proposer's three
+  experiments adequately closed each path.

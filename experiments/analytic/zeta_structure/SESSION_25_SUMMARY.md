@@ -63,4 +63,24 @@ The only remaining caveat: we tested 1000 zeros. Structure might exist at scales
 >1000 zeros to detect. However, GUE universality predictions strongly argue against this —
 the statistical agreement with GUE is already excellent at N=1000.
 
-**Total approaches tested across all sessions: 581+**
+**UPDATE (S45, 2026-04-25):** Caveat resolved. Extension to N=2000 (`zeta_structure_n2000.py`,
+`zeta_structure_n2000_results.md`) re-ran the five most discriminating tests. Pair-correlation
+RMS deviation from GUE shrank from ~0.10 to 0.0864; PSLQ on the previously-untested LATE
+block γ_{1001..1100} found 0/1225 pair and 0/4060 triple relations; cross-block (early × late)
+PSLQ found 0/400 relations; discrepancy and Weyl-sum ratios identical to N=1000 pattern.
+**No structure emerges at N=2000.** Probing >2000 would require Odlyzko's tabulated zeros.
+
+**UPDATE (S57, 2026-04-26):** Order-3 cell of the structural battery filled.
+`triple_correlation.py`, `triple_correlation_results.md` measured the 3-point correlation
+R_3(s_1, s_2) of unfolded zeros and compared to the GUE sine-kernel determinant
+ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2 K(s_1) K(s_2−s_1) K(s_2). Bulk RMS
+deviation 0.0875 (full grid, L_max=5, n_ref=1995); restricted-to-bulk RMS 0.0924;
+diagonal slice (equally-spaced triples) RMS 0.0972; anti-diagonal slice (constant 2nd-3rd
+gap) RMS 0.0884. Third-cumulant rigidity: c_3 of zero count in disjoint windows of
+L ∈ {1,2,4,8,16,32} stays at ~10⁻³ for every L, vs Poisson prediction c_3 = L
+(factor 10⁴ separation at L=32). **No third-order non-determinantal structure detected;
+GUE prediction matches at the only previously-untested correlation order.** This
+removes the residual hypothesis "could match pair correlation while concealing higher-order
+cluster pattern" and closes the last unfilled cell of the S25 structural battery.
+
+**Total approaches tested across all sessions: 582+**

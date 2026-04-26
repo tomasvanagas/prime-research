@@ -1,0 +1,475 @@
+
+=== Run #5 — Mode: critique — Sat Apr 25 21:39:59 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+    1	I'll propose fresh approaches without reading prior analysis. Let me start by drafting the proposals and then build testable code.
+    2	I see 37 proposals already exist. Let me focus on truly fresh angles not explored: topological data analysis, continued fraction expansion of the prime generating function, free probability / R-transform, reservoir computing, and Stein's method for explicit formula sharpening. Let me draft proposals and build two testable scripts.
+    3	Now let me write the two testable scripts.
+    4	The script ran. The J-fraction coefficients are erratic (b_12 = -407!), suggesting pi(n) is NOT D-finite — the apparent "linear log decay" of Hankel determinants is just because moments are bounded in [0,1]. Let me note this and move on.
+    5	No TDA library; I'll implement 0-dim persistence via scipy's single-linkage hierarchical clustering, which is mathematically equivalent.
+    6	Interesting result — long-lived bars are very few (<1% of N), but the count fluctuates around the Cramér baseline. Let me write the results.
+    7	All results files exist. No missing companions and `.run_state` is set to 5.
+    8	## Session summary
+    9	
+    10	Five fresh proposals (avoiding overlap with the existing 37) saved to `archive/ephemeral/proposals_session.md`:
+    11	
+    12	- **F1** — Persistent homology of detrended primes (TCDP conjecture)
+    13	- **F2** — Continued-fraction (J-fraction) expansion of pi(n) generating function (PPC: pi is P-recursive)
+    14	- **F3** — Free-probability R-transform of prime-indicator spectrum (FCP)
+    15	- **F4** — Reservoir computing on delta(n) with symbolic distillation
+    16	- **F5** — Stein's-method sharpening of explicit-formula error (SGEFE)
+    17	
+    18	Two were tested computationally:
+    19	
+    20	- **F2 (J-fraction):** **Negative.** Hankel determinants decay linearly in log-scale, but that is a trivial consequence of bounded moments. The J-fraction coefficients themselves are erratic (b_12 ≈ -407), strongly suggesting pi(n) is **not D-finite** — no compression.
+    21	- **F1 (TDA):** **Inconclusive.** Long-lived 0-dim bars number ~0.5% of N (sub-(N/log N)), but the same is true for the Cramér baseline. No reconstruction map from bars to p_n was demonstrated; gives a measurement, not an algorithm.
+    22	
+    23	F3, F4, F5 remain untested. F5 (Stein's-method) is the most theoretically interesting — would require careful analytic work to derive a sub-Gaussian tail bound on the explicit-formula error.
+    24	
+    25	`.run_state` set to 5.
+    26	
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_session.md
+    1	# Proposals Session (2026-04-25)
+    2	
+    3	Five fresh approaches not duplicating the existing 37 proposals. Focus areas:
+    4	topological data analysis, generating-function continued fractions, free probability,
+    5	reservoir computing, and Stein's-method sharpening of the explicit formula.
+    6	
+    7	---
+    8	
+    9	## Proposal F1: Persistent Homology of Detrended Prime Gap Sequence
+    10	
+    11	### Idea
+    12	The sequence d_n = p_n - n*ln(n) - n*(ln ln n - 1) has bounded mean (Cramér model).
+    13	Treat the trajectory {(n, d_n) : n=1..N} as a point cloud in R^2 and compute its
+    14	persistent homology (PH) under the Vietoris-Rips filtration.
+    15	
+    16	If the persistence diagram is *finitely supported* in some scale band — i.e., only
+    17	polylog(N) bars persist beyond noise — then pi(x) admits a polylog-sized topological
+    18	fingerprint. The reconstruction map is: persistent bars -> trajectory model -> p_n.
+    19	
+    20	This connects prime distribution to TDA, which has only been used on Ulam-spiral
+    21	visualizations, not on detrended sequences.
+    22	
+    23	### Pseudocode
+    24	```python
+    25	import numpy as np
+    26	from sympy import primerange
+    27	from ripser import ripser  # or gudhi
+    28	
+    29	primes = list(primerange(2, 10000))
+    30	n_arr = np.arange(1, len(primes)+1)
+    ... (244 more lines)
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+       676 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+       105 /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+       781 total
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (46374 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Grep] topological|persistent|TDA|persistence|homology
+    76:| Prismatic cohomology | FAIL | E | Formula exists but >= O(x^{1/2+eps}) | 9 |
+    189:## Topological / Exotic Mathematics
+    194:| Motivic cohomology | FAIL | C | H^1_mot(Spec(Z)) = Z^inf -- isomorphic to primes | 7 |
+    195:| Etale cohomology of Spec(Z) | FAIL | C | Recovers Euler product = knowing all primes | 7 |
+    199:| TDA (topological data analysis) | FAIL | I | Detects structure but not computable | 10 |
+    200:| Sheaf cohomology | FAIL | E | Same barrier | 10 |
+    666:| Étale cohomology point-counting for pi(x) | FAIL | C+E | Grothendieck-Lefschetz is polylog for FIXED variety, but encoding pi(x) needs unbounded dimension. Frobenius eigenvalues = zeta zeros. Character sums cost O(x). Hasse-Weil gives enough bits but each costs O(x^{2/3}). EC trace correlation 0.39 — too weak. 3rd algebraic geometry variant tested. See experiments/proposals/proposal20_etale_cohomology_count.py | 33 |
+  [Grep] continued fraction|J-fraction|Jacobi|P-recursive|Hankel|generating function
+    18:| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    249:| BPSW in TC^0 (computation) | WORKS | - | BPSW IS computable in TC^0: MR(2) = scalar pow, strong Lucas = 2x2 MPOW (Mereghetti-Palano), Jacobi = TC^0 via GCD. Correctness for all n conditional on BPSW conjecture (verified to 2^64) | 13 |
+    286:| Continued fraction of p(n)/n | FAIL | I | Higher CF terms unpredictable | 8 |
+    289:| Prony method on P(s) | PARTIAL | E | 6/9 primes, Hankel ill-conditioned | 8 |
+    299:| Generating function (Cauchy integral) | FAIL | C | Need primes to evaluate EGF | 7 |
+    342:| Jacobi matrix approach | FAIL | E | Parameters not closed-form | 3 |
+    435:| Partition generating function sum | FAIL | C | Sum [f(n)=0] has no GF shortcut; indicator of zeros doesn't factor through GFs | 17 |
+    633:| Wilf-Zeilberger definite sum for f(x) | FAIL | I | Delta_f bimodal (prime indicator). Higher-order differences RMS GROW (ratio->2.0=white noise). Hypergeometric recurrence R^2=0.997 is spurious (trivial autocorrelation). Summation kernel full Hankel rank 250/250 (incompressible). No WZ certificate | 29 |
+    649:| Tropical/min-plus fast-forward via gap structure | FAIL | I | Hankel rank 418/500 (ratio to random: 0.98). Corr dim grows with embedding (2.1→5.8, no attractor). Linear R²<0.001, quadratic R²<0.002. MI(g_n;g_{n+1})=0.013 bits (0.4% of entropy). Min-plus accuracy 7-11%. Algebraic obstruction: p(n)=sum(gaps) needs (+,×) not (min,+). Gaps indistinguishable from IID. See experiments/wildcard/tropical_prime_gaps.py | 32 |
+  [Grep] free probability|R-transform|spectral|RMT|GUE
+    19:| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    20:| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    22:| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    23:| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    24:| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    45:| Zeta zero compression/FMM | FAIL | I | Spectral flatness 0.91, phase catastrophe | 9 |
+    47:| Resummation (Borel/Pade/Shanks/Richardson/Mellin-Barnes) | FAIL | E | GUE statistics prevent partial sum prediction | 10 |
+    59:| Zeta zero compressibility / exploitable structure | FAIL | I | S36 spectral+Kt analysis: 82% of Fourier modes needed for reconstruction (no sparse representation), Kt complexity grows linearly ~5.58*N (incompressible), no algebraic structure in spectrum. Combined with S25: no rational/linear relations, GUE-random in all measures. Zero sequence is definitively incompressible. See experiments/information_theory/kt_complexity/SYNTHESIS.md | 25,36 |
+    116:| Prime race E(x;q) for CRT | FAIL | E | E(x;4) spectral flatness/power-law same as pi(x)-Li(x); 40 L-function zeros give 0% exactness; K_exact~sqrt(x); p(n)mod q has near-max entropy; L-zeros INDEPENDENT of zeta zeros so CRT costs MORE | 20 |
+    163:| Primon gas / GUE simulation | FAIL | C | Circular or statistical-only | 7 |
+    211:| Local-to-global reconstruction of pi(x) | FAIL | I | E(x)=pi(x)-Li(x) has only O(log x) bits — NO info-theoretic barrier to polylog. But O(log x) bits encoded across ~x^{1/2} GUE-random zero contributions via massive cancellation. Error autocorr=0.996 at lag 1 (helps adjacent queries only). Barrier is COMPUTATIONAL not informational. | 36 |
+    272:| Binary carry structure of pi(x) | FAIL | I | Carry chains identical to generic counter (avg ~2.0). Communication matrix rank for bit_j(pi(x)) = 2^{N/2-1}+2 EXACTLY (verified N=8..16) = exponential. Spectral weight spread across all Fourier levels. Primes indistinguishable from random subsets. No shortcut from binary arithmetic. | 17 |
+    319:| Green-Tao nilsystem correlation | FAIL | I+E | 1-step nilseqs (Fourier) R^2=0.52, 2-step (bracket quadratics) R^2=0.37, combined CV R^2=0.25. Top freqs = 1/2,1/3,1/6 (sieve bias). p(n) prediction: 0.84 correct digits (CV) vs li^{-1} 1.51 digits. Nilseqs capture AP correlations not individual primes. Residual non-normal, spectral peaks remain. Reduces to Fourier fitting (Sessions 3,7,14). | 25 |
+    337:## Spectral Methods
+    341:| Spectral/eigenvalue approach | FAIL | E | No viable formula found | 3 |
+    346:| MUSIC/ESPRIT spectral estimation | FAIL | E | Requires O(e^T) signal | 3 |
+    347:| Inverse Stieltjes | FAIL | E | Spectral resolution barrier | 8 |
+    350:| RMT/GUE approximation | FAIL | I | Correct statistics, wrong values | 8,10 |
+    351:| Cayley graph / Ihara zeta / spectral graph | FAIL | C+E | Cayley(Z/xZ, primes): circular (lambda_0=pi(x)); Ihara zeta = Selberg trace analog; GCD graph: eigenvalues = Ramanujan sums c_q(n), same ingredients as Meissel-Lehmer O(x^{2/3}); expander mixing error >> 1 | 13 |
+    352:| Trace formula / contour integral shortcut | FAIL | E | Contour ∮ f(s)ζ'/ζ(s)ds needs O(T^{1/2}) per eval (Riemann-Siegel); total O(T^{3/2} log T) = same as direct zero sum. Heat kernel smoothing trades accuracy for speed (no free lunch). First 50 zeros explain only 22% of oscillatory variance. See experiments/wildcard/spectral_shortcut.py | 20 |
+    380:| Cayley graph spectral approach | FAIL | C | Graph requires knowing primes; lambda_0 = pi(x) trivially; eigenvalues = exponential sums over primes | 13 |
+    418:| Ergodic theory / orbit complexity | FAIL | E+C | Transfer operators have spectral theory = zeta zeros; Furstenberg correspondence is circular | 16 |
+    476:## Session 19: Communication Complexity, SVD Spectral, Identity Search
+    483:| SVD spectral decay of oscillatory part | FAIL | I | Power-law S~i^{-1} (not geometric). 90% osc variance in ~20 SVs but 99% needs ~30% of total. Max osc SV scales as x^{0.66}. Insufficient for exact computation. | 19 |
+    517:| Trace formula / spectral shortcut | FAIL | E | Trace formula IS explicit formula (circular); O(T^{3/2}) | 20 |
+    536:| L-function zero convergence rate | FAIL | E | Empirical: pi(x;q,a) error is ROUGHER than pi(x) (TV ratio 1.5-3x for q=3..7); spectral 90% power at K=39-81 vs K=148 for pi(x) but total zeros needed = phi(q) sets; principal char alone gives ~same error as zeta for pi(x); no convergence advantage | 20+ |
+    554:| Spectral algebraic structure of delta(n) | FAIL | I | 1/f^1.70 spectrum is smooth continuum. No discrete lines. No algebraic relations among top coefficients. RMSE < 1 needs 82% of modes. Max error < 1 needs ALL modes. 4/10 peaks match zeta zeros but likely chance (1000 candidates). Definitively answers Session 20's open question | 36b |
+    555:| R^{-1}(n) + delta(n) decomposition for polylog | CLOSED | I | Complete analysis across S19-20-36b: delta(n) has 5.8 bits/value entropy rate, zero dependence on n (TE confirms), no spectral shortcuts, and requires O(N) total bits. This decomposition is a dead end for polylog algorithms | 36b |
+    567:| Prime race pi(x;q,a) shortcut for CRT | FAIL | E+C | pi(x;q,a) errors are 2x ROUGHER than pi(x) (TV ratio~2.0); each L-function needs O(sqrt(x)) zeros; phi(q) L-functions multiply cost; Chebyshev bias gives O(1) bits not O(log n). Katz-Sarnak universality: L-function zeros have GUE stats like zeta zeros | 22 |
+    583:| Spectral compression of zero sum | FAIL | I | 50 zeros: residual 1.84 at x=10000. DCT best: 99% in 10.4% coefficients. Critical 5% dense in ALL bases. Fourier interpolation: only 2x savings | 24 |
+    ... (8 more lines)
+  [Grep] reservoir|ESN|echo state|recurrent network|neural net|RNN|LSTM
+    80:| Number field algebraic decomposition | FAIL | E | Splitting doesn't reduce total cost | 7 |
+    110:| Mertens function shortcuts | FAIL | E | O(x^{2/3}) -- same as pi(x); H-T gives O(x^{3/5}) for M(x) but doesn't transfer to pi(x) | 6,11 |
+    124:| Nonlinear sieve: floor products | FAIL | E | delta(a,b,x) doesn't separate primes; polynomial fits overfit catastrophically; K^d >= sqrt(x) required | 14 |
+    259:| Monotone complexity lower bounds | FAIL | - | [pi(x)>=k]=[x>=p(k)] has TRIVIAL O(N) monotone complexity. Individual bits of pi(x) NOT monotone. Approach doesn't capture hardness of pi(x) | 15 |
+    348:| Compressed sensing on K zeros | PARTIAL | I | Lucky cancellations small x, doesn't scale | 7 |
+    405:| Elliptic curve a_p as det entry | FAIL | C | a_p defined only at primes; a_n for composite needs factoring; #E(Z/nZ) multiplicative, doesn't encode pi(x) | 16 |
+    435:| Partition generating function sum | FAIL | C | Sum [f(n)=0] has no GF shortcut; indicator of zeros doesn't factor through GFs | 17 |
+    497:- **PARTIAL:** ~19 (works partially but doesn't meet target)
+    582:| Hierarchical sieve (fast-multipole Φ) | FAIL | E | Φ calls/x = 0.03-0.04 constant (linear, not polylog). Prime indicator Fourier: 99% energy needs 78% of coefficients. Möbius sparsity doesn't scale | 24 |
+    608:| Legendre I-E cancellation structure | FAIL | E | Signed matrix rank = distinct floors (full rank). 90% nonzero net. Max collision grows but doesn't cancel | 28 |
+    623:| p-adic interpolation of pi(x) | FAIL | I | pi(x) NOT p-adically continuous: pi(x) mod p^k varies across all residue classes of x mod p^k. Local info doesn't determine global count | 29 |
+    653:| Hilbert-Pólya trace / GUE model / functional equation | FAIL | E,I | GUE: correct statistics, wrong values (std≈20-60). Moments: M_k~γ_max^k diverges. Selberg trace: circular (spectral↔geometric duality). Functional equation: doesn't change kernel. δ(x) incompressible: poly deg-50 RMSE=0.21≈deg-2. 90% Fourier power needs 138/500 modes. See experiments/wildcard/hilbert_polya_trace.py | 32 |
+    669:| Truth table compressibility for pi(x) | FAIL | I | 2.6x more compressible than random at N=20 (gzip 0.385 vs 1.0) but only LOCAL structure (prime sparsity creates runs). Block entropy → max at all scales. Shannon entropy → 1.0 bit/entry. Doesn't imply small circuits. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+  [Grep] machine learning|neural|GP|gaussian process|symbolic regression|symbolic distillation|deep learning
+    133:## Machine Learning / Statistical / Fitting
+    146:| Symbolic regression/PSLQ | FAIL | I | No pattern in delta(n) | 5 |
+    149:| Transformer neural | FAIL | I | 1.1% -- best ML result, still useless | 10 |
+    150:| FNO (Fourier Neural Operator) | FAIL | I | 0.5% | 10 |
+    151:| Gaussian Process | FAIL | I | 0.45% | 10 |
+    588:| Neural/ML for δ(n) | FAIL | I | Test RMSE=3.44 (random features), 1.3-1.6 (zeta features). Never <0.5. No generalization | 24 |
+  [Grep] Stein|sub-Gaussian|sub-exponential|tail bound|truncation|explicit formula error
+    25:| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    101:| Multiplicative convolution shortcut (Dirichlet) | FAIL | E | psi(x)=-sum mu(d)ln(d)floor(x/d) is exact but O(sqrt(x)) via hyperbola. Floor function breaks Euler product factorization. Infinite series factorizes but finite truncation does not. | 40 |
+    578:| Approx degree of isPrime over GF(p) | PARTIAL | E | GF(2/3): trivial deg 0 for N≥8 (prime density < 1/(2p)). GF(5): deg grows ~2N/3 up to N=12, then full N at N=14. GF(7): similar. Linear growth CONSISTENT with ∉ACC^0 but only upper bounds (ANF truncation). Razborov-Smolensky breaks down for sparse functions | 23 |
+    617:| Zero clustering truncation (Proposal 21) | FAIL | I | GUE-based clustering with sinc coherence factor. 10 zeros perform as well as 200 (error saturates at O(1)). Tail prediction via GUE completely fails — tail/partial ratios swing -3.4 to +3.3. Each zero carries independent information. | 37 |
+    662:| Spectral truncation / adaptive zero selection | FAIL | E | Select "resonant" zeros (γ·log(x) near kπ). For n<100, 1-2 zeros suffice (small-number artifact). For n≥500, 1000 zeros insufficient. Adaptive selection 41% better than sequential but cannot reduce O(√x) requirement. = reordering explicit formula sum. See experiments/proposals/proposal16_spectral_truncation_bound.py | 33 |
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/cf_jfraction_pi_results.md
+    1	# Results: J-fraction Expansion of Prime Generating Function (F2)
+    2	
+    3	**Date:** 2026-04-25
+    4	**Script:** `cf_jfraction_pi.py`
+    5	**Conjecture tested:** PPC — pi(n) is P-recursive (satisfies a finite-order linear
+    6	recurrence with polynomial-in-n coefficients), equivalently the moment-generating
+    7	function of pi(n)/n is D-finite.
+    8	
+    9	## Setup
+    10	- Computed pi(n) for n=1..80
+    11	- Used moments m_n = pi(n+2)/(n+2), n=0..78
+    12	- Computed Hankel determinants H_k of size (k+1)x(k+1) for k=0..16
+    13	- Extracted J-fraction coefficients (a_k, b_k) for k=0..11
+    14	
+    15	## Key numbers
+    16	| k  | log10\|H_k\| |
+    17	|----|-------------|
+    18	| 0  | -0.301      |
+    19	| 4  | -4.665      |
+    20	| 8  | -8.516      |
+    21	| 12 | -15.853     |
+    22	| 16 | -21.192     |
+    23	
+    24	Linear fit: log10|H_k| ≈ -1.32 k + 0.68
+    25	Quadratic fit: A_2 = -0.016 (essentially 0), so growth is **linear in k**, not quadratic.
+    26	
+    27	| k  | a_k        | b_{k+1}     |
+    28	|----|------------|-------------|
+    29	| 0  |  0.333     | -0.778      |
+    30	| 1  | -2.105     | -0.029      |
+    ... (45 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/persistent_homology_primes_results.md
+    1	# Results: Persistent Homology of Detrended Prime Sequence (F1)
+    2	
+    3	**Date:** 2026-04-25
+    4	**Script:** `persistent_homology_primes.py`
+    5	**Conjecture tested:** TCDP — the number of long-lived 0-dim persistence bars
+    6	in the detrended prime trajectory is o(N / log N).
+    7	
+    8	## Setup
+    9	- 0-dim PH via single-linkage hierarchical clustering on 2D point cloud
+    10	  (n/N, normalized d_n) where d_n = p_n - n ln n - n (ln ln n - 1).
+    11	- "Long-lived" = bar length > 5x median.
+    12	- Compared to two baselines: Cramér model pseudoprimes and IID Gaussian.
+    13	
+    14	## Key numbers
+    15	
+    16	| N    | True primes | Cramér | IID Gaussian | N/log N | long/(N/log N) |
+    17	|------|-------------|--------|--------------|---------|----------------|
+    18	| 200  | 0           | 0      | 2            | 37.7    | 0.000          |
+    19	| 500  | 3           | 6      | 6            | 80.5    | 0.037          |
+    20	| 1000 | 11          | 3      | 8            | 144.8   | 0.076          |
+    21	| 2000 | 14          | 22     | 10           | 263.1   | 0.053          |
+    22	
+    23	Scaling fit (N = 200, 400, 800, 1600 → long = 0, 2, 5, 8):
+    24	- long_lived ≈ 0.005 * N (linear, ~0.5% of N)
+    25	- All counts well below N/log N target
+    26	
+    27	## Verdict: WEAKLY POSITIVE BUT INCONCLUSIVE
+    28	
+    29	The long-lived bar count stays at ~0.5-1% of N across N ∈ [200, 2000]. This is
+    30	strictly sub-(N/log N) for this range — TCDP holds **as a quantitative observation**.
+    ... (40 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    1	# Open Problems: Viable Research Directions
+    2	
+    3	Last updated: 2026-04-05 (Session 37)
+    4	
+    5	These are the ONLY directions not yet proven closed. Everything else has been
+    6	tested (525+ approaches across 37 sessions) and confirmed to hit one of three
+    7	failure modes: Circularity, Equivalence, or Information Loss.
+    8	
+    9	**Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
+    10	well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
+    11	a sum of ~x^{1/2} cancelling terms), not information-theoretic. This reframes the problem:
+    12	find algebraic structure in the zero sum enabling bulk cancellation.
+    13	
+    14	**Pseudorandomness (S37 synthesis):** pi(x) mod 2 is indistinguishable from random under
+    15	21 independent structural measures. See `novel/pseudorandomness_of_pi.md`.
+    16	
+    17	---
+    18	
+    19	## 1. Circuit Complexity of pi(x) [ONLY REMAINING DIRECTION]
+    20	
+    21	**Question:** What is the circuit complexity of the prime-counting function?
+    22	
+    23	**The gap:** Omega(log x) proven lower bound vs O(x^{1/2+epsilon}) best upper bound.
+    24	This is the largest unexplored gap in complexity theory for a natural problem.
+    25	
+    26	**Equivalence:** "Is pi(x) in NC?" is EQUIVALENT to our polylog target (S12).
+    27	
+    28	**What's known:**
+    29	- PRIMES is in P (AKS), NOT in AC^0 or AC^0[p] (Allender-Saks-Shparlinski 2001)
+    30	- PRIMES is in NONUNIFORM TC^0 unconditionally (S13)
+    ... (76 more lines)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me check available zero data and design a focused F5 test.
+  [Bash] ls /apps/aplikacijos/prime-research/data/ | head -30
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_300.txt
+    zeta_zeros_500.txt
+  [Bash] head -3 /apps/aplikacijos/prime-research/data/zeta_zeros_1000.txt && echo --- && wc -l /apps/aplikacijos/prime-research/data/zeta_zeros_1000.txt
+    14.1347251417346937904572519836
+    21.0220396387715549926284795939
+    25.0108575801456887632137909926
+    ---
+    1000 /apps/aplikacijos/prime-research/data/zeta_zeros_1000.txt
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/proposals/ | grep -i stein
+    (Bash completed with no output)
+Now I'll write and run a focused experiment for F5 (Stein's-method / sub-Gaussian explicit-formula error).
+  [Write] /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay.py
+  [Bash] timeout 480 python experiments/proposals/stein_explicit_formula_decay.py 2>&1 | tail -80
+    timeout: failed to run command ‘python’: No such file or directory
+  [Bash] which python3; which python
+    Exit code 1
+    /usr/bin/python3
+  [Bash] timeout 480 python3 experiments/proposals/stein_explicit_formula_decay.py 2>&1 | tail -80
+           x      T    pi(x)         f_T(x)          |err| log10|err|
+         100     10       25        25.6942       0.694189    -0.1585
+         100     30       25        26.9536       1.953635     0.2908
+         100     50       25         5.2401      19.759933     1.2958
+         100    100       25       -53.7056      78.705641     1.8960
+         100    200       25      -243.1567     268.156740     2.4284
+         100    300       25      -430.3407     455.340720     2.6583
+         100    500       25      -926.3001     951.300088     2.9783
+         100    700       25     -1333.1271    1358.127070     3.1329
+         100   1000       25     -2254.7582    2279.758228     3.3579
+         500     10       95        94.3407       0.659289    -0.1809
+         500     30       95        63.3682      31.631837     1.5001
+         500     50       95        39.8195      55.180529     1.7418
+         500    100       95       -34.2706     129.270571     2.1115
+         500    200       95      -299.9092     394.909216     2.5965
+         500    300       95      -547.1633     642.163321     2.8076
+         500    500       95     -1147.7001    1242.700082     3.0944
+         500    700       95     -2074.2170    2169.216965     3.3363
+         500   1000       95     -3276.0708    3371.070782     3.5278
+        1000     10      168       168.3647       0.364688    -0.4381
+        1000     30      168       173.4587       5.458694     0.7371
+        1000     50      168       137.5438      30.456245     1.4837
+        1000    100      168       -11.0941     179.094086     2.2531
+        1000    200      168      -462.6535     630.653470     2.7998
+        1000    300      168      -844.4953    1012.495271     3.0054
+        1000    500      168     -1835.3024    2003.302371     3.3017
+        1000    700      168     -2577.8190    2745.818999     3.4387
+        1000   1000      168     -4333.2368    4501.236840     3.6533
+        5000     10      669       668.9357       0.064267    -1.1920
+        5000     30      669       632.7356      36.264428     1.5595
+    ... (37 more lines)
+The experiment has a bug — mp.log of x^ρ takes the principal branch, losing the correct multi-valued log needed for li(x^ρ). Let me fix and re-run.
+  [Edit] /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay.py
+    The file /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay.py has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] timeout 480 python3 experiments/proposals/stein_explicit_formula_decay.py 2>&1 | tail -80
+           x      T    pi(x)         f_T(x)          |err| log10|err|
+         100     10       25        25.6942       0.694189    -0.1585
+         100     30       25        25.3843       0.384329    -0.4153
+         100     50       25        25.3054       0.305428    -0.5151
+         100    100       25        25.3081       0.308072    -0.5113
+         100    200       25        25.0281       0.028095    -1.5514
+         100    300       25        25.0062       0.006205    -2.2072
+         100    500       25        25.0443       0.044344    -1.3532
+         100    700       25        25.0753       0.075257    -1.1235
+         100   1000       25        25.0127       0.012747    -1.8946
+         500     10       95        94.3407       0.659289    -0.1809
+         500     30       95        94.9770       0.023042    -1.6375
+         500     50       95        94.6878       0.312217    -0.5055
+         500    100       95        95.0023       0.002335    -2.6316
+         500    200       95        94.7926       0.207417    -0.6832
+         500    300       95        94.7718       0.228194    -0.6417
+         500    500       95        94.6902       0.309843    -0.5089
+         500    700       95        94.8473       0.152652    -0.8163
+         500   1000       95        95.0555       0.055542    -1.2554
+        1000     10      168       168.3647       0.364688    -0.4381
+        1000     30      168       168.2477       0.247654    -0.6062
+        1000     50      168       168.1467       0.146695    -0.8336
+        1000    100      168       167.6149       0.385139    -0.4144
+        1000    200      168       167.5418       0.458178    -0.3390
+        1000    300      168       167.8320       0.167958    -0.7748
+        1000    500      168       167.9264       0.073611    -1.1331
+        1000    700      168       167.9904       0.009618    -2.0169
+        1000   1000      168       168.1527       0.152663    -0.8163
+        5000     10      669       668.9357       0.064267    -1.1920
+        5000     30      669       668.2070       0.792960    -0.1007
+    ... (37 more lines)
+The corrected experiment shows truncation error stays near O(1) regardless of T, with no sub-Gaussian decay. Let me write the results file.
+  [Write] /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/proposals/stein_explicit_formula_decay_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Bash] ls -la /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md 2>&1
+    -rw-r--r-- 1 root root 11246 Apr 25 21:04 /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    1	# Critique Session — Session 38
+    2	
+    3	**Date:** 2026-04-05
+    4	**Evaluating:** Session 36 proposals (proposals 21-24) + literature scan for 2025-2026 papers
+    5	
+  [Write] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    The file /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    650	| Trace formula / moment method for zero sums | FAIL | I | Moment expansion S(x)=Σ(lnx)^k/k!·M_{k-1} DIVERGES: |M_k|~γ_max^k>>k!, radius of convergence x<1.0007. GUE trace analogy breaks: bounded eigenvalues required. Weil geometric side circular (needs all primes to x). Effective rank ~N (no compression). Gaussian damping unfavorable trade-off. 4 independent failures. See experiments/wildcard/trace_formula_approach.py | 33 |
+    651	| Contour integral evaluation of zero sum | FAIL | E | Contour ∮(ζ'/ζ)(s)·x^s/s ds equivalent to zero summation by residue theorem. Nyquist: quadrature points ≥ enclosed zeros. Smoothing trades accuracy for fewer zeros (uncertainty principle). SVD of zero-contribution matrix: 99% energy needs 133/500 components. No sparse representation in any basis. See experiments/wildcard/contour_integral_zerosum.py | 32 |
+    652	| Hybrid analytic + local sieve | FAIL | E | R⁻¹(n) error O(√p(n)) with ratio 0.05-0.25. Truncated zero sum often WORSE than none (K=0 error 12 vs K=500 error 208 at n=50000). Optimal hybrid complexity O(x^{1/2+ε}) matches Lagarias-Odlyzko. Iterative refinement oscillates. Cannot beat O(√x) zeros required. See experiments/wildcard/hybrid_analytic_sieve.py | 32 |
+    653	| Hilbert-Pólya trace / GUE model / functional equation | FAIL | E,I | GUE: correct statistics, wrong values (std≈20-60). Moments: M_k~γ_max^k diverges. Selberg trace: circular (spectral↔geometric duality). Functional equation: doesn't change kernel. δ(x) incompressible: poly deg-50 RMSE=0.21≈deg-2. 90% Fourier power needs 138/500 modes. See experiments/wildcard/hilbert_polya_trace.py | 32 |
+    654	| Convergence acceleration of zeta zero sum | FAIL | I | Richardson, Euler-Maclaurin, Padé, Cesàro, Aitken Δ², Shanks tested. Errors GROW as ~N^{0.8-1.0} (random walk). Best: Shanks(3) gives ~10x constant improvement. Root cause: each zero carries independent info (GUE-random phases). No structured error terms to exploit. See experiments/wildcard/zero_sum_acceleration.py | 32 |
+    655	| GRH batch Miller testing for pi(x) | FAIL | E | GRH Miller (witnesses ≤2ln²n) correct to 10^5. Batch testing: 1.02x speedup (negligible). Cost O(n·polylog n) — worse than sieve O(n·loglog n) and much worse than Meissel-Lehmer O(x^{2/3}). Each number requires independent modular exponentiation. See experiments/analytic/conditional/grh_miller_batch.py | 33 |
+    656	| GRH explicit formula optimal T | FAIL | E | Under GRH, need T=O(√x·log²x) zeros for error<0.5. With 1000 zeros, error≥18 for x≥10^4. Individual zeros at γ~200-400 still contribute >0.5 to pi(10^6). No way to use fewer than O(√x) zeros. Confirms Lagarias-Odlyzko at O(√x·polylog x). See experiments/analytic/conditional/grh_miller_batch.py | 33 |
+    657	| Elliott-Halberstam for pi(x) counting | FAIL | E | EH controls distribution in residue classes, not total count. Summing li(x)/φ(q) over coprime residues gives li(x) (same error as direct). Residue-class method 10^3-10^6x SLOWER than direct primepi. EH is about equidistribution, not enumeration. See experiments/analytic/conditional/elliott_halberstam_gaps.py | 33 |
+    658	| Gap structure (Cramér) for p(n) | FAIL | I | Cramér model fits well (max gaps 40-60% of ln²p). R⁻¹(n) search interval has O(ln x) primes. BUT identifying which is p(n) requires pi(x) at boundary — the counting bottleneck. At x=10^100: counting 10^57x more expensive than searching. Cramér solves wrong problem. See experiments/analytic/conditional/elliott_halberstam_gaps.py | 33 |
+    659	| Schoenfeld interval sieve under RH | FAIL | E | |pi(x)-li(x)|<√x·ln(x)/(8π). Sieve cost O(√x·ln x·ln ln x)=O(x^{1/2+ε}), better than ML O(x^{2/3}) asymptotically but still exponential in input bits. Iterative refinement with 1000 zeros: only 21% error reduction at x=10^6. Need O(√x·log²x) zeros for exactness. See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
+    660	| Cramér search + counting bottleneck | FAIL | E | Walk phase O(ln⁴x) trivial (0-114 steps verified). Counting phase pi(x₀) grows to dominate: 25% at n=5M, heading to 100%. At x=10^100: count=10^66.7 ops vs walk=10^9.5 ops. No conjecture reduces counting below O(x^{1/2+ε}). See experiments/analytic/conditional/schoenfeld_cramer.py | 33 |
+    661	| Best conditional algorithm (all conjectures) | FAIL | E | Under RH+Odlyzko-Schönhage: O(x^{1/2+ε}). RH alone with Turing zeros: O(x^{2/3+ε}), WORSE than unconditional. GRH, EH, Cramér all fail to improve beyond O(x^{1/2+ε}). For p(10^100): ~10^51 ops minimum. The √x barrier is fundamental — no standard conjecture breaks it. See experiments/analytic/conditional/best_conditional_algorithm.py | 33 |
+    662	| Spectral truncation / adaptive zero selection | FAIL | E | Select "resonant" zeros (γ·log(x) near kπ). For n<100, 1-2 zeros suffice (small-number artifact). For n≥500, 1000 zeros insufficient. Adaptive selection 41% better than sequential but cannot reduce O(√x) requirement. = reordering explicit formula sum. See experiments/proposals/proposal16_spectral_truncation_bound.py | 33 |
+    663	| p-adic lifting via CRT for pi(x) | FAIL | C+E | CRT works (3-6 primes suffice) but pi(x) mod p costs O(x^{2/3}) per prime. floor(x/d) mod q ≠ floor((x mod q)/(d mod q)) — floor division not a ring homomorphism. 12th CRT variant tested. See experiments/proposals/proposal17_padic_lifting.py | 33 |
+    664	| Dequantized Grover counting for pi(x) | FAIL | I | Tang 2024/Chia 2025 dequantization requires low-rank input. Prime indicator has adeg=N/2, comm rank=2^{N/2-1}+2 — full-rank. Truncated Möbius sums diverge. Sampling variance O(x²/S). Hyperbola=known O(√x). See experiments/proposals/proposal18_dequantized_grover_count.py | 33 |
+    665	| PSLQ/LLL on delta(n) (Ramanujan Library) | FAIL | I | delta(n) range [-130,102], std~33, lag-1 autocorr 0.95. PSLQ finds DIFFERENT relations per n (no universal formula). No recurrence order 1-6. No modular patterns. Best basis RMSE=31. 7th PSLQ/identity variant tested. See experiments/proposals/proposal19_ramanujan_library_delta.py | 33 |
+    666	| Étale cohomology point-counting for pi(x) | FAIL | C+E | Grothendieck-Lefschetz is polylog for FIXED variety, but encoding pi(x) needs unbounded dimension. Frobenius eigenvalues = zeta zeros. Character sums cost O(x). Hasse-Weil gives enough bits but each costs O(x^{2/3}). EC trace correlation 0.39 — too weak. 3rd algebraic geometry variant tested. See experiments/proposals/proposal20_etale_cohomology_count.py | 33 |
+    667	| MKtP / meta-complexity framework | FAIL | E | Kt framework reformulates "Is pi(x) in NC?" as "Is Kt(pi(x)mod2\|x) = O(polylog)?" — equivalent, not easier. Brandt's MKtP↔circuit lower bounds is GENERIC (any function in E, not pi(x) specifically). Kt(T_N) = O(2^N·N) by sieve regardless of circuit size. No new technique beyond circuit complexity theory. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+    668	| Approximate circuit complexity phase transition | FAIL | I | NO phase transition in rank-k approximation accuracy. Accuracy degrades GRADUALLY (rank-2: 63%, rank-10: 83%, rank-20: 95% at N=14). Errors spatially uniform (CV=0.22-0.25). No "easy core" to exploit for approx-then-correct strategy. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+    669	| Truth table compressibility for pi(x) | FAIL | I | 2.6x more compressible than random at N=20 (gzip 0.385 vs 1.0) but only LOCAL structure (prime sparsity creates runs). Block entropy → max at all scales. Shannon entropy → 1.0 bit/entry. Doesn't imply small circuits. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+    670	| GF(2) SLP / common subexpression analysis | FAIL | I | ANF sparsity EXACTLY 0.50 (random). CSE savings 50-66% = SAME as random functions. SLP length Θ(2^N). No GF(2) algebraic compression. Variable frequencies uniform. Monomial patterns at each degree → 0.50. pi(x) mod 2 indistinguishable from random Boolean function in ANF structure. See experiments/circuit_complexity/gf2_slp_structure.py | 35 |
+    671	| Smooth approximation for pi(x) parity | FAIL | I | R(x) accuracy for pi(x) mod 2 → 0.50 (random) as N grows. Smooth part provides ZERO parity information. Top-2 SVs capture only 12% of variance at N=14 (decreasing as 1/N). Parity entirely determined by oscillatory (zeta zero) contributions. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+    672	| Unbalanced communication matrix rank | DIAGNOSTIC | - | For k_LSB > N/2, actual rank EXCEEDS formula 2^{min(k,N-k)-1}+2 — often full row rank. Formula only tight for k ≤ N/2. SVD spectrum flat (power-law decay, no gap). Each additional SV contributes small equal increment. Polynomial rank for k=2logN but component functions g_i(MSBs) are as hard as pi(x). See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+    673	| Depth-2 threshold circuits for pi(x) LSB | FAIL | I | PTF degree = N/2 exactly (LP-verified N=4-12, ratio 0.50 stable from N=6). Requires C(N,N/2) ~ 2^N/sqrt(N) monomials = EXPONENTIAL. Single LTF accuracy → 0.50 (random). Depth-2 heuristic with k=64 gates fails for N≥8. Matches random function PTF degree (Gotsman 1994). Does NOT rule out poly-depth TC^0. See experiments/circuit_complexity/threshold_circuit_construction.py | 35 |
+    674	| SAT-based minimum circuit size for pi(x) mod 2 | INCONCLUSIVE | - | N=4: exact 6 gates (same as random). N=5-8 upper bounds: 12, 39, 81, 153 (grow ~2x/bit). N=9-10 unreliable (Shannon timeout, DNF fallback gives loose 2015/4829). pi(x)mod2 behaves like random function — no structural advantage. Need ABC or dedicated tools for tight bounds at N>=9. See experiments/circuit_complexity/sat_circuit_minimization.py | 35,36b |
+    675	| Adelic local-global prime counting (CRT mod q) | FAIL | E | 6th CRT variant. pi(x) mod q via AP decomposition 100-1000x SLOWER than pi(x) direct. R(x) error grows as O(sqrt(x)), mod-q correctness degrades to 0/6 at x=10^6. Liouville/Mertens parity ~50% (random). floor division not a ring homomorphism kills all modular decomposition. 3-6 moduli suffice for CRT but each costs O(x^{2/3}). See experiments/wildcard/adelic_prime_count.py | 35 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    670	| GF(2) SLP / common subexpression analysis | FAIL | I | ANF sparsity EXACTLY 0.50 (random). CSE savings 50-66% = SAME as random functions. SLP length Θ(2^N). No GF(2) algebraic compression. Variable frequencies uniform. Monomial patterns at each degree → 0.50. pi(x) mod 2 indistinguishable from random Boolean function in ANF structure. See experiments/circuit_complexity/gf2_slp_structure.py | 35 |
+    671	| Smooth approximation for pi(x) parity | FAIL | I | R(x) accuracy for pi(x) mod 2 → 0.50 (random) as N grows. Smooth part provides ZERO parity information. Top-2 SVs capture only 12% of variance at N=14 (decreasing as 1/N). Parity entirely determined by oscillatory (zeta zero) contributions. See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+    672	| Unbalanced communication matrix rank | DIAGNOSTIC | - | For k_LSB > N/2, actual rank EXCEEDS formula 2^{min(k,N-k)-1}+2 — often full row rank. Formula only tight for k ≤ N/2. SVD spectrum flat (power-law decay, no gap). Each additional SV contributes small equal increment. Polynomial rank for k=2logN but component functions g_i(MSBs) are as hard as pi(x). See experiments/circuit_complexity/approx_circuit_complexity.py | 35 |
+    673	| Depth-2 threshold circuits for pi(x) LSB | FAIL | I | PTF degree = N/2 exactly (LP-verified N=4-12, ratio 0.50 stable from N=6). Requires C(N,N/2) ~ 2^N/sqrt(N) monomials = EXPONENTIAL. Single LTF accuracy → 0.50 (random). Depth-2 heuristic with k=64 gates fails for N≥8. Matches random function PTF degree (Gotsman 1994). Does NOT rule out poly-depth TC^0. See experiments/circuit_complexity/threshold_circuit_construction.py | 35 |
+    674	| SAT-based minimum circuit size for pi(x) mod 2 | INCONCLUSIVE | - | N=4: exact 6 gates (same as random). N=5-8 upper bounds: 12, 39, 81, 153 (grow ~2x/bit). N=9-10 unreliable (Shannon timeout, DNF fallback gives loose 2015/4829). pi(x)mod2 behaves like random function — no structural advantage. Need ABC or dedicated tools for tight bounds at N>=9. See experiments/circuit_complexity/sat_circuit_minimization.py | 35,36b |
+    675	| Adelic local-global prime counting (CRT mod q) | FAIL | E | 6th CRT variant. pi(x) mod q via AP decomposition 100-1000x SLOWER than pi(x) direct. R(x) error grows as O(sqrt(x)), mod-q correctness degrades to 0/6 at x=10^6. Liouville/Mertens parity ~50% (random). floor division not a ring homomorphism kills all modular decomposition. 3-6 moduli suffice for CRT but each costs O(x^{2/3}). See experiments/wildcard/adelic_prime_count.py | 35 |
+    676	| MPS / TT bond dimension of chi_P | FAIL | E | Bond dim of prime indicator at every cut j EXACTLY equals min(2^j, 2^{d-j-1}+1). Proof: rows i>=1 of unfolding have all odd columns zero (primes>2 are odd), so rank ≤ 2^{d-j-1}+1. Saturated empirically k=10..20 (k=20 half-cut: 513/1024). Random control hits full 2^{d/2}. Constant factor 2 = wheel-2 in MPS language. Residual delta(n) bond dim ~ N^{0.42} at eps=0.01, returns to full at exact-integer precision. No polylog tensor-network representation. See experiments/wildcard/mps_bond_dimension.py | 42 |
+    677	
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" -type f | while read f; do r="${f%.py}_results.md"; if [ ! -f "$r" ]; then echo "MISSING: $r"; fi; done; find /apps/aplikacijos/prime-research/ -type d -name __pycache__ 2>/dev/null
+    (Bash completed with no output)
+All experiments have companion results files and no pycache. Let me update SESSION_INSIGHTS and finalize.
+  [Bash] tail -50 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    | W   | phi(W)/W | observed chi_P / random (largest d tested) |
+    |-----|----------|--------------------------------------------|
+    | 2   | 0.5000   | 0.5010 at d=20                             |
+    | 6   | 0.3333   | 0.3341 at d=8                              |
+    | 30  | 0.2667   | 0.2678 at d=4                              |
+    | 210 | 0.2286   | 0.2333 at d=2                              |
+    
+    Ratio asymptotes to phi(W)/W as d grows (the +1 row-0 contribution
+    vanishes).
+    
+    ### Why this still does NOT yield polylog
+    
+    The half-cut bond dim is exactly phi(W) * W^{d/2-1} + 1, which is
+    Theta(W^{d/2}) for any fixed primorial W. To make this polylog in
+    N = W^d we would need W to grow with d, but the cost of materializing
+    the wheel is at least W = exp(log N / d), and the optimum cost
+    exp(log N / 2) = sqrt(N) is achieved at d = 2. Same Lagarias-Odlyzko
+    sqrt(N) barrier, recovered from a pure entanglement argument with no
+    zeta zeros.
+    
+    ### Files updated
+    
+    - `novel/mps_bond_dimension.md` — added base-W theorem section, proof,
+      saturation table for all (W, d) tested.
+    - `experiments/wildcard/mps_bond_dimension_results.md` — extended with
+      Family B table, per-cut profiles for W=30/d=4 and W=6/d=8, polylog
+      obstruction analysis.
+    - `novel/pseudorandomness_of_pi.md` — added Measures 22 and 23
+      (TT bond dim at base-2 half cut; TT bond dim ratio at base-W half cut).
+    - `status/CLOSED_PATHS.md` — appended one row for the base-W MPS measurement.
+    ... (19 more lines)
+  [Bash] tail -2 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    (e) **1 approach (base-W MPS) added to CLOSED_PATHS, 534 total.**
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now create the session synthesis archive entry and set run_state.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session43_critique_tda_jfraction_freeprob_esn_stein.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session43_critique_tda_jfraction_freeprob_esn_stein.md
+  [Bash] echo 6 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    6
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+## Critique session summary
+
+Five proposals from `archive/ephemeral/proposals_session.md` critiqued — **none survived**.
+
+| ID | Verdict | Mode | Why |
+|----|---------|------|-----|
+| F1 (TDA/persistent homology) | DUPLICATE | I | Already closed at CLOSED_PATHS line 199; companion experiment confirms no inverse map. |
+| F2 (J-fraction of pi GF) | DUPLICATE | E | (a_k,b_k) erratic (b_12=-407); closes lines 286/289/299/342/435. |
+| F3 (Free probability R-transform) | FLAWED | C | A_N=diag(1_P) idempotent → ESD encodes only pi(N) (circular). |
+| F4 (Reservoir computing on delta) | DUPLICATE | I | Strict subset of transformer/FNO/GP failures (lines 149-151, 588). |
+| F5 (Stein sub-Gaussian EF error) | FLAWED | I | Empirically falsified: log10\|err\| vs T²/log(x) slope ~-3e-6, R²=0.2-0.4. |
+
+**Experiment run:** `experiments/proposals/stein_explicit_formula_decay.py` — falsifies SGEFE. (Required a mp.log branch-cut fix: rho*log(x) must be passed directly to Ei rather than going through x^rho.)
+
+**Files modified:**
+- `archive/ephemeral/critique_latest.md` (rewritten for this session)
+- `status/CLOSED_PATHS.md` (+5 entries, ~681 total)
+- `status/SESSION_INSIGHTS.md` (+Session 43)
+- `archive/sessions/session43_critique_tda_jfraction_freeprob_esn_stein.md` (new)
+- `experiments/proposals/stein_explicit_formula_decay.py` + `_results.md` (new)
+
+`.run_state` set to 6. The only remaining open direction is still circuit complexity of pi(x) (`status/OPEN_PROBLEMS.md` Problem 1).
+--- Session ended ---
+Sleeping 600 seconds before next run...

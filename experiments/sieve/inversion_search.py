@@ -21,7 +21,8 @@ from functools import lru_cache
 mpmath.mp.dps = 50  # high precision
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, SCRIPT_DIR)
+ANALYTIC_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, "..", "analytic"))
+sys.path.insert(0, ANALYTIC_DIR)
 
 from riemann_explicit import R_function, R_at_rho, load_or_compute_zeros, MOBIUS
 
