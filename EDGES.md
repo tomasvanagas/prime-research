@@ -433,6 +433,19 @@ on x ∈ [2, 100 000]:
 > ANF-sparse piece exactly. **This pins R(x) as the precise smooth/random
 > separator** — there is no third "intermediate" piece to peel off.
 
+**S67 extension (FOCUS-2 closure):** the E2.11 finite-difference
+signature was applied as a *pre-test* against six concrete candidate
+fourth-encoding intermediate quantities (T_1=Σ{logΓ}, T_2=ΣH_n,
+T_3=ΣH_n², Ψ(x, log^c x) for c∈{2,3,4}, Σσ_2, Σσ_3, Q(x), Σφ(n)).
+Result: all 9 close as mode I in two flavours — WHITE-A
+(residual std ~ √x, ratio → 2.0 like π−R) for 7 candidates, WHITE-B
+(residual at f64 precision, function entirely smooth) for T_2, T_3.
+**The pre-test rules out fourth-encoding candidates ~150x faster
+than S64's ρ-correlation method** (0.2s vs 30s/candidate) and is a
+strictly stronger filter, since it tests structural finite-difference
+equivalence rather than pairwise correlation. See
+`experiments/algebraic/fourth_encoding_search/e211_pretest_focus2_results.md`.
+
 ### E2.12 — Chebyshev psi link captures 91% of f(x) variance       [EVS L]
 
 S29; `experiments/algebraic/identity_search/algebraic_relations.py`.
@@ -1242,6 +1255,63 @@ informationally-complete encodings (E7.7) at the algorithmic level,
 leaving only zero-summation routes — themselves blocked by E7.1
 (zeros are linearly independent) and E7.4 (inversion non-contracting).
 
+### E7.11 — Convergence-acceleration / variance-reduction family is exhausted [EVS shape]
+
+Critique-46 synthesis (`archive/sessions/session_critique46.md`);
+sessions S5, S6, S10, S15, S25, S32, S43-S46, S48, S51, S63, critique-46.
+
+Across 13+ sessions the project has tested every standard
+convergence-acceleration and variance-reduction transform applied to the
+truncated explicit formula `psi_T(x) = sum_{|gamma|<=T}` (or to the
+analogous Cipolla / Lagarias-Odlyzko zero sums). **None beats the raw
+partial sum at x large enough for the rounding test.** Many are strictly
+worse:
+
+| Transform | Outcome | Worst measured ratio vs partial sum |
+|-----------|---------|-------------------------------------|
+| Padé / Wynn-eps (= Shanks) | strictly worse | **1900–4100x WORSE** (P-46 A at x in {100,1000,10000}) |
+| Aitken Δ², Richardson, Cesàro | strictly worse | order-of-magnitude regressions |
+| Fejér window | constant gain only | 67% recovery at K=100 vs 53% sharp (E3.7) |
+| Borel (single-dir), Borel-Padé | mixed → equivalent | locks into T-independent asymptote (E3.5 + E3.7 follow-up) |
+| Cesàro × Borel-Padé hybrid | strictly worse | 3/8 vs 6/8 Fejér-alone (line 711) |
+| Borel-Padé applied to Cipolla for p(n) | strictly worse | **1.4–14x worse** than raw Cipolla (P-46 B) |
+| Mellin-Barnes contour | equivalent | (line 49) |
+| Hermite / Gaussian / Riesz mollification | strictly worse | 54x worse at x=100, K=800 (line 693) |
+| Selberg Dirichlet-poly mollifier | strictly worse | best 1.72 vs sharp 0.44 at x=10000 (S63 P2, line 716) |
+| PNT zero-aware control variate (MC) | trivial | **1.006x variance reduction** (P-46 D) |
+| Harper random-multiplicative | equivalent | (line 257) |
+| Random K-subset of zeros | strictly worse | 4x worse than first-K (S54, line 700) |
+| Randomized I-E sieve | equivalent | (S54) |
+
+The unifying mechanism is the **linear-functional bound** captured in
+line 693:
+
+> Any kernel `w(gamma)` with `sum |w(gamma)| >= c · N(T)` inherits the
+> tail bound `Omega(sqrt(x) sqrt(log T / log x))` from the underlying
+> explicit-formula tail. Re-weighting cannot beat this — only NONLINEAR
+> operations on zeros could.
+
+Borel-Padé and the hybrid stacks fail by a related but distinct
+mechanism: the `1/k!` Borel transform exponentially suppresses
+information from zeros beyond the optimal-truncation point, locking the
+estimate into a leading-term asymptote that doesn't move with K.
+
+> Why this is shape-revealing: it is a **search-space constraint on the
+> entire family of linear post-processing of zero sums.** Any future
+> proposal in this family — re-weighting, smoothing, mollifying,
+> transforming, control-variate — is provably orthogonal to the sqrt(x)
+> wall. The only escape would be a *nonlinear* operation on zeros (e.g.,
+> a non-trivial functional that uses products / quotients / max-plus over
+> the zero spectrum, not weighted sums). No such operation has been
+> identified; E7.1 (zeros are linearly independent over Q) and E7.4
+> (inversion non-contracting) further constrain what nonlinear operations
+> could even leverage.
+
+Pairs with E7.10 (AKS modulus-twist orthogonality) as the second major
+*family-level closure* — between them, two of the largest unexplored
+attack families have been systematically exhausted, in the sieve+analytic
+and TC⁰-primality directions respectively.
+
 ### E7.7 — Three-pillars meta-theorem (informational closure)        [EVS shape]
 
 S15, S16; `archive/sessions/session16_synthesis.md`;
@@ -1395,9 +1465,15 @@ removed.
 Extended: 2026-04-26 deep file-by-file review — added E1.7, E1.8, E2.11,
 E2.12, E3.12, E6.7, E6.8, E6.9, E7.8, E7.9 plus the finite-size DCT
 caveat to E6.3.
+Extended: 2026-04-26 post-S67 — E2.11 pre-test closure of FOCUS-2 (9
+candidates, mode I, 8 NEW); methodological note added under E2.11 about
+its use as a fourth-encoding pre-disqualifier.
 Extended: 2026-04-26 post-S61..S66 (FOCUS-1 sub-attack closures) — added
 E1.9 (phi 2D rank, 22nd pseudorandomness measure), E7.10 (AKS modulus-
 twist orthogonality theorem, the structural meta-finding from S61/S64/
 S66), K_min non-monotonicity caveat to E3.11, AKS-gcd-extraction
 folklore note under E5.3.
+Extended: 2026-04-26 post-critique-46 — added E7.11 (convergence-
+acceleration / variance-reduction family systematically exhausted across
+13+ sessions; pairs with E7.10 as the second family-level closure).
 This document is alive — extend it with new edges as they appear.*

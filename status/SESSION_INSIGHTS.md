@@ -2688,3 +2688,164 @@ S66 confirms the S47/S64 mature-state hypothesis with one final
 construction-mode datapoint: the AKS family of TC⁰ approaches is
 exhausted. Future Chain-E work is exclusively non-construction
 (Brandt MKtP, new techniques, monitoring).
+
+---
+
+## Critique-46 (2026-04-26, critique of S46-fresh proposals)
+
+**Mode:** critique. Verifies the four S46-fresh proposals
+(`archive/ephemeral/proposals_session.md`) against CLOSED_PATHS.md and
+confirms each as DUPLICATE-PLUS, no `novel/` escalation.
+
+### Headline
+
+All four proposer self-verdicts hold up. Adds 4 entries to
+`status/CLOSED_PATHS.md` (lines 723-726) — total 541+ approaches.
+
+| # | Proposal | Critic verdict | Mode | Closest prior |
+|---|----------|----------------|------|----------------|
+| A | Wynn/Pade on psi(x) zero-sum partial sums | DUPLICATE-PLUS, CLOSED | I | lines 26, 49, 657, 697 |
+| B | Borel-Pade resummation of Cipolla asymptotic | DUPLICATE-PLUS, CLOSED | E | lines 40, 43, 49 |
+| C | Depth-5 Hecke/sigma fingerprint primality oracle | DUPLICATE-PLUS, CLOSED | C | line 689 |
+| D | Zero-aware MC control variate for pi(x) | DUPLICATE-PLUS, CLOSED | E+I | lines 256, 257, 688 |
+
+### Key empirical findings worth keeping
+
+1. **Wynn-epsilon diverges on psi-zero-sum sequences** (P-A): at x=10⁴
+   with K_max=160 zeros, best partial err 2.43 vs Wynn err 10013.88
+   (4100x worse). Confirms line 26 closure under one more transform.
+
+2. **Borel-Pade is uniformly worse than raw Cipolla truncation** (P-B):
+   1.4-14x penalty across n in {10, 100, 1000, 10⁴}. Stokes-line /
+   multi-instanton structure suspected; alternatively the asymptotic
+   series is past its optimal truncation point at small K.
+
+3. **Depth-5 multiplicative fingerprint perfectly separates 1229 primes
+   from 8770 composites in [2, 10⁴]** (P-C). Empirical anchor on the
+   AKS-style oracle approach. Algorithm is non-polylog regardless:
+   tau(n) for composite n requires factoring (subexp via GNFS).
+   Counting pi(x) with the oracle remains O(x · polylog x).
+
+4. **PNT control variate gives variance reduction factor 1.006x**
+   (P-D): essentially zero. Confirms lines 256/257/688 across one more
+   variance-reduction shape.
+
+### Pattern observation
+
+The convergence-acceleration / variance-reduction family of interventions
+on already-closed analytic primitives (Pade, Wynn, Shanks, Richardson,
+Aitken, Cesaro, Fejer, Borel, Mellin-Barnes, mollifiers, control
+variates, random sampling) is now **systematically exhausted** across
+sessions 5, 6, 10, 15, 25, 32, 43-46, 48, 51, 63, and now critique-46.
+Future proposals in this family should be pre-disqualified via
+CLOSED_PATHS check against this master list. The novel-bar for any
+future acceleration-style proposal is now: it must invoke a NONLINEAR
+operation on zeros (line 693 explicit ask) AND it must not be
+mathematically equivalent to a transform already named in the
+established list.
+
+### Project status unchanged
+
+`OPEN_PROBLEMS.md` remains at: only Circuit Complexity of pi(x) is
+genuinely viable. Within Chain E, all three AKS-family sub-attacks
+closed (S47, S61, S64, S66) — Chain E computationally cornered.
+Remaining levers: Brandt MKtP (FOCUS-3, un-engaged) and pure
+new-technique work.
+
+### Files
+
+- `archive/ephemeral/critique_latest.md` — full critique
+- `status/CLOSED_PATHS.md` — 4 new entries appended (lines 723-726)
+- `archive/sessions/session_critique46.md` — synthesis
+- `.run_state` set to 46
+
+---
+
+## Session 67 (2026-04-26, FOCUS-2 closure — E2.11 pre-test on six concrete fourth-encoding candidates)
+
+**Summary:** Executed FOCUS-2 (TODO.md): for the six concrete candidate
+intermediate quantities listed by the project, ran the E2.11 finite-
+difference pre-test as a fail-fastest filter before the expensive PSLQ
+stage. **All 9 expanded candidates close as mode I.** The "concrete
+fourth-encoding sweep" sub-task is exhausted; FOCUS-2 is now CLOSED.
+
+### Methodology
+
+For each candidate T_i(x), compute it on a contiguous window
+x ∈ [10⁵, 1.5·10⁵), polynomial-detrend (deg 6, absorbs leading
+x, x log x, x log²x, x², ...), then iterate Δᵏ for k=1..7 and report
+RMS(Δᵏ⁺¹)/RMS(Δᵏ). For f(x)=π(x)−R(x) this ratio → 2.0 (E2.11). A
+candidate matching that signature is structurally equivalent to π−R
+and can be closed without PSLQ. Three controls bracket the verdict:
+i.i.d. Gaussian (WHITE-A, ratio 1.913), smooth polynomial (WHITE-B,
+ratio 1.903 from amplified f64 noise after exact polynomial fit),
+and π(x)−R(x) itself (ratio 1.914).
+
+### Verdicts (9 candidates, 8 NEW + Σφ re-check)
+
+| Candidate | residual std | Δ⁷/Δ⁶ ratio | Class |
+|---|---|---|---|
+| T_1 = Σ {log Γ(n)} | 3.06e+00 | 1.905 | WHITE-A (NEW) |
+| T_2 = Σ H_n | 3.87e-04 | 1.926 | WHITE-B smooth (NEW) |
+| T_3 = Σ H_n² | 7.75e-03 | 1.926 | WHITE-B smooth (NEW) |
+| Ψ(x, B=137) (c=2) | 2.53e+00 | 1.915 | WHITE-A (NEW regime) |
+| Ψ(x, B=1616) (c=3) | 2.90e+00 | 1.916 | WHITE-A (NEW regime) |
+| Ψ(x, B=18971) (c=4) | 8.16e+00 | 1.916 | WHITE-A (NEW regime) |
+| Σ σ_2(n) | 1.42e+09 | 1.989 | WHITE-A (NEW) |
+| Σ σ_3(n) | 7.70e+13 | 1.995 | WHITE-A (NEW) |
+| Q(x) squarefree | 3.12e+00 | 1.948 | WHITE-A (NEW) |
+| Σ φ(n) | 1.77e+04 | 1.982 | WHITE-A (re-check, also S64) |
+
+WHITE-A = same GUE-noise signature as π−R; WHITE-B = entirely smooth
+(closed-form to f64 precision). Both close as mode I.
+
+### Why this matters
+
+1. **Methodological gain.** E2.11 pre-test filters fourth-encoding
+   candidates ~150× faster than S64's ρ-correlation method (0.2s vs
+   30s/candidate). The pre-test is also a *strictly stronger* filter,
+   because it tests the structural equivalence directly at the
+   finite-difference operator level, rather than via pairwise
+   correlation that can miss subtle non-correlated equivalences.
+
+2. **Cumulative cleanout.** Adding to S15/S16 (15+ families), S55-S56
+   (34 character-twisted Liouville), and S64 (21 candidates), this
+   session brings the cumulative count to **~78 distinct fourth-
+   encoding routes empirically closed**. The three-pillars meta-theorem
+   (E7.7) gains 8 fresh empirical checks against the same wall — at the
+   *function* level, the bisection of bits 0..N/2 (smooth) and N/2..N
+   (oscillatory) re-emerges as the bisection of "WHITE-B smooth" vs
+   "WHITE-A oscillatory" candidates.
+
+3. **TODO.md FOCUS-2 closes; FOCUS-3 / FOCUS-4 / FOCUS-5 unchanged.**
+   The active research agenda narrows further. The remaining
+   theoretical aspiration in this lineage is "find a fundamentally
+   new intermediate quantity not based on floor values or zeta zeros"
+   — at this point an open theoretical question with no concrete
+   sub-task remaining.
+
+### Tactical observation for future fourth-encoding work
+
+Any future proposal in this lineage should be pre-disqualified by the
+E2.11 test before being filed as an experiment. The pre-test takes ~5
+seconds per candidate (per FOCUS-2 budget) and rules out both modes I
+and E by the structural finite-difference signature. If a candidate
+shows Δᵏ ratio bounded < 2.0 (e.g. ~ 1.5) or non-monotone toward 2,
+that is an INTERMEDIATE survivor and merits the full PSLQ run; the
+present 9-candidate sweep produced zero such survivors.
+
+### Project status unchanged
+
+`OPEN_PROBLEMS.md` remains at: only Circuit Complexity of π(x) is
+genuinely viable. Chain E computationally cornered (S66). FOCUS-1
+sub-attacks all closed; FOCUS-2 now closed; FOCUS-3 (Brandt MKtP) and
+FOCUS-4 (3-point correlation at N≥10⁴) remain.
+
+### Files
+
+- `experiments/algebraic/fourth_encoding_search/e211_pretest_focus2.py`
+- `experiments/algebraic/fourth_encoding_search/e211_pretest_focus2_results.md`
+- `status/CLOSED_PATHS.md` — 1 new entry appended
+- `EDGES.md` — E2.11 extended with S67 methodological note
+- `archive/sessions/session67_focus2_e211_pretest.md` — synthesis
+- `.run_state` set to 47

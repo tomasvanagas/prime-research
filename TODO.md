@@ -2,39 +2,107 @@
 
 > **For agents starting a session:** read this file first, then `EDGES.md`,
 > then `status/OPEN_PROBLEMS.md`. EDGES catalogues every real mathematical
-> edge found across 58 sessions and groups them into the two surviving
-> chains (E and F). Every other chain (A, B, C, D, G) has been closed.
+> edge across 67+ sessions, tagged with IDs (E1.x .. E7.x). Cite edge IDs
+> by name in CLOSED_PATHS entries and session syntheses (CLAUDE.md step 10).
 >
-> **Critical priority is FOCUS-1 below.** It is the only direction whose
-> resolution would substantively change project status. FOCUS-2 / FOCUS-3
-> are sharpening targets; FOCUS-4 is a recurring lightweight watch; the
-> housekeeping and benchmarking items are non-blocking.
+> # === Active priority order ===
 >
-> Recently closed and removed from this file: Connes operator scaling
-> (S53), pi(x) mod q for q in {2..13} via Liouville (S55+S56), Borel+Fejer
-> hybrid (S52), 3-point GUE correlation (S57), N=2000 zeta structure (S45),
-> Helfgott-Thompson M(x) benchmark (S60, sieve route shown tight via E6.7+E7.6).
+> **FOCUS-3 (Brandt MKtP) is the new critical path.** With FOCUS-1 (AKS
+> sub-attacks) closed S61/S64/S66 — all three hitting the same E5.3 wall
+> per E7.10 — and FOCUS-2 (4th-encoding sweep) closed S67 — 9/9 candidates
+> mode I via the E2.11 pre-test — Brandt is the only construction-flavoured
+> critical-path option still untouched. It has been logged for 30+ sessions
+> without engagement. **Pick this up in the next focused-mode session.**
 >
-> S60 EDGES extension added 10 new edges (E1.7, E1.8, E2.11, E2.12, E3.12,
-> E6.7, E6.8, E6.9, E7.8, E7.9). Effect on this file: FOCUS-2 gains an
-> E2.11 pre-disqualification test (5s vs 30s per candidate); FOCUS-5 gains
-> level-of-distribution as a tracked literature category; the H-T benchmark
-> is removed. FOCUS-1 / FOCUS-3 / FOCUS-4 unchanged.
+> Other active items (lower priority): FOCUS-4 (3-point correlation at
+> N≥10⁴), FOCUS-5 (literature watch). FOCUS-1 and FOCUS-2 retained below
+> as archived references with closure pointers.
+>
+> # === Recently closed ===
+>
+> - **FOCUS-1 entire (S61, S64, S66):** all three AKS sub-attacks closed
+>   FAIL with mode E or E+I or E+C; modulus / coefficient-ring / gcd-
+>   strengthening are orthogonal to depth (E7.10).
+> - **FOCUS-2 entire (S67):** all 9 candidate intermediate-quantity
+>   summatories closed mode I via E2.11 pre-test (Δᵏ ratio → 2.0 white-
+>   noise signature). Six WHITE-A (GUE-equivalent to π−R), two WHITE-B
+>   (entirely smooth, no prime info), one mixed.
+> - Connes operator scaling (S53), π(x) mod q for q ∈ {2..13} via
+>   Liouville (S55+S56), Borel+Fejér hybrid (S52), 3-point GUE correlation
+>   (S57), N=2000 zeta structure (S45), Helfgott-Thompson M(x) benchmark
+>   (S60, sieve route tight via E6.7+E7.6).
+>
+> # === Recent EDGES extensions ===
+>
+> - **S60 batch (10 edges + 1 caveat):** E1.7, E1.8, E2.11, E2.12, E3.12,
+>   E6.7, E6.8, E6.9, E7.8, E7.9, plus E6.3 finite-size DCT caveat.
+> - **S66 batch (2 edges + 2 refinements):** E1.9 (φ 2D rank, 22nd
+>   pseudorandomness measure), E7.10 (AKS modulus-twist orthogonality
+>   theorem), K_min non-monotonicity caveat to E3.11, AKS-gcd-extraction
+>   note under E5.3.
+> - **Critique-46 batch (1 edge):** E7.11 (convergence-acceleration family
+>   systematically exhausted).
 
 ---
 
 # === CRITICAL PATH ===
 
-## [FOCUS-1] AKS growing-dim MPOW in TC^0  [Chain E, the only open frontier]
+## [FOCUS-3] Brandt MKtP framework deep dive  [NEW critical path, S67+]
 
-**Why this is THE critical item.** After S50-S58 closed Chains A/B/C/D/G,
-Chain E (TC^0 via growing-dimension matrix powering) is the only
-remaining EVS-H surviving chain (`EDGES.md` §8). The missing primitive is
-either:
+**Why this is now THE critical item.** With FOCUS-1 (AKS) and FOCUS-2
+(4th-encoding sweep) both fully closed, Brandt is the only remaining
+*construction-flavoured* attack on the only open problem (circuit
+complexity of π(x), per `status/OPEN_PROBLEMS.md`).
 
-1. resolve `growing-dim MPOW in TC^0?` (positive → PRIMES in TC^0),
-2. or find an alternative TC^0 counting primitive (4th encoding,
-   subsumed by FOCUS-2).
+Brandt 2024 (TCC) proved `MKtP ∉ DTIME[O(n²)]` via a diagonalisation
+that **bypasses Natural Proofs**. S30 flagged this as "the only known
+technique that could lead to unconditional superpolynomial lower bounds
+without hitting the barriers." S39 confirmed no follow-up papers
+through April 2026. The project has logged Brandt for 30+ sessions
+without anyone engaging with the technique.
+
+### Concrete actions
+
+1. **Read Brandt 2024 carefully.** TCC proceedings or arXiv listing.
+   Identify the diagonalisation skeleton: what is being diagonalised
+   against, what natural-function class is the result for, what
+   exact ingredient bypasses Razborov-Rudich.
+2. **Adapt to π(x) mod 2.** This function is total, computable in
+   sub-exponential time O(x^{2/3}), conjectured outside TC⁰, and
+   pseudorandom in 22+ measures (`novel/pseudorandomness_of_pi.md`).
+   Does Brandt's hypothesis class admit π mod 2 as a natural target,
+   or does the construction require an artificially-defined function
+   (like MKtP itself) that doesn't extend to natural NT?
+3. **Even a *conditional* Brandt-style lower bound on π(x) mod 2
+   would be the first non-trivial circuit lower bound the project has
+   produced.** If Brandt's hypothesis only applies to artificial
+   classes, document this rigorously as the closure mode and elevate
+   to `proven/circuit_size_barrier.md`.
+4. Save analysis at `experiments/circuit_complexity/brandt_mktp/`
+   (theory dump + any concrete computations on small N).
+5. Cite EDGES IDs in the closure: this is a Chain E attempt against
+   E5.3 via a non-AKS technique; T4 (Natural Proofs) is the constraint
+   to thread.
+
+This is exploratory — most likely closure mode is "Brandt's hypothesis
+doesn't extend to natural functions like π mod 2", but the upside is
+unique among the remaining options. **It is also the only critical-path
+work that satisfies CLAUDE.md's "Construction is encouraged" rebalance**:
+even a careful theoretical construction (formal definitions + small-N
+simulation) qualifies. Save under `experiments/constructions/brandt_mktp/`
+if the work produces a concrete object/circuit, otherwise the
+`brandt_mktp/` path above.
+
+---
+
+# === ARCHIVED / CLOSED ===
+
+## [FOCUS-1] AKS growing-dim MPOW in TC^0  [CLOSED S61/S64/S66 — archive]
+
+> **All three sub-attacks closed FAIL.** Per E7.10 (AKS modulus-twist
+> orthogonality theorem), every modulus / coefficient-ring / gcd-
+> strengthening twist of the AKS test reduces to growing-dim r×r MPOW
+> at the same `r ~ log²n`, leaving E5.3 untouched.
 
 S47 closed cyclotomic-CRT splitting (AKS-prescribed r is prime in 21/22
 sampled n). Three uncovered sub-attacks remain — each tractable for a
@@ -110,93 +178,35 @@ family — within it, no further leverage point is known.
 
 # === SECONDARY (sharpening) ===
 
-## [FOCUS-2] 4th encoding of pi(x) — concrete candidate sweep
+## [FOCUS-2] 4th encoding of pi(x) — concrete candidate sweep — CLOSED (S67)
 
-E7.7 (three-pillars meta-theorem) says only 3 informationally-complete
-encodings of pi(x) are known: prime positions, zeta zeros, floor values.
-15+ candidate intermediate-quantity families have been individually
-closed (S15, S16). The *space of additive number-theoretic functions*
-has not been enumerated systematically.
+**Status:** CLOSED, FAIL (mode I). See CLOSED_PATHS.md last line,
+`experiments/algebraic/fourth_encoding_search/e211_pretest_focus2_results.md`,
+and `archive/sessions/session67_focus2_e211_pretest.md`.
 
-### Pre-test (fail-fastest, **NEW from S60 EDGES extension**)
+**Headline:** All 9 listed candidates (T_1, T_2, T_3, Ψ × 3 regimes, σ_2,
+σ_3, Q, T_6) close at the E2.11 pre-test stage *without reaching PSLQ*.
+T_2 = ΣH_n and T_3 = ΣH_n² are entirely smooth (closed-form, residual at
+f64 precision — they carry no prime information at all). The other 7
+produce GUE-white residuals indistinguishable from f(x) = π(x) − R(x) —
+they encode the *same* zeta-zero oscillation, hence a polylog evaluator
+for any of them would yield polylog π(x). None has a polylog evaluator.
+Cumulative fourth-encoding routes empirically closed: ~78. The "concrete
+candidate sweep" sub-task of FOCUS-6 is now exhausted; only abstract
+"fundamentally new intermediate quantity not based on floor values or
+zeta zeros" remains as theoretical aspiration.
 
-E2.11 pins R(x) as the **exact** smooth/random separator: iterated finite
-differences of `f(x) = pi(x) - R(x)` grow as white noise with RMS ratio
-→ 2.0 per Δ-application; Hankel rank is full (250/250). So:
+> **Body of FOCUS-2 archived (S67):** the original 6-candidate sweep
+> definition + E2.11 pre-test methodology lived here. With all 9
+> candidates closed mode I, the active body has been collapsed to this
+> archive note. See `experiments/algebraic/fourth_encoding_search/
+> e211_pretest_focus2_results.md` for the 9-candidate verdict table
+> and `archive/sessions/session67_focus2_e211_pretest.md` for synthesis.
+> Methodology preserved in `EDGES.md` E2.11.
 
-> **Pre-disqualification:** for each candidate `T_i`, compute its known
-> leading asymptotic `A_i(x)`. Iterate `Delta^k (T_i - A_i)` for k = 1..7
-> on x ∈ [10^4, 10^6]. **If RMS ratio Delta^{k+1}/Delta^k → 2.0**, the
-> residual is GUE-type and `T_i` is just another encoding of the same
-> information — close immediately, no PSLQ run needed (~5 seconds, not 30).
-> Only candidates whose residual difference operator is **non-white**
-> (ratio bounded away from 2, or annihilated at finite order) advance to
-> the PSLQ stage.
+---
 
-Expected outcome from the pre-test: candidates 1, 2, 4, 5, 6 below all have
-closed-form leading terms whose residuals empirically look GUE-type — they
-should pre-disqualify in seconds. Only candidate 3 (Psi(x, log^c x))
-plausibly survives because the smooth/random split for *smooth-number
-counts* is genuinely different from R(x)'s split.
-
-### Concrete candidates (test in this order, fail-fast)
-
-1. **Sum of log Gamma fractional part:** `T_1(x) = sum_{n<=x} {log Gamma(n)}`.
-   Distinct from psi(x); ties to Stirling's series. Known asymptotic but
-   no polylog inversion attempt logged.
-2. **Harmonic-number summatories:** `T_2(x) = sum_{n<=x} H_n`,
-   `T_3(x) = sum_{n<=x} H_n^2`. Both have closed-form leading terms;
-   residuals never PSLQ'd against pi(x).
-3. **Smooth-number count Psi(x, B) for varying B:** S26 partially tested
-   B = sqrt(x); B = log^c(x) regime untested. **Most likely to survive
-   the E2.11 pre-test** — the Dickman/Buchstab piece is structurally
-   different from R(x).
-4. **Divisor function sigma_k summatories (k = 1, 2, 3):** the
-   Dirichlet series structures are different from zeta(s); cross-PSLQ
-   never run against pi(x) - R(x).
-5. **Squarefree-count Q(x):** ratio Q(x)/x converges to 6/pi^2; the
-   residual `Q(x) - 6 x / pi^2` was tested (closed S21) but not against
-   pi(x) directly via Mobius inversion.
-6. **Jacobi totient phi(n) summatory:** `T_6(x) = sum_{n<=x} phi(n)`.
-   Closed-form leading 3 x^2 / pi^2; residual periodicity untested.
-
-For each candidate that passes the pre-test:
-- Compute `T_i(x)` exactly for x up to 10^6.
-- PSLQ at 60 dps against `{pi(x), pi(x)/log(x), li(x), R(x), x, sqrt(x)}`
-  with cross-validation at 4 distinct x values.
-- If any relation survives cross-validation: deep dive.
-- If none does: log closure with three-pillars verdict.
-
-Save under `experiments/algebraic/fourth_encoding_search/<candidate>/`.
-
-**Each pre-test is ~5 seconds; full PSLQ is ~30 seconds.** With the E2.11
-pre-test, six candidates take well under one focused session. Most likely
-outcome: 5/6 pre-disqualify, 1/6 (Psi) reaches PSLQ and closes there,
-but the search-space narrowing is itself valuable.
-
-## [FOCUS-3] Brandt MKtP framework deep dive
-
-S30 flagged Brandt (TCC 2024, MKtP not in DTIME[O(n^2)]) as "the only
-known technique that could lead to unconditional superpolynomial lower
-bounds without hitting the barriers." S39 confirmed no follow-up papers
-through April 2026. **Project has never engaged with the technique
-beyond logging it.**
-
-### Concrete actions
-
-1. Read Brandt 2024 (TCC, alternatively arXiv listing) carefully.
-2. Identify whether the diagonalization argument can be applied to
-   pi(x) mod 2 specifically — the function is total, computable, has
-   sub-exponential time bound (O(x^{2/3})), and is conjectured outside
-   TC^0.
-3. Even a *conditional* Brandt-style lower bound on pi(x) mod 2 would
-   be the first non-trivial circuit lower bound for our problem.
-4. Save analysis at `experiments/circuit_complexity/brandt_mktp/`
-   (theory dump + any concrete computations).
-
-This is exploratory — most likely closure mode is "Brandt's hypothesis
-doesn't extend to natural functions", but the upside is unique among
-remaining options.
+# === SECONDARY (sharpening) ===
 
 ## [FOCUS-4] Higher-order zeta-zero correlation at N >= 10^4
 

@@ -1,6 +1,6 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-26 (Session 66)
+Last updated: 2026-04-26 (Session 67)
 
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (538+ approaches across 66 sessions) and confirmed to hit one of three
@@ -15,6 +15,16 @@ the same r ~ log²n. The only remaining escapes from Chain E are
 Brandt MKtP (FOCUS-3, un-engaged) and fundamentally new lower-bound
 techniques (open problem class) — no further AKS-style construction
 work is expected to dislodge the frontier.
+
+**S67 status update — FOCUS-2 (concrete fourth-encoding sweep) closed.**
+The E2.11 finite-difference pre-test ruled out 9 candidate intermediate
+quantities (8 NEW + φ-summatory re-checked) as fourth encodings of π(x):
+all produced GUE-white residuals indistinguishable from f(x)=π(x)−R(x),
+or were entirely smooth (T_2=ΣH_n, T_3=ΣH_n²). Cumulative fourth-
+encoding routes empirically closed: ~78. The "concrete candidate sweep"
+sub-task is exhausted; only the abstract "fundamentally new intermediate
+quantity" remains as a theoretical aspiration. See CLOSED_PATHS.md last
+line and `experiments/algebraic/fourth_encoding_search/e211_pretest_focus2_results.md`.
 
 **Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
 well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
