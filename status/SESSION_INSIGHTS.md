@@ -3211,3 +3211,249 @@ that anti-correlates with any oscillatory template, with the bias
 - `EDGES.md` — E3.13 extended with S71 sub-section + L⁴ obstruction
 - `ATTACK_VECTORS.md` — §C1 moved to "Closed attacks" section
 - `status/CLOSED_PATHS.md` — closure row added at line ~748
+
+## Session 77 — N1 Tensor-Network Compression Family Closure (negative-shape edge)
+
+**Mode:** novelty (B-grade target).
+**Target:** `NOVELTY_CHALLENGES.md` §4.N1 — family-level closure of E2.1
+across classical polynomial-spatial-locality tensor ansätze.
+**Channel:** Razborov (lower-bound mindset; spectral-rank route).
+**Self-grade:** B (refinement: lifts E2.1 from MPS-only to family-level
+scope, with empirical verification at 22 (W, d) pairs and three orthogonal
+closure mechanisms).
+
+### Headline result
+
+Across **22 (W, d) pairs** (W ∈ {2,3,4,5,6,7}, d ∈ {4,6,8,10,12}), the
+half-cut bond dim required to *exactly* represent χ_P is **identical**
+across five classical tensor-network ansätze:
+
+* MPS / Tensor-Train at the half-cut.
+* Hierarchical Tucker root-children bond dim.
+* PEPS 2D-reshape boundary cut.
+* Tensor Ring (cyclic MPS).
+* CP-rank Kruskal lower bound.
+
+All four equal `min(W^j, φ(W)·W^(d-j-1)+1)` (E2.1's closed form), with
+exact saturation in 21/22 cases and a single finite-size deficit of 1
+at W=5, d=4, N=625 (a benign small-N row dependency).
+
+**Asymptotic ratio**: `bond_dim / sqrt(N) → φ(W)/W` (the **Mertens
+product**) — verified at d=12 for W∈{2,3,4} and at d=8 for W=6:
+
+* W=2: 33/64 = 0.515 → 0.500
+* W=3: 487/729 = 0.668 → 0.667
+* W=4: 513/1024 = 0.501 → 0.500
+* W=6: 433/1296 = 0.334 → 0.333
+
+The Mertens product is the **universal** asymptotic compression ratio
+across the family — was previously only an MPS-specific number.
+
+### Three closure mechanisms (orthogonal across the seven listed ansätze)
+
+1. **Unfolding-rank route (5 ansätze)**: MPS, HT, TR, PEPS, CP all
+   admit an unfolding contraction whose matricisation rank IS (or
+   lower-bounds) the bond / rank parameter. E2.1 then forces
+   `≥ φ(W)·W^(d-j-1)+1` at the maximising cut.
+2. **Tucker by mode-slice independence**: mode-`j` matricisation has
+   rank ≤ W trivially, so the multilinear-rank tuple does NOT see
+   E2.1. But the W mode-`j` slices of χ_P are *linearly independent*
+   (Dirichlet's theorem ensures different residue classes mod W have
+   different prime patterns), forcing multilinear rank tuple
+   `(W, ..., W)` — no compression.
+3. **MERA by parameter count**: bond-dim alone admits weak Rényi-2
+   bound `χ ≥ rank^{1/(2 log d)}` (small in absolute terms). But MERA
+   with depth `log d` and bond dim `χ` has total parameter count
+   `O(d · χ^c)`, which to represent χ_P's `Ω(N^{1/2})` unfolding rank
+   requires `χ ≥ N^{Ω(1)}` — polynomial, not polylog.
+
+### What this lifts
+
+E2.1 was previously a single-ansatz statement. After S77 it becomes
+the **universal half-cut bond dim** across five spatial-locality
+ansätze. Five prior CLOSED_PATHS rows (lines 171, 185, 517, 518, 600)
+are subsumed under a single mechanism.
+
+### What remains open (next-action targets)
+
+* **Non-spatial-locality ansätze.** Random-projection of mode subsets,
+  algebraic constructions (Reed-Solomon-modulated tensors), quantum-
+  walk-style oracle representations — explicitly carved out from N1.
+  These are the natural follow-ups.
+* **L1 Lean formalisation `lower_bound`** (Arc 2): the last `sorry` in
+  `MPSBondDim/Basic.lean`. N1 has now empirically verified the lower
+  bound at 21/22 (W, d) pairs — the formal proof remains open.
+
+### Files touched
+
+* New: `experiments/constructions/tensor_compression_family_closure/`
+  (`definition.md`, `tensor_compression_family.py`,
+  `tensor_compression_family_results.md`,
+  `tensor_compression_family_results.json`, `run_full.log`).
+* Modified: `EDGES.md` (E2.1 annotated with S77 family-level scope).
+* Modified: `status/CLOSED_PATHS.md` (one row added at line 750).
+* Modified: `NOVELTY_CHALLENGES.md` (N1 marked BUILT).
+* Modified: `RESEARCH_AGENDA.md` (Arc 4 sub-milestone added).
+* New: `archive/sessions/session77_n1_tensor_compression_family.md`.
+
+## Session 79 — A3 frontier attack: Cayley graph spectrum probes ω(n), not primality (CLOSED)
+
+**Mode:** frontier attack (ATTACK_VECTORS §A.A3).
+**Channelling:** Bourgain (spectral gap on Cayley graphs of arithmetic
+groups, sum-product); Lubotzky-Phillips-Sarnak (arithmetic Cayley graph
+spectra).
+**Cross-domain ingredient:** spectral graph theory of Cayley graphs of
+finite abelian groups (Babai 1979).
+**Outcome: B-grade** (ambitious frontier attack failed informatively;
+new structural lower bound + new negative-shape edge).
+
+### What was attempted
+
+Per ATTACK_VECTORS §A.A3, build Cay((Z/nZ)*, {2,3,5,2⁻¹,3⁻¹,5⁻¹}) and
+ask: does any spectral feature decide primality of n? Distinct from
+prior CLOSED_PATHS lines 354/383/384/385 which used primes-as-generators
+or graph-index (circular). A3 fixes generators and varies n.
+
+### What the data showed
+
+For n ∈ [7, 2000] coprime to 30 (300 primes, 13 prime powers, 214
+semiprimes, 6 triple-prime composites), 24 spectral features tested.
+**No feature is disjoint primes-vs-composites.** Mann-Whitney AUC for
+the hard sub-case (primes vs prime powers, both ω=1):
+
+* {2,3,5} ∪ inv: 0.509
+* {2,3,7} ∪ inv: 0.566
+* {2,3,5,7} ∪ inv: 0.673
+
+Essentially no discrimination. The structural reason:
+
+### New theorem (provable from CRT character theory + empirically verified)
+
+> For n odd coprime to S, the Cayley graph Cay((Z/nZ)\*, S ∪ S⁻¹) has
+> at least **2^ω(n)** integer eigenvalues, where ω(n) is the number of
+> distinct prime factors of n.
+
+Proof: 2-torsion subgroup of the character group has size 2^ω(n) (each
+(Z/p_i^{a_i}Z)\* contributes one Z/2Z); for χ in the 2-torsion subgroup,
+χ(s) ∈ {±1} for all s, so λ_χ ∈ Z. ∎
+
+Verified across 533 (n) × 3 (generator set) = 1599 measurements, **0
+violations**. Bound is sharp in 84/533 = 15.8% of cases.
+
+### Why A3 fails by structure
+
+(Z/p^kZ)\* is cyclic for odd p (Gauss). So **primes n and prime powers
+n=p^k both have ω(n)=1 and produce structurally identical cyclic unit
+groups.** Spectrum cannot distinguish them up to discrete-log alignment.
+
+To rescue, you'd combine spectral features with a perfect-power test —
+which inherits AKS-class growing-dim MPOW depth (E5.3, E7.10).
+
+### What this adds to the catalogue
+
+* **New EDGES.md entry E7.12** — Cayley graph spectrum probes ω(n), not
+  primality (search-space constraint on the entire fixed-generator
+  abelian-Cayley-graph spectral primality family).
+* **New CLOSED_PATHS row** for ATTACK_VECTORS §A.A3 (line 751, mode E).
+* **New explicit identity** n_int_eigs(Cay((Z/nZ)\*, S ∪ S⁻¹)) ≥ 2^ω(n)
+  with character-theoretic proof and 84/533 sharpness.
+
+### Files touched
+
+* New: `experiments/circuit_complexity/cayley_spectral_primality/`
+  (`cayley_spectral_primality.py`, `cayley_robustness.py`,
+  `cayley_spectral_primality_results.md`, `spectrum_features.json`,
+  `separation_summary.json`, `robustness_features.json`).
+* Modified: `status/CLOSED_PATHS.md` (one row added, line 751).
+* Modified: `EDGES.md` (new E7.12 entry).
+* Modified: `ATTACK_VECTORS.md` (A3 closure entry added under
+  "Closed attacks").
+* New: `archive/sessions/session79_a3_cayley_spectral_primality.md`.
+
+### Why B-grade not A-grade
+
+A-grade would require a *positive* result: a spectral feature that
+genuinely decides primality. The frontier attack failed in the
+predicted direction. Failure mode is structural and cleanly characterised
+(spectrum is blind to cyclic-vs-cyclic), so this is firmly B-grade
+ambitious failure rather than C-grade refinement.
+
+## Session 80 — D4 frontier attack: Szegedy quantum walks on prime graphs (CLOSED)
+
+### What was done
+
+Cross-domain frontier attack on ATTACK_VECTORS §D.D4. Imported Szegedy's
+2004 discriminant matrix theorem (arxiv quant-ph/0401053) and applied
+it to three number-theoretic graph families:
+
+(A) **Cayley `Cay((Z/NZ)*, {2,3,5,inv})`** for primes N ∈ {31, 61, 89,
+127, 167, 211, 257, 307, 373, 449, 541, 673, 809, 1009}.
+(B) **Coprime graph `C_x`** (vertices [1..x], edges (m,n) iff gcd(m,n)=1)
+for x ∈ {30, 50, 100, 200, 350, 500, 700, 1000}.
+(C) **Divisor graph `D_x`** (vertices [1..x], edges (m,n) iff m|n) for
+the same x range.
+
+For each: computed lazy-walk transition matrix `P`, discriminant
+`D(x,y) = sqrt(P(x,y)·P(y,x))`, full spectrum, classical mixing time,
+Szegedy mixing time `1/(2 arcsin(sqrt(δ)))`, primality correlation of
+top-50 eigenvectors, and stationary prime mass.
+
+### Findings
+
+1. **Cayley sweep** (S79 quantum extension): empirical `t_C(N) ~ N^{0.789}`,
+   `t_Q(N) ~ N^{0.414}`. Quadratic Szegedy speedup confirmed but neither is
+   polylog. This **EXTENDS E7.12 to the quantum-walk regime** —
+   not just classical Cayley spectrum but also Szegedy quantisation
+   inherits the ω(n)-probing barrier.
+
+2. **Coprime graph** has Ω(1) gap (asymptotically `δ → 0.4166`) and a
+   clean closed-form: stationary prime mass / uniform prime mass
+   `→ ζ(2) = π²/6 ≈ 1.6449` (Mertens). Verified at x=1000 with
+   deviation -0.022. Mixing is `O(1)` both classical and quantum, but
+   primality bias is a constant — no polylog opening.
+
+3. **Divisor graph** has Ω(1) gap; high-prime-mass eigenvectors localise
+   on **prime-centered divisor clusters** (one specific prime p and its
+   multiples per eigenvector). For example, k=14 at x=250 (eigenvalue
+   0.768) concentrates 100% of mass on {43, 47, 86, 94, 172, 188, …}
+   — the prime-cluster localisation is structurally analogous to E7.12
+   degree-class probing, not global primality.
+
+### Outcome
+
+CLOSED §D.D4 with mode E. Added E7.13 to EDGES.md: "Szegedy walks on
+arithmetic graphs do not yield polylog π(x)" — combines the spectral
+barrier (Cayley class) with the localisation barrier (coprime/divisor
+class) into a single negative-shape edge for the entire family.
+
+### Grade: B (ambitious cross-domain failure)
+
+Cross-domain Szegedy machinery did real work: the discriminant-theorem
+quadratic speedup `t_Q ≈ sqrt(t_C)` was empirically realised on the
+Cayley sweep; the π²/6 stationary identity is a clean Mertens-law
+derivation specific to the coprime-graph chain. Failure is structural
+and cleanly characterised. Source paper (Szegedy 2004) cited.
+
+### Files touched
+
+* New: `experiments/quantum/szegedy_walk_prime_graphs/`
+  (`szegedy_walk_prime_graphs.py`, `szegedy_walk_extended.py`,
+  `eigenvector_inspection.py`, `degree_class_check.py`,
+  `szegedy_walk_prime_graphs_results.md`, plus json/log artefacts).
+* Modified: `status/CLOSED_PATHS.md` (one row added).
+* Modified: `EDGES.md` (E7.12 quantum-extension annotation;
+  new E7.13 entry).
+* Modified: `ATTACK_VECTORS.md` (D4 closure entry under
+  "Closed attacks").
+* Modified: `RESEARCH_AGENDA.md` (D4 added to closed-attacks pointer).
+* New: `archive/sessions/session80_d4_szegedy_walk.md`.
+
+### Why B-grade not A-grade
+
+A-grade would require a Szegedy walk producing `O(polylog(x))` mixing
+AND a primality-localised eigenvector. The frontier attack failed in
+the predicted direction with a clean structural reason. Failure is
+informative (the joint condition of fast mixing + primality
+localisation appears genuinely incompatible for arithmetic graphs in
+the tested families), so this is firmly B-grade ambitious failure
+rather than C-grade refinement.

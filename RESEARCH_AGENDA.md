@@ -175,6 +175,13 @@ See `NOVELTY_CHALLENGES.md` §1.
 - [ ] Pick C3 (Brandt × per-bit). Build it. Close or extend.
 - [ ] Pick C4 (Aggarwal × Dusart × BPSW). Build the unified library.
 - [ ] Pick C6 (three-pillars × HKM time-space curve). Build it.
+- [x] **N1 (tensor-network compression family) — BUILT S77.** Family-
+  level closure of E2.1 across MPS, HT, TR, PEPS, CP — half-cut bond
+  dim is identical across all five and equals `min(W^j, φ(W)·W^(d-j-1)+1)`
+  (verified at 22 (W, d) pairs, 21/22 exact). Tucker and MERA close by
+  orthogonal mechanisms. The Mertens product φ(W)/W is the universal
+  asymptotic compression ratio. CLOSED_PATHS row added; E2.1 annotated.
+  See `experiments/constructions/tensor_compression_family_closure/`.
 - [ ] After 4-6 compositions, write a meta-synthesis: which edge pairs
   yielded structure, which collapsed?
 
@@ -185,6 +192,13 @@ worth confirming on independent (W, d) at larger d, and characterizing
 *which* eigenvectors the spikes correspond to (small-prime indicators?
 Selberg eigenfunctions? cross-block correlation modes?). That sub-arc
 is the natural next step inside C2 if a future agent wants to push it.
+**N1 sub-arc completion.** N1 unified five tensor ansätze under E2.1's
+unfolding-rank mechanism; the natural N1 follow-on is **non-spatial-
+locality ansätze** (random-projection of mode subsets; algebraic
+constructions like Reed-Solomon-modulated tensors; quantum-walk-style
+oracle ansätze). These were explicitly carved out from N1 and remain
+open. A session that picked one of them up would be a B-grade extension
+of the family closure into broader ansatz classes.
 
 ### Arc 5 — Frame-Shift exploration
 **Status:** SUGGESTED
@@ -232,7 +246,9 @@ source of genuinely new direction.
 
 ## Closed arcs
 
-(none yet)
+(none — but see ATTACK_VECTORS.md "Closed attacks" for the
+ATTACK_VECTORS-level closures, which are arc-adjacent: §C1 closed in
+S71, §A.A3 closed in S79, §D.D4 closed in S80.)
 
 ---
 

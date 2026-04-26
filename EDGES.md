@@ -362,6 +362,21 @@ faithful at the second-moment level (i.e., reproducing κ_2) needs rank
 angle independent of the explicit-formula machinery.
 See `experiments/constructions/free_cumulants_chi_p/`.
 
+**S77 family-level scope refinement (N1):** the unfolding-rank lower
+bound `≥ φ(W)·W^(d-j-1)+1` is the *universal* half-cut bond dim across
+classical polynomial-spatial-locality tensor-network ansätze:
+**MPS / Tensor-Train, Hierarchical Tucker (root-children bond dim),
+Tensor Ring, PEPS (2D-reshape boundary), and CP-rank Kruskal lower
+bound**. Verified at 22 (W, d) pairs spanning W ∈ {2, 3, 4, 5, 6, 7},
+d ∈ {4, 6, 8, 10, 12}: half-cut bond dim is **identical** across all
+five ansätze in 21/22 cases, with a single finite-size deficit of 1 at
+(W=5, d=4, N=625). Tucker and MERA close by orthogonal mechanisms
+(mode-slice independence and parameter-count, respectively) — the
+conclusion (no polylog ansatz exists) is uniform. The unifying
+mechanism is the unfolding-rank lower bound ITSELF; E2.1 is no longer
+an MPS-only statement. See
+`experiments/constructions/tensor_compression_family_closure/`.
+
 ### E2.2 — Liouville/parity identity                                [EVS M (was H, downgraded S55)]
 
 S46, S55; `experiments/proposals/proposal25_liouville_parity_check.py`
@@ -1521,6 +1536,96 @@ asymptotically): E7.6 + E7.10 together close two of the three known
 informationally-complete encodings (E7.7) at the algorithmic level,
 leaving only zero-summation routes — themselves blocked by E7.1
 (zeros are linearly independent) and E7.4 (inversion non-contracting).
+
+### E7.12 — Cayley graph spectrum probes ω(n), not primality          [EVS shape]
+
+S79; ATTACK_VECTORS §A.A3;
+`experiments/circuit_complexity/cayley_spectral_primality/`;
+CLOSED_PATHS row at session 79.
+
+For n coprime to the generator set S, the adjacency spectrum of the
+Cayley graph Cay((Z/nZ)*, S ∪ S⁻¹) has at least **2^ω(n) integer
+eigenvalues**, where ω(n) is the number of distinct prime factors of n.
+
+Proof: by CRT, (Z/nZ)\* ≅ ∏ (Z/p_i^{a_i}Z)\*. For odd p_i each factor
+has even order so its character group has 2-torsion of order 2; the
+2-torsion of the full character group has size 2^ω(n). For χ in the
+2-torsion subgroup, χ(s) ∈ {±1} for all s, so the eigenvalue
+λ_χ = Σ_{s∈S∪S⁻¹} χ(s) is an integer. ∎
+
+Empirically verified (533 values of n × 3 generator sets, 0 violations).
+Bound is sharp in 84/533 cases.
+
+> Why this is shape-revealing: any **fixed-generator abelian Cayley
+> graph spectral feature** is a function of (Z/nZ)\*'s decomposition
+> into prime-power factors, hence detects ω(n), not primality. Since
+> (Z/p^kZ)\* is cyclic for odd p (Gauss), prime n and prime power
+> n=p^k both give cyclic unit groups with ω=1; they are
+> spectrally indistinguishable up to discrete-log alignment. Distinguishing
+> primes from prime powers requires a separate perfect-power test
+> which inherits AKS-class growing-dim MPOW depth (E5.3, E7.10). Adds
+> a search-space constraint to the spectral-primality family — closing
+> A3 from ATTACK_VECTORS.md and ruling out the entire fixed-generator
+> abelian-Cayley spectral approach.
+
+Distinct from CLOSED_PATHS lines 354, 383, 384, 385 (which used
+primes-as-generators or graph index — circular). E7.12 is the
+**index-fixed, generator-fixed** version of the failure: the graph
+itself is buildable without primes, but the spectrum doesn't decide
+primality.
+
+**S80 quantum extension:** Szegedy quantisation
+of these Cayley walks inherits the same poly-mixing barrier. The
+discriminant matrix `D(x,y) = sqrt(P(x,y) P(y,x))` has the same
+spectrum as the (lazy) walk for reversible chains, so eigenvalues
+`cos(θ_k) → e^{±2iθ_k}` give phase gap `2 arcsin(sqrt(δ))`. Empirical
+sweep over 14 primes N ∈ {31, …, 1009} fits classical mixing
+`t_C(N) ~ N^{0.789}` and Szegedy mixing `t_Q(N) ~ N^{0.414}` —
+quadratic speedup confirmed but not polylog. The structural barrier
+(spectrum probes ω(n)) is unchanged by quantisation.
+
+### E7.13 — Szegedy walks on arithmetic graphs do not yield polylog π(x) [EVS shape]
+
+S80; ATTACK_VECTORS §D.D4;
+`experiments/quantum/szegedy_walk_prime_graphs/`;
+CLOSED_PATHS row at session 80.
+
+For Szegedy quantum walks (Szegedy 2004, arxiv quant-ph/0401053) on
+reversible Markov chains over `[1..x]` whose transition graph is
+defined by a simple arithmetic relation, polylog primality extraction
+requires *jointly* (i) classical spectral gap `δ = Ω(1/polylog(x))`
+AND (ii) a single eigenvector of the discriminant matrix with
+primality-localised mass. Three test families demonstrate (i) and (ii)
+are **incompatible** in this setting:
+
+- **Cayley `(Z/NZ)*`:** `δ → 0` as `N^{-c}`, c ≈ 0.87 — Szegedy
+  mixing `~N^{0.41}` is poly, not polylog.
+- **Coprime graph `C_x = ([1..x], gcd=1)`:** `δ = Ω(1)` (asymptotically
+  `δ → 0.4166...`); only the trivial Perron eigenvector carries
+  primality information (stationary mass on primes ≈ `(π²/6)/x`,
+  exactly Mertens density `ζ(2)`).
+- **Divisor graph `D_x`:** `δ = Ω(1)`; high-prime-mass eigenvectors
+  exist but localise on prime-centered divisor clusters (one specific
+  prime `p` + its multiples per eigenvector), not on global primality.
+  Same degree-class probing mechanism as E7.12.
+
+Verified at full sweep: 14 Cayley primes, 8 coprime sizes (x ≤ 1000),
+8 divisor sizes (x ≤ 1000); cross-domain quadratic speedup
+`t_Q ≈ sqrt(t_C)` empirically realised on the Cayley sweep.
+
+> Why this is shape-revealing: this is the **quantum-walk family
+> closure**. The Szegedy discriminant theorem cleanly converts the
+> classical spectral structure of an arithmetic chain into a
+> quantum-walk operator, but the conversion is gap-preserving: it can
+> at best square-root the mixing time, never log-compress it. So any
+> arithmetic graph whose classical chain mixes in poly(x) cannot mix
+> in polylog under Szegedy walks; and any graph that mixes in O(1)
+> classically already fails on the spectral-localisation side.
+> Combined with E7.12 this rules out a substantial swath of
+> "graph-based polylog primality test" attempts.
+
+Cross-domain reference: Szegedy, M. *Quantum Speed-Up of Markov Chain
+Based Algorithms*, FOCS 2004, arxiv quant-ph/0401053.
 
 ### E7.11 — Convergence-acceleration / variance-reduction family is exhausted [EVS shape]
 

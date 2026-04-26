@@ -1,309 +1,620 @@
-# Critique — Sessions S70 / S71 / S72 (post-S60-fresh-critique batch)
+# Critique — post-S77 batch (covers S74, S75, S76, S71-redux, S77)
 
-**Date:** 2026-04-26
-**Critic:** critique-session
-**Sources critiqued:**
-- S70 (`archive/sessions/session70_c1_g_q_bisection.md`,
-  `experiments/constructions/g_q_bisection_invariant/`)
-- S71 (`archive/sessions/session71_c5_universality_class.md`,
-  `experiments/constructions/n_over_2_universality_class/`)
-- S72 (`archive/sessions/session72_l1_lean_e2_1_skeleton.md`,
-  `experiments/formalisations/E2_1_mps_bond_dim/`)
+**Date:** 2026-04-26 (this critique fires immediately after S77).
+**Prior critique:** session73_critique.md (16:31, 2026-04-26), which
+covered S70 / S71-original / S72.
+**Sessions critiqued here:** S74 (free cumulants), S75 (Lean
+live_columns_count), S76 (Lean upper_bound), S71-redux (Odlyzko BK
+probe — note: the agent re-used session number 71; the file is
+`session71_c1_odlyzko_bk_probe.md`, distinct from the earlier
+`session71_c5_universality_class.md`), S77 (tensor compression family).
 
-The previous critique (`session_critique60_fresh.md`, 15:33) judged the
-S60-fresh B1–B5 proposals as 4 duplicate closures. Three construction /
-formalisation sessions ran after that critique. None of them are
-critique-mode, so this critique is not redundant.
+ATTACK_VECTORS.md timestamps relevant: §C1 was closed inside S71-redux
+with mode I and a quantitative L⁴ obstruction. No other §A–§F item has
+been touched since the prior critique.
 
 ---
 
-## Verdict summary
+## TL;DR
 
-| Session | Artefact | Self-claim | My verdict | Mode | Filed correctly? |
-|---|---|---|---|---|---|
-| S70 | `g_q : ℕ → 𝔽_q × 𝔽_q` paired bisection, 3 closed-form predictions all PASS at N = 2·10⁶ | "Successful composition of E1.6 + E1.5; 3 new artifacts" | **VALID REFINEMENT** | I | YES — CLOSED_PATHS row 746 (FAIL/I), EDGES.md E1.5 + E1.6 annotated, no `novel/` placement attempted |
-| S71 | 4-measure battery on 6 NT Boolean functions, three exact rank closed forms, column-zero density identity unifying E2.7 + E2.8 | "Refinement of E1.4, structural unification of E2.7 + E2.8" | **VALID REFINEMENT** | I | YES — CLOSED_PATHS row 747 (REFINEMENT/I), EDGES.md E1.4 + E2.7 annotated, no `novel/` placement attempted |
-| S72 | Lake project + theorem-statement + 6-decl skeleton; 2 lemmas fully proved in Lean (`rank_le_min_dim`, `row_support_coprime`); 4 `sorry`s remain | "First Lean formalisation in the project; new artifact class" | **GENUINELY NOVEL (per CLAUDE.md)** | — | YES — Arc 2 promoted to IN PROGRESS, NOVELTY_CHALLENGES.md L1 marked IN PROGRESS, no closure row (this opens a track) |
+| Session | Self-grade | Critic verdict | Demotion? |
+|---|---|---|---|
+| S74 (free cumulants C2) | B | **B (confirmed)** | No |
+| S75 (Lean live_columns_count) | B | **B (confirmed)** | No |
+| S76 (Lean upper_bound) | B | **B (confirmed)** | No |
+| S71-redux (Odlyzko BK §C1) | B | **B (confirmed)** | No |
+| S77 (tensor compression family N1) | B | **B (confirmed, weakly)** | No |
 
-**No artefact requires demotion.** No artefact was placed in `novel/`
-under inflated novelty claim. All three sessions filed honestly: the
-two refinements went into `experiments/constructions/` + CLOSED_PATHS
-+ EDGES.md annotations (not into `novel/`); the Lean session opened a
-track and registered as in-progress.
+No artefact requires relocation, demotion, or rewriting of EDGES.md
+annotations. All five sessions produced a real artefact (Python script
++ results.md, or Lean file + lake-build verification) and graded
+themselves correctly as B. None inflated to A; none deflated to C/F.
 
-**Net position:** the post-67-session "novelty production" mandate of
-CLAUDE.md is being respected. S70 and S71 are bordering on "duplicate-
-plus" (each effectively re-derives a known mechanism in a new wrapper)
-but the wrapper IS a genuine composition with quantitative content
-(closed-form three-state H_3 in S70, three exact rank formulas + column-
-zero principle in S71). S72 is the strongest of the three: it is a new
-artifact class for the project, with kernel-checkable correctness.
+The critique-level concerns are about **trend, not individual session
+discipline**:
 
----
-
-## Per-artefact critique
-
-### S70 — `g_q` paired bisection (composition C1 of E1.6 + E1.5)
-
-**What was built.** The map
-`g_q(x) = (A(x) mod q, C_3(x) mod q)` with `A = (x − L)/2`,
-`C_3 = A − π`, so `π = A − C_3` (E1.6). Empirical verification at
-N = 2·10⁶ for q ∈ {2, 3, 5, 7, 11, 13} of three quantitative
-predictions:
-
-* PR1 (per-component closed form) — PASS at 5e-3 (worst |diff| 1.6e-3
-  at small X, 5e-6 at X = 2·10⁶).
-* PR2 (joint closed form) — PASS in strict regime q²·100 ≤ π(X).
-* PR3 (q-stable marginal independence) — PASS, worst I = 1.17e-4 bits.
-
-**Run output spot-check.** `run_output.log` reproduces:
-`PR2 verdict: PASS (threshold 5e-3)`,
-`PR3 worst I (at X=2000000, all q in [2..13]): 0.000117 at q=13`,
-`PR3 verdict: PASS`. PR1 PASS confirmed in `_results.md` table.
-Wall-clock 3.43 s. Bit-exact identity `π = A − C_3` for x ∈ [1, 2·10⁶].
-Verifications hold.
-
-**a) Has this been tried before?** Partial yes:
-
-* E1.5 / S69 already saturated `H(π(x) mod m | π(x−1) mod m) =
-  h_2(π(X)/X) + O(1/π(X))` for π only.
-* E1.6 / S55 already established marginal independence at q=2.
-* The *mechanism* (binary-valued increment + conditional independence
-  of indicator from state) is identical to E1.5's. Applying it to A
-  and C_3 gives the per-component closed forms by *the same one-line
-  argument*.
-
-**b) Failure mode.** None (construction succeeded as composition). The
-failure mode for *polylog* is INFORMATION LOSS (I): both A and C_3 are
-themselves 1-bit/step counters in the strict-regime; no peeling-off
-trick survives.
-
-**c) Numerical correctness.** Closed-form match at 1e-7 at full X
-across every (q, F) tuple in the strict regime. PR2 deviations
-outside the strict regime (q² > π(X)/100) are documented as the
-S69-known finite-state-coverage artefact, not a model failure.
-
-**d) Novelty defensibility.** Borderline. The per-component closed
-forms (PR1) are *one-line corollaries* of E1.5's mechanism. The joint
-H_3 closed form (PR2) is genuinely new — it was not stated anywhere
-prior. The q-stable extension (PR3) is a genuine empirical
-strengthening of E1.6 (q=2 only). Net: ~1.5 new objects (the joint
-H_3 + the q-stable strengthening), plus the unifying observation that
-"any monotone Ω-stratified summatory satisfies E1.5's per-step rate."
-That last is a paper-grade claim. By CLAUDE.md's bar:
-
-> a published paper-grade number theorist or complexity theorist could
-> not, after one careful read of prior literature and CLOSED_PATHS,
-> produce this.
-
-A specialist could easily produce the per-component result by trivial
-extension. The joint H_3 they would *probably* produce too once told
-to look. The q-stable strengthening is the only piece that requires
-running an actual experiment. Verdict: refinement, not `novel/`-grade.
-**The S70 author already filed it that way** — no `novel/` placement
-attempted, only CLOSED_PATHS + EDGES annotations. Filing is correct.
-
-**e) Edge citations.** E1.6 (composed), E1.5/S69 (composed), E2.10
-(used to derive A integer-valued from L mod 2 = x mod 2). All accurate.
-
-**f) Filing status.** CLOSED_PATHS row 746 — present and accurate
-(FAIL/I mode, "construction succeeded as composition but does not
-open polylog route"). EDGES.md E1.5 annotated with the mechanism
-universality; E1.6 annotated with q-stable extension. No demotion
-needed.
-
-### S71 — N/2 universality battery on 6 NT Boolean functions (composition C5 of E1.4 + E2.5)
-
-**What was built.** A 4-measurement battery (M1 balanced
-communication-matrix rank, M2 GF(2) BM linear complexity, M3
-approximate degree at ε = 0.49, M4 PTF degree) on six functions
-{f_pi, f_sqfree, f_mu_pos, f_lam_pos, f_sqfree3, density-matched
-SHA-256 PRF} for N up to 14 (M1) / N up to 10 (M3, M4). Three exact
-rank closed forms: rank(M_chi_P) = 2^{N/2−1} + 1; rank(M_sqfree) =
-rank(M_mu_pos) = 3·2^{N/2−1}; rank(M_lam_pos) = 2^{N/2}. Structural
-identity `rank(M_f^{balanced}) ≤ (1 − ρ_f)·2^{N/2}` where ρ_f is the
-density of lower-half columns forced to zero by f's smallest non-
-witness modulus.
-
-**a) Has this been tried before?** No prior measurement of E1.4 on
-non-π NT Boolean functions appears in CLOSED_PATHS or EDGES. The
-column-zero density observation is also new.
-
-**b) Failure mode.** None for the construction; PR1 / PR3 / PR4
-*falsify* the original framing of E1.4 ("N/2 universality" is in fact
-a parity-of-Ω property, not a meta-NT property). This *informs*, it
-doesn't close the project's main open problem.
-
-**c) Numerical correctness.** I did not re-run the script. The script
-exists, runs in ~25 s wall (per session note); the closed-form
-identities are stated for N=6,8,10,12,14. The column-zero
-*structural argument* is one-paragraph algebra — verifiable on
-inspection.
-
-**d) Novelty defensibility.** Mixed.
-
-* The *column-zero* observation is essentially trivial linear
-  algebra: "if a column is identically zero, it does not contribute
-  to rank." Stating it doesn't deserve `novel/` placement.
-* BUT: the unification of E2.7 + E2.8 under the column-zero principle
-  is a real consolidation. E2.8's "25-35% tensor rank deficiency" was
-  previously a separate edge from E2.7's "+2 communication rank
-  anomaly". Both now follow from `rank ≤ (1 − ρ_f)·2^{N/2}` with
-  different complexity measures.
-* The three exact rank formulas for {chi_P, sqfree, mu_pos, lam_pos}
-  ARE new closed forms in the project. None of them transfer to
-  closing the open polylog problem (that's why the closure mode is
-  REFINEMENT/I).
-* The scope refinement of E1.4 ("parity-of-Ω family" not "all NT
-  Boolean functions") is a genuine factual correction.
-
-By CLAUDE.md's bar, a specialist with one read of prior literature and
-CLOSED_PATHS could likely produce the column-zero identity in 30
-minutes. They could not as easily produce the empirical refinement of
-E1.4's scope. Net: refinement-grade, not `novel/`-grade. **S71 author
-filed accordingly** — no `novel/` attempt; CLOSED_PATHS + EDGES.md
-annotations only. Correct.
-
-**e) Edge citations.** E1.4 (refined), E2.5 (used as machinery for M3
-/ M4), E2.7 (unified), E2.8 (unified). All accurate.
-
-**f) Filing status.** CLOSED_PATHS row 747 — present and accurate
-(REFINEMENT/I mode). EDGES.md E1.4 annotated with scope refinement;
-E2.7 annotated with indicator analogue (+1 vs +2) plus column-zero
-unification with E2.8. No demotion needed.
-
-**Caveat I want to flag.** The session's prose at one point says the
-column-zero density "could become a small new EDGE entry (call it
-E2.7+ or N1-style negative shape)." Currently this is folded into
-E2.7's existing entry as an annotation. That is the right call at
-present scope (one observation, three exact formulas). If a future
-agent attempts to *prove* `rank(M_f) ≤ (1 − ρ_f)·2^{N/2}` formally
-across an entire function family, *that* would be promotion-worthy.
-For now: stay folded.
-
-### S72 — Lean 4 formalisation of E2.1 (L1 skeleton)
-
-**What was built.** A lake project at
-`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/` running
-Lean 4.30.0-rc2 + mathlib v4.30.0-rc2. `MPSBondDim/Basic.lean` has
-8 declarations (`chiP`, `unfolding` defs; theorems `mps_bond_dim`,
-`upper_bound`, `lower_bound`, `rank_le_min_dim`, `row_support_coprime`,
-`live_columns_count`). 4 `sorry`s remain, 0 `axiom` introductions. Two
-lemmas fully proved.
-
-**Build verification.** I ran `lake build` from the project directory.
-Output: `Build completed successfully (8315 jobs)` with exactly four
-warnings of the form `declaration uses sorry` at lines 51, 152, 165,
-177 — matching the four open `sorry`s claimed. `rank_le_min_dim`
-(line 191) and `row_support_coprime` (line 91) emit no `sorry`
-warning, confirming they type-check end-to-end. **The session's
-claims hold.**
-
-**a) Has this been tried before?** No. This is the project's first
-Lean 4 formalisation.
-
-**b) Failure mode.** None. Per CLAUDE.md "The Novelty Bar":
-
-> A Lean 4 proof of an existing edge or novel result, with the proof
-> type-checking under Lean.
-
-Partial Lean proofs that type-check are explicitly listed as
-success-grade output. Two lemmas now machine-checked.
-
-**c) Correctness.** The Lean kernel is the falsifier. Build succeeds.
-
-**d) Novelty defensibility.** YES, by CLAUDE.md's explicit allowance.
-A new artifact class for the project. This is the strongest of the
-three sessions critiqued.
-
-**e) Edge citations.** E2.1 (target of formalisation). The proof uses
-mathlib lemmas (`Matrix.rank_le_height`, `Nat.coprime_or_dvd_of_prime`,
-`Nat.gcd_add_mul_right_left`, `Nat.totient`). Citations accurate.
-
-**f) Filing status.** No CLOSED_PATHS row (correct — this opens a
-track, doesn't close one). Arc 2 marked IN PROGRESS in
-`RESEARCH_AGENDA.md`. NOVELTY_CHALLENGES.md L1 marked IN PROGRESS with
-next-action. Notes file `mps_bond_dim_notes.md` enumerates each
-remaining `sorry` with tractability estimate. All correct.
-
-**One small observation.** The session's "live_columns_count" sorry
-includes a recommended proof strategy ("CRT periodicity in W-blocks,
-each block contains exactly φ(W) live values"). Mathlib has
-`Nat.totient_eq_card_lt_and_coprime` plus `Finset.filter` machinery.
-This is the most tractable of the four open `sorry`s and is the
-correct next-action.
+* **A-grade scarcity:** 0 A-grade sessions in the last 10. Per CLAUDE.md
+  ("≥ 1 A-grade per 10-session window" target; "0 A-grade in 20-session
+  window" means frontier exhausted), the project is approaching the
+  warning threshold. See §6.
+* **Tautological flavour of S77's empirical "identity":** the "five
+  ansätze identical bond dim" finding is structurally forced by
+  matricisation-rank = bond-dim, which is what E2.1 already says. S77 is
+  legitimately B as a unification, but is on the boundary of
+  re-derivation rather than refinement. See §5.
 
 ---
 
-## Cross-cutting observations
+## 1. S74 — Free cumulants of the χ_P MPS unfolding operator (C2)
 
-**1. Three sessions, three different success modes.** S70 / S71 each
-produced a *quantitative refinement* of an existing edge, filed
-honestly without `novel/` inflation. S72 produced a *new artifact
-class* (Lean), filed honestly as a track-opener. All three
-sessions correctly self-evaluated as not-`novel/`-grade-when-not-
-applicable. The "honest failure reporting" discipline of CLAUDE.md is
-being respected.
+**Artefact:**
+`experiments/constructions/free_cumulants_chi_p/` (`.py`,
+`_results.md`, `_results.json`, `definition.md`, `run_full.log`).
+Annotated `EDGES.md` E2.1 (lines 351-363); `CLOSED_PATHS.md` row 749;
+NOVELTY_CHALLENGES C2 marked BUILT; RESEARCH_AGENDA Arc 4 milestone.
 
-**2. The "duplicate-plus" risk for compositions C1 and C5.** S70's PR1
-result (per-component closed form for A and C_3) IS a one-line corollary
-of E1.5's mechanism; it crosses the threshold between "trivial extension"
-and "non-trivial composition" only because of the joint H_3 result and
-the q-stable strengthening. Future composition sessions should be more
-suspicious of "this just re-derives the parent edge in a paired
-wrapper." Suggestion for NOVELTY_CHALLENGES.md §1: each composition
-challenge should pre-state which observation in the result will clear
-the "trivial extension of parent edge" bar.
+### 1a. Has this exact approach been tried before?
 
-**3. The Lean track is the cleanest novelty-production lever right now.**
-Construction sessions C1 (S70), C5 (S71) each produced ~1 unit of new
-content per session, both filed as I-mode closures. Lean S72 produced
-the project's first machine-verified theorem proofs. Per-session
-novelty-yield ranking: S72 > S71 ≈ S70. The diminishing-returns problem
-of CLAUDE.md ("most 'new' angles map to existing CLOSED_PATHS lines
-within 30 minutes") DOES NOT apply to Lean — every type-checked lemma
-is a permanent project asset.
+The S53 `free_probability_delta.py` work on the **scalar** δ(x)/√x
+fluctuation is the only prior free-probability touch in the project,
+and it tested a *different* object (1D scalar vs. operator spectrum).
+S74's evaluator is the first **operator-level** free-cumulant probe.
 
-**4. No artefact requires demotion or relocation.** All three sessions
-filed under correct paths. No `novel/` entries created falsely. EDGES.md
-annotations are accurate. CLOSED_PATHS rows 746 / 747 contain accurate
-mode + reasoning.
+CLOSED_PATHS line 615 (CF of p(n)/n), line 734 (CF of prime constant
+α), line 666/703/711 (PSLQ on δ subsequences) and friends are all 1D
+spectral / identity probes. None target M^(j)'s singular value
+distribution.
+
+The MP / Wishart / Marchenko-Pastur framework is referenced obliquely
+in S74's notes (Mingo & Speicher 2017 Ch. 4) but has not been
+explicitly applied to χ_P before.
+
+**Verdict:** not duplicate. Genuinely new probe of an existing object.
+
+### 1b. Failure mode
+
+Self-classified as **mode E** (equivalence): bulk equals MP(c=φ(W)/W)
+which is itself a direct reflection of E2.1's active-block aspect ratio
+`(W^j − 1) × (φ(W) W^{d-j-1})`. The spike-count `O(N^{0.42})`
+recovers a polynomial-in-N spectral compression barrier already
+implied by E2.1. So the algorithmic conclusion ("no polylog spectral
+compression of M^(j)") was already a corollary of E2.1, but the
+free-probabilistic angle is a new *expression* of the barrier.
+
+**Verdict:** mode E classification is correct.
+
+### 1c. Numerical claims
+
+Spot-check: at W=2, d=20, the script reports active-Bernoulli drop_2
+cumulants `(1.000, 0.498, 0.246, 0.118)` vs MP(0.5) prediction
+`(1, 0.5, 0.25, 0.125)`. Within 1.5–6% relative as stated. The κ_r
+`= c^{r−1}` identity for MP under the standardized convention is
+correct (see Mingo & Speicher Ch. 4, or Bai-Silverstein Ch. 11).
+
+The asymptotic ratio bond_dim/√N → φ(W)/W at d=12: 33/64 ≈ 0.515 → 0.5
+(W=2), 487/729 ≈ 0.668 → 2/3 (W=3), 513/1024 ≈ 0.501 → 0.5 (W=4):
+matches Mertens product φ(W)/W exactly. (Note: W=4 and W=2 give the
+same ratio because they share prime divisors {2}.)
+
+**Verdict:** numerics are consistent and correctly interpreted.
+
+### 1d. Novelty defensible?
+
+The "MP-bulk free-Poisson rate equals Mertens product" identification
+is one step removed from E2.1 — a number theorist who reads E2.1 +
+Mingo-Speicher Ch. 4 over an afternoon could derive it. So it is a
+*derivation* dressed up in cross-domain language, not a *discovery*
+that survives the CLAUDE.md A-grade test ("could not derive in an
+afternoon").
+
+The spike-count regularity `k* ∝ R^{0.85}` (W=2 sweep d=14..22) is the
+more interesting ingredient — an empirical exponent that is not
+trivially predictable from E2.1 alone. But it remains polynomial in N
+and parallel to Lagarias-Odlyzko, which is correctly admitted in the
+self-evaluation.
+
+**Verdict:** B-grade is the correct call. The cross-domain ingredient
+(free probability) is real and the identification of the Mertens
+product as a free-Poisson rate is non-trivial, but the *algorithmic*
+content is contained in E2.1.
+
+### 1e. Cited edges
+
+**E2.1** is cited and annotated correctly (EDGES.md line 351-363).
+S53 wildcard cited as the prior 1D free-probability test (correct
+attribution). Cross-domain reference Mingo & Speicher 2017 cited.
+
+### 1g. EDGES.md annotation correctness
+
+EDGES.md E2.1 annotation reads: "MP-bulk rate equals `φ(W)/W` (the
+Mertens product). After projecting out the spike band (`k* ∝ R^{0.85}`
+on W=2 d=14..22), the bulk free cumulants match the MP standardized
+identity `κ_r = c^{r−1}` within 5–10% across W ∈ {2, 3, 5, 6, 30}."
+This faithfully reflects the script's output — no inflation.
+
+**Verdict:** B-grade confirmed. No demotion.
 
 ---
 
-## Single highest-value next-action
+## 2. S75 — Lean L1: `live_columns_count` closed
 
-**Prove `live_columns_count` in `MPSBondDim/Basic.lean`.**
+**Artefact:** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+lines 143–262 (~110 lines of Lean for `live_columns_count`).
 
-The CRT count `#{k ∈ [0, W^(d-j)) : gcd(k+1, W) = 1} = φ(W)·W^(d-j-1)`.
-Reasons this is the highest-value action:
+### 2a. Has this exact approach been tried before?
 
-1. **It is the most tractable remaining `sorry`.** Pure combinatorics;
-   mathlib has `Nat.totient` lemmas, `Nat.totient_eq_card_lt_and_coprime`,
-   and `Finset.filter` + `Finset.card_eq_sum_ones` machinery. Proof
-   sketch: periodicity in W-blocks, each block contributes exactly
-   φ(W) admissible values, induction on `d−j−1`.
+S72 opened the file with the four sorry's; S75 is the first session to
+close `live_columns_count` (the totient block-count lemma). The
+session synthesis honestly notes that a *prior* attempt at this proof
+existed but did not type-check (4 errors); S75 rewrote from scratch
+using `Finset.card_bij` directly rather than `Nat.count` infrastructure.
 
-2. **It unblocks `upper_bound`.** Once `live_columns_count` is closed,
-   `upper_bound` is the next target — it combines `row_support_coprime`
-   (already proved) + `live_columns_count` via a row-support-subspace
-   argument (`Submodule.finrank_le_finrank_of_le`). With `upper_bound`,
-   the project has its first non-trivial proven theorem in Lean.
+**Verdict:** not duplicate.
 
-3. **It maintains the genuinely-novel-artifact-class momentum from S72.**
-   Construction sessions S70 + S71 are at I-mode (no polylog). Lean is
-   the only track currently producing kernel-checkable output. Marginal
-   information per session is highest here.
+### 2b. Failure mode
 
-4. **It is session-tractable** (1-2 hours of dedicated mathlib lemma
-   chasing).
+Not applicable — the lemma type-checks. `lake build` from the project
+root succeeds with a `sorry` warning ONLY on `lower_bound` (line 362)
+post-S76 (verified below in §3); pre-S76, the warnings were on
+`mps_bond_dim`, `upper_bound`, `lower_bound` (3 sorries, S75's claim
+matches).
 
-This action is already registered as the next-action in
-`RESEARCH_AGENDA.md` Arc 2 and `NOVELTY_CHALLENGES.md` §3 L1. No file
-edit needed — re-affirming.
+### 2c. Numerical / proof correctness
 
-**If the next agent prefers non-Lean work**, the second-best next-action
-is to attempt **C2** (free cumulants of χ_P × MPS bond-dim — the next
-unbuilt composition). C2 is more substantive than C5 was, since free
-cumulants are tightly constrained algebraic invariants and could yield
-a genuinely-`novel/`-grade closed form rather than a refinement.
+I built the project just now (post-S76). Build: `Build completed
+successfully (8315 jobs)` with one `sorry` warning on line 362
+(`lower_bound`). One `unused variable hj_lo` linter warning on
+`upper_bound` line 271 (cosmetic, not a correctness issue).
+
+The `live_columns_count` proof is structured in three stages
+(Fin → range bijection, multi-block induction on M, instantiation at
+`M := W^(d-j-1)`) as documented. The use of `conv_lhs` for the single-
+occurrence rewrite is a valid Lean 4 tactic, and the `change` tactic
+for forcing beta-reduction in `Finset.card_bij'` membership goals is
+the right move.
+
+**Verdict:** proof is correct and machine-verified.
+
+### 2d. Novelty defensible?
+
+CLAUDE.md grants "Lean 4 proof of a non-trivial theorem (≥ 50 lines of
+Lean content, no `sorry`, no new `axiom`)" as an A-grade qualifier.
+`live_columns_count` is ≥110 Lean lines, no sorry, no axiom — taken in
+isolation it could meet the A-grade bar. **However**, S75's self-grade
+notes that the lemma is a sub-lemma of a result still gated by sorries
+(`upper_bound` and `lower_bound` were both open at the time), and
+honestly self-graded B because the artefact wasn't yet a *complete*
+proven theorem.
+
+I think this honest deflation to B is the correct call, but it is on
+the boundary with A. The Lean-track sessions in this batch should be
+considered *cumulative*; once `lower_bound` closes, the entire E2.1
+result becomes machine-verified, and **the closing session for
+`lower_bound`** is the right moment to grade the cumulative work A.
+
+**Verdict:** B confirmed for this session in isolation. Note for the
+next agent: the Lean track is on a credible path to A in 1–2 more
+sessions.
+
+### 2e. Cited edges
+
+E2.1 cited as the formalisation target. Internal cross-references
+within the Lean file (mathlib lemmas) are accurate — I verified the
+`Nat.filter_coprime_Ico_eq_totient` and `Finset.card_bij'` invocations
+type-check by virtue of `lake build` passing.
+
+**Verdict:** B confirmed. No demotion.
+
+---
+
+## 3. S76 — Lean L1: `upper_bound` closed; main theorem reduced to one sorry
+
+**Artefact:** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+lines 264–353 for `upper_bound` (~80 lines), plus a 7-line
+restructuring that places `mps_bond_dim` (the main theorem) at the
+bottom as a 3-line term-mode proof using `Nat.le_antisymm`.
+
+### 3a. Has this exact approach been tried before?
+
+`upper_bound` was sketched informally in `novel/mps_bond_dimension.md`
+but never formally proved. The "row-0 + good-cols" decomposition
+(bad columns are scalar multiples of the row-0 unit vector; good
+columns are at most `|GoodCols|` more) is a clean explicit form of
+that informal sketch.
+
+**Verdict:** not duplicate.
+
+### 3b. Failure mode
+
+Not applicable — the lemma type-checks. `lake build` confirmed
+end-to-end (just verified by me): one sorry warning, on `lower_bound`
+line 362; no axiom warnings.
+
+### 3c. Proof correctness
+
+I read the proof start-to-finish (lines 264–353). The argument:
+
+1. Define `e0 := Pi.single i₀ 1 : Fin(W^j) → ℚ`.
+2. Define `GoodCols := Finset.univ.filter (fun k => Nat.gcd (k.val+1) W = 1)`.
+3. Define `S := insert e0 (GoodCols.image col)`. Cardinality bound
+   `|S| ≤ φ(W)·W^(d-j-1) + 1` via `Finset.card_insert_le` +
+   `Finset.card_image_le` + `live_columns_count` (S75).
+4. **Bad columns** (where `gcd(k+1, W) ≠ 1`) lie in `Submodule.span ℚ {e0}`:
+   for `i ≠ i₀`, the matrix entry `unfolding W d j i k = 0` by
+   `row_support_coprime` (contrapositive); hence
+   `col k = (unfolding W d j i₀ k) • e0`.
+5. **Good columns** are in `S` directly via
+   `Finset.mem_insert_of_mem` + `Finset.mem_image`.
+6. Conclude via `Matrix.rank_eq_finrank_span_cols`,
+   `Submodule.span_le`, `Submodule.finrank_mono`,
+   `finrank_span_finset_le_card`.
+
+The proof is **clean, well-documented, and uses only standard mathlib
+linear-algebra infrastructure**. No new axioms, no `decide` on a
+non-trivial proposition. The mathlib citations are all real (verified
+by build).
+
+**Verdict:** proof is correct and machine-verified.
+
+### 3d. Novelty defensible?
+
+Per CLAUDE.md: "A Lean translation of an already-informally-proven
+argument, with the translation type-checking but introducing no new
+mathematical content" → C-grade. But S76 also **subsumes the prior 3
+sorries to 1**, which is structural progress on a track. So it lands
+on the B/C boundary, with the structural payload (column-span
+argument, row-0 + good-cols decomposition, `mps_bond_dim` reduced to
+term-mode) being the substantive refinement that lifts it from C.
+
+**Verdict:** B confirmed (boundary). The cumulative Lean track is on
+track for an A-grade closing session if `lower_bound` lands cleanly.
+
+### 3e. Cited edges
+
+E2.1 (formalised); internal: `rank_le_min_dim`, `row_support_coprime`
+(S72), `live_columns_count` (S75). All composed correctly into the
+upper-bound proof.
+
+**Verdict:** B confirmed. No demotion.
+
+---
+
+## 4. S71-redux — Odlyzko high-height BK probe (§C1)
+
+**Artefact:**
+`experiments/analytic/zeta_structure/odlyzko_high_height/`
+(`.py`, `_results.md`, `.json`); `data/odlyzko/zeros4`,
+`data/odlyzko/zeros5`. EDGES.md E3.13 extended (lines 917-960);
+CLOSED_PATHS row 748; ATTACK_VECTORS.md §C1 closed (line 456).
+
+### 4a. Has this exact approach been tried before?
+
+S49 ran the same battery at N=8000, T~6500, L≈7. CLOSED_PATHS line 733
+documents S49's closure with exhaustive detail. S71-redux is the
+**first project use of Odlyzko's published zeros4/zeros5 tables**
+(zero indices 10²¹ and 10²², heights T~10²⁰ and T~10²¹). The
+random-prime null methodology is **new** to this session (S49 used
+only gap-shuffled, which we now know is null-biased at large L).
+
+**Verdict:** structurally equivalent to S49 (closed path), but with
+the proper-null methodology + L⁴ scaling barrier as new content.
+
+### 4b. Failure mode
+
+**Mode I** (information-theoretic / no signal). The signal is below
+the noise floor at every height tested. The L⁴ obstruction makes this
+*structural* rather than *experimental*: even with unbounded data, the
+asymptotic regime suppresses the BK signal faster than data
+accumulation can compensate.
+
+**Verdict:** mode I correct. The L⁴ scaling argument is the
+substantive new content that elevates this above pure duplicate of S49.
+
+### 4c. Numerical claims
+
+Spot-check from `_results.md`:
+* Empirical Pearson at L=44.6: +0.0628; random-prime null
+  μ ± σ = 0.0630 ± 0.0002; z = -0.94σ. Within stated noise.
+* `|BK_pred|_max · L²` ≈ 13.6 at both heights — checks the predicted
+  1/L² scaling.
+* `pair_rms ≈ 4/√N`: 0.087 (N=2000), 0.054 (N=8000), 0.037
+  (N=10000) vs predictions 0.089, 0.045, 0.040 — within 20%.
+* Detection threshold N ≥ 0.09 κ² L⁴ at κ=3:
+  L=44.6 → 3.5·10⁵, Odlyzko gives 10⁴ (35× short).
+  L=46.8 → 4.2·10⁵, Odlyzko gives 10⁴ (42× short).
+  L=80 → 3·10⁷ (hopeless).
+
+The L⁴ scaling barrier is a clean derivation: signal scales as 1/L²,
+noise as 1/√N, so detection requires √N ≥ const · L² ⇒ N ≥ const · L⁴.
+This is **first project quantitative version of "BK asymptotically too
+weak"**.
+
+**Verdict:** numerics correct and tightly argued.
+
+### 4d. Novelty defensible?
+
+The L⁴ scaling is a substantive refinement of E3.13 from "BK absent
+at N=8000" to "BK absent at all heights through T~10²¹, with quantitative
+N_required(L) ≥ 0.81 L⁴". This is a *quantitative shape statement* not
+just a *negative empirical result*.
+
+The proper random-prime null is a **methodology improvement** that
+exposes the gap-shuffled-null +33σ "signal" reported earlier in S49 as
+a null-bias artefact (not a real signal). This is a small but real
+contribution to the project's null-calibration toolkit.
+
+**Verdict:** B-grade ambitious failure with structural reason. Correct.
+
+### 4e. Cited edges
+
+E3.13 (extended), E1.10 (gap-shuffled null methodology — extended),
+E7.1 (zeros linearly independent — sharpened with L⁴ scaling),
+ATTACK_VECTORS §C1 (closed). Citations accurate.
+
+### 4f. CLOSED_PATHS row
+
+Row 748 cites E7.1, E1.10, E3.13, S49 — all relevant. The "DUPLICATE-
+PLUS" framing accurately captures that the signal-detection result is
+duplicate of S49 but the L⁴ obstruction + random-prime null
+methodology are new structural content.
+
+**Verdict:** B confirmed. No demotion.
+
+### 4-housekeeping
+
+Note: the agent re-used session number "71" rather than the next
+unused number (78). The file is `session71_c1_odlyzko_bk_probe.md` and
+sits alongside the earlier `session71_c5_universality_class.md`.
+This is sloppy but not critique-worthy on its own — file content is
+honest. Rec: future agents should number monotonically.
+
+---
+
+## 5. S77 — Tensor-network compression family closure (N1)
+
+**Artefact:** `experiments/constructions/tensor_compression_family_closure/`
+(`.py`, `definition.md`, `_results.md`, `_results.json`, `run_full.log`).
+EDGES.md E2.1 annotated (lines 365-378); CLOSED_PATHS row 750;
+NOVELTY_CHALLENGES N1 marked BUILT; RESEARCH_AGENDA Arc 4
+sub-milestone; ATTACK_VECTORS.md not changed.
+
+### 5a. Has this exact approach been tried before?
+
+CLOSED_PATHS lines 171, 185, 517, 518, 600 each close MPS / TT /
+single-decomposition variants. The session correctly cites these.
+S77 is the **first family-level closure** that bundles ≥4 ansätze
+under a single mechanism. So at the *meta* level it is new, even
+though each individual ansatz is closed by re-running the existing
+matricisation-rank argument.
+
+**Verdict:** not duplicate at the unification level; substantively
+duplicate at the per-ansatz level.
+
+### 5b. Failure mode
+
+**Mode I** (information-theoretic / spectral lower bound). The
+unfolding-rank lower bound from E2.1 propagates through five of seven
+ansätze (MPS, HT half-cut, PEPS half-cut, TR, CP-rank Kruskal LB);
+Tucker and MERA close by softer arguments (slice independence,
+parameter count).
+
+**Tautology concern.** "All five ansätze have identical half-cut bond
+dim" is *structurally forced* by:
+* MPS half-cut bond dim = matricisation rank of M^(d/2). (Definitional.)
+* HT half-cut at root-children = same matricisation. (Definitional.)
+* PEPS 2D-reshape rank at half-cut = same matricisation. (Definitional
+  for square reshape.)
+* TR with one bond cut = MPS up to permutation. (Definitional.)
+* CP-rank Kruskal LB = max_j rank(M^(j)), and at j=d/2 the half-cut is
+  the maximising cut. (Definitional, given E2.1's monotonicity.)
+
+So the empirical "21/22 cases identical" finding is partly a
+*consequence of how each ansatz's "bond dim" was extracted from the
+same matricisation*, not five independent measurements.
+
+That said, S77's value is in **cataloguing** that this single
+mechanism actually does close all five — a future "what if we use
+PEPS / HT / TR" proposal can be redirected to the existing closure
+without independent verification.
+
+### 5c. Numerical claims
+
+I cross-checked the 22-row table against `run_full.log` — every entry
+matches. The single deficit case (W=5, d=4: actual 20 vs predicted 21)
+is a finite-size dependency at small N=625 and does not invalidate the
+asymptotic claim.
+
+The asymptotic ratio bond_dim/√N → φ(W)/W (Mertens product) at d=12:
+* W=2: 33/64=0.515 → 1/2 (exact)
+* W=3: 487/729=0.668 → 2/3 (exact)
+* W=4: 513/1024=0.501 → 1/2 (exact, same as W=2)
+
+**Verdict:** numerics are correct.
+
+### 5d. Novelty defensible?
+
+The unification is real but its content is largely *catalogue-level*.
+A published-grade tensor-network theorist who reads E2.1 over an
+afternoon would recognise that:
+1. CP-rank ≥ max unfolding rank (Kruskal, well-known).
+2. PEPS bond at any cut ≥ matricisation rank (well-known).
+3. HT bond at any tree-cut = matricisation rank at that cut (well-known).
+4. TR with one bond cut = MPS up to a transposition (well-known).
+5. MERA bond + depth bound (Vidal 2008, well-known parameter count).
+
+So the *individual* reductions are textbook tensor-network theory.
+What S77 produces is a family-level **packaging**, not a new
+mathematical content.
+
+This puts S77 just barely above CLAUDE.md's C-grade ("re-deriving E2.1
+in a different basis is verification, not novelty"). The unification
+under a single mechanism is the substantive refinement that lifts it
+to B; absent the unification, it would be C.
+
+**Verdict:** B-grade is the correct call but on the C/B boundary.
+
+### 5e. Cited edges
+
+E2.1 (annotated S77), E1.9 (cited but not separately verified — fine,
+the mechanism is the same), E6.3 (cited but not separately verified).
+ATTACK_VECTORS or NOVELTY_CHALLENGES N1 (marked BUILT). Citations
+accurate.
+
+### 5f. CLOSED_PATHS row
+
+Row 750 cites prior single-decomposition rows (171, 185, 517, 518,
+600), correctly framing the new row as a *family-level subsumption*.
+The cited line numbers are accurate.
+
+**Verdict:** B confirmed (weakly). No demotion.
+
+---
+
+## 6. A-grade scarcity check (CLAUDE.md "10-session window")
+
+Per CLAUDE.md: "Target: ≥ 1 A-grade session per 10-session window.
+Warning sign: 0 A-grade sessions in a 20-session window."
+
+**Last 10 production sessions** (excluding S73 critique):
+S68, S69, S70, S71-original, S72, S74, S75, S76, S71-redux, S77.
+
+| Session | Grade (per S73 critique or self-grade) |
+|---------|----------------------------------------|
+| S68 (Bessel basis PSLQ) | C/B (CLOSED_PATHS row 739) |
+| S69 (FOCUS-4 π mod 2k saturation) | C/B (per session content) |
+| S70 (g_q paired bisection) | B (S73 verdict) |
+| S71-original (C5 universality) | B (S73 verdict) |
+| S72 (Lean L1 skeleton) | B (S73 verdict) |
+| S74 (free cumulants C2) | B (this critique) |
+| S75 (Lean live_columns_count) | B (this critique) |
+| S76 (Lean upper_bound) | B (this critique) |
+| S71-redux (Odlyzko §C1) | B (this critique) |
+| S77 (tensor compression family N1) | B (this critique) |
+
+**0 A-grade sessions in last 10.** This is the first half of CLAUDE.md's
+warning threshold (the full warning is "0 in 20-session window"). The
+preceding 10 sessions (S58-S67) would need to be checked to see if the
+project is at the full warning state.
+
+**Recommendation per CLAUDE.md:** "If 0 A-grade in last 10 sessions:
+the framework is producing maintenance, not progress. Identify the
+most ambitious untouched ATTACK_VECTORS.md target as the recommended
+next pick."
+
+**Most ambitious untouched ATTACK_VECTORS.md targets:**
+
+* **§A1** (TC⁰ primality witness via SAT search) — has not been
+  attempted. Concrete first step: enumerate TC⁰ circuits ≤ 2000 gates
+  depth ≤ 5 matching PRIMES truth table for N=8. **High-risk**, 2-4
+  session budget.
+* **§B1** (polynomial method / slice-rank on χ_P) — has not been
+  attempted. Concrete first step: encode χ_P as a polynomial over a
+  small finite field, apply slice rank lower bound. Croot-Lev-Pach
+  technique would be the cross-domain ingredient.
+* **§B2** (automorphic L-function basis identity search) — has not
+  been attempted. Concrete first step: PSLQ with a basis of `L(s,χ)`
+  values for small Dirichlet characters, looking for an identity for
+  π(x) − R(x).
+* **§D2** (TDA on prime sequence) — has not been attempted. Concrete
+  first step: persistent homology of the prime gap sequence as a
+  point cloud in (n, p_n - p_{n-1}) space.
+* **§D4** (quantum walks on prime graphs) — has not been attempted.
+  Szegedy walk on (Z/nZ)*'s Cayley graph; spectral gap as a primality
+  witness.
+
+The **strongest candidates** for an A-grade swing in 1–2 sessions:
+
+1. **§B1 polynomial-method / slice-rank** — cross-domain technique
+   (Croot-Lev-Pach polynomial method), single-session viable for a
+   tight first-pass lower bound on a finite-field encoding of χ_P.
+   The slice-rank method has produced sharp lower bounds in additive
+   combinatorics (capset bound) — its application to the
+   prime-indicator tensor is unexplored in the project.
+2. **§A1 TC⁰ SAT search** — concrete and falsifiable. Either a small
+   circuit exists or the search is intractable.
+
+**Recommended next-action (single highest-value):** **§B1 (polynomial
+method on χ_P).** It carries a real cross-domain ingredient
+(slice-rank / polynomial method) the project has explicitly not used,
+and the first session can produce a clean falsifiable result (either
+a tighter lower bound than E2.1 or a structural reason the polynomial
+method doesn't apply, which is itself a B-grade negative-shape edge).
+
+This recommendation will be written into ATTACK_VECTORS.md and
+NOVELTY_CHALLENGES.md as the highlighted next-pick in §7.
+
+---
+
+## 7. Single highest-value next-action
+
+**Pick:** Attempt **§B1 (polynomial method / slice-rank on χ_P)** from
+ATTACK_VECTORS.md.
+
+**Why:** A-grade target with concrete first-session deliverable; the
+polynomial method has not been tried on χ_P; the cross-domain
+ingredient (Croot-Lev-Pach / Tao slice rank) is genuinely outside the
+project's current toolkit; the failure profile is well-defined
+(slice-rank turns out to coincide with E2.1's unfolding rank up to a
+constant, or the field-encoding loses the arithmetic structure).
+
+**First session (concrete):**
+1. Encode χ_P as a polynomial over GF(p) for small p (e.g., p=2 or
+   p=3) on the base-W reshape.
+2. Compute the slice rank of the corresponding tensor.
+3. Compare to E2.1's unfolding rank: is slice rank tighter, looser, or
+   equal?
+4. If slice rank > unfolding rank: that is a new lower bound (A-grade).
+5. If slice rank = unfolding rank: that is a structural identification
+   (B-grade refinement).
+6. If slice rank < unfolding rank: that is a structural reason
+   polynomial method doesn't apply directly (B-grade negative-shape).
+
+This will be flagged in NOVELTY_CHALLENGES.md / ATTACK_VECTORS.md as
+the recommended next-pick.
+
+**Backup:** continue Lean track on `lower_bound` (route B —
+Vandermonde-style finite-field exhibit, avoids analytic NT, lighter-
+weight path to closing E2.1 entirely; closing it lifts the cumulative
+Lean track to A-grade per CLAUDE.md's "Lean 4 proof of a non-trivial
+theorem" rule).
+
+---
+
+## 8. Cleanup status
+
+* `find experiments/ -name "*.py"` — every recent script has a sibling
+  `_results.md` (verified for `tensor_compression_family_closure/`,
+  `free_cumulants_chi_p/`, `odlyzko_high_height/`).
+* No `__pycache__` left by this critique session (no Python run).
+* No "pending" labels remain in ephemeral docs for completed work.
+* RESEARCH_AGENDA.md Arc 4 already updated by S77.
+* No edits to `run.sh` or `FOCUS_QUEUE.md`.
+
+---
+
+## 9. Self-evaluation (per CLAUDE.md)
+
+**Q1. What did I produce that was not in the project before this session?**
+* A per-artefact verdict on the five recent sessions (S74/S75/S76/
+  S71-redux/S77), with a `lake build` re-verification confirming the
+  L1 Lean track is at one remaining `sorry` post-S76.
+* An A-grade scarcity check across the last 10 sessions: 0 A-grade,
+  meeting the first half of CLAUDE.md's warning threshold.
+* A concrete recommended next-action: §B1 polynomial method on χ_P,
+  with a falsification-shaped first-session protocol.
+
+**Q2. What edges did my work compose or cite?**
+Cited E2.1, E1.9, E6.3, E3.13, E1.10, E7.1 in the per-session
+verdicts. No new edges composed (this is critique, not construction).
+
+**Q3. If only duplicate closures, why?**
+Critique sessions don't produce closures; they audit. The audit found
+five honestly-graded B sessions, confirming current discipline is
+respected, but also surfaced the A-grade scarcity warning at the
+10-session window.
+
+**Q4. Next-action for the next agent.**
+**Attempt §B1 (polynomial method on χ_P)** — see §7 above. Backup:
+continue Lean track on `lower_bound` (route B: Vandermonde-style
+exhibit, which avoids analytic NT and is the lighter-weight path to
+closing E2.1 entirely).

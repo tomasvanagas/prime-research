@@ -453,6 +453,72 @@ If a frontier attack produces a result that survives the critique:
 
 ## Closed attacks
 
+### §D.D4 — Szegedy quantum walks on prime/divisor/coprime/Cayley graphs (CLOSED 2026-04-26, S80, mode E)
+
+**Outcome:** quantum extension of E7.12 + clean closed-form on coprime
+graph + structural negative result.
+
+Tested Szegedy walks on three number-theoretic graph families using the
+Szegedy 2004 discriminant matrix theorem (`D(x,y) = sqrt(P(x,y) P(y,x))`,
+mixing time `O(1/sqrt(δ))`).
+
+(A) Cayley `Cay((Z/NZ)*, {2,3,5,inv})` for primes N ∈ {31, …, 1009}:
+classical mixing `t_C(N) ~ N^{0.789}`, Szegedy mixing
+`t_Q(N) ~ N^{0.414}` — quadratic speedup confirmed but neither is
+polylog. **EXTENDS S79 (E7.12) to the quantum-walk regime**.
+
+(B) Coprime `C_x` for x ∈ {30, …, 1000}: spectral gap is `Ω(1)`
+(asymptotically `δ → 0.4166...`); stationary prime mass / uniform
+prime mass `→ ζ(2) = π²/6 ≈ 1.6449` (Mertens; verified at x=1000
+with deviation -0.022). Bias is constant — no polylog π(x) extractor.
+
+(C) Divisor `D_x`: gap `Ω(1)`. High-prime-mass eigenvectors localise
+on prime-centered divisor clusters (one specific prime `p` + its
+multiples per eigenvector, e.g., k=14 at x=250 concentrates 100% mass
+on {43, 47} ∪ multiples ∪ {1}) — same degree-class probing mechanism
+as E7.12.
+
+**Why §D.D4 fails by structure:** for a Szegedy walk to give polylog
+primality extraction, you need (i) `δ = Ω(1/polylog(x))` AND (ii) a
+single eigenvector with primality-localised mass. The two conditions
+are **incompatible** on the tested families: Cayley graphs satisfy a
+weak version of (ii) but `δ` shrinks polynomially; coprime/divisor
+graphs satisfy (i) but only the trivial Perron eigenvector carries
+global primality information (via degree-weighted Mertens factor).
+
+**Suggested EDGE upgrade**: extend E7.12 (currently classical-Cayley)
+to a stronger "Cayley-spectral barrier carries to Szegedy quantisation"
+form, OR add E7.13 covering Szegedy walks on arithmetic graphs.
+
+See `experiments/quantum/szegedy_walk_prime_graphs/` and
+`archive/sessions/session80_d4_szegedy_walk.md`.
+
+### §A.A3 — Spectral primality test via (Z/nZ)* Cayley graph (CLOSED 2026-04-26, S79, mode E)
+
+**Outcome:** structural negative result + new lower-bound identity.
+
+Built Cay((Z/nZ)*, {2,3,5,2⁻¹,3⁻¹,5⁻¹}) for 533 values of n ∈ [7,2000]
+coprime to 30 (300 primes, 13 prime powers, 214 semiprimes, 6 triple-
+prime composites). Computed full adjacency spectrum and 24 candidate
+features. **No feature is disjoint primes-vs-composites.**
+Mann-Whitney AUC for the hard sub-case (primes vs prime powers, both
+ω(n)=1): 0.509 with {2,3,5}, 0.566 with {2,3,7}, 0.673 with
+{2,3,5,7}∪inv — essentially noise.
+
+Why §A.A3 fails by structure: from CRT character theory, n_int_eigs ≥
+**2^ω(n)** where ω(n) is the number of distinct prime factors. (Z/p^kZ)*
+is cyclic for odd p (Gauss), so prime n and prime power n=p^k both have
+ω=1 and produce structurally identical unit groups. Spectrum cannot
+distinguish them. Adding a perfect-power test inherits AKS-class
+growing-dim MPOW depth (E5.3, E7.10).
+
+Adds new EDGES.md entry **E7.12** (Cayley graph spectrum probes ω(n),
+not primality) — search-space constraint on the entire fixed-generator
+abelian-Cayley-graph spectral family.
+
+See `experiments/circuit_complexity/cayley_spectral_primality/` and
+`archive/sessions/session79_a3_cayley_spectral_primality.md`.
+
 ### §C1 — Odlyzko zeros at height 10²² (CLOSED 2026-04-26, S71, mode I)
 
 **Outcome:** structural negative result + new quantitative obstruction.

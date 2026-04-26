@@ -35,9 +35,27 @@ the middle of an arc, pick from there instead. The frontier sections:
 - **§E** Meta-Analysis of CLOSED_PATHS as a Data Source (2 attacks)
 - **§F** Synthesis Targets That Would Be Publishable (3 multi-session arcs)
 
-The single highest-leverage attempt right now (per ATTACK_VECTORS analysis):
-**§C1** — re-run BK arithmetic correction probe at Odlyzko zeros at
-height ~10²² (1 session, A-grade if a deviation is detected).
+The single highest-leverage attempt right now (per post-S77 critique
+A-grade scarcity check, **0 A-grade in last 10 sessions**):
+**§B1** — polynomial method / slice-rank on χ_P. Encode χ_P as a
+polynomial over GF(p) for small p (p=2 or p=3) on the base-W reshape,
+compute slice rank, compare to E2.1's unfolding rank. Outcome shapes:
+(a) slice rank > unfolding rank → new lower bound (A-grade);
+(b) slice rank = unfolding rank → structural identification (B-grade);
+(c) slice rank < unfolding rank → polynomial method doesn't apply
+directly, structural negative-shape edge (B-grade). Cross-domain
+ingredient: Croot–Lev–Pach polynomial method / Tao slice rank. The
+project has not used this tool. Single-session viable.
+
+**Backup highest-leverage:** L1 Lean — close `lower_bound` in
+`MPSBondDim/Basic.lean` (route B: Vandermonde-style finite-field
+exhibit). Once closed, the cumulative L1 Lean track meets CLAUDE.md's
+"Lean 4 proof of a non-trivial theorem (≥ 50 lines, no sorry, no
+axiom)" A-grade rule for E2.1 as a whole.
+
+§C1 (BK Odlyzko zeros) is now **closed** by S71-redux with a quantitative
+L⁴ obstruction (N_required ≥ 0.81 L⁴ for κ=3 detection); no further
+attempts there.
 
 ---
 
@@ -238,7 +256,7 @@ AKS family, E7.11 closes the convergence-acceleration family, E5.8 closes
 the Brandt family. Each is a single argument that closes dozens of
 individual approaches. Producing more of these is high-leverage.
 
-### N1 — Tensor-network compression family
+### N1 — Tensor-network compression family — **BUILT (S77)**
 **Hypothesis:** No tensor network of polylog bond dimension can represent
 χ_P (for any reshape, any tensor-train ordering, any matrix product
 structure). E2.1 is the W=primorial special case; E1.9 is the φ(x,a) 2D case;
@@ -249,6 +267,25 @@ exponentially-many factors."
 statement is not.
 **First step:** State the conjecture precisely. Test it on 3-4 new tensor
 factorisations (CP, Tucker, hierarchical Tucker, MERA).
+**Outcome (S77):** Family-level closure verified empirically across **22
+(W, d) pairs** spanning W ∈ {2,3,4,5,6,7}, d ∈ {4,6,8,10,12}. Five
+classical ansätze (MPS, Hierarchical Tucker root-children, PEPS 2D
+boundary, Tensor Ring, CP-rank Kruskal LB) are reduced to E2.1's
+unfolding-rank lower bound — half-cut bond dim is **identical** across
+all five and equals `min(W^j, φ(W)·W^(d-j-1)+1)` (exact saturation in
+21/22 cases; one finite-size deficit of 1 at W=5, d=4). Tucker and MERA
+close by orthogonal mechanisms (mode-slice independence; parameter
+count). Asymptotic ratio `bond_dim / sqrt(N) → φ(W)/W` (the **Mertens
+product**) — verified at d=12 for W∈{2,3,4} and at d=8 for W=6: 0.515
+vs 0.500; 0.668 vs 0.667; 0.501 vs 0.500; 0.334 vs 0.333. **Net new
+content**: (i) E2.1 lifted from single-ansatz to family-level scope —
+unfolding-rank bound is the *universal* mechanism; (ii) Mertens product
+identified as the universal asymptotic compression ratio across the
+family; (iii) the closure subsumes prior single-decomposition
+CLOSED_PATHS rows (lines 171, 185, 517, 518, 600). No polylog opening.
+**Status:** BUILT. CLOSED_PATHS row added (S77). E2.1 annotated in
+EDGES.md.
+**Save under:** `experiments/constructions/tensor_compression_family_closure/`
 
 ### N2 — Linear-functional family on zero-sums
 **Hypothesis:** Any linear functional `Σ w(γ) · h(γ, x)` with `Σ |w(γ)| ≥ c·N(T)`
