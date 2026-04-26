@@ -478,10 +478,16 @@ The problem of computing p(n) in polylogarithmic time remains open in the strong
 
 **April 2026 session 29 search update (5 topics):**
 
-1. **Kilictas-Alpay TG Kernel (June 2025):** Claims exact pi(x) via explicit formula with
-   only O(log x) zeta zeros and error < 0.5. If verified, this is the most significant
-   result for the project -- would imply near-polylog prime counting. NEEDS VERIFICATION.
-   See Section 2.5d.
+1. **Kilictas-Alpay TG Kernel (June 2025):** Claimed exact pi(x) via explicit formula
+   with only O(log x) zeta zeros and error < 0.5. **VERIFIED FALSE (S65).** Code-backed
+   audit (`experiments/wildcard/tg_kernel_audit.py`) empirically falsifies the construction
+   at small x: ∫Φ_TG = 0.886 not 0 as paper requires; S(x)=Σ Λ(n)Φ_TG(n/x) measured at
+   x∈{100..30000} is ≈0.886·x, not αe^{-α²}≈3.7e-4 as paper derives; Σ F_TG(ρ) is
+   x-independent so cannot encode π(x). The IBP step on p.7 substitutes Ψ(t)≈t and
+   drops the deviation (Ψ-t) that encodes prime fluctuations. Lemma 2's zero-density
+   bound is also self-contradictory at σ=1/2 (gives a decreasing function of T).
+   Refines the S12/S30 debunking with empirical evidence and pinpoints the math errors.
+   Do NOT pursue follow-ups under this framework. See §2.5d and CLOSED_PATHS S65 entry.
 
 2. **Connes-Consani-Moscovici Zeta Spectral Triples (Nov 2025):** Using primes <= 13,
    spectra match first 50 zeta zeros to 10^{-55} accuracy. Beautiful but no algorithmic

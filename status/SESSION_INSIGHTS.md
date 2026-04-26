@@ -2428,3 +2428,263 @@ as a viable direction.
 - `status/CLOSED_PATHS.md` (4 new entries after line 714)
 - `experiments/proposals/session63fresh_*.{py,_results.md}` (proposer's artifacts)
 
+
+## Session 64 — FOCUS-1 sub-attack 3 construction: Healy-Viola Frobenius transplant
+**Date:** 2026-04-26
+
+### Context
+S47 closed the cyclotomic-CRT splitting of AKS-MPOW (CLOSED_PATHS line 690).
+S61 closed FOCUS-1 sub-attack 2 (non-cyclotomic ring AKS, line 714). S64
+addresses sub-attack 3: does reducing the AKS congruence
+`(a+x)^n ≡ a^n + x^n (mod n, x^r-1)` modulo a prime `q | n-1` yield a
+TC^0-amenable test by exploiting the q-power Frobenius
+`F: F_q[x]/(x^r-1) -> F_q[x]/(x^r-1), F(a+x) = a + x^q` (a ring
+homomorphism in characteristic q)?
+
+### Construction
+Implemented and verified the Frobenius decomposition
+
+  `(a + x)^n  =  prod_i (a + x^{q^i mod r})^{c_i}`   in F_q[x]/(x^r - 1)
+
+where `c_i` are base-q digits of n. Decomposition matches naive repeated
+squaring on 6/6 sanity-check cases (Q1 PASS).
+
+### Headline negative
+**Primes do NOT satisfy mod-q AKS for non-trivial a.** Across 19 primes
+in [101..2207], for every prime `q | n-1` with `q < r = aks_r(n)` and
+every `a in {1, ..., q-1}` (a coprime to q): **0/399 passes**. The
+trivial case `a ≡ 0 mod q` always passes (both sides reduce to `x^n`)
+but carries zero primality information.
+
+Why: the polynomial identity `(a+x)^n - (a^n + x^n) = sum_{k=1}^{n-1}
+binom(n,k) a^{n-k} x^k` vanishes mod n (Frobenius) but NOT mod q for
+`q != n` prime. By Lucas's theorem, `binom(n,k) mod q = prod_i
+binom(n_i, k_i)` where n_i, k_i are base-q digits — these are nonzero
+whenever k is a "base-q sub-string" of n. Empirically the residual
+polynomial fills 8-102 of r coefficients in F_q[x]/(x^r-1) — not a
+sparse correction, no partial-cancellation rescue available.
+
+### Depth analysis
+Frobenius decomposition saves only constant factor `log(q)/log(2)`
+bit-operations vs naive repeated squaring (~2x for q=2, ~3.3x for q=7).
+Both schemes reduce to O(log n) sequential r-dim polynomial
+multiplications = NC^1, NOT TC^0. The growing-dim r×r MPOW primitive
+(E5.3) is unchanged by switching the coefficient ring from Z_n to F_q.
+
+### Closure
+**FAIL — modes (E) Equivalence + (I) Information loss.**
+- (E) The mod-q computation IS growing-dim r×r MPOW over F_q, the same
+  E5.3 primitive that is the only open Chain-E frontier.
+- (I) AKS Frobenius identity is mod-n specific; reducing mod q≠n loses
+  it (no Hensel lifting), and primes themselves fail the mod-q test.
+
+CLOSED_PATHS line 719 added. With sub-attack 2 (S61 line 714) and
+sub-attack 3 (this) closed, only sub-attack 1 (Bernstein 2003
+strengthened gcd) of FOCUS-1 remains un-built.
+
+### Files
+- `experiments/circuit_complexity/aks_alternative/frobenius_transplant/frobenius_transplant.py`
+- `experiments/circuit_complexity/aks_alternative/frobenius_transplant/frobenius_transplant_results.md`
+- `archive/sessions/session64_frobenius_transplant.md`
+- `status/CLOSED_PATHS.md` (one new entry after line 718)
+
+
+## Session 65 — Fresh-perspective audit of arXiv:2506.22634 (TG kernel) + phi 2D rank
+
+### Setup
+Fresh-perspective mode: instructed not to read CLAUDE.md / CLOSED_PATHS,
+think from first principles. After ~138 wildcard scripts already exist,
+parallel-launched a 2025-2026 literature scan and tested two construction
+angles:
+1. phi(x,a) viewed as 2D matrix M[i,j] under four framings — does it
+   admit polylog-rank reconstruction sufficient for integer-precision
+   Meissel-Lehmer phi recovery?
+2. Audit of the literature-flagged candidate arXiv:2506.22634
+   (Kılıçtaş–Alpay TG-kernel "rigorous bound").
+
+### Result 1 — phi 2D low-rank (CLOSED, mode I)
+SVD of phi(x_i, a_j) under four framings (raw, Mertens-residual,
+normalised, col-difference) at K∈{18,40,60}: relative singular spectrum
+decays exponentially as exp(-0.33·k) — looks compressible.  But
+||M||_F ∝ x grows, so required rank for integer-precision (±0.5) recovery
+scales **linearly** with K (12 at K=18, ≈35 at K=60), not polylog. The
+relative compressibility is illusory — same pseudorandomness wall the
+project's 21+ measures already showed in other framings. Adds the 22nd
+structural-pseudorandomness measure.
+
+### Result 2 — TG-kernel audit (CLOSED, modes C+I)
+The literature scan (sub-agent) flagged arXiv:2506.22634 as the most
+algorithmically promising 2025 result: claims ~1200 zeros suffice for
+π(x) at x with 10^8 digits via truncated-Gaussian kernel +
+Riesz-Weil explicit formula. Project monitor had it on a "DEBUNKED
+S12/S30" line but with vague reasons. Full PDF audit + small-x
+empirical falsification (`experiments/wildcard/tg_kernel_audit.py`):
+
+- **0th moment fails by 0.886.** Paper requires ∫Φ_TG(t)dt = 0 (so
+  F_TG(1)=0 cancels the main term). But Φ_TG is strictly positive on
+  its support [0, α+Δ]; we measured ∫_0^4 Φ_TG = 0.8862. Premise
+  self-contradictory.
+
+- **LHS empirically wrong by 8 orders of magnitude.** Paper derives
+  Σ Λ(n) Φ_TG(n/x) ≈ αe^{-α²} ≈ 3.7e-4. We computed S(x) directly:
+  x=100 → 86.78, x=1000 → 884.39, x=30000 → 26584.91 — i.e.
+  S(x) ≈ 0.886·x. Trace: their IBP step on p.7 substitutes Ψ(t)≈t
+  (PNT main) and drops the (Ψ(t)−t) deviation that is precisely the
+  oscillatory zero-sum signal encoding π(x).
+
+- **Σ F_TG(ρ) is x-independent.** F_TG depends only on Φ_TG, not on x.
+  The truncated zero sum is therefore a fixed constant (≈ 2.5×10⁻²
+  for first 20 zero pairs). It cannot "round to give π(x)" — π(x)
+  varies with x, the proposed identity does not.
+
+- **Lemma 2 zero-density bound is mathematically wrong.** Paper invokes
+  N(σ,T) ≤ A T^{1−1/σ} (log T)^B; at σ=1/2 this gives A T^{−1} (log T)^B,
+  *decreasing* in T, contradicting the actual N(T) ≈ (T/2π) log(T/2π)
+  which grows.
+
+- **Appendix B is symbolic-mysticism crank content** ("EmbedS(Faruk
+  Alpay) := Φ_∞ … canonical identity fold equating author with a
+  functor"), citing a self-referential "Faruk Alpay ≡ Φ_∞" preprint.
+
+The right answer for smoothed-kernel-based π(x): smoothing in log-scale
+with width h yields T·h ~ √log(1/ε); integer-precision recovery of π(x)
+requires h ≲ log(x)/x ⇒ T ~ x. No polylog escape via this route.
+
+### Methodological contribution
+The audit shows a **fast falsification recipe** for any future "smoothed
+kernel beats explicit formula" preprint: compute the LHS Σ Λ(n) Φ(n/x)
+at small x where π(x) is known and check whether it matches the paper's
+claimed identity. < 100 lines of code; falsified this paper in minutes.
+Worth keeping in the literature-monitor playbook.
+
+### Literature monitor update
+S29's "NEEDS VERIFICATION" annotation on the TG-kernel paper
+(literature/state_of_art_2026.md line 481) replaced with "VERIFIED
+FALSE" plus the empirical evidence and pointer to the audit script.
+The paper joins CLOSED_PATHS as line ~722.
+
+### Files
+- `experiments/wildcard/phi_2d_lowrank.py` + `_results.md`
+- `experiments/wildcard/tg_kernel_audit.py` + `_results.md`
+- Updates: `status/CLOSED_PATHS.md` (2 new entries), `literature/state_of_art_2026.md`
+- This file (S65 entry).
+
+### Closure
+No new viable direction opened. Confirms that the 2025 literature has
+no genuine breakthrough toward sub-x^{2/3} π(x): Guth-Maynard's
+zero-density estimate sharpens error terms but doesn't produce a faster
+algorithm, Aggarwal 2510.16285 is a wrapper-level p_n speedup, and
+the Alpay-line "TG kernel" claim is mathematically incoherent.
+The mature-state hypothesis from S47 holds.
+
+## Session 66 (2026-04-26, FOCUS-1 sub-attack 1 construction — Bernstein 2003 smaller-r AKS)
+
+**Mode:** deep-focus, construction. Closes the only un-built FOCUS-1
+sub-attack and triggers the "computationally cornered" milestone for
+Chain E per `TODO.md`.
+
+### Headline
+
+**FOCUS-1 sub-attack 1 closed FAIL, mode (E) Equivalence.** With S61
+and S64 already closing sub-attacks 2 and 3, all three AKS-family
+constructions are now closed — every modulus-twist and gcd-strengthening
+of the AKS test reduces to the same growing-dim r×r MPOW primitive
+(E5.3) at the same r ~ log²(n). Chain E is **computationally cornered**.
+
+### What was tested
+
+The Bernstein 2003 strengthening augments standard AKS with a gcd test:
+for each `a ∈ [1, S]` compute the residual `(X+a)^n − (X^n + a) mod
+(n, X^r − 1)`; for every non-zero coefficient c, check `gcd(c, n)`.
+Test passes iff every residual is identically zero.
+
+### Q1 — empirical r already meets Bernstein's bound
+
+On the S47 22-sample n grid (n ∈ {101, 102, 561, ..., 1000003}):
+- Mean `r/log²(n) = 1.207`, mean `(r − log²n) = 25.05`
+- r prime in 21/22 cases
+- The standard AKS order-condition already produces r within an
+  additive constant of the conjectural Bernstein r = O(log² n) bound.
+
+So *"smaller r"* is empirical reality already. What Bernstein 2003
+attempts to add is a **deterministic correctness theorem** at this r.
+
+### Q2/Q3 — striking empirical result on gcd-extraction
+
+At canonical r, the test gives perfect discrimination on the sample:
+**3/3 primes pass, 0/13 composites pass**. More importantly, the
+Bernstein-style gcd of the residual coefficient with n yields a
+non-trivial factor of n in **13/13 composite failures**, including
+all 7 Carmichaels tested:
+
+| n | Carmichael | gcd witness | extracted factor |
+|---|---|---|---|
+| 561 | 3·11·17 | (1, 374, 187) | 11·17 = 187 |
+| 1729 | 7·13·19 | (1, 266, 133) | 7·19 = 133 |
+| 8911 | 7·19·67 | (1, 5092, 1273) | 19·67 = 1273 |
+
+Empirically the gcd-extraction algorithm gives factoring as a side
+effect of compositeness witnessing — a known corollary of AKS but
+worth noting; not a `novel/` entry because (a) implicit in any AKS
+proof (b) does not unblock any complexity question.
+
+### Q4 — dim/r ratio unchanged
+
+Mean `max_dim/r = 0.9899` across 22 samples — identical to S47.
+CRT splitting saves at most a factor of 1.06 on dimension, only when r
+happens to be composite (1/22 cases). The Bernstein strengthening
+operates on the gcd side, not the matrix dimension.
+
+### Q5 — small-r probe (typical-vs-worst-case observation)
+
+At r = log₂(n) + 1 (linear, way below the AKS bound), the polynomial
+test still discriminates every composite in our sample including the
+Carmichael 561. The AKS bound r ~ log²n is a *worst-case* defense
+against adversarial near-primes; typical composites are caught at
+r = O(log n). This is a complementary observation, not a closure
+escape — Bernstein's strengthening covers the worst case.
+
+### Q6 — why this is closure mode (E) Equivalence
+
+The strengthened-gcd test does:
+
+1. Length-O(log n) sequential growing-dim r×r MPOW over Z_n
+   = the open primitive E5.3, unchanged.
+2. Plus √φ(r) · log n integer-gcd checks of O(log n)-bit integers.
+   Integer gcd is in NC¹ (Hesse-Allender-Barrington 2002), conjectured
+   NOT in TC⁰ — same NC¹/TC⁰ frontier as growing-dim MPOW.
+
+The substitution replaces one frontier problem with another at the
+same frontier. Even if integer gcd were placed in TC⁰ tomorrow, the
+polynomial-multiplication step is itself growing-dim r×r MPOW. No
+escape from Chain E.
+
+### State of FOCUS-1 / Chain E
+
+| Sub-attack | Status |
+|---|---|
+| 1 — Bernstein 2003 strengthened gcd | **CLOSED** S66 (this) — (E) |
+| 2 — Non-cyclotomic ring `Z_n[x]/(x^d+a)` | CLOSED S61 line 714 — (E)+(C) |
+| 3 — Healy-Viola Frobenius transplant | CLOSED S64 line 719 — (E)+(I) |
+
+**Computationally cornered.** Within the AKS family every modulus-twist,
+ring-replacement, and gcd-strengthening reduces to the same growing-dim
+MPOW primitive at the same r. The only remaining levers on Chain E are:
+(1) Brandt MKtP framework (FOCUS-3, un-engaged), (2) a fundamentally
+new lower-bound technique, (3) a non-AKS TC⁰ primality test using only
+scalar operations (long-standing aspiration since S15).
+
+### Files
+
+- `experiments/circuit_complexity/aks_alternative/bernstein_smaller_r/bernstein_smaller_r.py` (~9 KB)
+- `experiments/circuit_complexity/aks_alternative/bernstein_smaller_r/bernstein_smaller_r_results.md`
+- Updates: `status/CLOSED_PATHS.md` (line ~722), `status/OPEN_PROBLEMS.md` (Chain E status)
+- `archive/sessions/session66_bernstein_smaller_r.md` (synthesis)
+- `TODO.md` (FOCUS-1 milestone)
+
+### Closure
+
+S66 confirms the S47/S64 mature-state hypothesis with one final
+construction-mode datapoint: the AKS family of TC⁰ approaches is
+exhausted. Future Chain-E work is exclusively non-construction
+(Brandt MKtP, new techniques, monitoring).

@@ -169,6 +169,32 @@ analysis at N = 100 000 corrects this:
 > this rules out *any* recurrence-based shortcut from n to delta(n)
 > (a recurrence of order > 7 would have non-zero PACF at higher lags).
 
+### E1.9 — phi(x,a) 2D rank: 22nd pseudorandomness measure       [EVS L]
+
+S65; `experiments/wildcard/phi_2d_lowrank.py` and `_results.md`;
+`novel/pseudorandomness_of_pi.md` measure #22.
+
+Viewing the Meissel `phi(x, a)` function as a 2D matrix `M[i, j] =
+phi(x_i, a_j)` under four framings (raw, Mertens-residual,
+normalised, column-difference), the relative SVD spectrum decays as
+`exp(-0.33 * k)` — apparent exponential low-rank — but `||M||_F` grows
+linearly in x, so
+
+```
+   rank required for integer-precision (+/- 0.5) recovery
+        scales LINEARLY in K
+        (12 at K=18, ~35 at K=60)
+```
+
+not polylog. The relative compressibility cancels exactly against the
+absolute scale, the same pattern that breaks DCT/wavelet sparsity at
+asymptotic x (E6.3 caveat, wavelet `N^{0.75}` scaling).
+
+> Why this is an edge: adds a clean *combinatorial* pseudorandomness
+> measure to a battery previously dominated by algebraic / spectral /
+> communication tests. Confirms that even when chi_P is replaced by
+> the smoother sieve auxiliary phi, the linear-rank wall persists.
+
 ### E1.8 — Spectral reconstruction of delta needs 82% of all modes [EVS M]
 
 S36; `experiments/information_theory/kt_complexity/spectral_algebraic_structure_results.md`.
@@ -623,6 +649,27 @@ knowing pi(x) is circular.
 > at which x — a problem effectively as hard as pi(x) itself, but
 > conceptually cleaner than zero-summation as a target.
 
+**S62 caveat (NEW):** the universal-ordering K_min(x) measured at single
+x values is **wildly non-monotonic** and dominated by GUE phase-luck.
+Concrete (`experiments/analytic/conditional/k_min_extended/`):
+
+| x       | K_min | K_min* (50-window stable) | sqrt(x) |
+|---------|------:|--------------------------:|--------:|
+| 10^3    |     0 |                        81 |    31.6 |
+| 10^4    |     1 |                      1250 |   100.0 |
+| 10^5    |     3 |                       572 |   316.2 |
+| 10^6    |   N/A |    N/A (still off ±0.5 at K=2000) |  1000.0 |
+| 10^7    |   563 |                      1912 |  3162.3 |
+
+10^4 needs more zeros than 10^5; 10^6 hasn't settled at K=2000 even though
+10^7 has. **A single-x K_min measurement is not a reliable estimator of
+the asymptotic curve** — the residual oscillates around 0 with x-dependent
+phase, and whether the rounding-window crossing happens "early" or "late"
+is phase-luck. The asymptotic exponent stays at 1/2 (universal ordering).
+Linear regression on log K* vs log x giving x^{0.275} from four points
+is meaningless, two of them phase-luck-dominated. Future K_min
+experiments should use the median over an x-interval, not a single x.
+
 ### E3.12 — Pascadi 2025 unconditional x^{5/8} equidistribution     [EVS M]
 
 `literature/aggarwal_2025_analysis.md`; arXiv 2025 (Pascadi).
@@ -787,6 +834,17 @@ non-trivial factor still has dimension r-1 (max_dim/r >= 0.94).
 > TC^0/NC^1 boundary. A positive resolution puts PRIMES in TC^0; a
 > negative resolution would separate TC^0 from NC^1 — both major
 > complexity-theory results.
+
+**S66 side-finding (folklore-grade):** the gcd-of-residual-coefficient
+test, applied to composite n that fail Bernstein 2003's strengthened
+AKS, **extracts a non-trivial factor of n in 13/13 sampled composite
+failures including all 7 Carmichaels in [101, 410041]**. Mechanism:
+residual coefficient at degree k is `≡ a^{n-k} · binom(n, k) mod n`,
+and `gcd(binom(n,k), n)` is non-trivial whenever k is a base-p
+sub-string of n for some prime p | n (Lucas + CRT). This is implicit
+in the AKS proof and not novel-grade, but the empirical 100% extraction
+rate is worth knowing — anyone proposing "use AKS residuals for
+factoring" should start from this S66 number, not re-measure.
 
 ### E5.5 — Karchmer-Wigderson formula lower bound: 2^{N/2-O(1)}      [EVS M]
 
@@ -1140,6 +1198,50 @@ when the smoothness parameter y << x.
 > primes" analogy at the **constant scaling level**, not just on technical
 > grounds. The recursion is Theta(x), not o(x), in calls.
 
+### E7.10 — AKS modulus-twist orthogonality theorem               [EVS shape]
+
+S61, S64, S66 (combined evidence);
+`status/CLOSED_PATHS.md` lines 714, 719, ~722;
+`archive/sessions/session{61,64,66}_*.md`.
+
+The three FOCUS-1 sub-attacks closed in 2026-04-26 produced a clean
+structural conjecture, well-evidenced if not formally proved:
+
+> **Modulus / coefficient-ring / gcd-strengthening twists of AKS are
+> orthogonal to circuit depth.** Every AKS variant tested preserves
+> the matrix-power dimension `r = polylog(n)` and therefore reduces
+> to E5.3 (growing-dim MPOW in TC⁰), independently of the surrounding
+> algebraic choices.
+
+Concrete twist-by-twist evidence:
+
+| Variant | What changed | What stayed | Source |
+|---------|--------------|-------------|--------|
+| Non-cyclotomic ring `Z_n[x]/(x^d+a)` | Modulus structure (Eisenstein vs cyclotomic-flavour) | r×r MPOW over Z_n | S61, line 714 |
+| Frobenius transplant `(Z/qZ)[x]/(x^r-1)`, `q ∣ n−1` | Coefficient ring (Z_n → F_q) | r×r MPOW over F_q | S64, line 719 |
+| Bernstein 2003 strengthened gcd | Adds gcd-of-residual certificate | r×r MPOW over Z_n + integer gcd | S66, line ~722 |
+
+In all three cases the "interesting" structural change (Eisenstein
+twist breaking Carmichael alignment, q-power Frobenius giving binomial
+decomposition, gcd extraction recovering 13/13 Carmichael factors) is
+*orthogonal* to the depth question. The bottleneck primitive is the
+matrix-power chain itself, not any algebraic surrounding.
+
+> Why this is shape-revealing: it is a **search-space constraint on the
+> entire AKS family of TC⁰ approaches.** Any future AKS-style
+> construction whose only novelty is a modulus / ring / gcd choice is
+> orthogonal to E5.3 and provably cannot resolve Chain E. **Chain E is
+> "computationally cornered"** within the AKS family per TODO.md's
+> backup objective. The remaining levers on the only open problem are
+> non-AKS in flavour: Brandt MKtP (FOCUS-3), a fundamentally new
+> lower-bound technique, or a non-AKS TC⁰ primality test.
+
+This complements E7.6 (Lucy-DAG pebbling closes the *sieve* family
+asymptotically): E7.6 + E7.10 together close two of the three known
+informationally-complete encodings (E7.7) at the algorithmic level,
+leaving only zero-summation routes — themselves blocked by E7.1
+(zeros are linearly independent) and E7.4 (inversion non-contracting).
+
 ### E7.7 — Three-pillars meta-theorem (informational closure)        [EVS shape]
 
 S15, S16; `archive/sessions/session16_synthesis.md`;
@@ -1293,4 +1395,9 @@ removed.
 Extended: 2026-04-26 deep file-by-file review — added E1.7, E1.8, E2.11,
 E2.12, E3.12, E6.7, E6.8, E6.9, E7.8, E7.9 plus the finite-size DCT
 caveat to E6.3.
+Extended: 2026-04-26 post-S61..S66 (FOCUS-1 sub-attack closures) — added
+E1.9 (phi 2D rank, 22nd pseudorandomness measure), E7.10 (AKS modulus-
+twist orthogonality theorem, the structural meta-finding from S61/S64/
+S66), K_min non-monotonicity caveat to E3.11, AKS-gcd-extraction
+folklore note under E5.3.
 This document is alive — extend it with new edges as they appear.*

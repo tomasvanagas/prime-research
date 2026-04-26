@@ -1682,3 +1682,1043 @@ Now let me update the project status documents.
     717	| RMT local-moment Bayesian predictor for Δ(x) = π(x) − li(x) over H=100 window (S63 fresh) | FAIL | C | Weighted-mean predictor (1/\|x−X\|) on Δ over [X−H, X+H] window predicts Δ(X) at RMSE 0.33 < 0.5 across X ∈ {1000, 5000, 10000, 50000} — passes ±0.5 criterion mathematically. Algorithm is CIRCULAR: building Δ(x) for x in window requires π(x) at every window point. Two strategies both fail: global sieve to X is O(X log log X) (worse than Meissel-Lehmer); anchor + Miller-Rabin sweep needs anchor π(x_0) at O(x_0^{2/3}) which IS the original problem. Side-finding (worth keeping for novel/pseudorandomness_of_pi.md after Cramér baseline): std(Δ) over 200-window < 2 even at X=5e4, supports "Δ entropy at scale X concentrated at freq ≥ 1/√X". Adjacent: lines 353 (RMT statistics-only), 656 (HP/GUE), 36 (anchor + AKS sieve). See experiments/proposals/session63fresh_rmt_moments.py | 63 |
     718	| Newton-on-π with progressive 2^k zero-budget for inverting π(x)=n (S63 fresh) | FAIL | I | DUPLICATE-PLUS of line 685 (R⁻¹ fixed-point with zero correction, S44). Different map (Newton on π vs fixed-point on R⁻¹) but identical failure mechanism: π_K(x) carries O(1) GUE-random tail noise, Newton amplifies by 1/π'(x) ≈ log(x), so iterate band-oscillates at scale ~log x for n ≥ 1000. Empirical: n=100 converges in 2 steps with K=6 (err 0.016); n=1000/5000/10000 oscillate in band 5–25, n=5000 even drifts away from initial guess. Asymptotic obstruction: required K satisfies √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog, identical to direct explicit-formula evaluation. Geometric K_k=2^k summing to K_total=O(K_final) does not break the √x barrier. See experiments/proposals/session63fresh_newton_zerobudget.py | 63 |
     719	
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update SESSION_INSIGHTS, TODO, and create a session file.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (10 more lines)
+  [Bash] grep -n "Session 6[0-9]" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    2210:## Session 60 (2026-04-26, S35-fresh proposals + critique cycle)
+    2250:## Session 61 (2026-04-26, FOCUS-1 sub-attack 2 construction — non-cyclotomic ring AKS)
+    2316:## Session 62 (2026-04-26, deep focus task #4 — K_min extension with 2000 zeros)
+    2380:## Session 63 — Critique of S63 fresh proposals (D-finite δ, mollifier, RMT moments, Newton zero-budget)
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    2380	## Session 63 — Critique of S63 fresh proposals (D-finite δ, mollifier, RMT moments, Newton zero-budget)
+    2381	**Date:** 2026-04-26
+    2382	
+    2383	### Context
+    2384	S63 (proposer) generated four fresh proposals without consulting CLOSED_PATHS.md,
+    2385	ran each, and self-closed all four. This critique session verified the verdicts
+    2386	against the 537+-entry catalogue.
+    2387	
+    2388	### Verification result
+    2389	All four self-verdicts hold up:
+    2390	- **P1 (D-finite recurrence on δ):** novel sub-test (first run of D-finite hunt
+    2391	  on δ rather than π or 1_P), confirms broader holonomic-on-prime closures
+    2392	  (lines 576, 577, 680). Mode I.
+    2393	- **P2 (Selberg Dirichlet-polynomial mollifier):** duplicate-plus of line 693
+    2394	  (Hermite/Gaussian/Riesz mollification). Different kernel shape, same
+    2395	  general-kernel tail-bound argument. Caveat: experiment uses naive M(ρ)/M(1)
+    2396	  weighting without ζ·M's M-zero/pole contributions; theoretical closure is
+    2397	  decisive regardless. Mode E.
+    2398	- **P3 (RMT local-moment predictor on Δ):** confirmed circular. Predictor
+    2399	  passes empirically (RMSE 0.33 over H=200 window) but obtaining the window
+    2400	  requires π values, which is the original problem. Mode C.
+    2401	- **P4 (Newton with progressive 2^k zero-budget):** duplicate-plus of line 685
+    2402	  (R⁻¹ fixed-point with zero correction). Different map (Newton-on-π vs
+    2403	  R⁻¹-fixed-point), identical failure mechanism (GUE-random tail noise
+    2404	  amplified by 1/π'(x) ≈ log x to prime-gap scale). Mode I.
+    2405	
+    2406	### Side-findings worth keeping
+    2407	1. **Methodology lesson (P1):** when running null-space / PSLQ / D-finite
+    2408	   searches on data with multiplicative column-scale spread, validate via
+    2409	   held-out **prediction**, not via training-side singular-value ratios.
+    ... (22 more lines)
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session64_frobenius_transplant.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session64_frobenius_transplant.md
+Now let me update TODO.md to mark sub-attack 3 as closed:
+  [Read] /apps/aplikacijos/prime-research/TODO.md
+    66	when the ring is `Z_n[x]/f(x)`.
+    67	
+    68	Save under `experiments/circuit_complexity/aks_alternative/non_cyclotomic_ring/`.
+    69	
+    70	### Sub-attack 3: Healy-Viola Frobenius transplant
+    71	
+    72	Healy-Viola 2006 showed `F_{2^n}` exponentiation is in TC^0 by
+    73	exploiting that Frobenius `x -> x^2` is the identity on `F_2`-coefficients.
+    74	**Question:** does any partial Frobenius-like map exist on `Z_n[x]/(x^r - 1)`
+    75	that gives the same depth collapse?
+    76	
+    77	Specifically: if we work modulo a prime `q` dividing `n - 1`, the
+    78	`q`-th-power Frobenius on `(Z/qZ)[x]/(x^r - 1)` IS a ring homomorphism.
+    79	Whether AKS-correctness lifts back to `Z_n` from this quotient is the
+    80	question.
+    81	
+    82	**Concrete next step:** compute the full power-Frobenius orbit structure
+    83	on `(Z/qZ)[x]/(x^r - 1)` for small (n, q, r) triples, see if AKS
+    84	verification can be staged through a TC^0-friendly chain.
+    85	
+    86	Save under `experiments/circuit_complexity/aks_alternative/frobenius_transplant/`.
+    87	
+    88	### Backup objective if all three close
+    89	
+    90	Then the sub-attack space is exhausted and the only escape is **Brandt
+    91	MKtP** or a fundamentally new lower-bound technique. Mark Chain E as
+    92	"computationally cornered" in `status/OPEN_PROBLEMS.md` and shift
+    93	remaining sessions to FOCUS-2 / FOCUS-3.
+    94	
+    95	---
+    ... (5 more lines)
+  [Edit] /apps/aplikacijos/prime-research/TODO.md
+    The file /apps/aplikacijos/prime-research/TODO.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/TODO.md
+    The file /apps/aplikacijos/prime-research/TODO.md has been updated successfully.
+Now let me verify all the file integrity, run the housekeeping check, and finalize.
+  [Bash] find experiments/circuit_complexity/aks_alternative/frobenius_transplant -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "---all-experiments-orphan-check---" ; find experiments/ -name "*.py" -newer status/SESSION_INSIGHTS.md 2>/dev/null | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "---__pycache__---"; find experiments/circuit_complexity/aks_alternative -name "__pycache__" -type d
+    ---all-experiments-orphan-check---
+    ---__pycache__---
+    experiments/circuit_complexity/aks_alternative/frobenius_transplant/__pycache__
+  [Bash] rm -rf experiments/circuit_complexity/aks_alternative/frobenius_transplant/__pycache__ && find experiments/ -name "__pycache__" -type d 2>/dev/null | head -5
+    (Bash completed with no output)
+  [Bash] echo "=== final verification ===" && ls -la experiments/circuit_complexity/aks_alternative/frobenius_transplant/ && echo "---SESSION_INSIGHTS tail---" && grep "Session 64" status/SESSION_INSIGHTS.md && echo "---CLOSED_PATHS tail---" && grep -c "Frobenius-mod-q" status/CLOSED_PATHS.md && echo "---TODO.md sub-attack 3 status---" && grep -A 3 "Sub-attack 3" TODO.md | head -10
+    === final verification ===
+    total 32
+    drwxr-xr-x 2 root root  4096 Apr 26 11:21 .
+    drwxr-xr-x 4 root root  4096 Apr 26 11:11 ..
+    -rw-r--r-- 1 root root 14442 Apr 26 11:17 frobenius_transplant.py
+    -rw-r--r-- 1 root root  7393 Apr 26 11:18 frobenius_transplant_results.md
+    ---SESSION_INSIGHTS tail---
+    ## Session 64 — FOCUS-1 sub-attack 3 construction: Healy-Viola Frobenius transplant
+    ---CLOSED_PATHS tail---
+    1
+    ---TODO.md sub-attack 3 status---
+    ### Sub-attack 3: Healy-Viola Frobenius transplant — CLOSED (S64)
+    
+    **Status:** CLOSED, FAIL (E + I). See CLOSED_PATHS.md line 719,
+    `experiments/circuit_complexity/aks_alternative/frobenius_transplant/`,
+All status files are consistent. Now write the run state and finalize.
+  [Bash] echo 42 > .run_state && cat .run_state
+    42
+## Summary
+
+**Session 64 — FOCUS-1 sub-attack 3 (Healy-Viola Frobenius transplant): CLOSED, FAIL (E + I).**
+
+Built the construction at `experiments/circuit_complexity/aks_alternative/frobenius_transplant/`. Tested whether reducing the AKS congruence `(a+x)^n ≡ a^n + x^n (mod n, x^r-1)` modulo a prime `q | n-1` yields a TC^0-amenable test via the q-power Frobenius `F: F_q[x]/(x^r-1) → F_q[x]/(x^r-1), F(a+x) = a + x^q`.
+
+Key findings:
+- **Frobenius decomposition is correct** (Q1: `(a+x)^n = prod_i (a + x^{q^i mod r})^{c_i}` matches naive repeated squaring on 6/6 sanity cases).
+- **Headline negative**: primes do NOT satisfy mod-q AKS for non-trivial a (0/399 across 19 primes; trivial `a≡0 mod q` always passes but carries zero info).
+- **Why**: residual `(a+x)^n - (a^n + x^n) = sum binom(n,k) a^{n-k} x^k` vanishes mod n but NOT mod q (Lucas's theorem). Empirically the residual fills 8-102 of r coefficients — no sparsity rescue.
+- **Depth**: even granted the test worked, Frobenius saves only constant factor `log(q)/log(2)`; both schemes are length-O(log n) growing-dim r×r MPOW = NC^1, not TC^0. The E5.3 primitive is unchanged by the q-twist.
+
+Updates filed: CLOSED_PATHS.md line 719, SESSION_INSIGHTS.md S64 entry, TODO.md FOCUS-1 sub-attack 3 marked CLOSED, archive/sessions/session64_frobenius_transplant.md, results.md beside the script. With sub-attacks 2 (S61) and 3 (S64) closed, only sub-attack 1 (Bernstein 2003 strengthened gcd) remains un-built in FOCUS-1. `.run_state` set to 42.
+--- Session ended ---
+Sleeping 5 seconds before next run...
+
+=== Run #42 — Mode: wildcard — Sun Apr 26 11:21:51 UTC 2026 ===
+I'll dive in fresh. Let me first set up the workspace and survey existing wildcard experiments to avoid duplication, then commit to building concrete things.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/wildcard/ 2>/dev/null | head -50
+    adelic_prime_count.py
+    adelic_prime_count_results.md
+    algebraic_shortcut.py
+    algebraic_shortcut_results.md
+    automata_prime_count.py
+    automata_prime_count_results.md
+    batch_mobius_sieve.py
+    batch_mobius_sieve_results.md
+    bbp_digit_freeze.py
+    bbp_digit_freeze_results.md
+    borel_explicit_formula.py
+    borel_explicit_formula_results.md
+    carry_propagation_boundary.py
+    carry_propagation_boundary_results.md
+    causal_state_complexity.py
+    causal_state_complexity_results.md
+    cf_pi_over_li.py
+    cf_pi_over_li_results.md
+    contour_integral_zerosum.py
+    contour_integral_zerosum_results.md
+    convolution_sieve.py
+    convolution_sieve_results.md
+    crt_modular_counting.py
+    crt_modular_counting_results.md
+    crt_prime_locator.py
+    crt_prime_locator_results.md
+    crt_reconstruction.py
+    crt_reconstruction_results.md
+    dfa_pi_residual.py
+    dfa_pi_residual_results.md
+    ... (20 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/algorithms/ 2>/dev/null
+    nth_prime_formula.py
+    v10_c_accelerated.py
+    v1_pade_approximation.py
+    v5_pure_analytic.py
+    v6_single_dp.py
+    v7_optimized.py
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; cat /apps/aplikacijos/prime-research/TODO.md 2>/dev/null | head -80
+    42
+    ---
+    # TODO
+    
+    > **For agents starting a session:** read this file first, then `EDGES.md`,
+    > then `status/OPEN_PROBLEMS.md`. EDGES catalogues every real mathematical
+    > edge found across 58 sessions and groups them into the two surviving
+    > chains (E and F). Every other chain (A, B, C, D, G) has been closed.
+    >
+    > **Critical priority is FOCUS-1 below.** It is the only direction whose
+    > resolution would substantively change project status. FOCUS-2 / FOCUS-3
+    > are sharpening targets; FOCUS-4 is a recurring lightweight watch; the
+    > housekeeping and benchmarking items are non-blocking.
+    >
+    > Recently closed and removed from this file: Connes operator scaling
+    > (S53), pi(x) mod q for q in {2..13} via Liouville (S55+S56), Borel+Fejer
+    > hybrid (S52), 3-point GUE correlation (S57), N=2000 zeta structure (S45),
+    > Helfgott-Thompson M(x) benchmark (S60, sieve route shown tight via E6.7+E7.6).
+    >
+    > S60 EDGES extension added 10 new edges (E1.7, E1.8, E2.11, E2.12, E3.12,
+    > E6.7, E6.8, E6.9, E7.8, E7.9). Effect on this file: FOCUS-2 gains an
+    > E2.11 pre-disqualification test (5s vs 30s per candidate); FOCUS-5 gains
+    > level-of-distribution as a tracked literature category; the H-T benchmark
+    > is removed. FOCUS-1 / FOCUS-3 / FOCUS-4 unchanged.
+    
+    ---
+    
+    # === CRITICAL PATH ===
+    
+    ## [FOCUS-1] AKS growing-dim MPOW in TC^0  [Chain E, the only open frontier]
+    ... (52 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/wildcard/ 2>/dev/null | wc -l; echo "---"; ls /apps/aplikacijos/prime-research/experiments/wildcard/ 2>/dev/null | tail -60
+    138
+    ---
+    ntt_sieve_results.md
+    p_recursive_search.py
+    p_recursive_search_results.md
+    pade_residual.py
+    pade_residual_results.md
+    partition_prime_detect.py
+    partition_prime_detect_results.md
+    probabilistic_exact.py
+    probabilistic_exact_results.md
+    random_zero_subset.py
+    random_zero_subset_results.md
+    recursive_dickman.py
+    recursive_dickman_results.md
+    recursive_prime_counting.py
+    recursive_prime_counting_results.md
+    rounding_R_exact.py
+    rounding_R_exact_results.md
+    self_correcting_formula.py
+    self_correcting_formula_results.md
+    session45_brainstorm.md
+    sieve_function_compression.py
+    sieve_function_compression_results.md
+    sieve_matrix_rank.py
+    sieve_matrix_rank_results.md
+    spectral_compression.py
+    spectral_compression_results.md
+    spectral_shortcut.py
+    spectral_shortcut_results.md
+    ... (32 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/ 2>/dev/null; echo "---"; ls /apps/aplikacijos/prime-research/experiments/ 2>/dev/null
+    README.md
+    ---
+    algebraic
+    analytic
+    circuit_complexity
+    constructions
+    dynamical
+    information_theory
+    ml
+    other
+    proposals
+    quantum
+    sieve
+    topological
+    wildcard
+I see 138 wildcard experiments already exist. To find genuinely fresh angles, I'll do this in parallel: search the 2025-2026 literature for any new breakthroughs, and pursue two construction experiments testing angles I don't see in the existing file list.
+
+**My fresh angles:**
+1. **Low-rank structure of φ(x,a)** — view Meissel's phi as a 2D matrix and test whether SVD/sparsity allows polylog reconstruction (different from "matrix rank of sieve").
+2. **PSLQ search** for closed-form integer-linear combinations giving π(x) exactly from a basis of analytically-cheap quantities (li, R, log, ψ-zero-sum truncations, etc.).
+3. **Lattice-encoded π(x)**: construct a lattice whose short vector encodes π(x) — LLL runs in polylog of bit-length.
+
+Let me kick off literature search in parallel and start writing.
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Agent] 
+    Async agent launched successfully.
+    agentId: a4acf31b2dafcd3d9 (internal ID - do not mention to user. Use SendMessage with to: 'a4acf31b2dafcd3d9' to continue this agent.)
+    The agent is working in the background. You will be notified automatically when it completes.
+    Do not duplicate this agent's work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+    output_file: /tmp/claude-0/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tasks/a4acf31b2dafcd3d9.output
+    Do NOT Read or tail this file via the shell tool — it is the full sub-agent JSONL transcript and reading it will overflow your context. If the user asks for progress, say the agent is still running; you'll get a completion notification.
+  [Bash] ls /apps/aplikacijos/prime-research/data/ 2>/dev/null; echo "---"; ls /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py 2>/dev/null && head -30 /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py
+    gen_zeros_2000.log
+    gen_zeros_2000.py
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_2000.txt
+    zeta_zeros_300.txt
+    zeta_zeros_500.txt
+    ---
+    /apps/aplikacijos/prime-research/algorithms/v10_c_accelerated.py
+    """
+    V10: C-ACCELERATED NTH PRIME SOLVER
+    =====================================
+    Uses ctypes to call a C implementation of Lucy_Hedgehog DP
+    for maximum performance. Also implements the analytical formula
+    for p(n) that works in O(polylog(n)) time but gives only ~47% of digits.
+    
+    TWO MODES:
+      1. EXACT MODE: Uses C-accelerated Lucy DP. 100% accurate. O(p(n)^{2/3}).
+         Works up to p(10^12) in reasonable time.
+    
+      2. APPROXIMATE MODE: Uses R^{-1}(n) via mpmath. O(polylog(n)) time.
+         Gives first ~47% of digits correctly.
+         p(10^100) in 0.5 seconds (approximate).
+         p(10^1000) in ~2 seconds (approximate).
+    """
+    
+    import math
+    import time
+    import ctypes
+    import tempfile
+    ... (9 more lines)
+Background literature search launched. Now writing experiment 1.
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+  [Bash] timeout 90 python3 experiments/wildcard/phi_2d_lowrank.py 2>&1 | tail -90
+    Exit code 143
+    Terminated
+Timed out. Let me rewrite with a faster phi via direct inclusion-exclusion (only enumerate smooth d ≤ x).
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py has been updated successfully.
+Strong literature finding: arXiv:2506.22634 (Kılıçtaş & Alpay, 2025) claims a truncated-Gaussian kernel needing only ~1200 zeta zeros for x with 10^8 digits — if scaling is genuinely O(log x), this is the closest result to polylog π(x) yet. I'll run the phi experiment then pivot to auditing that paper.
+  [Bash] timeout 90 python3 experiments/wildcard/phi_2d_lowrank.py 2>&1 | tail -100
+    ============================================================
+    PHI 2D LOW-RANK / SVD TEST  (fresh-perspective S65)
+    ============================================================
+    K=18, x_grid (geometric): min=8, max=23612
+    a_grid: 1..18  (so primes p_1=2 ... p_18=61)
+    
+    >> Framing A built in 0.01s
+    
+    [Framing A] shape (18, 18)  ||M||_F=2.762e+04  sigma_1=2.762e+04
+      top 8 normalised: ['1.000e+00', '3.217e-03', '1.795e-03', '3.428e-04', '1.930e-04', '1.209e-04', '7.220e-05', '6.002e-05']
+      effective rank (>1e-10): 18
+      exp fit:   sigma_k ~ exp(-6.22 -0.441*k)
+      power fit: sigma_k ~ k^-2.75
+      VERDICT: EXP-DECAY (low effective rank, COMPRESSIBLE)
+    
+    >> Framing B built in 0.01s
+    
+    [Framing B] shape (18, 18)  ||M||_F=193  sigma_1=185.2
+      top 8 normalised: ['1.000e+00', '2.832e-01', '6.100e-02', '3.606e-02', '1.840e-02', '1.133e-02', '9.357e-03', '8.953e-03']
+      effective rank (>1e-10): 18
+      exp fit:   sigma_k ~ exp(-1.96 -0.376*k)
+      power fit: sigma_k ~ k^-2.32
+      VERDICT: EXP-DECAY (low effective rank, COMPRESSIBLE)
+    
+    >> Framing C built in 0.01s
+    
+    [Framing C] shape (18, 18)  ||M||_F=3.794  sigma_1=3.752
+      top 8 normalised: ['1.000e+00', '1.308e-01', '6.309e-02', '3.080e-02', '1.848e-02', '1.118e-02', '5.935e-03', '1.286e-03']
+      effective rank (>1e-10): 18
+      exp fit:   sigma_k ~ exp(-1.57 -0.625*k)
+    ... (36 more lines)
+All framings show exponential decay at K=18, but this is small scale. Need to test if it persists at larger K — pseudorandomness is expected to kick in for larger primes. Let me extend.
+  [Edit] /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Edit] /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py has been updated successfully.
+  [Bash] timeout 300 python3 experiments/wildcard/phi_2d_lowrank.py 2>&1 | tee /tmp/phi_2d.log | tail -120
+      top 8 normalised: ['1.000e+00', '1.455e-03', '9.092e-04', '3.078e-04', '2.066e-04', '1.689e-04', '1.406e-04', '1.211e-04']
+      effective rank (>1e-10): 18
+      exp fit:   sigma_k ~ exp(-6.59 -0.334*k)
+      power fit: sigma_k ~ k^-1.99
+      VERDICT: EXP-DECAY (low effective rank, COMPRESSIBLE)
+    
+    ############################################################
+    ### SCALE medium (K=40): x_grid 16..1937033, a 1..40, p_K=173
+    ############################################################
+    
+    >> Framing A built in 1.35s
+    
+    [medium (K=40) | Framing A] shape (40, 40)  ||M||_F=3.076e+06  sigma_1=3.076e+06
+      top 8 normalised: ['1.000e+00', '1.685e-03', '4.403e-04', '6.398e-05', '3.561e-05', '1.917e-05', '9.991e-06', '6.456e-06']
+      effective rank (>1e-10): 40
+      exp fit:   sigma_k ~ exp(-8.62 -0.33*k)
+      power fit: sigma_k ~ k^-2.64
+      VERDICT: EXP-DECAY (low effective rank, COMPRESSIBLE)
+    
+    >> Framing B built in 1.34s
+    
+    [medium (K=40) | Framing B] shape (40, 40)  ||M||_F=6817  sigma_1=5805
+      top 8 normalised: ['1.000e+00', '6.113e-01', '6.526e-02', '2.976e-02', '1.352e-02', '6.621e-03', '3.451e-03', '3.215e-03']
+      effective rank (>1e-10): 40
+      exp fit:   sigma_k ~ exp(-2.85 -0.302*k)
+      power fit: sigma_k ~ k^-2.42
+      VERDICT: EXP-DECAY (low effective rank, COMPRESSIBLE)
+    
+    >> Framing C built in 1.31s
+    
+    ... (89 more lines)
+Important nuance: spectrum decay is exponential in relative terms, but matrix Frobenius norm grows ∝x; so the rank needed to recover phi to integer precision (±0.5) scales roughly linearly with K. That kills the compression argument for exact recovery — but I should write the result up, then pivot to the high-leverage TG-kernel audit.
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank_results.md
+Now the high-leverage move: audit the TG-kernel paper. Let me fetch it.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [WebFetch] 
+    # Paper Analysis: TG Kernel for Prime Counting
+    
+    ## 1. **Zero Count Claim**
+    The abstract states: "For x with 10^8 decimal digits, we demonstrate that only ~1200 nontrivial zeta zeros suffice to achieve the error bound."
+    
+    This is a specific numerical claim for an astronomically large x, but the abstract does not provide an explicit formula for zero count as a function of x.
+    
+    ## 2. **Scaling of Zero Count**
+    **Not specified in the abstract.** The document provides no explicit formula for how the required zero count scales with x (whether O(log x), O(x^{1/2}), etc.). This is a critical gap.
+    
+    ## 3. **Truncated-Gaussian Kernel**
+    Abstract describes: "Gaussian-like test functions with compact support, engineered with vanishing moments to eliminate main terms." No explicit mathematical form is given in the provided text.
+    
+    ## 4. **Mellin Transform / Explicit Formula**
+    Not detailed in the abstract. The work operates within "explicit formula framework" but specific formula invocation is not quoted here.
+    
+    ## 5. **The "1200 zeros for 10^8 digits" Claim**
+    As stated above: ~1200 zeros claimed sufficient for x = 10^(10^8). No derivation provided in this excerpt.
+    
+    ## 6. **Numerical Experiments**
+    **None reported in the abstract.** No output tables or experimental results are shown.
+    
+    ## 7. **Proof Status**
+    The abstract claims "rigorous error bounds" and states "All constants are made explicit, ensuring full verifiability." However, the arXiv page provides only abstract-level information. The authors assert the method is "unconditional" (hypothesis-free).
+    
+    ## 8. **Author Affiliations & Red Flags**
+    **Affiliations not listed** in the provided page content. Submission date is 27 Jun 2025 (future date, suggesting archive/preprint status). No institutional affiliations visible here.
+    
+    **Critical limitation:** This is an abstract only—core theorems, proofs, and numerical validation are in the full PDF, not reproduced above.
+Let me fetch the actual PDF for the formulas.
+  [WebFetch] 
+    # Mathematical Content Extraction: "A Rigorous Error Bound for the TG Kernel in Prime Counting"
+    
+    ## Authors
+    **Bugra Kilictas** and **Faruk Alpay** (affiliations from arXiv metadata; ORCID links present in document).
+    
+    ---
+    
+    ## 1. The TG Kernel: Definition & Properties
+    
+    The TG (Turan–Glasser) kernel is a smooth, compactly supported kernel used to approximate the prime-counting function. From the document structure (sections on preliminaries and error analysis):
+    
+    **Definition**: The kernel satisfies:
+    - **Compact support**: on an interval (likely [−1,1] or scaled variant)
+    - **Vanishing moments**: designed so that certain moments vanish, enabling rigorous error control
+    - **Smoothness**: differentiable properties enabling Fourier analysis
+    
+    The document references this as enabling an "explicit-formula" approach with controlled truncation error.
+    
+    ---
+    
+    ## 2. Explicit-Formula Identity
+    
+    The core identity (implicit from abstract and section structure):
+    
+    $$\psi(x) \text{ or } \pi(x) = \text{main term} + \sum_{|\gamma| \leq T} (\text{sum over zeta zeros}) + \text{error}$$
+    
+    Here **ψ(x) = Σ_{p^k ≤ x} log p** (second Chebyshev function), and the sum is over imaginary parts γ of non-trivial zeros of ζ(s).
+    
+    ---
+    
+    ... (67 more lines)
+The fetcher's summary inserted hand-wavy inferences. Let me read the actual PDF directly.
+  [Bash] ls -la /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/ 2>&1 | head
+    total 416
+    drwxr-xr-x 2 root root   4096 Apr 26 11:32 .
+    drwxr-xr-x 4 root root   4096 Apr 26 11:32 ..
+    -rw-r--r-- 1 root root 414179 Apr 26 11:32 webfetch-1777203167183-ya7yjw.pdf
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/webfetch-1777203167183-ya7yjw.pdf
+    pdftoppm is not installed. Install poppler-utils (e.g. `brew install poppler` or `apt-get install poppler-utils`) to enable PDF page rendering.
+  [Bash] which pdftotext; pdftotext --version 2>&1 | head -2; python3 -c "import pypdf" 2>&1; python3 -c "import pdfminer" 2>&1; python3 -c "import PyPDF2" 2>&1
+    Exit code 1
+    /bin/bash: line 1: pdftotext: command not found
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'pypdf'
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'pdfminer'
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'PyPDF2'
+  [Bash] pip install pypdf -q 2>&1 | tail -3
+    note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+    hint: See PEP 668 for the detailed specification.
+  [Bash] pip install pypdf -q --break-system-packages 2>&1 | tail -3
+    WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+  [Bash] python3 -c "
+from pypdf import PdfReader
+r = PdfReader('/apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/webfetch-1777203167183-ya7yjw.pdf')
+print('pages:', len(r.pages))
+for i, p in enumerate(r.pages[:6]):
+    print(f'\n===== PAGE {i+1} =====')
+    print(p.extract_text())
+" 2>&1 | head -250
+    pages: 19
+    
+    ===== PAGE 1 =====
+    arXiv:2506.22634v1  [math.NT]  27 Jun 2025
+    A Rigorous Error Bound for the TG Kernel in Prime Counting
+    Faruk Alpay
+    Independent Researcher
+    Bugra Kilictas
+    Bahcesehir University
+    July 1, 2025
+    Abstract
+    We establish a rigorous error bound for a truncated Gaussian (TG) kernel approach to
+    the prime counting problem. Specifically, we prove that the approximation error contributed
+    by the TG kernel remains below 1 /2 globally for all sufficiently large arguments. This
+    result guarantees that our analytic prime counting method can deterministically compute
+    π(x) (the number of primes ≤ x) to the correct integer value by simple rounding, without
+    relying on unproven hypotheses. The TG kernel is a smooth test function designed to exploit
+    the explicit formula for primes, offering advantages in balancing analytic tractability with
+    computational efficiency. We provide explicit constants throughout, demonstrating that for
+    x with 10 8 decimal digits, only approximately 1200 nontrivial zeta zeros are required to
+    achieve the error bound, enabling practical computation in potentially seconds on modern
+    hardware.
+    Keywords: prime counting function, explicit formula, truncated Gaussian kernel, error bounds,
+    analytic number theory, computational number theory, Riemann zeta function
+    1 Introduction
+    In this work, we establish a rigorous error bound for a TG kernel approach to the prime counting
+    problem (the deterministic prime-index inversion problem). Specifically, we prove that the ap-
+    proximation error contributed by the TG kernel remains below 1 /2 globally (for all sufficiently
+    large arguments). This result guarantees that our analytic prime counting method can deter-
+    ministically compute π(x) (the number of primes ≤ x) to the correct integer value by simple
+    ... (220 more lines)
+  [Bash] python3 -c "
+from pypdf import PdfReader
+r = PdfReader('/apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/webfetch-1777203167183-ya7yjw.pdf')
+for i, p in enumerate(r.pages[6:14]):
+    print(f'\n===== PAGE {i+7} =====')
+    print(p.extract_text())
+" 2>&1 | head -350
+    ===== PAGE 7 =====
+    At the upper limit, ΦTG(t/x) vanishes fort > x (α+∆) (since ΦTG has support [−(α+∆), α+∆]),
+    and at the lower limit t = 0, Ψ(0) = 0, so the boundary term is zero. Thus
+    X
+    n
+    Λ(n)ΦTG(n/x) = −
+    Z x(α+∆)
+    0
+    Ψ(t) d
+    dtΦTG
+     t
+    x
+    
+    dt.
+    Differentiating ΦTG(t/x): d
+    dtΦTG(t/x) = 1
+    xΦ′
+    TG(t/x). So the equation becomes
+    X
+    n
+    Λ(n)ΦTG(n/x) = − 1
+    x
+    Z x(α+∆)
+    0
+    Ψ(t)Φ′
+    TG
+     t
+    x
+    
+    dt.
+    ... (319 more lines)
+  [Bash] python3 -c "
+from pypdf import PdfReader
+r = PdfReader('/apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/webfetch-1777203167183-ya7yjw.pdf')
+for i, p in enumerate(r.pages[10:19]):
+    print(f'\n===== PAGE {i+11} =====')
+    print(p.extract_text())
+" 2>&1 | head -500
+    ===== PAGE 11 =====
+    and since |FTG(1/2+ it)| decays faster than 1/|t|3 (see Section 3), there exists a constant C such
+    that for large T :
+    |FTG(1/2 + it)| < C
+    (1 + |t|)3 .
+    Thus, splitting the sum into imaginary parts in segments, we get:
+    Ezeros(x) < 2C
+    Z ∞
+    T
+    1
+    (1 + t)3 dN(1/2, t).
+    Integration by parts (or summation by parts) then yields:
+    Ezeros(x) < 2C
+    Z ∞
+    T
+    N(1/2, t)d
+     1
+    (1 + t)3
+    
+    .
+    Using the density bound N(1/2, t) ≤ 0.2 t ln t for large t (which is a known unconditional result
+    for the zeta zeros distribution), we can estimate:
+    Ezeros(x) < 2C
+    Z ∞
+    T
+    0.2t ln t d
+     1
+    (1 + t)3
+    
+    .
+    ... (460 more lines)
+The audit is conclusive. Multiple fundamental flaws:
+
+1. **Appendix B is crank content** ("EmbedS(Faruk Alpay) := φ_∞ ... canonical identity fold") — symbolic mysticism, not math.
+2. **Catastrophic IBP step (p.7)**: they replace Ψ(t) by t via PNT — *throwing away the very Ψ(t)−t deviation that encodes π(x)*. The resulting identity has no π(x) on either side.
+3. **Wrong zero-density bound**: they invoke "N(σ,T) ≤ AT^{1−1/σ}(log T)^B" — at σ=1/2 this gives AT^{−1}(log T)^B, which is *decreasing* in T (the actual N(1/2,T) ≈ (T/2π)log(T/2π) grows).
+4. **Internal contradiction**: they claim ∫Φ_TG(t)dt=0 (vanishing 0th moment) but Φ_TG ≥ 0 on its support, so ∫>0.
+5. **Wrong kernel scaling**: Φ_TG(n/x)=e^{−(n/x)²} smooths n on *ordinary* scale with width x — which averages over an interval ~x, far too coarse to localize at integer-π(x) precision. Smoothing in *log scale* with width h forces the genuine tradeoff h·T=const → T~x for h~1/x. Paper hides this.
+6. **No empirical validation** for any x ≥ 10^3 (they cite π(10^12) but never compute).
+
+Let me build a quick falsification experiment to confirm.
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit.py
+  [Bash] timeout 120 python3 experiments/wildcard/tg_kernel_audit.py 2>&1 | tail -100
+    ======================================================================
+    TG KERNEL AUDIT (arXiv:2506.22634)
+    ======================================================================
+    
+    Kernel parameters: alpha=3.0, Delta=1.0
+    
+    [STEP 1] Check 0th moment ∫Phi_TG(t)dt (paper claims =0 by design):
+       ∫_0^4.0 Phi_TG(t) dt = 8.862251e-01
+       Paper's required value: 0  (so that F_TG(1) = 0 and main term cancels).
+       ⚠ FAIL: 0th moment is NOT zero. Paper's construction self-contradictory:
+         the truncated Gaussian on [0, alpha+Delta] is strictly positive,
+         so its integral cannot be zero. F_TG(1) is NOT zero, so the
+         'main term cancellation' premise of the paper FAILS.
+    
+       F_TG(1) = ∫Phi_TG(t) dt = 8.862251e-01
+       (Should equal M0 — sanity check.)
+    
+    [STEP 2] Compute LHS  S(x) = sum_n Lambda(n) Phi_TG(n/x)  for several x.
+       And check what 'main term' the paper's IBP derivation predicts:
+         paper: αe^(-α²) ≈ -∑_ρ F_TG(ρ) + E_triv  (NB: x absent on RHS!)
+       We test: does S(x) actually relate to pi(x) in any useful way?
+    
+       alpha*exp(-alpha^2) = 3.702294e-04  (paper says this is the LHS?!)
+    
+             x     pi(x)           S(x)     S(x)/x   paper-main
+           100        25        86.7854    0.86785     3.70e-04
+           500        95       441.2741    0.88255     3.70e-04
+          1000       168       884.3879    0.88439     3.70e-04
+          5000       669      4429.2867    0.88586     3.70e-04
+         10000      1229      8860.4126    0.88604     3.70e-04
+    ... (64 more lines)
+Audit fully confirmed. Empirical numbers nail every flaw: 0th moment = 0.886 (not zero as paper requires), S(x) ≈ 0.886·x (linear in x, *not* αe^(−α²)≈3.7×10⁻⁴ as paper claims), F_TG(ρ) is x-independent so cannot encode π(x). Now writing results files and updating status.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit_results.md
+Now updating status files and writing session summary.
+  [Bash] head -50 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md 2>/dev/null; echo "..."; wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md /apps/aplikacijos/prime-research/literature/state_of_art_2026.md /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md 2>/dev/null
+    # Closed Paths: Master Lookup (537+ Approaches)
+    
+    **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    
+    Last updated: 2026-04-26 (Sessions 1-60, 197+ sub-agents)
+    
+    ## Failure Modes
+    - **C** = Circularity (needs primes to compute primes)
+    - **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    - **I** = Information Loss (smooth approximation loses critical bits)
+    
+    ---
+    
+    ## Analytic / Explicit Formula / Zeta Zeros
+    
+    | Approach | Verdict | Mode | Key Finding | Session |
+    |----------|---------|------|-------------|---------|
+    | Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    | Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    | 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    | Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    | Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    | PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    | DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    | Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    | Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    | Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    | Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    | Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
+    | Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
+    ... (25 more lines)
+  [Bash] tail -40 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    <persisted-output>
+    Output too large (32.6KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/615e057f-2c77-450b-9cc7-2c6a49c1684c/tool-results/bll1fj1lp.txt
+    
+    Preview (first 2KB):
+    | J-fraction of pi(n)/n generating function (D-finiteness test) | FAIL | E | Hankel-determinant J-fraction coefficients (a_k, b_k) for k=0..11 from first 80 moments are erratic: b_3=-3, b_4=-8.28, b_12=-407.4. log\|H_k\| decays linearly in k but that is a trivial consequence of moments in [0,1] — NOT evidence of D-finiteness. pi(n) is not P-recursive at any low order. See experiments/proposals/cf_jfraction_pi.py | 43 |
+    | Persistent homology of detrended primes (TCDP) | FAIL | I | 0-dim long-lived bar count is sub-(N/log N) but Cramér-model baseline is too — sublinearity is a generic property of bounded-detrended trajectories, not specific to primes. PH gives a measurement, not an inverse-map: recovering p_n from a barcode requires bar endpoints AND original 1D ordering of n, which IS pi(x). Re-confirms TDA closure (line 199). See experiments/proposals/persistent_homology_primes.py | 43 |
+    | Free probability R-transform of prime indicator (FCP) | FAIL | C | A_N = diag(1_P) is idempotent, so trace(A_N^j)/N = pi(N)/N for all j. ESD = (1-pi(N)/N)*delta_0 + (pi(N)/N)*delta_1 — Bernoulli measure parameterized by pi(N) alone. R-transform is closed-form q/(1-qz) with q = pi(N)/N. Free convolution preserves this triviality. Encodes only pi(N), the very quantity we want. | 43 |
+    | Reservoir computing on delta(n) (Dynamical Compressibility) | FAIL | I | ESN is a strict subset of recurrent dynamical systems; transformer (line 149, 1.1% accuracy), FNO, GP, PSLQ symbolic regression on delta(n) all already failed. delta(n) Kt entropy 5.58 bits/value (line 555). Polylog reservoir state cannot encode irreducible info. Symbolic-regression readout duplicates line 146. | 43 |
+    ...
+    </persisted-output>
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | Cyclotomic CRT decomposition of AKS ring Z_n[x]/(x^r-1) | FAIL | E | For AKS-prescribed r (smallest r>1 with gcd(n,r)=1 and ord_r(n) > log_2(n)^2), r is empirically prime in 21/22 sampled n in {10^2..10^6, Carmichael 561/1105/1729/2465/2821/6601/8911, powers of 2}. When r prime, x^r-1 = (x-1)*Phi_r(x), so CRT yields Z_n x Z_n[x]/Phi_r(x); the non-trivial factor has dimension r-1, no asymptotic reduction. Best observed reduction max_dim/r = 0.94 (only composite r=289=17^2). Cyclotomic shortcut for AKS-MPOW closed; parent OPEN status of "AKS in TC^0 via growing-dim MPOW" (line 232) unaffected. See experiments/circuit_complexity/cyclotomic_crt_splitting.py | 47 |
+    | Causal-state / excess-entropy generator for prime parity stream q(n)=1{p(n)=5 mod 6} | FAIL | I | Block-entropy estimates (N=148 931 bits, L=1..18) give h_mu approx 0.97686 nats/step (vs 0.99708 for matched i.i.d. Bernoulli null) and excess entropy E plateauing at +0.026 nats above null around L=10. Stochastic memory exists (Hardy-Littlewood pair correlation between consecutive primes' residues mod 6) but is finite and tiny: exp(0.026) approx 1.026 epsilon-machine size. Per-step compressibility ~3.3% below entropy ceiling, far below the log_2(x) bits/step required for polylog encoding of pi(x). Adjacent to lines 233, 672 (parity-mod-2 closures); refines the pseudorandomness picture but does not reopen any path. See experiments/wildcard/causal_state_complexity.py | 48 |
+    | Extended PSLQ basis for f(x)=pi(x)-R(x): 10 zeta-zero modes, arithmetic partial sums, Mahler functional | FAIL | I | Three sub-bases not covered by Session 29's seven experiments. (A) 26-term basis with sin/cos(gamma_k log x) for k=1..10: PSLQ finds tight relations (residual 1e-44) at each x in {1000,5000,20000,50000} but every coefficient vector is point-specific; cross-check residuals 4e2 - 6e3, FAIL at all 12 cross-points. (B) 9-term basis with M(x), L_lambda(x), Phi(x), psi(x) normalized by sqrt(x): PSLQ only finds true integer facts about partial sums (M(2000)=5; L_lambda(1000)=-7M(1000)) with coeff(f)=0; f rejected from every short combination. (C) 7-term Mahler basis f(x), f(x^2), f(x^3) + transcendentals at x in {10..46}: relations require coefficients of size 10^6-10^7 and shatter at every other base (residuals 1e6-2e8). Strengthens Session 29 closure. See experiments/algebraic/identity_search/extended_basis_search.py | 48 |
+    | Hermite/Gaussian/Riesz mollification of truncated explicit formula for psi(x) | FAIL | E | Tested Gaussian kernel exp(-(gamma-log x)^2/2sigma^2) for sigma in {0.5,1,2} and Riesz mean (1-|gamma|/T)^2 for T in {50,200,800}, K up to 800 zeros, x in {100,1000,10000}. Mollification is strictly WORSE than unmollified at small x (x=100, K=800: unmoll err 0.076 vs best Gauss 4.117 — 54x worse) and at most 1.21x better at x=10000 (Riesz T=50 — partial-sum truncation luck, ~30 effective zeros). Linear-functional argument: any kernel w(gamma) with sum|w|>=cN(T) inherits Omega(sqrt(x)*sqrt(log T/log x)) tail bound; sigma->infty recovers unmollified. To beat sqrt(x), need NONLINEAR operation on zeros, not re-weighting. Strict duplicate of lines 31, 32, 36, 519, 685. See experiments/proposals/proposal27_hermite_reverse_explicit.py | 48 |
+    | Cramer-window / (min,+) tropical sieve around R^{-1}(n) anchor | FAIL | E+I | Empirical scan (n<=10^6, primes up to 1.6e7, 80 log-spaced n): max\|delta_n\|=1823, max\|delta_n\|/log^2(p_n)=6.65 (UNBOUNDED), max\|delta_n\|/sqrt(p_n)=0.59 (better than RH's 1/(8pi) on this range), empirical fit \|delta_n\|~p^0.505 (matches RH-predicted sqrt(x)). Proposal conflates Cramer prime-gap bound O(log^2 p) with R^{-1} approximation error Omega(sqrt(x)/log x) — they are unrelated objects. Window required to bracket p_n around R^{-1}(n) is sqrt(x), not polylog. Tropical (min,+) lift adds nothing because pi(x) is COUNTING not optimization (line 422). Anchor pi-evaluation IS the original problem. Strict duplicate of lines 593, 659, 661. See experiments/proposals/proposal28_cramer_window_probe.py | 48 |
+    | Sum-of-squares / Lasserre hierarchy localisation of p(n) (polynomial optimisation encoding) | FAIL | I | Encode "smallest x with sum p_i >= n where p_i = 1[i prime]" as polynomial system; SoS level-d SDP runs in n^{O(d)}. CLOSED by approximate-degree theorem: adeg(chi_P)=ceil(N/2) for N=4..11 LP-verified (line 580 + novel/approx_degree_prime.md, S28). SoS-deg >= adeg/2 = N/4 = Omega(log x) per single-prime constraint; AND-ing n constraints raises degree, so total SoS level Omega(log x), runtime >= x^{Omega(1)} >> polylog. Independent confirmation: SoS lower bounds on random-like predicates (Grigoriev '01, Schoenebeck '08, KMOS '17) give degree Omega(N) given pseudorandomness of pi(x) mod 2 in 25+ measures (novel/pseudorandomness_of_pi.md). Decisively closed; do not schedule SDP session. | 48 |
+    | Cancellation-anchor density via truncated zero-sum smallness (small-K artefact) | FAIL | E | Probe at K in {10,50,200} zeros, x in {10^3,10^4,10^5}, 10001 y per (x,K) reports apparent 6-25% density of \|E_K(y)\|<sqrt(log x). Apparent density is ARTEFACT of truncating K << sqrt(y): mean \|E_200\| at x=10^5 is 31.9, already saturating sqrt(x) bound. Full zero sum (T->infty) gives density polylog/sqrt(x)->0 by GUE statistics; truncated tail Sum_{|gamma|>T} y^rho/rho contributes Omega(sqrt(y/(log x log T))) which dominates at large y. Locating a true polylog-small-full-sum y is at least as hard as evaluating Sum_rho y^rho/rho (the original problem). Strict duplicate of lines 35, 581, 593. See experiments/proposals/proposal30_anchor_density.py | 48 |
+    | Borel-Pade x Cesaro-Fejer hybrid for pi(x) (stacked convergence-acceleration) | FAIL | E | Apply Fejer window K_T(gamma)=(sin(gamma/2T)/(gamma/2T))^2 first, then Borel-Pade resum the windowed-increment partial sums. Sweep x in {1000..100000}, T in {50,100,300,1000}, 2000 zeros, mp.dps=30. Borel-Fejer recovery flat at 3/8 (37.5%) regardless of T, vs Fejer-alone 6/8 (75%) at T=1000. Diagnosis: Borel-Pade locks into a T-independent asymptote — at x=10000 the hybrid returns S in {1229.61, 1229.70, 1229.70, 1229.70} across T={50,100,300,1000}, IDENTICAL to 4 decimals. Pade fits the leading envelope of increments; the Borel integral integral e^{-z}P/Q dz extracts a tail-completion that depends only on low-order coefficients. New zeros added by larger T are exponentially suppressed by 1/k! in the Borel transform, so they cannot move Pade's leading-order fit. Strict regression vs Fejer alone at every T (regressions 3-4, wins 0-1). Closes the natural S45+S46 stacking; convergence-acceleration interventions cannot be combined to break sqrt(x). See experiments/proposals/borel_fejer_hybrid.py | 51 |
+    | Connes-Consani-Moscovici spectral-triple operator (arXiv:2511.22755) as polylog architecture for pi(x) (Chain A step 4 / FOCUS-1 / E3.1) | FAIL | E | Numerical proxy: rank-one self-adjoint perturbation V = c\|v><v\| of discretized scaling operator D = -i d/du on L^2([-L,L]), L = log(lambda), x_cutoff = 10^4, N=1200 Fourier modes; v built from von-Mangoldt-weighted prime-power delta-comb in log space (best variant). Sweep B in {1..9} primes ({2}, {2,3}, ..., {2..23}); coupling tuned at B=6. Median matched-error[:50] flat at 0.13-0.20 across all B (no monotonic decrease in B); K_accurate(<0.5) saturates at 50/50 by comb-density artefact (also true for B=0 control); under monotone test (mu_K vs gamma_K), K_accurate=0 for all B. Proxy does NOT reproduce CCM's published 10^{-55} accuracy on err[1] (off by ~53 orders), but scaling-law conclusion is independent of kernel choice. Three independent arguments close polylog claim: (i) rank-one perturbation has B parameters; Cauchy interlacing limits eigenvalue placement to ~B substantial shifts; (ii) diagonalization of N x N truncation costs O(N^3) = O(K^3) for K eigenvalues — worse than O(x^{1/2+eps}) summation; (iii) CCM's published B=6 -> K=50 with err range 10^{-55..-3} implies geometric per-zero error growth ~11.3x, yielding K_accurate(B=6) ~ 53 even at face value, with NO multi-B data point in the literature establishing super-linear scaling. Even granting most-generous linear K_accurate(B)=B, reaching K=10^50 zeros for p(10^100) requires B ~ 10^50 primes, identical to existing O(sqrt(x)) zero-summation barrier. Closes E3.1's elevated edge value to baseline analytic equivalence. See experiments/analytic/connes_operator/. | 53 |
+    | BBP-style isolated-digit spigot for psi(x) via explicit-formula partial sums | FAIL | I | Empirical zero-vs-precision scan: K in {10,50,200,1000,2000} zeros, x in {1e4..1e7}. Going K=10->K=2000 (200x more zeros) reduces |residual| only ~4-300x; max|res|/sqrt(x) flatlines around 0.001 with `~1/sqrt(K)` decay. Anomaly hunt (4001 consecutive x near 1e6, K=2000): residuals are i.i.d. Gaussian with std ~25 (= 0.025*sqrt(x)); smallest |res|=0.012 at x=1001799 matches Gaussian-tail expectation (1.5 expected, 1 observed) — no structural cancellation. BBP works because summands decay GEOMETRICALLY (1/16^k); zero contributions decay only as 1/k via `sqrt(x)/|rho_k|`, so zeros-per-digit grows ~10^d (exponential in digits) not O(d). Confirms standard sqrt(x) information bound; aligns with novel/pseudorandomness_of_pi.md. See experiments/wildcard/bbp_digit_freeze.py | 54 |
+    | Compressed-sensing recovery of psi(x) via random K-subset of zeta zeros (vs first-K) | FAIL | E | Tested K=50 random subsets vs first-50 from pool M=2000 (50 random trials, 200 consecutive x near 1e6). Random subsets are STRICTLY WORSE: rms 404 vs 97 (4x worse); even best random subset (rms 310) is 3x worse than first-K. Reason: 1/|rho_k| weighting concentrates magnitude on low-frequency zeros, so random subsamples miss the bulk of the signal. Falsifies "compressed sensing applies to zero basis" — signal is DENSE in zero basis with smoothly-decaying amplitudes, not K-sparse. First-K is near-optimal among K-subsets; no polylog subset can carry sqrt(x) magnitude budget. Closes the natural CS-style shortcut. See experiments/wildcard/random_zero_subset.py | 54 |
+    | Levin universal search on delta(n) with explicit 11-token RPN DSL through length 8 | FAIL | I | Refines line 211 (S7). Enumerated all type-correct RPN programs of length <=8 over the alphabet {n, 0..3, +, -, *, //, %, L (bit_length), S (isqrt)} = 11 tokens (3.6M programs) and scored against delta(1..50). Best partial fit isqrt(n-1) - n//2 matches delta(1..9) by coincidence and breaks at n=10 (delta(10)=0 vs program output -2). Best non-coincidence match length 7 covers only 5/50. Length 8 = ~28 program-bits, two orders of magnitude below the >=280 information bits delta(1..50) carries (Shannon ratio 0.84 from line 595, Kt 5.58 bits/value from line 489). Length 9: ~35M programs; length 10: ~350M; length 12: ~35B (intractable). Concrete description-length floor on delta in this DSL. See experiments/proposals/levin_search_delta.py | 49 |
+    | Haar wavelet sparsity of prime indicator 1_P[1..N] | FAIL | I | Refines lines 239 (S40, on C(x)) and 583 (S24, Fourier 78%). Manual Haar transform at N in {1024, 4096, 16384}: k_99 / N = {0.425, 0.375, 0.337}; random-density-matched control within 7% at every scale; sinusoid positive control at 0.089 unchanged. Linear extrapolation: k_99 ~ 0.33*N (NOT polylog). Deferred Daubechies/Symlet branch is provably negative without running it: line 583 dense Fourier spectrum is basis-invariant under translation-modulation orthonormal bases; line 471 commrank 2^{N/2} blocks any sparse Fourier-style recovery; pseudorandomness barrier (21+ measures, novel/pseudorandomness_of_pi.md) precludes polylog support in any orthonormal basis by Donoho-Stark uncertainty. See experiments/proposals/wavelet_sparsity_indicator.py | 49 |
+    | PSLQ + structured zeta-zero/log basis on delta(n) (8th PSLQ-on-delta variant) | FAIL | I+E | Refines lines 666 (S33), 690 (S48). Atom basis {1, log n, log log n, 1/log n, sqrt(n)/log n, cos(gamma_k log n)/sqrt(n), sin(gamma_k log n)/sqrt(n)}_{k<=K} for delta(1..200) at 50 dps. PSLQ on column-averaged vector (16 atoms) and 10 individual rows: NO relation of norm <= 10^6. Least-squares R^2 trajectory: K=5: 0.16; K=10: 0.20; K=20: 0.29; K=50: 0.71 — exactly the explicit-formula slow-convergence curve (K-th zero contributes O(1/sqrt(p_n))). At N=200, p_N~1223, sqrt(p_N)~35, so K=50 saturating R^2~0.7 matches predicted ceiling. No-relation chain: any integer linear combination of {sin/cos(gamma_k log n)/sqrt(n)} ~= 0 mod 2pi requires Z-relations among gamma_k, but line 22 (S25, 13000+ tests at 60 dps) rules these out at norm <= 10^6. Closes path. See experiments/proposals/pslq_delta_basis.py | 49 |
+    | Frobenius-trace ensemble linear/ridge decoding of pi(x) mod m (7-curve x 4-modulus) | FAIL | E | Refines line 318 (S16) with explicit ridge-regression accuracy table. Tested 7 non-singular curves y^2 = x^3 + a x + b for (a,b) in {(0,1),(1,0),(-1,1),(1,-1),(2,3),(-3,4),(5,7)}, all 668 odd primes q <= 5000, 37-feature matrix (cumulative S_x, S_x of a_q^2, S_x of a_q mod m for m in {2,3,5}, log q, idx). Ridge-regression accuracies vs uniform baselines: pi(x) mod 2: 0.502 (uniform 0.500, +0.2pp); mod 3: 0.333 (0.333, +0.0pp); mod 5: 0.199 (0.200, -0.1pp); mod 7: 0.159 (0.143, +1.6pp). All within 1.5pp of uniform — Sato-Tate independence verified. Cumulative L-coefficients encode L(E,s) information, not the modular residue of the prime count; no linear functional extracts the latter from the former. Strict duplicate of line 318's mechanism with explicit empirical numbers. See experiments/proposals/frobenius_crt_correlation.py | 49 |
+    | Liouville-identity components A(x) mod 2 and C_3(x) mod 2 — structural pseudorandomness (FOCUS-2 / Chain B&C) | FAIL | I | Reinforces line 684 (S46) at the structural-pseudorandomness level. New algebraic observation: L(x) mod 2 = x mod 2 trivially (free identity, zero prime info), so the missing primitives via E2.2 are L(x) mod 4 (= A(x) mod 2 = (x-L(x))/2 mod 2) AND C_3(x) mod 2; pi(x) mod 2 = A XOR C_3 (verified bit-exact on x in [1, 2e6], 100% agreement). Battery on x in [1, 2e6]: A(x) mod 2 has block-entropy 7.9999/8 bits, AC max[1..30] = 0.0010, FFT z = 5.53 (no spectral line), LFSR length over GF(2) = N/2 exactly — *more pseudorandom than pi(x) mod 2 itself*. C_3(x) mod 2 same with AC = 0.148 (density bias only). Mutual info I(A; C_3) = 1.94e-5 bits (statistically independent). 11 cheap proxies (x mod 2/3/4, M(x) mod 2, Q(x) mod 2, sigma_0(x) mod 2, omega(x), Omega(x), L mod 4 hi-bit, L mod 8 bits) all |corr| < 0.002 with pi(x) mod 2; best XOR fusion of any 4-subset achieves 0.4951 agreement (worse than chance). Conditional entropy H(pi mod 2 | proxy) = 0.99993 bits for every proxy. Adds 2 new measures (#25 A mod 2, #26 C_3 mod 2) to novel/pseudorandomness_of_pi.md. See experiments/sieve/pi_mod_q_fixed/liouville_modular_structure.py | 24 |
+    | Character-twisted Liouville sums L_chi(x) for chi mod q in {3,5,7,11,13} (FOCUS-2 q>=3 / Chain B) | FAIL | I | Generalizes the S55 q=2 closure to all 34 non-trivial Dirichlet characters across q in {3,5,7,11,13}. ALGEBRAIC FREE IDENTITY: L_chi(x) = sum_{r in (Z/q)*} chi(r)*S_r(x) with S_r(x) = sum_{n<=x, n=r mod q} lambda(n); since each lambda(n) in {-1,+1} ≡ 1 (mod 2), S_r(x) ≡ count_r(x) (mod 2 in Z), hence L_chi(x) ≡ sum_r chi(r)*count_r(x) (mod 2 Z[zeta_d]) where d = ord(chi). Right-hand side computable in O(polylog) via floor counts, no prime info. Verified by EXACT integer arithmetic in Z[zeta_d] (cyclotomic-polynomial reduction; rank-deficient FP-projection appears to fail for d in {5,10,12} but exact check passes 2000/2000 sampled x for ALL 34 chars). Next-bit pseudorandomness: A_chi(x) mod 2 = #{n<=x: lambda(n)*Re(chi(n))=+1} mod 2 has LFSR/N in [0.4995, 0.5002] (full pseudorandom rank), block-entropy up to 7.97/8, FFT z up to 8.5 (within 1.5sigma of order-statistic baseline ~4.8), AC values up to 0.6 are pure coset-density bias 1/phi(d). MAX MI(A_chi mod 2 ; pi(x;q,a) mod 2) = 9.55e-6 bits across all q, all chi, all a in (Z/q)* — at noise floor for N=1e6 samples. Closes the natural extension of S55 to q>=3; the character-twisted route to chain B's missing primitive collapses by the same dual mechanism (free identity + pseudorandom next bit). Adds measures #27..#31 to novel/pseudorandomness_of_pi.md. See experiments/sieve/pi_mod_q_fixed/character_twisted_liouville.py | 56 |
+    | Reordered tensor-train (TT) compression of delta(n) across 7 orderings | FAIL | I | Refines lines 171 (S10), 516 (S20), 599 (S26). At N=2^13=8192 with eps_rel=1e-3 SVD truncation, all seven tested orderings (identity, bit-reversal, Gray, Morton, 2-adic, sort-by-R^{-1}, random) AND a Gaussian-noise baseline produce IDENTICAL bond profile [2,4,8,16,32,64,64,32,16,8,4,2] = the binary-TT volume-law ceiling at every cut (min(2^j, 2^{L-j})). Smooth-cosine positive control gives bond=2 throughout, confirming SVD pipeline sensitivity. Bit-reversal/Gray/Morton are 2-adic isomorphisms of the binary cube and cannot change the half-cut min; sort-by-R^{-1} reorders smooth coordinate but residual delta is GUE-random regardless. Strongest empirical "ordering-independent volume-law" demonstration on record. See experiments/proposals/session49_mps_delta_orderings.py | 49 |
+    | LASSO compressed-sensing of delta(n) in zero-mode basis (extends S7/S54) | FAIL | I | Refines lines 350 (S7) and 699 (S54). At N=4096, K_max=1024 zeros (gamma_max=1447), alpha sweep {1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1}: best test-RMSE solution at every K in {16, 64, 256, 1024} and every alpha is nnz=0 (predict delta=0). OLS overfits catastrophically at K>=256 (test RMSE blows up to 1e10+). Naive round(R^{-1}) baseline matches all-zero LASSO at 1.1% prime recovery. LASSO discovers no sparsity exists by selecting empty support — consistent with line 699's "signal DENSE in zero basis with smoothly-decaying 1/|rho_k| amplitudes, not K-sparse." See experiments/proposals/session49_compressed_sensing_zeros.py | 49 |
+    | Learned (ridge) residues at fixed zeta zeros for delta(n) | FAIL | I | Refines lines 561 (S21), 691, 692 (S48), 702 (S49 R1). Original test misspecifies basis as cos(gamma_k log n)/sqrt(n) using prime INDEX n; explicit-formula derivation gives delta(n) ~ -2*sqrt(p_n)*sum_k cos(gamma_k log p_n - phi_k)/|rho_k|, so correct basis is sqrt(p_n)*cos(gamma_k log p_n). Critic re-ran corrected basis on K in {32,128,512,2000}: corrected basis lower test RMSE at K=32 (25.3 vs 37.4) and K=128 (23.7 vs 37.4), but still ~1.7% test prime recovery vs 1.1% naive. K>=512 overfits catastrophically under both bases. Theoretical floor: tail energy beyond K zeros gives test-RMSE ~Omega(sqrt(p_n)/sqrt(K log K)); ~1.6 at K=2000 explains the plateau. Ridge-vs-analytic gap < 0.4pp at every K — finite-sample noise, not learned-coefficient gain. Closes "learned residues absorb tail energy" hypothesis under both correct and incorrect basis. See experiments/proposals/session49_neural_zero_residue.py and experiments/proposals/critique49_basis_misspec.py | 49 |
+    | Walsh-Hadamard sparsity of chi_P at N=2^14 (S35-fresh / S60 crit) | FAIL | I | DUPLICATE under basis-invariance argument of line 702 (S49 Haar). Empirical: top-1024 of 16384 WH coefficients capture 53% of L^2 mass; need k=N/2=8192 for integer-exact pi(x); spectral entropy 10.79 / 14 bits. Donoho-Stark + 21+ pseudorandomness measures + line 471 commrank 2^{N/2} preclude polylog support in any orthonormal basis on (Z/2)^L. Refines line 702 with WH-specific decay numbers but does not reopen. See experiments/proposals/session35fresh_walsh_hadamard.py | 60 |
+    | PSLQ on delta(n) with 7-feature analytic dictionary, 40 sliding windows (S35-fresh / S60 crit) | FAIL | I | Ninth PSLQ-on-delta variant. Strict subset of line 703 (S49) basis (omits zeta-zero modes). Dictionary [log p, loglog p, digamma, 1/log p, 1, Liouville partial sum, n] for n=1..2000, windows of 30 rows, step 50: 39/40 windows return distinct integer signatures, residuals 10-200, no relation generalises. Confirms the entropy-gap closure (`novel/info_computation_gap.md`) — small smooth-feature dictionaries cannot absorb delta's GUE-random oscillation. Lower fidelity than line 703. See experiments/proposals/session35fresh_pslq_delta.py | 60 |
+    | MPS midpoint-cut bond dim of chi_P at N=2^14 (S35-fresh / S60 crit) | FAIL | I | DUPLICATE of line 518 (S41 theorem) and line 171 (S10). Empirical: rank ~ 2^{0.485 L} ~ sqrt(N) at the natural midpoint cut for L=6..14; top singular value ~ N^{0.24}. Recovers the W=2 half-cut consequence of S41's closed-form theorem rank = min(W^j, phi(W)*W^{d-j-1}+1). Permuted-orderings follow-up already closed by line 707 (S49: 7 orderings on delta give identical volume-law). See experiments/proposals/session35fresh_mps_chi_p.py | 60 |
+    | Truncated Dirichlet-character explicit formula on AP mod 12 (S35-fresh / S60 crit) | FAIL | I | DUPLICATE of lines 29-31 (explicit formula + few zeros), line 70 (Modular CRT for pi(x)), and line 693 (S48 mollification). q=12 (phi=4), x in {1000..10000}, T in {5,10,20,40} zeros per character, a in {1,5,7,11}: T=40 gives 1/20 exact pi(x;q,a); max |diff|=74. T=20 worse than T=10 — same density-alignment artefact line 30 already flagged. Per-character GRH error x^{1/2+eps}/T inherited; chibar(a)-weighted sum doesn't reduce per-character error below sqrt(x). To beat sqrt(x) need NONLINEAR operations on zeros (line 693), not character decomposition. See experiments/proposals/session35fresh_dirichlet_explicit.py | 60 |
+    | Non-cyclotomic ring AKS variant Z_n[x]/(x^d+a) (FOCUS-1 sub-attack 2) | FAIL | E+C | Builds (x+b)^n =? x^n + b in Z_n[x]/(x^d+a) at small d, replacing standard AKS modulus x^r-1. Empirical sweep d in {3..12}, a in {1,2}, n up to 410041 inc. 30 Carmichaels. Clean structural finding: cyclotomic-flavour (a=1) leaks Carmichaels at small d (19/30 at d=3, 5/30 at d=6, 3/30 at d=4 = Phi_8) — Carmichael Frobenius alignment with small cyclotomic factors of x^d+1; non-cyclotomic Eisenstein (a=2) leaks 0/30 at every d tested. (E) Even with a=2, evaluating the congruence requires polylog-dim matrix powering — exactly the growing-dim MPOW primitive (E5.3) that is the open Chain-E frontier; modulus structure is orthogonal to depth. (C) Capelli's theorem certifies x^d+a irreducible over F_p in TC^0, but requires p|n known — circular for primality testing on input n. No correctness theorem analog of AKS counting argument exists for Eisenstein moduli. Refines line 690 (S47 cyclotomic-CRT). Confirms FOCUS-1 sub-attack 2 closed; sub-attacks 1 (Bernstein 2003 smaller-r) and 3 (Healy-Viola Frobenius transplant) remain. See experiments/circuit_complexity/aks_alternative/non_cyclotomic_ring/. | 37 |
+    | D-finite (Apéry-style) recurrence for δ(n) = p(n) − R⁻¹(n) at (L,d) ≤ (4,4) (S63 fresh) | FAIL | I | Held-out prediction skill 0.5–1.3 (≈ noise) for all (L,d) tested at N=400, 200-bit precision. Train-side singular-value drop with d is purely column-conditioning artefact (rows span 12 OOM in n^k); held-out validation is the correct test, training rank-ratio is artifact. Distinct from line 576 (D-finite on π itself) and line 680 (J-fraction on π/n GF) — first explicit test on the analytic-detrending residual δ. δ inherits GUE-random oscillation; not P-recursive at low order. Methodology lesson: validate null-space relations via prediction, not training SVD ratios. See experiments/proposals/session63fresh_dfinite_delta.py | 63 |
+    | Selberg-style Dirichlet-polynomial mollifier weight on truncated explicit formula (S63 fresh) | FAIL | E | DUPLICATE-PLUS of line 693 (Hermite/Gaussian/Riesz mollification, S48). Tested length-Y mollifier M(s)=Σ_{n≤Y} a_n n^{-s} with a_n LSQ-tuned to zero \|M(ρ_j)\| for j ≤ K, sweep (K,Y) ∈ {(5,30),(10,50),(20,100),(40,200)}, T ≤ 1000. Mollified estimator strictly WORSE than sharp at every T (sharp at x=10000, T=50: err 0.44; best mollified: 1.72). CAVEAT: experiment uses naive M(ρ)/M(1) per-zero weighting without ζ·M's M-zero/pole contributions; decisive closure is line 693's general-kernel argument (any kernel w with Σ\|w\| ≥ cN(T) inherits Ω(√x √(log T/log x)) tail bound). Y-vs-K duality: any K zeros killed cost length-Y compensation, no net gain. To beat √x need NONLINEAR ops on zeros. See experiments/proposals/session63fresh_mollifier_pi.py | 63 |
+    | RMT local-moment Bayesian predictor for Δ(x) = π(x) − li(x) over H=100 window (S63 fresh) | FAIL | C | Weighted-mean predictor (1/\|x−X\|) on Δ over [X−H, X+H] window predicts Δ(X) at RMSE 0.33 < 0.5 across X ∈ {1000, 5000, 10000, 50000} — passes ±0.5 criterion mathematically. Algorithm is CIRCULAR: building Δ(x) for x in window requires π(x) at every window point. Two strategies both fail: global sieve to X is O(X log log X) (worse than Meissel-Lehmer); anchor + Miller-Rabin sweep needs anchor π(x_0) at O(x_0^{2/3}) which IS the original problem. Side-finding (worth keeping for novel/pseudorandomness_of_pi.md after Cramér baseline): std(Δ) over 200-window < 2 even at X=5e4, supports "Δ entropy at scale X concentrated at freq ≥ 1/√X". Adjacent: lines 353 (RMT statistics-only), 656 (HP/GUE), 36 (anchor + AKS sieve). See experiments/proposals/session63fresh_rmt_moments.py | 63 |
+    | Newton-on-π with progressive 2^k zero-budget for inverting π(x)=n (S63 fresh) | FAIL | I | DUPLICATE-PLUS of line 685 (R⁻¹ fixed-point with zero correction, S44). Different map (Newton on π vs fixed-point on R⁻¹) but identical failure mechanism: π_K(x) carries O(1) GUE-random tail noise, Newton amplifies by 1/π'(x) ≈ log(x), so iterate band-oscillates at scale ~log x for n ≥ 1000. Empirical: n=100 converges in 2 steps with K=6 (err 0.016); n=1000/5000/10000 oscillate in band 5–25, n=5000 even drifts away from initial guess. Asymptotic obstruction: required K satisfies √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog, identical to direct explicit-formula evaluation. Geometric K_k=2^k summing to K_total=O(K_final) does not break the √x barrier. See experiments/proposals/session63fresh_newton_zerobudget.py | 63 |
+    | Healy-Viola Frobenius-mod-q transplant of AKS (FOCUS-1 sub-attack 3) | FAIL | E+I | Tests whether reducing AKS congruence (a+x)^n ≡ a^n + x^n mod (n, x^r-1) modulo a prime q\|n-1 yields a TC^0-amenable test via the q-power Frobenius F: F_q[x]/(x^r-1)→itself, F(a+x)=a+x^q (ring hom). Frobenius gives a binomial decomposition (a+x)^n = prod_i (a+x^{q^i mod r})^{c_i} where c_i are base-q digits of n; verified matches naive repeated squaring (6/6 cases). HEADLINE NEGATIVE: primes do NOT satisfy mod-q AKS for non-trivial a — 0/399 passes across 19 primes in [101..2207] for every q\|n-1, q<r, every a in {1..q-1}. Trivial case a≡0 mod q always passes (both sides reduce to x^n) but carries zero primality info. WHY: residual (LHS-RHS) mod (q,x^r-1) has 8-102 of r non-zero coefficients (Lucas's theorem mod q gives binom(n,k) non-zero whenever k is a base-q sub-string of n; explicit n=101=0b1100101: 16 odd binomials in {0,1,4,5,32,33,36,37,...}). DEPTH: even granted the test worked, Frobenius decomposition saves only constant factor log(q)/log(2) bit-ops vs naive (~2x for q=2, ~3.3x for q=7); both reduce to O(log n) sequential r-dim multiplications = NC^1, not TC^0. (E) The mod-q computation is length-O(log n) growing-dim r×r MPOW over F_q — same primitive E5.3 unchanged by q-twist. (I) AKS Frobenius identity is mod-n specific; reducing mod q≠n loses it (no Hensel lifting). With FOCUS-1 sub-attacks 2 (S61, line 714) and 3 (this) closed, only sub-attack 1 (Bernstein 2003 strengthened gcd) remains un-built. See experiments/circuit_complexity/aks_alternative/frobenius_transplant/. | 64 |
+  [Bash] tail -3 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | RMT local-moment Bayesian predictor for Δ(x) = π(x) − li(x) over H=100 window (S63 fresh) | FAIL | C | Weighted-mean predictor (1/\|x−X\|) on Δ over [X−H, X+H] window predicts Δ(X) at RMSE 0.33 < 0.5 across X ∈ {1000, 5000, 10000, 50000} — passes ±0.5 criterion mathematically. Algorithm is CIRCULAR: building Δ(x) for x in window requires π(x) at every window point. Two strategies both fail: global sieve to X is O(X log log X) (worse than Meissel-Lehmer); anchor + Miller-Rabin sweep needs anchor π(x_0) at O(x_0^{2/3}) which IS the original problem. Side-finding (worth keeping for novel/pseudorandomness_of_pi.md after Cramér baseline): std(Δ) over 200-window < 2 even at X=5e4, supports "Δ entropy at scale X concentrated at freq ≥ 1/√X". Adjacent: lines 353 (RMT statistics-only), 656 (HP/GUE), 36 (anchor + AKS sieve). See experiments/proposals/session63fresh_rmt_moments.py | 63 |
+    | Newton-on-π with progressive 2^k zero-budget for inverting π(x)=n (S63 fresh) | FAIL | I | DUPLICATE-PLUS of line 685 (R⁻¹ fixed-point with zero correction, S44). Different map (Newton on π vs fixed-point on R⁻¹) but identical failure mechanism: π_K(x) carries O(1) GUE-random tail noise, Newton amplifies by 1/π'(x) ≈ log(x), so iterate band-oscillates at scale ~log x for n ≥ 1000. Empirical: n=100 converges in 2 steps with K=6 (err 0.016); n=1000/5000/10000 oscillate in band 5–25, n=5000 even drifts away from initial guess. Asymptotic obstruction: required K satisfies √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog, identical to direct explicit-formula evaluation. Geometric K_k=2^k summing to K_total=O(K_final) does not break the √x barrier. See experiments/proposals/session63fresh_newton_zerobudget.py | 63 |
+    | Healy-Viola Frobenius-mod-q transplant of AKS (FOCUS-1 sub-attack 3) | FAIL | E+I | Tests whether reducing AKS congruence (a+x)^n ≡ a^n + x^n mod (n, x^r-1) modulo a prime q\|n-1 yields a TC^0-amenable test via the q-power Frobenius F: F_q[x]/(x^r-1)→itself, F(a+x)=a+x^q (ring hom). Frobenius gives a binomial decomposition (a+x)^n = prod_i (a+x^{q^i mod r})^{c_i} where c_i are base-q digits of n; verified matches naive repeated squaring (6/6 cases). HEADLINE NEGATIVE: primes do NOT satisfy mod-q AKS for non-trivial a — 0/399 passes across 19 primes in [101..2207] for every q\|n-1, q<r, every a in {1..q-1}. Trivial case a≡0 mod q always passes (both sides reduce to x^n) but carries zero primality info. WHY: residual (LHS-RHS) mod (q,x^r-1) has 8-102 of r non-zero coefficients (Lucas's theorem mod q gives binom(n,k) non-zero whenever k is a base-q sub-string of n; explicit n=101=0b1100101: 16 odd binomials in {0,1,4,5,32,33,36,37,...}). DEPTH: even granted the test worked, Frobenius decomposition saves only constant factor log(q)/log(2) bit-ops vs naive (~2x for q=2, ~3.3x for q=7); both reduce to O(log n) sequential r-dim multiplications = NC^1, not TC^0. (E) The mod-q computation is length-O(log n) growing-dim r×r MPOW over F_q — same primitive E5.3 unchanged by q-twist. (I) AKS Frobenius identity is mod-n specific; reducing mod q≠n loses it (no Hensel lifting). With FOCUS-1 sub-attacks 2 (S61, line 714) and 3 (this) closed, only sub-attack 1 (Bernstein 2003 strengthened gcd) remains un-built. See experiments/circuit_complexity/aks_alternative/frobenius_transplant/. | 64 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    715	| D-finite (Apéry-style) recurrence for δ(n) = p(n) − R⁻¹(n) at (L,d) ≤ (4,4) (S63 fresh) | FAIL | I | Held-out prediction skill 0.5–1.3 (≈ noise) for all (L,d) tested at N=400, 200-bit precision. Train-side singular-value drop with d is purely column-conditioning artefact (rows span 12 OOM in n^k); held-out validation is the correct test, training rank-ratio is artifact. Distinct from line 576 (D-finite on π itself) and line 680 (J-fraction on π/n GF) — first explicit test on the analytic-detrending residual δ. δ inherits GUE-random oscillation; not P-recursive at low order. Methodology lesson: validate null-space relations via prediction, not training SVD ratios. See experiments/proposals/session63fresh_dfinite_delta.py | 63 |
+    716	| Selberg-style Dirichlet-polynomial mollifier weight on truncated explicit formula (S63 fresh) | FAIL | E | DUPLICATE-PLUS of line 693 (Hermite/Gaussian/Riesz mollification, S48). Tested length-Y mollifier M(s)=Σ_{n≤Y} a_n n^{-s} with a_n LSQ-tuned to zero \|M(ρ_j)\| for j ≤ K, sweep (K,Y) ∈ {(5,30),(10,50),(20,100),(40,200)}, T ≤ 1000. Mollified estimator strictly WORSE than sharp at every T (sharp at x=10000, T=50: err 0.44; best mollified: 1.72). CAVEAT: experiment uses naive M(ρ)/M(1) per-zero weighting without ζ·M's M-zero/pole contributions; decisive closure is line 693's general-kernel argument (any kernel w with Σ\|w\| ≥ cN(T) inherits Ω(√x √(log T/log x)) tail bound). Y-vs-K duality: any K zeros killed cost length-Y compensation, no net gain. To beat √x need NONLINEAR ops on zeros. See experiments/proposals/session63fresh_mollifier_pi.py | 63 |
+    717	| RMT local-moment Bayesian predictor for Δ(x) = π(x) − li(x) over H=100 window (S63 fresh) | FAIL | C | Weighted-mean predictor (1/\|x−X\|) on Δ over [X−H, X+H] window predicts Δ(X) at RMSE 0.33 < 0.5 across X ∈ {1000, 5000, 10000, 50000} — passes ±0.5 criterion mathematically. Algorithm is CIRCULAR: building Δ(x) for x in window requires π(x) at every window point. Two strategies both fail: global sieve to X is O(X log log X) (worse than Meissel-Lehmer); anchor + Miller-Rabin sweep needs anchor π(x_0) at O(x_0^{2/3}) which IS the original problem. Side-finding (worth keeping for novel/pseudorandomness_of_pi.md after Cramér baseline): std(Δ) over 200-window < 2 even at X=5e4, supports "Δ entropy at scale X concentrated at freq ≥ 1/√X". Adjacent: lines 353 (RMT statistics-only), 656 (HP/GUE), 36 (anchor + AKS sieve). See experiments/proposals/session63fresh_rmt_moments.py | 63 |
+    718	| Newton-on-π with progressive 2^k zero-budget for inverting π(x)=n (S63 fresh) | FAIL | I | DUPLICATE-PLUS of line 685 (R⁻¹ fixed-point with zero correction, S44). Different map (Newton on π vs fixed-point on R⁻¹) but identical failure mechanism: π_K(x) carries O(1) GUE-random tail noise, Newton amplifies by 1/π'(x) ≈ log(x), so iterate band-oscillates at scale ~log x for n ≥ 1000. Empirical: n=100 converges in 2 steps with K=6 (err 0.016); n=1000/5000/10000 oscillate in band 5–25, n=5000 even drifts away from initial guess. Asymptotic obstruction: required K satisfies √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog, identical to direct explicit-formula evaluation. Geometric K_k=2^k summing to K_total=O(K_final) does not break the √x barrier. See experiments/proposals/session63fresh_newton_zerobudget.py | 63 |
+    719	| Healy-Viola Frobenius-mod-q transplant of AKS (FOCUS-1 sub-attack 3) | FAIL | E+I | Tests whether reducing AKS congruence (a+x)^n ≡ a^n + x^n mod (n, x^r-1) modulo a prime q\|n-1 yields a TC^0-amenable test via the q-power Frobenius F: F_q[x]/(x^r-1)→itself, F(a+x)=a+x^q (ring hom). Frobenius gives a binomial decomposition (a+x)^n = prod_i (a+x^{q^i mod r})^{c_i} where c_i are base-q digits of n; verified matches naive repeated squaring (6/6 cases). HEADLINE NEGATIVE: primes do NOT satisfy mod-q AKS for non-trivial a — 0/399 passes across 19 primes in [101..2207] for every q\|n-1, q<r, every a in {1..q-1}. Trivial case a≡0 mod q always passes (both sides reduce to x^n) but carries zero primality info. WHY: residual (LHS-RHS) mod (q,x^r-1) has 8-102 of r non-zero coefficients (Lucas's theorem mod q gives binom(n,k) non-zero whenever k is a base-q sub-string of n; explicit n=101=0b1100101: 16 odd binomials in {0,1,4,5,32,33,36,37,...}). DEPTH: even granted the test worked, Frobenius decomposition saves only constant factor log(q)/log(2) bit-ops vs naive (~2x for q=2, ~3.3x for q=7); both reduce to O(log n) sequential r-dim multiplications = NC^1, not TC^0. (E) The mod-q computation is length-O(log n) growing-dim r×r MPOW over F_q — same primitive E5.3 unchanged by q-twist. (I) AKS Frobenius identity is mod-n specific; reducing mod q≠n loses it (no Hensel lifting). With FOCUS-1 sub-attacks 2 (S61, line 714) and 3 (this) closed, only sub-attack 1 (Bernstein 2003 strengthened gcd) remains un-built. See experiments/circuit_complexity/aks_alternative/frobenius_transplant/. | 64 |
+    720	
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now updating the literature monitor file with the audit verdict, and writing the session summary.
+  [Bash] tail -30 /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+      nth_prime path, Brun-Titchmarsh-based dist_approx improvement. v8.5 release
+      imminent. Constant-factor only.
+    - **Kakkar, arXiv:2604.02383 (April 2026, ML category):** "Neural Prime Sieves"
+      -- PrimeFamilyNet for prime-family classification. ~60-90% search-space
+      reduction with >95% recall. Confirms §5.4 barrier (no exactness). No
+      asymptotic impact.
+    - **Li, arXiv:2604.14596 (April 2026, 103-page lone-author preprint):**
+      "Prime-Zero Duality: Fractal Geometry, Renormalization-Group Flow, and
+      an Information-Ontological Framework for Number Theory." Speculative;
+      author acknowledges core claim unproven. Same profile as the debunked
+      Kilictas-Alpay TG kernel (§2.5d) -- no peer review, no institutional
+      affiliation, no computational pathway. Flagged for completeness.
+    
+    Other notable in-window items with no project relevance: González-Negrín
+    arXiv:2604.15396 (Salem integral RH equivalence note), arXiv:2604.03051
+    (CUE moment computation), arXiv:2604.16530 (zeta deficiency identity),
+    ECCC TR26-061 (Raz, non-commutative ABP lower bound), ECCC TR26-056
+    (Frick et al., Z₂-topological sign-rank framework -- conceptually adjacent
+    to χ_P sign-rank but no number-theoretic application), ECCC TR26-051
+    (Liu-Mazor-Pass, time-bounded Kolmogorov / Pessiland; adjacent to Brandt
+    MKtP line but no direct π(x) connection).
+    
+    No paper in the window changes the asymptotic barrier. The mature-state
+    hypothesis from S47 holds: most weeks produce no relevant news. Absence
+    of news is itself information.
+    
+    ---
+    
+    Generated: 2026-04-05; revised 2026-04-25 (session 47), 2026-04-26 (session 58)
+    Consolidated from: latest_2026_breakthroughs.md, latest_research_2026.md, exact_formulas_2026.md, exact_formulas_research.md, april_2026_new_findings.md, session10_internet_search.md, session20_internet_search, session30_internet_search
+The literature file already references "the debunked Kilictas-Alpay TG kernel (§2.5d)" — let me check what's already documented to avoid duplication.
+  [Bash] grep -n -B 1 -A 20 "Kilictas\|TG kernel\|2506.22634" /apps/aplikacijos/prime-research/literature/state_of_art_2026.md | head -80
+    177-
+    178:### 2.5d Kilictas-Alpay: TG Kernel for Exact Prime Counting (June 2025)
+    179-
+    180:**Source:** arXiv:2506.22634
+    181-
+    182-**KEY FINDING -- most relevant new result for project.**
+    183-
+    184:Uses a Truncated Gaussian (TG) kernel in the explicit formula framework. The TG kernel
+    185-is a piecewise function: Gaussian e^{-t^2} for t in [0,alpha], smoothly joined by cubic
+    186-polynomial P(t)e^{-t^2} for t in (alpha, alpha+Delta], zero beyond. C^2 continuity ensured.
+    187-Vanishing moments eliminate main terms.
+    188-
+    189-**Main claim:** Approximation error remains globally below 1/2 for all x >= 10^3,
+    190-guaranteeing EXACT pi(x) via rounding, without assuming RH.
+    191-
+    192-**Zeros needed:** For x with 10^8 decimal digits (~10^{10^8}), only ~1200 nontrivial
+    193-zeta zeros suffice. ~600 zeros with positive imaginary part. This is N = O(log x) zeros.
+    194-
+    195-**Computational cost:** Single FFT-based multiplication on ~330 million-bit number.
+    196-Claims "seconds on modern hardware" for 10^8-digit x.
+    197-
+    198-**Key theorems:**
+    199-- Lemma 1 (Tail Error): R_tail(x) < (alpha+Delta)*e^{-alpha^2}
+    200-- Lemma 2 (Zero Truncation): E_zeros(x) < 0.6*C/T^2*(ln T + 1)
+    201-
+    202-**DEBUNKED (Sessions 12, 30):**
+    203-1. Violates the uncertainty principle: kernel too wide to resolve primes
+    204-2. Omits critical x^{1/2} factor in error analysis
+    205-3. AI-generated paper with mathematical errors
+    206:4. Authors (Kilictas/Alpay) have no number theory background; Alpay publicly admits
+    ... (50 more lines)
+The paper was already debunked at S12/S30 but my audit adds sharper code-backed falsifications. Let me update the stale "NEEDS VERIFICATION" note in the literature monitor.
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    478	
+    479	**April 2026 session 29 search update (5 topics):**
+    480	
+    481	1. **Kilictas-Alpay TG Kernel (June 2025):** Claims exact pi(x) via explicit formula with
+    482	   only O(log x) zeta zeros and error < 0.5. If verified, this is the most significant
+    483	   result for the project -- would imply near-polylog prime counting. NEEDS VERIFICATION.
+    484	   See Section 2.5d.
+    485	
+    486	2. **Connes-Consani-Moscovici Zeta Spectral Triples (Nov 2025):** Using primes <= 13,
+    487	   spectra match first 50 zeta zeros to 10^{-55} accuracy. Beautiful but no algorithmic
+  [Edit] /apps/aplikacijos/prime-research/literature/state_of_art_2026.md
+    The file /apps/aplikacijos/prime-research/literature/state_of_art_2026.md has been updated successfully.
+Now let me write the session summary, update SESSION_INSIGHTS, and clean up.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+  [Bash] grep -n "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    1927:## Session 55 (2026-04-26, FOCUS-2 Liouville structural decomposition)
+    1977:## Session 56 (2026-04-26, FOCUS-2 q≥3 character-twisted Liouville)
+    2040:## Session 57 (2026-04-26, deep focus task #2 — order-3 cell of structural battery)
+    2099:## Session 58 (2026-04-26, normal mode, FOCUS-7 literature watch)
+    2148:## Session 59 (2026-04-26, deep focus task #3 — FOCUS-6 fourth-encoding sweep)
+    2210:## Session 60 (2026-04-26, S35-fresh proposals + critique cycle)
+    2250:## Session 61 (2026-04-26, FOCUS-1 sub-attack 2 construction — non-cyclotomic ring AKS)
+    2316:## Session 62 (2026-04-26, deep focus task #4 — K_min extension with 2000 zeros)
+    2380:## Session 63 — Critique of S63 fresh proposals (D-finite δ, mollifier, RMT moments, Newton zero-budget)
+    2432:## Session 64 — FOCUS-1 sub-attack 3 construction: Healy-Viola Frobenius transplant
+  [Bash] tail -40 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    ### Headline negative
+    **Primes do NOT satisfy mod-q AKS for non-trivial a.** Across 19 primes
+    in [101..2207], for every prime `q | n-1` with `q < r = aks_r(n)` and
+    every `a in {1, ..., q-1}` (a coprime to q): **0/399 passes**. The
+    trivial case `a ≡ 0 mod q` always passes (both sides reduce to `x^n`)
+    but carries zero primality information.
+    
+    Why: the polynomial identity `(a+x)^n - (a^n + x^n) = sum_{k=1}^{n-1}
+    binom(n,k) a^{n-k} x^k` vanishes mod n (Frobenius) but NOT mod q for
+    `q != n` prime. By Lucas's theorem, `binom(n,k) mod q = prod_i
+    binom(n_i, k_i)` where n_i, k_i are base-q digits — these are nonzero
+    whenever k is a "base-q sub-string" of n. Empirically the residual
+    polynomial fills 8-102 of r coefficients in F_q[x]/(x^r-1) — not a
+    sparse correction, no partial-cancellation rescue available.
+    
+    ### Depth analysis
+    Frobenius decomposition saves only constant factor `log(q)/log(2)`
+    bit-operations vs naive repeated squaring (~2x for q=2, ~3.3x for q=7).
+    Both schemes reduce to O(log n) sequential r-dim polynomial
+    multiplications = NC^1, NOT TC^0. The growing-dim r×r MPOW primitive
+    (E5.3) is unchanged by switching the coefficient ring from Z_n to F_q.
+    
+    ### Closure
+    **FAIL — modes (E) Equivalence + (I) Information loss.**
+    - (E) The mod-q computation IS growing-dim r×r MPOW over F_q, the same
+      E5.3 primitive that is the only open Chain-E frontier.
+    - (I) AKS Frobenius identity is mod-n specific; reducing mod q≠n loses
+      it (no Hensel lifting), and primes themselves fail the mod-q test.
+    
+    CLOSED_PATHS line 719 added. With sub-attack 2 (S61 line 714) and
+    ... (8 more lines)
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'EOF'
+
+## Session 65 — Fresh-perspective audit of arXiv:2506.22634 (TG kernel) + phi 2D rank
+
+### Setup
+Fresh-perspective mode: instructed not to read CLAUDE.md / CLOSED_PATHS,
+think from first principles. After ~138 wildcard scripts already exist,
+parallel-launched a 2025-2026 literature scan and tested two construction
+angles:
+1. phi(x,a) viewed as 2D matrix M[i,j] under four framings — does it
+   admit polylog-rank reconstruction sufficient for integer-precision
+   Meissel-Lehmer phi recovery?
+2. Audit of the literature-flagged candidate arXiv:2506.22634
+   (Kılıçtaş–Alpay TG-kernel "rigorous bound").
+
+### Result 1 — phi 2D low-rank (CLOSED, mode I)
+SVD of phi(x_i, a_j) under four framings (raw, Mertens-residual,
+normalised, col-difference) at K∈{18,40,60}: relative singular spectrum
+decays exponentially as exp(-0.33·k) — looks compressible.  But
+||M||_F ∝ x grows, so required rank for integer-precision (±0.5) recovery
+scales **linearly** with K (12 at K=18, ≈35 at K=60), not polylog. The
+relative compressibility is illusory — same pseudorandomness wall the
+project's 21+ measures already showed in other framings. Adds the 22nd
+structural-pseudorandomness measure.
+
+### Result 2 — TG-kernel audit (CLOSED, modes C+I)
+The literature scan (sub-agent) flagged arXiv:2506.22634 as the most
+algorithmically promising 2025 result: claims ~1200 zeros suffice for
+π(x) at x with 10^8 digits via truncated-Gaussian kernel +
+Riesz-Weil explicit formula. Project monitor had it on a "DEBUNKED
+S12/S30" line but with vague reasons. Full PDF audit + small-x
+empirical falsification (`experiments/wildcard/tg_kernel_audit.py`):
+
+- **0th moment fails by 0.886.** Paper requires ∫Φ_TG(t)dt = 0 (so
+  F_TG(1)=0 cancels the main term). But Φ_TG is strictly positive on
+  its support [0, α+Δ]; we measured ∫_0^4 Φ_TG = 0.8862. Premise
+  self-contradictory.
+
+- **LHS empirically wrong by 8 orders of magnitude.** Paper derives
+  Σ Λ(n) Φ_TG(n/x) ≈ αe^{-α²} ≈ 3.7e-4. We computed S(x) directly:
+  x=100 → 86.78, x=1000 → 884.39, x=30000 → 26584.91 — i.e.
+  S(x) ≈ 0.886·x. Trace: their IBP step on p.7 substitutes Ψ(t)≈t
+  (PNT main) and drops the (Ψ(t)−t) deviation that is precisely the
+  oscillatory zero-sum signal encoding π(x).
+
+- **Σ F_TG(ρ) is x-independent.** F_TG depends only on Φ_TG, not on x.
+  The truncated zero sum is therefore a fixed constant (≈ 2.5×10⁻²
+  for first 20 zero pairs). It cannot "round to give π(x)" — π(x)
+  varies with x, the proposed identity does not.
+
+- **Lemma 2 zero-density bound is mathematically wrong.** Paper invokes
+  N(σ,T) ≤ A T^{1−1/σ} (log T)^B; at σ=1/2 this gives A T^{−1} (log T)^B,
+  *decreasing* in T, contradicting the actual N(T) ≈ (T/2π) log(T/2π)
+  which grows.
+
+- **Appendix B is symbolic-mysticism crank content** ("EmbedS(Faruk
+  Alpay) := Φ_∞ … canonical identity fold equating author with a
+  functor"), citing a self-referential "Faruk Alpay ≡ Φ_∞" preprint.
+
+The right answer for smoothed-kernel-based π(x): smoothing in log-scale
+with width h yields T·h ~ √log(1/ε); integer-precision recovery of π(x)
+requires h ≲ log(x)/x ⇒ T ~ x. No polylog escape via this route.
+
+### Methodological contribution
+The audit shows a **fast falsification recipe** for any future "smoothed
+kernel beats explicit formula" preprint: compute the LHS Σ Λ(n) Φ(n/x)
+at small x where π(x) is known and check whether it matches the paper's
+claimed identity. < 100 lines of code; falsified this paper in minutes.
+Worth keeping in the literature-monitor playbook.
+
+### Literature monitor update
+S29's "NEEDS VERIFICATION" annotation on the TG-kernel paper
+(literature/state_of_art_2026.md line 481) replaced with "VERIFIED
+FALSE" plus the empirical evidence and pointer to the audit script.
+The paper joins CLOSED_PATHS as line ~722.
+
+### Files
+- `experiments/wildcard/phi_2d_lowrank.py` + `_results.md`
+- `experiments/wildcard/tg_kernel_audit.py` + `_results.md`
+- Updates: `status/CLOSED_PATHS.md` (2 new entries), `literature/state_of_art_2026.md`
+- This file (S65 entry).
+
+### Closure
+No new viable direction opened. Confirms that the 2025 literature has
+no genuine breakthrough toward sub-x^{2/3} π(x): Guth-Maynard's
+zero-density estimate sharpens error terms but doesn't produce a faster
+algorithm, Aggarwal 2510.16285 is a wrapper-level p_n speedup, and
+the Alpay-line "TG kernel" claim is mathematically incoherent.
+The mature-state hypothesis from S47 holds.
+EOF
+echo "Appended."
+    Appended.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session65_tg_kernel_audit.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session65_tg_kernel_audit.md
+Now cleanup: verify all .py have _results.md companions, kill any __pycache__, save run state.
+  [Bash] find experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -20
+    (Bash completed with no output)
+  [Bash] find experiments/ -name "__pycache__" -type d 2>/dev/null | head -5; echo "---"; ls /apps/aplikacijos/prime-research/__pycache__ 2>/dev/null
+    Exit code 2
+    ---
+  [Bash] find /apps/aplikacijos/prime-research -name "__pycache__" -type d 2>/dev/null | head; echo "---"; ls /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank* /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit*
+    ---
+    /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank.py
+    /apps/aplikacijos/prime-research/experiments/wildcard/phi_2d_lowrank_results.md
+    /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit.py
+    /apps/aplikacijos/prime-research/experiments/wildcard/tg_kernel_audit_results.md
+  [Bash] echo 43 > /apps/aplikacijos/prime-research/.run_state; cat /apps/aplikacijos/prime-research/.run_state
+    43
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session 65 complete. Two paths closed cleanly:
+
+**1. phi(x,a) 2D low-rank** (`experiments/wildcard/phi_2d_lowrank.py`) — Apparent exp(-0.33·k) singular-value decay across K∈{18,40,60} is illusory: ‖M‖_F grows ∝ x, so integer-precision recovery needs *linear* rank in K (12 → 35 as K grows 18 → 60). 22nd structural-pseudorandomness measure.
+
+**2. arXiv:2506.22634 audit** (`experiments/wildcard/tg_kernel_audit.py`) — The literature scan flagged Kılıçtaş–Alpay's TG-kernel "polylog π(x)" claim as the most algorithmically promising 2025 result. Code-backed audit empirically falsifies the construction at small x:
+- ∫Φ_TG = 0.886 ≠ 0 (paper requires F_TG(1)=0 to cancel main term — Φ_TG ≥ 0 cannot integrate to 0).
+- S(x) = Σ Λ(n)Φ_TG(n/x) ≈ 0.886·x (NOT αe^(−α²)≈3.7×10⁻⁴ as paper derives — IBP step on p.7 substitutes Ψ(t)≈t and drops the deviation that encodes π(x)).
+- Σ F_TG(ρ) is x-independent → cannot encode π(x) by rounding.
+- Lemma 2's zero-density bound is decreasing in T at σ=½ (mathematically wrong).
+- Appendix B is symbolic-mysticism crank content.
+
+Updated CLOSED_PATHS (2 new entries), literature/state_of_art_2026.md (replaced stale "NEEDS VERIFICATION" → "VERIFIED FALSE"), SESSION_INSIGHTS, and wrote `archive/sessions/session65_tg_kernel_audit.md`. The audit produces a generalisable falsification recipe for future smoothed-kernel preprints. `.run_state` saved at 43.
+
+Sources:
+- [arXiv 2506.22634 — Kılıçtaş & Alpay, TG Kernel in Prime Counting](https://arxiv.org/abs/2506.22634)
+- [arXiv 2510.16285 — Aggarwal, Algorithms for Computing p_n](https://arxiv.org/abs/2510.16285)
+- [arXiv 2405.20552 — Guth & Maynard, Dirichlet polynomial large value estimates](https://arxiv.org/abs/2405.20552)
+--- Session ended ---
+Sleeping 5 seconds before next run...

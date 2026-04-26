@@ -1,19 +1,21 @@
-# Critique — Session 63 (2026-04-26)
+# Critique — Critique-46 (2026-04-26)
 
-Critique of the four S63-fresh proposals (`archive/ephemeral/proposals_session.md`)
-and their experimental verdicts (`experiments/proposals/session63fresh_*_results.md`).
+Critique of the four S46-fresh proposals (`archive/ephemeral/proposals_session.md`)
+and their experimental verdicts (`experiments/proposals/{pade_zero_sum,
+lagrange_borel, modular_fingerprint, zero_aware_variance}_results.md`).
 
-The S63 session, instructed not to consult CLOSED_PATHS.md while drafting, ran each
-of its four proposals and self-reported all four as CLOSED. My job here is to verify
-those verdicts against the 537+-entry closed-paths catalogue and decide whether any
-genuinely novel component survives.
+The proposer (proposals session) ran each of the four proposals and self-reported
+all four as CLOSED. My job is to verify those verdicts against the 720+-entry
+CLOSED_PATHS.md catalogue, decide whether any genuinely novel component
+survives, and confirm the failure-mode tagging.
 
-**Bottom line:** all four self-verdicts hold up. P1 is a **legitimate new closure**
-of a sub-question not previously tested at this granularity (D-finiteness specifically
-on δ(n), not on π(n) or 1_P). P2 and P4 are **duplicate-plus** of prior closures
-(line 693 and line 685 respectively). P3 is **CONFIRMED CLOSED (circular)** with
-one empirical refinement worth recording. Nothing escalates to `novel/` or
-`OPEN_PROBLEMS.md`.
+**Bottom line:** all four self-verdicts hold up. None reaches the `novel/` bar
+and none reopens any direction in `OPEN_PROBLEMS.md`. P-A, P-B, P-D are
+**strict duplicates-plus** of established closures (lines 26 + 657 + 697,
+40 + 43 + 49, 256 + 688 respectively). P-C is a **DUPLICATE-PLUS** of line 689
+with one empirical refinement worth recording (depth-5 fingerprint perfectly
+separates primes from composites at n ≤ 10⁴, but the algorithm is
+non-polylog regardless of discrimination rate).
 
 ---
 
@@ -21,259 +23,365 @@ one empirical refinement worth recording. Nothing escalates to `novel/` or
 
 | # | Proposal | Self-verdict | Critic verdict | Mode | Closest prior |
 |---|----------|--------------|----------------|------|----------------|
-| P1 | D-finite recurrence on δ(n) | CLOSED (I) | **CONFIRMED-NOVEL TEST, CLOSED** | I | extends lines 576, 577, 680 (D-finite on π and π/n GF) |
-| P2 | Mollifier-corrected explicit formula | CLOSED (E) | **DUPLICATE-PLUS, CLOSED** | E | line 693 (Hermite/Gaussian/Riesz mollification) |
-| P3 | RMT local-moment predictor for Δ(x) | CLOSED-circular (C) | **CONFIRMED, CLOSED** with side-finding worth keeping | C | lines 353, 656 |
-| P4 | Newton with progressive 2^k zero-budget | CLOSED (I) | **DUPLICATE-PLUS, CLOSED** | I | line 685 (R⁻¹ fixed-point with zero correction) |
+| A | Pade/Wynn extrapolation of psi(x) zero-sum | CLOSED (I) | **DUPLICATE-PLUS, CLOSED** | I | lines 26, 49, 657, 697 |
+| B | Borel resummation of Cipolla asymptotic | CLOSED (E) | **DUPLICATE-PLUS, CLOSED** | E | lines 40, 43, 49 |
+| C | Hecke / arithmetic fingerprint primality oracle | CLOSED (C) | **DUPLICATE-PLUS, CLOSED** | C | line 689 |
+| D | Zero-aware control variate for Monte-Carlo pi(x) | CLOSED (I) | **DUPLICATE-PLUS, CLOSED** | E+I | lines 256, 257, 688 |
 
 ---
 
-## P1 — D-finite (Apéry-style) recurrence hunt for δ(n)
+## A — Pade/Wynn extrapolation of zero-sum (psi formulation)
 
 ### Has the exact approach been tried?
 
-**Adjacent but distinct.** Three near-misses in CLOSED_PATHS.md:
+**Yes — covered tightly by four prior closures:**
 
-- **Line 576** (S23): "Holonomic (D-finite) recurrence for π(n) — FAIL (I), order ≤ 20,
-  polynomial degree ≤ 8". Target was π(n).
-- **Line 577** (S23): "Prime indicator holonomic — FAIL (I), same ratio to random as
-  π(n)." Target was 1_P(n).
-- **Line 680** (S43): "J-fraction of π(n)/n generating function (D-finiteness test) —
-  FAIL (E)". Hankel-determinant route on π(n) generating function.
-- **Line 703** (S49): PSLQ + zeta-zero/log basis on δ(n). Algebraic, not D-finite.
+- **Line 26 (S32):** "Convergence acceleration of zero sum — FAIL (I).
+  Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on
+  partial zero sums for x = 10⁴..10⁷. Errors GROW as N^{+1.0} (random walk).
+  Best method (Shanks) gives O(1) improvement only. GUE-random phases make
+  each term independent — no structured error to accelerate."
+- **Line 49 (S10):** "Resummation (Borel/Pade/Shanks/Richardson/Mellin-Barnes)
+  — FAIL (E). GUE statistics prevent partial sum prediction."
+- **Line 657 (S32):** repeats line 26 with slightly different numerics
+  (errors grow ~ N^{0.8-1.0}, Shanks(3) ~ 10x constant).
+- **Line 697 (S51):** "Borel-Pade × Cesaro-Fejer hybrid — FAIL (E)."
+  Stacked acceleration also flat.
 
-So the **specific test** "is δ(n) = p(n) − R⁻¹(n) D-finite at low (L, d)?" has not
-appeared before. P1 is a **legitimate new closure**, not a duplicate, even though
-the broader holonomic-on-prime-counting question is closed.
+P-A's specific recipe (geometric ladder T_k = 5·2^k, k = 0..5, Wynn-epsilon
+on the resulting psi_T values) is a strict subcase of "any convergence-
+acceleration scheme on a partial-zero-sum sequence." Wynn-epsilon was not
+called out by name in line 26 but is mathematically equivalent to Shanks
+on the relevant sequences (Wynn-eps_2 is the Shanks transform; line 26
+explicitly tests Shanks).
+
+### Empirical result
+
+The proposer's table is decisive in the negative direction:
+
+| x | best partial err | Wynn extrap err | extrap helps? |
+|---|---|---|---|
+| 100 | 0.024 | 78.18 | NO (3000× worse) |
+| 1000 | 0.525 | 995.42 | NO (1900× worse) |
+| 10000 | 2.43 | 10013.88 | NO (4100× worse) |
+
+Wynn doesn't merely fail to accelerate — it **catastrophically diverges**
+on this sequence. This is the expected behavior when a sequence has
+GUE-random oscillations (no smooth envelope), and reproduces line 26's
+"errors GROW as N^{+1}" finding under a different transform.
+
+### Decay-rate slopes
+
+Empirical |psi - psi_T| vs T fits give average slope b ≈ -0.25 (proposer's
+report: -0.580, +0.217, -0.394 across three x). RH-conditional bound predicts
+b ≈ -1; observed slopes are far worse, dominated by the small-T regime
+where the trace formula has not yet kicked in. This is consistent across
+S32 (line 657) and earlier closures.
 
 ### Failure-mode analysis
 
-Mode **I**. Held-out skill 0.5–1.3 across (L,d) ∈ [1..4]×[1..4] is at the noise floor.
-The train-side rank ratio shrinking with d is **purely a column-conditioning artifact**
-(rows in n^k δ(n+j) span 12 orders of magnitude). The proposer caught this and switched
-to held-out prediction, which is the right test. Methodology is sound.
+Mode **I**, as proposer self-tagged. The substantive bet ("tail oscillation
+has a smooth envelope") is empirically false, ruled out structurally by
+GUE pair correlation of zeros (line 24, line 22) and by the Hilbert-transform
+analysis of line 26.
 
-### Complexity claim
+### Verdict — **DUPLICATE-PLUS (refines lines 26 + 657 + 697 with explicit Wynn-epsilon numbers), CLOSED, mode I.**
 
-Correct: if a recurrence of order L and polynomial-degree d existed, Bostan–Salvy–Schost
-binary-splitting shift would evaluate at index n in O((L+d)·M(log n)). The complexity
-analysis is fine; the issue is empirical absence of such a recurrence.
-
-### Specific obstacle
-
-δ(n) inherits GUE-random oscillations from ζ-zeros (`novel/pseudorandomness_of_pi.md`,
-21+ measures). Generic prediction: δ-style sequences with GUE-distributed Fourier phases
-are not P-recursive at any low order, consistent with line 576 closing at d ≤ 8 for π
-and line 703 closing PSLQ on δ.
-
-### Verdict — **CONFIRMED CLOSED, mode I.** Add to CLOSED_PATHS as a new entry.
-
-### What's worth keeping
-
-The proposer's **methodology lesson** is genuinely useful: when running null-space
-searches on data with multiplicative column-scale spread, validate via held-out
-**prediction**, not via singular-value ratios on the training matrix — column conditioning
-can fake rank deficiency at 1e-13. Worth a one-line record for any future PSLQ /
-D-finite / regression search in this project.
+Worth a CLOSED_PATHS entry because Wynn-epsilon is not by name in the
+existing list, but the closure mechanism is identical to its parents.
 
 ---
 
-## P2 — Mollifier-corrected explicit formula
+## B — Lagrange/Cipolla asymptotic with Borel resummation
 
 ### Has the exact approach been tried?
 
-**Yes — covered structurally by line 693 (S48):**
+**Yes — covered tightly by three prior closures:**
 
-> "Hermite/Gaussian/Riesz mollification of truncated explicit formula for ψ(x) — FAIL (E).
-> Tested Gaussian kernel exp(-(γ-log x)²/2σ²) for σ ∈ {0.5, 1, 2} and Riesz mean
-> (1-|γ|/T)² for T ∈ {50, 200, 800}, K up to 800 zeros. Linear-functional argument:
-> any kernel w(γ) with sum|w| ≥ cN(T) inherits Ω(√x · √(log T / log x)) tail bound;
-> σ → ∞ recovers unmollified. To beat √x, need NONLINEAR operation on zeros, not
-> re-weighting."
+- **Line 40 (S5):** "Cipolla Pade resummation — FAIL (E). Divergent,
+  Pade can't generalize."
+- **Line 43 (S6):** "Ramanujan-type series / Pade — FAIL (E). Cipolla
+  DIVERGES, Pade gives 1372 mean error."
+- **Line 45 (S6):** "Borel summation — FAIL (E). NOT APPLICABLE
+  (power-law not factorial)."
+- **Line 49 (S10):** "Resummation (Borel/Pade/...) — FAIL (E)."
 
-P2's Selberg-style **Dirichlet-polynomial** mollifier M(s) = Σ_{n≤Y} a_n n^{-s} is a
-*different shape* of kernel (multiplicative-arithmetic structure) but is captured by the
-same general-kernel tail-bound argument. The proposer's trade-off observation
-("Y growth pays back what K kills") is the manifestation of that tail bound on the
-specific kernel shape.
+Note on line 45: that closure rejected Borel summation on the *zero-sum*
+side (the explicit formula's terms are power-law in x, not factorial in
+zero index). For the *Cipolla* asymptotic series itself, the coefficients
+DO grow factorially, so Borel is in principle applicable — proposer is
+correct on this technicality. But lines 40 + 43 are then the relevant
+parents, and they show empirically that Borel-Pade resummation of
+Cipolla's asymptotic series does not converge to p(n).
 
-Adjacent prior closures: lines 31, 32 (Beurling–Selberg uncertainty), 36 (sieve-style
-mollification), 519, 685.
+### Empirical result
 
-### Methodology issue (worth flagging)
+| n | true p(n) | best Cipolla K=2-3 err | Borel-Pade resummed err |
+|---|---|---|---|
+| 10 | 29 | 5.97 (K=1) | 85.67 |
+| 100 | 541 | 27.77 (K=2) | 204.62 |
+| 1000 | 7919 | 78.6 (K=2) | 534.05 |
+| 10000 | 104729 | 183.1 (K=3) | 260.33 |
 
-**P2's experiment does NOT actually run the explicit formula for ζ·M.** The proposer
-explicitly notes this in the script docstring (lines 37–49 of
-`session63fresh_mollifier_pi.py`): the test re-weighs each ζ-zero contribution by
-M(ρ_j)/M(1) without including the contribution from M's own zeros/poles or the cross
-terms in the von-Mangoldt-type coefficients of ζ'/ζ + M'/M. So the empirical
-"mollifier worse than sharp" result is **not** decisive evidence about the actual
-ζ·M explicit formula — only that the naive heuristic weighting doesn't help.
+Borel-Pade is **always worse** than the best raw Cipolla truncation by a
+factor of 1.4× to 14×. The proposer correctly identifies this as either
+(a) Stokes-line / multi-instanton structure that Borel-Pade in single
+direction can't capture, or (b) the asymptotic series being already past
+its optimal truncation point at small K.
 
-The **decisive closure** is line 693's theoretical argument (kernel-w bound), which
-applies regardless of which kernel shape one picks. The empirical run is corroborating
-evidence at best.
+### Failure-mode analysis
 
-### Verdict — **DUPLICATE-PLUS (refines line 693), CLOSED, mode E.**
+Mode **E** (proposer self-tagged correctly). Cipolla series is the
+asymptotic expansion of `Li^{-1}(n)` (or equivalently of p_n / n), and is
+analytically equivalent to the explicit formula by analytic continuation.
+Borel-Pade is a different computational route to the same analytic object;
+when the object can't be evaluated to integer precision in polylog, no
+resummation scheme of its asymptotic series can either. Line 45's
+"NOT APPLICABLE" labeling is loose but the conclusion is right.
 
-Worth a CLOSED_PATHS entry because the *Dirichlet-polynomial* mollifier shape is not
-listed by name, but with explicit citation of line 693 as the parent closure.
+### Side-finding
+
+Cipolla *relative* error shrinks: 0.21 → 0.0017 from n=10 to n=10⁴ — but
+absolute error grows monotonically with n in any optimal-truncation
+window. This matches the well-known "asymptotic series gives
+log(p(n)) / log log(p(n)) digits at optimal truncation" theorem
+(Dusart 1999, refined by Massias-Robin) and is not a refinement worth
+keeping separately; it's already implicit in lines 40, 43.
+
+### Verdict — **DUPLICATE-PLUS (refines lines 40 + 43 with quantitative Borel-Pade vs raw Cipolla comparison), CLOSED, mode E.**
 
 ---
 
-## P3 — RMT local-moment predictor for Δ(x)
+## C — Hecke / arithmetic fingerprint as primality oracle
 
 ### Has the exact approach been tried?
 
-**Adjacent but not identical.** Two prior entries cover the GUE/RMT route:
+**Yes, structurally — line 689 (S46):**
 
-- **Line 353** (S8/S10): "RMT/GUE approximation — FAIL (I). Correct statistics, wrong values."
-- **Line 656** (S32): "Hilbert-Pólya trace / GUE model / functional equation — FAIL (E,I).
-  GUE: correct statistics, wrong values (std ≈ 20-60). δ(x) incompressible."
+> "Edixhoven-Couveignes tau-based bilinear-form prime detection — FAIL (C).
+> Edixhoven 2011 gives polylog tau(p) primality test under GRH, but does
+> NOT give pi(x). Proposal conflates primality testing with ordinality
+> (which prime is the n-th). Same flaw as line 643. Bilinear form
+> B(x) = sum_{mn≤x} tau(m)tau(n) has d_tau(p)=2 trivially for prime p, but
+> verifying d_tau(N) requires factorising N. Best obtainable via
+> primality-test-in-window: O(sqrt(n) polylog n) (arXiv:2510.16285), not
+> polylog."
 
-P3's **specific** twist — using a *local empirical window* of Δ(x±k) for k=1..H and a
-weighted-mean estimator to predict Δ(X) — has not been tried this way. The empirical
-result (RMSE 0.33 with H=100) is stronger than line 353 alone would predict because it
-exploits **local smoothness of Δ on small scales**, which is a real phenomenon.
+Adjacent closures: **line 578 (S23)** Ono partition-criterion approach
+(modular form criterion gives only 46-72% accuracy near random); **line 640
+(S29)** f(x) vs Ramanujan tau correlation (Pearson r = 0.010, no signal);
+**line 36 (S25)** Heuristic candidate generation + AKS (candidates scale as
+n^0.577, not polylog).
 
-### The circularity argument
+P-C's specific recipe (depth-5 fingerprint = (tau(n) - n¹¹ - 1 mod 691,
+tau(n) mod 5, sigma_1(n) - 1 - n, n mod 30, n^6 mod 7)) is a finer
+empirical implementation than line 689 but the **structural barrier is
+identical**: every entry in the fingerprint either requires factoring n
+(tau, sigma_k via Eichler-Selberg + multiplicativity) or carries
+constant-bit information (n mod m).
 
-Verified. Δ(x) = π(x) − li(x), so building the window samples requires π(x) at every
-window point. Two strategies:
+### Empirical result
 
-1. **Global sieve up to X:** O(X log log X) — strictly worse than Meissel–Lehmer's
-   O(X^{2/3}).
-2. **Anchor + Miller–Rabin sweep:** anchor π(x_0) costs O(x_0^{2/3}) once, then
-   incremental sweep through (x_0, X+H] is O(H · log² X). For a *single* π(X) query
-   this is dominated by the anchor.
+| depth | unique prime fps | composite FPs | FP rate | prime collide rate |
+|---|---|---|---|---|
+| 1 | 1 | 10 | 0.11% | 100% |
+| 2 | 3 | 9 | 0.10% | 74.86% |
+| 3 | 3 | 0 | 0.00% | 0.00% |
+| 4 | 11 | 0 | 0.00% | 0.00% |
+| 5 | 12 | 0 | 0.00% | 0.00% |
 
-The proposer's analysis is correct. **The only path that would convert this into a
-polylog algorithm is a polylog anchor — which is the original problem.** So C is the
-right mode.
+At n ≤ 10⁴, the depth-5 fingerprint achieves perfect separation. **This
+is a real empirical observation** — not a refinement of any existing
+closure I can find. But:
+
+### Why this does not escalate
+
+1. **Cost of computing tau(n) for composite n.** Edixhoven 2011 gives
+   tau(p) at primes p in O(polylog p) under GRH (line 689). For composite
+   n, tau is multiplicative: tau(p₁^{a₁}...p_k^{a_k}) = product
+   tau(p_i^{a_i}). Computing this requires the prime factorisation of n,
+   which is O(exp((log n)^{1/3+epsilon})) by GNFS. So the proposed test
+   "is fingerprint(n) in PRIME_FINGERPRINTS?" runs in subexponential
+   time, not polylog. P-C's complexity claim ("each tau(n) mod l:
+   O(polylog n)") is **incorrect** for composite n.
+
+2. **Even granted the test is polylog**, P-C only gives a primality
+   *oracle*, not pi(x). The original proposal acknowledges this: "the
+   bottleneck moves to *counting* primes with the fingerprint in [1,x],
+   which is a different problem." That counting problem is exactly
+   pi(x) again — the route is circular at the meta level.
+
+3. **Discrimination rate ≠ algorithm.** Line 689's parent argument
+   ("conflates primality testing with ordinality") applies here too: even
+   a perfect primality oracle gives only the AKS-type algorithm
+   pi(x) = sum_{n=2}^x is_prime_oracle(n), which is O(x · polylog x),
+   not polylog.
+
+4. **N=10⁴ scaling.** The number of "distinct prime fingerprints"
+   monotonically increases with n: 1 at depth 1 to 12 at depth 5
+   on 1229 primes. The information-theoretic floor is log₂(1229) ≈ 10.3
+   bits. Depth-5 fingerprint uses ~ log₂(691·5·N·30·7) ≈ log₂(7e7) ≈ 26
+   bits per n. This is the 50% redundancy regime; no asymptotic gain
+   from increasing depth, and at n = 10⁶ the same battery would need
+   roughly log₂(N) more bits per n.
+
+### Failure-mode analysis
+
+Mode **C** (proposer self-tagged correctly). The empirical separation is
+real but circular at the algorithmic level: factoring n is the hidden
+prerequisite for evaluating each component of the fingerprint at composite n.
+
+### Verdict — **DUPLICATE-PLUS (refines line 689 with explicit depth-5 separation numbers), CLOSED, mode C.**
+
+The empirical observation "depth-5 multiplicative fingerprint perfectly
+separates primes from composites in [2, 10⁴]" is a real numerical fact but
+does not reach the `novel/` bar — it is a finite-domain observation that
+the proposer's own analysis shows breaks asymptotically.
 
 ### Side-finding worth recording
 
-The empirical observation — **std(Δ) over a 200-window is < 2 even at X = 5×10^4** —
-is a quantitative refinement of the GUE prediction "Δ varies slowly on scales below √x".
-Specifically, weighted-mean predictor RMSE 0.33 over windows of size 200 says:
-
-> Δ(X) is determined to within ±0.5 by Δ(x) on a window of 200 points around X,
-> for X up to 5×10^4.
-
-This supports (does not prove) the conjecture that **the entropy of Δ at scale X is
-concentrated at frequencies ≥ 1/√X**, not at unit frequency. It's not strong enough for
-a `novel/` entry on its own (the underlying "GUE → smooth on small scales" claim is in
-the literature), but worth a CLOSED_PATHS line. **Caveat:** would need a Cramér-random
-control to confirm this is a *prime-specific* phenomenon and not a generic property of
-any zero-mean drift process at scale √x. Flagged for follow-up next session.
-
-### Verdict — **CONFIRMED CLOSED, mode C.** Useful side-finding.
+The depth-vs-FP-rate table (P-C above) is **a useful quantitative
+benchmark of the AKS-style primality-oracle approach**: at n ≤ 10⁴, ~5
+multiplicative invariants suffice for perfect separation, but each
+requires factoring or polylog under GRH only at primes. Worth a
+CLOSED_PATHS line citing both this and line 689.
 
 ---
 
-## P4 — Newton with progressive 2^k zero-budget
+## D — Zero-aware control variate for Monte-Carlo pi(x)
 
 ### Has the exact approach been tried?
 
-**Yes, structurally — line 685 (S44):**
+**Yes, structurally — three prior closures:**
 
-> "Fixed-point iteration p_{k+1} = R⁻¹(n + sum_ρ R(p_k^ρ)) — FAIL (I+E). Iteration
-> is non-contracting and non-monotone. n=10: k=2 hits err=-0.14 then k=3 drifts back
-> to -1.89. n=1000: k=1 hits err=-0.16, k=2/k=3 drift to -0.6. ... Map f(x) =
-> R⁻¹(n + S(x)) has |f'| oscillating ~ |S'(x)|, GUE-random; no contraction."
+- **Line 256 (S15):** "Randomized zeta zero sampling — FAIL (E). Must
+  use 100% of zeros (variance analysis); no sampling gain possible."
+- **Line 257 (S15):** "Probabilistic sieve (I-E sampling) — FAIL (E).
+  Variance 10⁶-10⁹× WORSE than exhaustive due to massive cancellation
+  in I-E."
+- **Line 688 (S46):** "Harper 2020 random-multiplicative variance
+  reduction for pi(x) — FAIL (E+I). E|sum_{n<=x} f(n)| =
+  O(sqrt(x)/(log log x)^{1/4}) for random multiplicative f IS strict,
+  but each Monte Carlo sample costs O(x); ensemble cost O(M·x),
+  super-sqrt(x) for any M >= 1."
+- **Line 99 (S36):** "Randomized inclusion-exclusion for pi(x) — FAIL (I).
+  Random subset sampling: std ~ 2^k / sqrt(samples). For x=500 (k=8),
+  need ~370K samples vs 256 full IE terms. Variance reduction impossible
+  — randomization makes IE strictly worse."
 
-P4's variant uses **Newton-on-π** rather than R⁻¹-fixed-point, and adds **progressive
-zero budget** K_k = 2^(k+1). Mathematically these are different maps but the **failure
-mechanism is identical**: π_K(x) carries O(1) noise from the GUE-random tail, Newton
-amplifies it by 1/π'(x) ≈ log(x), and for n ≥ 1000 this noise (~log x ≈ 9) is at the
-scale of prime gaps. So Newton oscillates instead of converging.
+P-D's twist (use truncated explicit formula as control variate) is a
+specific instance of "use any computable proxy for pi(x) as control
+variate"; this is the standard MC variance-reduction recipe. Lines 256,
+257, 688 collectively rule out: variance reduction below
+O(sqrt(x)/polylog) requires either sub-sqrt(x) zero-sum tail bound
+(disproven, line 26) or a non-trivial multiplicative-character cancellation
+(disproven, line 688).
 
-Adjacent prior closures: line 36 (heuristic candidate gen + AKS), line 337
-(self-correcting R⁻¹), line 657 (convergence acceleration of zero sum).
+### Empirical result
 
-### The "geometric K_k" claim
+The proposer's measurement is decisive:
 
-Even granting K_total = O(K_final), the final K must satisfy
-|π_K(p(n)) − n| < 0.5 / log(p(n)) ≈ 0.05 (so that Newton's per-iter step is < 0.5).
-The empirical zero-tail behaves as |π_K(x) − π(x)| ~ √x / (√K · log x · √|γ_K|).
-Plugging: x = 10^4, K = 256 ⇒ tail ≈ 100 / (16 · 9 · 6) ≈ 0.12 — at the threshold.
-x = 10^6, K = 256 ⇒ tail ≈ 1000 / (16 · 13 · 6) ≈ 0.8 — exceeds threshold.
+- log-log slope b of |psi - psi_T| vs T: average -0.294 (RH predicts -1).
+- Variance reduction factor with PNT-style 1/log y control variate: 1.006×
+  (essentially zero).
+- pi(10000) = 1229; naive MC error = 13.2; PNT-controlled MC error = 14.4
+  (slightly WORSE).
 
-So the claimed budget K_total = O(log² n) **does not** suffice asymptotically; one
-needs K = Ω(x^{1/2-ε} / polylog), and Newton-on-π_K cannot localize p(n) to ±0.5
-within polylog total work. This is the same √x barrier as direct explicit-formula
-evaluation. The proposer's empirical observation (oscillates at n ≥ 1000 in a band of
-size 5–25) is consistent with this analysis.
+The PNT control variate gives only constant-factor variance reduction; the
+explicit-formula truncation does not improve with T at the scales tested
+because the residual is GUE-random with no exploitable structure — the
+same observation as lines 256, 257.
 
-### Verdict — **DUPLICATE-PLUS (refines line 685 via different fixed-point map), CLOSED, mode I.**
+### Failure-mode analysis
 
-### Quantitative obstruction worth keeping
+Mode **E + I**, not just I. The empirical measurement (proposer's
+slope -0.29 at small T) is the small-T regime artifact; at T ≥ sqrt(x)
+the slope approaches the RH-predicted -1, which is the **information-
+theoretic limit**. Any control-variate with deterministic O(polylog) cost
+that beats this would imply a structural cancellation in the zero sum
+itself — which is the open problem of FOCUS-1.
 
-The proposer's identification of the failure mode — π_K-noise × Newton's 1/log x
-amplification ≈ prime gap scale at x ≥ 10^3 — is a clean quantitative statement that
-complements line 685's "|f'| oscillates GUE-randomly" framing.
+### Verdict — **DUPLICATE-PLUS (refines lines 256 + 688 with explicit PNT-control-variate variance ratio numbers), CLOSED, mode E+I.**
 
 ---
 
 ## Cross-cutting observations
 
-1. **All four proposals self-closed correctly.** The proposer's experimental discipline
-   was high: each test was hardened against a specific failure mode (P1: column
-   normalization + held-out prediction; P3: control by varying H and X; P4: progressive
-   K with explicit residual tracking). No reruns needed.
+1. **All four proposals self-closed correctly.** Methodology was sound:
+   each test was set up to falsify a single concrete claim (Wynn vs
+   plain truncation; Borel-Pade vs raw Cipolla; depth-5 fingerprint
+   discrimination rate; PNT-control-variate variance reduction factor).
 
-2. **None of the four warrants `novel/`.** Each closure either duplicates or refines an
-   existing closure.
+2. **All four are duplicates-plus** of existing closures. The closest
+   parents are lines 26 + 49 + 657 + 697 (P-A), lines 40 + 43 + 49 (P-B),
+   line 689 (P-C), lines 256 + 257 + 688 (P-D). None of the four reaches
+   the `novel/` bar, none reopens an `OPEN_PROBLEMS.md` direction.
 
-3. **None of the four reopens an OPEN_PROBLEMS.md direction.** OPEN_PROBLEMS still has
-   only Circuit Complexity of π(x) as the sole genuinely viable direction (with FOCUS-1
-   sub-attacks 1 and 3 still un-built per line 714).
+3. **The strongest by-product is P-C's depth-5 fingerprint table.**
+   It is a useful quantitative anchor for the AKS-style primality-oracle
+   approach but is not standalone-novel — it sits inside line 689's
+   parent closure mechanism.
 
-4. **The strongest by-product is P3's empirical local smoothness of Δ.** This *could*
-   eventually belong in `novel/pseudorandomness_of_pi.md` as a **complementary** measure
-   (local smoothness below √x scale is the *flip side* of pseudorandomness at scale √x).
-   Recommend adding one paragraph there, but only **after** running a Cramér-random
-   baseline. Skipping for this critique session because that requires new code; flagging
-   for next session.
+4. **Pattern in the proposer's choices.** All four proposals are
+   "convergence-acceleration / variance-reduction" type interventions on
+   already-closed analytic primitives (zero sum, Cipolla asymptotic,
+   primality oracle, MC pi). This is the **same pattern that closed
+   S43 + S46 + S48 + S51 + S63** (lines 657, 685-697, 715-718) — the
+   project has now systematically exhausted this family. Worth noting
+   in the next session-insights entry.
 
-5. **Methodology lesson worth pinning:** P1's column-normalization vs held-out validation
-   distinction is general — applies to any future PSLQ / null-space / regression search.
-   Adding a note to the project conventions (or a one-liner in CLAUDE.md) might save
-   future sessions from the same trap.
+5. **None of the four warrants `novel/` placement.** The OPEN_PROBLEMS
+   landscape is unchanged: only Circuit Complexity of pi(x) (with
+   FOCUS-1 sub-attack 1 [Bernstein 2003 strengthened-r AKS] and
+   sub-attack 3 [Healy-Viola Frobenius transplant] still un-built per
+   line 714's progress note).
 
 ---
 
 ## Action items
 
-The proposer already wrote four `_results.md` files. The remaining work for this
-critique:
+1. **Add four entries to `status/CLOSED_PATHS.md`** (S46-fresh batch).
+   Drafted below.
+2. **Update `status/SESSION_INSIGHTS.md`** with critique-46 entry noting
+   that the convergence-acceleration / variance-reduction family is now
+   exhausted across P-A through P-D plus prior sessions.
+3. **Append session synthesis** at
+   `archive/sessions/session_critique46.md`.
+4. **Set `.run_state` to 46.**
 
-1. **Add four entries to `status/CLOSED_PATHS.md`** (S63 batch). Drafted below.
-2. **Optionally add P3's local-smoothness measure** to `novel/pseudorandomness_of_pi.md`
-   *after* running a Cramér baseline. Deferred to next session.
-3. **Update `status/SESSION_INSIGHTS.md`** with S63 entry.
-4. **Append session synthesis** at `archive/sessions/session63_proposals_critique.md`.
-
-### Drafted CLOSED_PATHS.md entries (insert after line 714)
+### Drafted CLOSED_PATHS.md entries (insert after line 721)
 
 ```
-| D-finite (Apéry-style) recurrence for δ(n) = p(n) − R⁻¹(n) at (L,d) ≤ (4,4) (S63 fresh) | FAIL | I | Held-out prediction skill 0.5–1.3 (≈ noise) for all (L,d) tested at N=400, 200-bit precision. Train-side singular-value drop with d is purely column-conditioning artefact (rows span 12 OOM in n^k); held-out validation is the correct test, training rank-ratio is artifact. Distinct from line 576 (D-finite on π itself) and line 680 (J-fraction on π/n GF) — first explicit test on the analytic-detrending residual δ. δ inherits GUE-random oscillation; not P-recursive at low order. Methodology lesson: validate null-space relations via prediction, not training SVD ratios. See experiments/proposals/session63fresh_dfinite_delta.py | 63 |
-| Selberg-style Dirichlet-polynomial mollifier weight on truncated explicit formula (S63 fresh) | FAIL | E | DUPLICATE-PLUS of line 693 (Hermite/Gaussian/Riesz mollification, S48). Tested length-Y mollifier M(s)=Σ_{n≤Y} a_n n^{-s} with a_n LSQ-tuned to zero |M(ρ_j)| for j ≤ K, sweep (K,Y) ∈ {(5,30),(10,50),(20,100),(40,200)}, T ≤ 1000. Mollified estimator strictly WORSE than sharp at every T (sharp at x=10000, T=50: err 0.44; best mollified: 1.72). CAVEAT: experiment uses naive M(ρ)/M(1) per-zero weighting without ζ·M's M-zero/pole contributions; decisive closure is line 693's general-kernel argument (any kernel w with Σ|w| ≥ cN(T) inherits Ω(√x √(log T/log x)) tail bound). Y-vs-K duality: any K zeros killed cost length-Y compensation, no net gain. To beat √x need NONLINEAR ops on zeros. See experiments/proposals/session63fresh_mollifier_pi.py | 63 |
-| RMT local-moment Bayesian predictor for Δ(x) = π(x) − li(x) over H=100 window (S63 fresh) | FAIL | C | Weighted-mean predictor (1/|x−X|) on Δ over [X−H, X+H] window predicts Δ(X) at RMSE 0.33 < 0.5 across X ∈ {1000, 5000, 10000, 50000} — mathematically passes ±0.5 criterion. Algorithm is CIRCULAR: building Δ(x) for x in window requires π(x) at every window point. Two strategies both fail: global sieve to X is O(X log log X) (worse than Meissel-Lehmer); anchor + Miller-Rabin sweep needs anchor π(x_0) at O(x_0^{2/3}) which IS the original problem. Side-finding (worth keeping for novel/pseudorandomness_of_pi.md after Cramér baseline): std(Δ) over 200-window < 2 even at X=5e4, supports "Δ entropy at scale X concentrated at freq ≥ 1/√X". Adjacent: lines 353 (RMT statistics-only), 656 (HP/GUE), 36 (anchor + AKS sieve). See experiments/proposals/session63fresh_rmt_moments.py | 63 |
-| Newton-on-π with progressive 2^k zero-budget for inverting π(x)=n (S63 fresh) | FAIL | I | DUPLICATE-PLUS of line 685 (R⁻¹ fixed-point with zero correction, S44). Different map (Newton on π vs fixed-point on R⁻¹) but identical failure mechanism: π_K(x) carries O(1) GUE-random tail noise, Newton amplifies by 1/π'(x) ≈ log(x), so iterate band-oscillates at scale ~log x for n ≥ 1000. Empirical: n=100 converges in 2 steps with K=6 (err 0.016); n=1000/5000/10000 oscillate in band 5–25, n=5000 even drifts away from initial guess. Asymptotic obstruction: required K satisfies √x/(√K·log x·√γ_K) < 0.05/log x ⇒ K ≥ x^{1/2-ε}/polylog, identical to direct explicit-formula evaluation. Geometric K_k=2^k summing to K_total=O(K_final) does not break the √x barrier. See experiments/proposals/session63fresh_newton_zerobudget.py | 63 |
+| Wynn-epsilon (=Shanks transform) on geometric ladder of psi(x) zero-sum partial sums (S46-fresh) | FAIL | I | DUPLICATE-PLUS of lines 26 (S32), 49 (S10), 657 (S32), 697 (S51). Tested geometric ladder T_k = 5*2^k, k=0..5, K_max=160 zeros, x in {100, 1000, 10000}. Wynn extrapolation diverges catastrophically: x=10000 best partial err 2.43 vs Wynn err 10013.88 (4100x worse). Empirical |psi - psi_T| log-log slope b ≈ -0.25 average, far below RH-conditional -1 — small-T regime where trace formula hasn't kicked in. GUE pair correlation of zeros gives no exploitable smooth envelope to extrapolate. Wynn-eps_2 = Shanks transform (line 26 already tested by name); P-A is a strict subcase. See experiments/proposals/pade_zero_sum.py | 46 |
+| Borel-Pade resummation of Cipolla asymptotic series for p(n) (S46-fresh) | FAIL | E | DUPLICATE-PLUS of lines 40 (S5 Cipolla Pade), 43 (S6 Ramanujan/Pade), 45 (S6 Borel — caveat: line 45 was on zero-sum side which is power-law not factorial, but Cipolla coefficients DO grow factorially so Borel is in principle applicable here; still does not converge). Tested K=1..7 truncation + Borel-Pade resum at L=log n, M=log log n. Borel-Pade always 1.4-14x WORSE than best raw Cipolla truncation: at n=10000 best Cipolla K=3 err=183 vs Borel-Pade err=260. Diagnosis: Stokes-line / multi-instanton structure that single-direction Borel-Pade cannot capture, OR small-K is already past optimal truncation. Cipolla relative error 0.21 -> 0.0017 from n=10 to 10^4 (asymptotic-series character) — but absolute error grows. Cipolla = analytically equivalent to explicit formula by analytic continuation; no resummation of its asymptotic gives integer-precision in polylog. See experiments/proposals/lagrange_borel.py | 46 |
+| Depth-5 multiplicative fingerprint (Hecke tau, sigma, n mod 30, n^6 mod 7) as primality oracle (S46-fresh) | FAIL | C | DUPLICATE-PLUS of line 689 (S46 Edixhoven-Couveignes tau-based prime detection). Empirical: depth-5 fingerprint (tau(n)-n^11-1 mod 691, tau(n) mod 5, sigma_1(n)-1-n, n mod 30, n^6 mod 7) achieves PERFECT separation of 1229 primes from 8770 composites in [2,10000] — useful quantitative anchor. BUT three barriers: (i) tau(n) for COMPOSITE n requires factoring n via multiplicativity (Edixhoven 2011 gives polylog tau(p) only at primes under GRH, not at composites); subexp factoring cost via GNFS; (ii) even granted polylog primality oracle, counting primes in [1,x] with the oracle is pi(x) again (the original problem) — circular at meta level; (iii) depth-vs-bits floor: 5 features ≈ 26 bits per n; finite-domain perfect separation collapses asymptotically as log(N) more bits needed at larger N. P-C's complexity claim "tau(n) mod l: O(polylog n)" is incorrect for composite n. See experiments/proposals/modular_fingerprint.py | 46 |
+| Zero-aware control variate for Monte-Carlo pi(x) using truncated explicit formula (S46-fresh) | FAIL | E+I | DUPLICATE-PLUS of lines 256 (S15 Randomized zeta zero sampling — must use 100% of zeros), 257 (S15 Probabilistic sieve — variance 10^6-10^9x worse), 688 (S46 Harper random-multiplicative — sample cost O(x), no asymptotic gain). Empirical at x=10000, T=200 zeros: PNT-control-variate variance reduction factor only 1.006x (essentially zero); naive MC err 13.2 vs PNT-controlled 14.4 (slightly WORSE). Log-log slope of |psi - psi_T| vs T: average b ≈ -0.29 across x in {100,500,1000,5000,10000} — small-T regime; at T >= sqrt(x) slope approaches RH-conditional -1, which IS the information-theoretic limit. GUE-random residuals carry no exploitable structure beyond the trivial bound. Beating O(sqrt(x)/polylog) variance reduction would require structural cancellation in the zero sum itself — exactly the FOCUS-1 open question. See experiments/proposals/zero_aware_variance.py | 46 |
 ```
 
 ---
 
 ## Critic's bottom line
 
-All four proposer self-verdicts hold up. Two are duplicates-plus of existing closures
-(P2 → line 693; P4 → line 685), one is a new specific test that confirms a broader
-pattern (P1 — first explicit D-finite test on δ rather than π), one is genuinely
-circular but yields a small empirical refinement to the local-smoothness picture (P3).
+All four proposer self-verdicts hold up. All four are duplicates-plus of
+existing closures (P-A → 26+49+657+697; P-B → 40+43+49; P-C → 689;
+P-D → 256+257+688). One useful empirical refinement (P-C: depth-5
+fingerprint perfectly separates primes from composites in [2, 10⁴]) is
+worth recording but does not reach the `novel/` bar because the algorithm
+is non-polylog regardless of separation rate.
 
-The session adds four well-documented closures, one methodology lesson on
-column-conditioning vs held-out validation, and a small empirical handle on Δ-smoothness
-at scales below √x. **Nothing reopens any closed direction; nothing reaches the
-`novel/` bar.** OPEN_PROBLEMS.md remains as it was: only circuit complexity of π(x)
-is genuinely open.
+The session adds four well-documented closures and a quantitative
+benchmark on multiplicative-fingerprint discrimination depth. Nothing
+reopens any closed direction; nothing reaches the `novel/` bar.
+**`OPEN_PROBLEMS.md` remains as it was: only Circuit Complexity of pi(x)
+is genuinely open**, with FOCUS-1 sub-attack 1 (Bernstein 2003
+strengthened-r) and sub-attack 3 (Healy-Viola Frobenius transplant)
+still un-built per line 714 — though those are now closed (S64, S66) per
+TODO.md, leaving FOCUS-3 (Brandt MKtP) un-engaged.
+
+Pattern observation: the convergence-acceleration / variance-reduction
+family of interventions (Pade, Wynn, Borel, mollifiers, control variates,
+random sampling) on already-closed analytic primitives is now
+**systematically exhausted** across P-A..P-D plus prior sessions
+S5, S6, S10, S15, S25, S32, S43-S46, S48, S51, S63. Future proposals in
+this family should be pre-disqualified by a single CLOSED_PATHS check
+against the master list of acceleration techniques.

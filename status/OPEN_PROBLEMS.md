@@ -1,10 +1,20 @@
 # Open Problems: Viable Research Directions
 
-Last updated: 2026-04-05 (Session 37)
+Last updated: 2026-04-26 (Session 66)
 
 These are the ONLY directions not yet proven closed. Everything else has been
-tested (525+ approaches across 37 sessions) and confirmed to hit one of three
+tested (538+ approaches across 66 sessions) and confirmed to hit one of three
 failure modes: Circularity, Equivalence, or Information Loss.
+
+**S66 status update — Chain E is computationally cornered.** All three
+FOCUS-1 sub-attacks have now closed (S47 cyclotomic-CRT line 690; S61
+non-cyclotomic ring line 714; S64 Frobenius transplant line 719; S66
+Bernstein 2003 strengthened-gcd this session). Every modulus-twist and
+gcd-strengthening of the AKS family reduces to growing-dim r×r MPOW over
+the same r ~ log²n. The only remaining escapes from Chain E are
+Brandt MKtP (FOCUS-3, un-engaged) and fundamentally new lower-bound
+techniques (open problem class) — no further AKS-style construction
+work is expected to dislodge the frontier.
 
 **Key reframing (S36):** E(x) = pi(x) - Li(x) has only O(log x) bits of information,
 well within polylog bounds. The barrier is COMPUTATIONAL (extracting O(log x) bits from
@@ -46,9 +56,17 @@ This is the largest unexplored gap in complexity theory for a natural problem.
 
 **What might still work:**
 - Non-AKS TC^0 primality test using only scalar operations
-- Growing-dimension matrix powering in TC^0 (genuine frontier)
+- Growing-dimension matrix powering in TC^0 (genuine frontier; Chain E open primitive E5.3)
 - Exploiting commutativity of polynomial ring multiplication
 - A fundamentally new intermediate quantity not based on floor values or zeta zeros
+- Brandt MKtP-style diagonalization for natural functions (FOCUS-3, un-engaged)
+
+**S66 — Chain E status:** computationally cornered. All three AKS-family
+sub-attacks closed (modulus-twist, gcd-strengthening, ring-replacement
+all reduce to the same growing-dim MPOW primitive at the same r). The
+Chain-E open frontier E5.3 is unchanged but no construction-style attack
+within the AKS framework remains. Brandt MKtP and pure new-technique
+work are the only open levers.
 
 ---
 

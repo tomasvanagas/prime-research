@@ -23,11 +23,16 @@ Best known: O(x^{2/3}) combinatorial, O(x^{1/2+epsilon}) analytic.
 ## Where to Find Things
 
 ```
+EDGES.md                <-- 66 real mathematical edges across 10 sections,
+                            tagged with IDs (E1.x, ...). Cite by ID when
+                            classifying closures or building chains. READ
+                            EARLY in every session. Extend with new edges
+                            discovered during the session.
 status/
-  CLOSED_PATHS.md      <-- 525+ tested approaches. SEARCH before proposing anything.
+  CLOSED_PATHS.md      <-- 720+ tested approaches. SEARCH before proposing anything.
   OPEN_PROBLEMS.md     <-- The ONLY viable research directions. Start here.
   BEST_ALGORITHMS.md   <-- Working implementations with benchmarks.
-  SESSION_INSIGHTS.md  <-- Detailed per-session findings (Sessions 12-37).
+  SESSION_INSIGHTS.md  <-- Detailed per-session findings (Sessions 12-66+).
 proven/
   barriers.md          <-- Mathematically proven impossibility results.
   complexity.md        <-- Upper/lower bounds, circuit complexity.
@@ -74,24 +79,47 @@ FOCUS_QUEUE.md               <-- Deep-dive tasks for focused sessions.
    safely do (e.g., duplicate cleanup requiring human review), skip it and
    note in TODO.md that it's blocked. Do NOT let blocked housekeeping prevent
    all research.
-2. **Read `status/OPEN_PROBLEMS.md`** for viable research directions.
-   As of Session 37, only circuit complexity of pi(x) remains genuinely open.
-   If no viable experiment exists, check `literature/state_of_art_2026.md` for
-   new publications that might open a direction. If nothing new, say so and stop.
-   Do NOT re-run experiments on closed paths.
-3. **Search `status/CLOSED_PATHS.md`** before proposing ANY approach.
-4. **Read `novel/pseudorandomness_of_pi.md`** — this is the project's strongest
-   finding (21 measures showing pi(x) mod 2 is random-like). Any new approach
+2. **Read `EDGES.md`.** This is the catalogue of every real mathematical edge
+   surfaced across 60+ sessions, grouped into surviving chains and tagged with
+   IDs (E1.x, E2.x, E3.x, E4.x, E5.x, E6.x, E7.x). Cite edge IDs by name when
+   classifying closures, building chains, or arguing why an approach is
+   constrained. The §0 frame (T1-T6) and §10 single-target objectives tell you
+   what the chain has to fit through and where uncovered attack surface
+   actually lives. Do NOT propose a chain whose endpoint reduces to a known
+   negative-shape edge (E7.x).
+3. **Read `status/OPEN_PROBLEMS.md`** for viable research directions.
+   As of Session 66, only circuit complexity of pi(x) remains genuinely open,
+   and Chain E (the AKS-family route to TC^0) is "computationally cornered"
+   per E7.10 — modulus / coefficient-ring / gcd-strengthening twists are
+   orthogonal to depth. If no viable experiment exists, check
+   `literature/state_of_art_2026.md` for new publications that might open a
+   direction. If nothing new, say so and stop. Do NOT re-run experiments on
+   closed paths.
+4. **Search `status/CLOSED_PATHS.md`** before proposing ANY approach.
+5. **Read `novel/pseudorandomness_of_pi.md`** — this is the project's strongest
+   finding (22+ measures showing pi(x) mod 2 is random-like). Any new approach
    must explain how it circumvents this.
-5. Use sub-agents to save context window.
-6. **Context management:** when context is filling up, write remaining work to
+6. Use sub-agents to save context window.
+7. **Context management:** when context is filling up, write remaining work to
    `TODO.md` so the next session can continue. Then halt.
-7. **Update this file** only for significant status changes (new best algorithm,
+8. **Update this file** only for significant status changes (new best algorithm,
    major barrier proven, goal change). Do NOT add session-by-session details here --
    those go to `status/SESSION_INSIGHTS.md`.
-8. DO NOT modify `run.sh`. Update `FOCUS_QUEUE.md` only to mark tasks
+9. DO NOT modify `run.sh`. Update `FOCUS_QUEUE.md` only to mark tasks
    COMPLETED or add new tasks — do not delete completed task descriptions.
-9. If you find the breakthrough, respond with exactly: I FOUND IT!!!
+10. **When closing or building, cite EDGES.md edge IDs in your CLOSED_PATHS
+    entry and session synthesis.** A closure that reduces to E5.3 should say
+    so by name; a chain that exploits E1.6 (A⊕C₃ bisection) or E2.1 (MPS
+    bond-dim identity) should reference the source edge. This keeps EDGES.md
+    cross-linked with closures and prevents drift.
+11. **When you discover a new edge** — a verified mathematical fact, identity,
+    or measurable structural deviation not already in EDGES.md — add it
+    inline in the appropriate section (§1 information, §2 algebraic, §3
+    analytic, §4 sieve, §5 conditional/TC⁰, §6 computational, §7 negative-
+    shape) with a fresh ID, EVS rating (H/M/L/shape), and a one-line
+    "why this is an edge" justification. Update the closing footer to record
+    the addition.
+12. If you find the breakthrough, respond with exactly: I FOUND IT!!!
 
 ### Construction is encouraged, not just measurement (S60)
 

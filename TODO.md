@@ -40,18 +40,22 @@ S47 closed cyclotomic-CRT splitting (AKS-prescribed r is prime in 21/22
 sampled n). Three uncovered sub-attacks remain — each tractable for a
 focused-mode session:
 
-### Sub-attack 1: Smaller-r AKS variant (Bernstein 2003)
+### Sub-attack 1: Smaller-r AKS variant (Bernstein 2003) — CLOSED (S66)
 
-Lenstra-Pomerance proved AKS works at r = O(log^4 n). Bernstein 2003
-strengthened the gcd condition. **Question:** can r = O(log^2 n) be
-forced under any sufficient condition that itself sits in TC^0?
+**Status:** CLOSED, FAIL (E with weak C). See CLOSED_PATHS.md line ~722,
+`experiments/circuit_complexity/aks_alternative/bernstein_smaller_r/`,
+and `archive/sessions/session66_bernstein_smaller_r.md`.
 
-**Concrete next step:** read Bernstein 2003 (cr.yp.to/papers/aks.pdf),
-identify the exact gcd condition, prototype the matrix-powering circuit
-for the strengthened test, measure dim/r ratio over the same 22-sample
-n grid as S47.
-
-Save under `experiments/circuit_complexity/aks_alternative/bernstein_smaller_r/`.
+**Headline:** Empirical r already satisfies r/log²n mean = 1.207 on
+the S47 22-sample grid (mean r − log²n = 25.05, r prime in 21/22).
+"Smaller r" is empirical reality already; the question is *deterministic
+correctness* at this r. The Bernstein-style gcd certificate works
+empirically (gcd extracts factor of n in 13/13 composite failures
+including all 7 Carmichaels) but the integer-gcd subroutine on
+O(log n)-bit integers is in NC¹ (Hesse-Allender-Barrington 2002), NOT
+known in TC⁰ — same NC¹/TC⁰ frontier as growing-dim MPOW (E5.3) it
+purportedly replaces. Closure mode (E): the strengthening trades one
+frontier problem for another at the same frontier.
 
 ### Sub-attack 2: Non-cyclotomic ring decomposition
 
@@ -67,30 +71,40 @@ when the ring is `Z_n[x]/f(x)`.
 
 Save under `experiments/circuit_complexity/aks_alternative/non_cyclotomic_ring/`.
 
-### Sub-attack 3: Healy-Viola Frobenius transplant
+### Sub-attack 3: Healy-Viola Frobenius transplant — CLOSED (S64)
 
-Healy-Viola 2006 showed `F_{2^n}` exponentiation is in TC^0 by
-exploiting that Frobenius `x -> x^2` is the identity on `F_2`-coefficients.
-**Question:** does any partial Frobenius-like map exist on `Z_n[x]/(x^r - 1)`
-that gives the same depth collapse?
+**Status:** CLOSED, FAIL (E + I). See CLOSED_PATHS.md line 719,
+`experiments/circuit_complexity/aks_alternative/frobenius_transplant/`,
+and `archive/sessions/session64_frobenius_transplant.md`.
 
-Specifically: if we work modulo a prime `q` dividing `n - 1`, the
-`q`-th-power Frobenius on `(Z/qZ)[x]/(x^r - 1)` IS a ring homomorphism.
-Whether AKS-correctness lifts back to `Z_n` from this quotient is the
-question.
+**Headline:** primes do NOT satisfy mod-q AKS for non-trivial a (0/399
+across 19 primes; trivial a≡0 mod q always passes but carries zero
+info). The Frobenius identity `(a+x)^n ≡ a^n + x^n` is mod-n specific;
+reducing mod q≠n loses it (residual polynomial fills 8-102 of r
+coefficients, by Lucas's theorem on binom(n,k) mod q). Even granted
+the test worked, the q-twist gives only a `log(q)/log(2)` constant-factor
+saving — both schemes reduce to length-O(log n) growing-dim r×r MPOW
+over F_q (E5.3), unchanged.
 
-**Concrete next step:** compute the full power-Frobenius orbit structure
-on `(Z/qZ)[x]/(x^r - 1)` for small (n, q, r) triples, see if AKS
-verification can be staged through a TC^0-friendly chain.
+### Backup objective: ALL THREE NOW CLOSED — Chain E computationally cornered (S66)
 
-Save under `experiments/circuit_complexity/aks_alternative/frobenius_transplant/`.
+**S66 milestone:** with sub-attacks 1 (S66), 2 (S61), 3 (S64) all
+closed, the AKS-family sub-attack space is exhausted. Every modulus-
+twist, ring-replacement, and gcd-strengthening of the AKS test
+reduces to growing-dim r×r MPOW over the same r ~ log²n. The
+"computationally cornered" marker is now active in
+`status/OPEN_PROBLEMS.md`.
 
-### Backup objective if all three close
+**Remaining levers on Chain E:**
+1. **Brandt MKtP** (FOCUS-3 below) — un-engaged framework with a
+   possible diagonalization argument for natural functions.
+2. **Fundamentally new lower-bound technique** — open problem class,
+   no concrete proposal.
+3. **A non-AKS TC⁰ primality test** using only scalar operations
+   (long-standing aspiration since S15; no active attack line).
 
-Then the sub-attack space is exhausted and the only escape is **Brandt
-MKtP** or a fundamentally new lower-bound technique. Mark Chain E as
-"computationally cornered" in `status/OPEN_PROBLEMS.md` and shift
-remaining sessions to FOCUS-2 / FOCUS-3.
+Future Chain-E construction work should look outside the AKS
+family — within it, no further leverage point is known.
 
 ---
 
