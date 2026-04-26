@@ -47,11 +47,12 @@ directly, structural negative-shape edge (B-grade). Cross-domain
 ingredient: Croot–Lev–Pach polynomial method / Tao slice rank. The
 project has not used this tool. Single-session viable.
 
-**Backup highest-leverage:** L1 Lean — close `lower_bound` in
-`MPSBondDim/Basic.lean` (route B: Vandermonde-style finite-field
-exhibit). Once closed, the cumulative L1 Lean track meets CLAUDE.md's
-"Lean 4 proof of a non-trivial theorem (≥ 50 lines, no sorry, no
-axiom)" A-grade rule for E2.1 as a whole.
+**Backup highest-leverage:** L1 Lean — close
+`exists_invertible_submatrix` in `MPSBondDim/Basic.lean` (route B:
+Vandermonde-style finite-extension exhibit, post-S83 isolated as the
+sole remaining `sorry` in the file). Once closed, the cumulative L1
+Lean track meets CLAUDE.md's "Lean 4 proof of a non-trivial theorem
+(≥ 50 lines, no sorry, no axiom)" A-grade rule for E2.1 as a whole.
 
 §C1 (BK Odlyzko zeros) is now **closed** by S71-redux with a quantitative
 L⁴ obstruction (N_required ≥ 0.81 L⁴ for κ=3 detection); no further
@@ -114,11 +115,13 @@ or "construction-incoherent" if the object isn't well-defined.
 **Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S71). E1.4 and E2.7 annotated in EDGES.md.
 **Save under:** `experiments/constructions/n_over_2_universality_class/`
 
-### C6 — Three-pillars × HKM time-space curve
+### C6 — Three-pillars × HKM time-space curve — **BUILT (S81)**
 **Edges:** E7.7 + E6.7
 **Object:** E7.7 says only 3 informationally-complete encodings of π(x) exist (prime positions, zeta zeros, floor values). E6.7 puts HKM at the Pareto-frontier `(time = N^{8/15}, space = N^{1/3})`. Build a "three-pillar tradeoff diagram" — for each pillar, compute the achievable time-space curve, and ask whether HKM is on the *zeta-zero* pillar's frontier or the *floor-values* pillar's frontier. The novel content is the structural placement.
 **Why novel:** No one has classified the algorithmic tradeoffs by which pillar they live on.
 **Falsification:** Tradeoff diagrams for at least 2 pillars.
+**Outcome (S81):** Built (alpha, beta) catalog of 14 algorithms (4 prime / 4 zeta / 6 floor). All four pre-stated falsifiers (F1: HKM dominated; F2: HKM cross-pillar dominated; F3: identical pillar frontiers; F4: floor T*S < 5/6) PASS. **Three structural findings:** (i) HKM is on the **floor pillar** Pareto frontier and dominates every other floor-pillar entry elementwise; (ii) **HKM uniqueness**: no zero-pillar or prime-pillar algorithm achieves both `T ≤ N^{8/15}` AND `S ≤ N^{1/3}` simultaneously — HKM's `(8/15, 1/3)` point is uniquely accessible on the floor pillar; (iii) **non-overlapping pillar regions**: time-only minimum is shared by prime+zeta pillars at α=1/2, space-only minimum is unique to floor at β=1/3, T*S minimum is unique to floor at 13/15 ≈ 0.867 (saturating E7.6 to within N^{0.034}). Aggarwal (E6.6) is observed as a meta-algorithm whose effective placement migrates with the chosen pi(x). No polylog opening — refinement of E7.7 + E6.7. CLOSED_PATHS row added (S81). E6.7 and E7.7 annotated.
+**Status:** BUILT, no polylog opening.
 **Save under:** `experiments/constructions/pillar_tradeoff_diagram/`
 
 ---
@@ -192,7 +195,7 @@ plus `<name>_notes.md`.
 `lean --run`). If it doesn't, the session is an in-progress formalisation,
 not a closure. Save the in-progress state to `RESEARCH_AGENDA.md`.
 
-### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76)**
+### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83)**
 **Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
 base W ≥ 2, for every cut 1 ≤ j < d:
 ```
@@ -208,10 +211,18 @@ statement + 5-lemma skeleton typechecks (`lake build` succeeds);
 `rank_le_min_dim`, `row_support_coprime`, `live_columns_count`,
 `upper_bound` fully proved (no `sorry`, no `axiom`); main theorem
 `mps_bond_dim` reduced to `Nat.le_antisymm` of the lemmas (3-line
-term-mode proof, no `sorry`). **Only 1 `sorry` remains on
-`lower_bound`**. **Next action:** prove `lower_bound` (row-independence
-argument via prime-counting density, or a generic combinatorial
-exhibit — see Arc 2 next-action discussion). See
+term-mode proof, no `sorry`).
+**S83 progress:** Closed `lower_bound` itself (sorry-free 6-line proof)
+by introducing a new declaration `exists_invertible_submatrix` that
+isolates the prime-density content as `∃ ρ σ, IsUnit (submatrix ρ σ)`.
+The reduction uses mathlib's `Matrix.rank_of_isUnit` +
+`Matrix.rank_submatrix_le`. Net: the only remaining `sorry` is now on
+the pure prime-existence existential, not on the rank-bound logic.
+**Next action:** prove `exists_invertible_submatrix`. Route A:
+Bertrand-style prime existence in `[i·W^(d-j)+1, (i+1)·W^(d-j)]` for
+each `0 ≤ i < R` (uses `Nat.bertrand` + Dirichlet APs in mathlib,
+~100-200 lines). Route B: generic Vandermonde exhibit over a finite
+extension of ℚ, bypassing arithmetic entirely (lighter). See
 `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 ### L2 — E1.5: 0.537-bits invariant

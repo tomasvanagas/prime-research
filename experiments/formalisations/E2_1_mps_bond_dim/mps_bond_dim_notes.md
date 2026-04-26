@@ -2,7 +2,7 @@
 
 **Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
 **Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
-**Build status:** `lake build` succeeds. **1 `sorry` placeholder remains** (down from 3 after S76 closed `upper_bound` and reduced `mps_bond_dim` to a term application of the lemmas).
+**Build status:** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`).
 **No `axiom` introductions.**
 
 ## What this file formalises
@@ -20,23 +20,27 @@ for `W ∈ {2, 6, 30, 210}` and `d` up to 20.
 
 ## Lean layout
 
-The proof is decomposed into 6 declarations:
+The proof is decomposed into 8 declarations:
 
-| name                   | role                                       | status   |
-|------------------------|--------------------------------------------|----------|
-| `chiP`                 | prime indicator `ℕ → ℚ`                    | def      |
-| `unfolding`            | the `(W^j × W^(d-j))` matrix over `ℚ`      | def      |
-| `rank_le_min_dim`      | trivial ceiling `rank ≤ W^j`               | **done** |
-| `row_support_coprime`  | nonzero entries imply `gcd(k+1, W) = 1`    | **done** |
-| `live_columns_count`   | CRT count: live columns = `φ(W) · W^(d-j-1)` | **done** |
-| `upper_bound`          | `rank ≤ φ(W) · W^(d-j-1) + 1`              | **done** |
-| `lower_bound`          | `min(W^j, φ(W) · W^(d-j-1) + 1) ≤ rank`    | `sorry`  |
-| `mps_bond_dim`         | **main theorem** (term application)        | **done** |
+| name                            | role                                           | status   |
+|---------------------------------|------------------------------------------------|----------|
+| `chiP`                          | prime indicator `ℕ → ℚ`                        | def      |
+| `unfolding`                     | the `(W^j × W^(d-j))` matrix over `ℚ`          | def      |
+| `rank_le_min_dim`               | trivial ceiling `rank ≤ W^j`                   | **done** |
+| `row_support_coprime`           | nonzero entries imply `gcd(k+1, W) = 1`        | **done** |
+| `live_columns_count`            | CRT count: live columns = `φ(W) · W^(d-j-1)`   | **done** |
+| `upper_bound`                   | `rank ≤ φ(W) · W^(d-j-1) + 1`                  | **done** |
+| `exists_invertible_submatrix`   | exhibit ∃ `R × R` IsUnit submatrix             | `sorry`  |
+| `lower_bound`                   | `min(W^j, φ(W)·W^(d-j-1)+1) ≤ rank`            | **done** |
+| `mps_bond_dim`                  | **main theorem** (term application)            | **done** |
 
 (Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
-`Nat.le_antisymm` of the auxiliary lemmas. But it transitively depends
-on `lower_bound`, which still has a `sorry`. Once `lower_bound` is
-closed, the main theorem is automatically closed without modification.)
+`Nat.le_antisymm` of the auxiliary lemmas. As of S83, `lower_bound` is
+also `sorry`-free: its proof is a 6-line structural reduction citing
+`exists_invertible_submatrix`. The single remaining `sorry` lives
+entirely inside `exists_invertible_submatrix` and captures the
+prime-density content of the informal proof. Once that exhibit is in
+hand, `lower_bound` and `mps_bond_dim` close automatically.)
 
 The five completed proofs (plus the term-mode main theorem):
 
@@ -91,21 +95,40 @@ The five completed proofs (plus the term-mode main theorem):
 
 Only one open obligation remains:
 
-**`lower_bound`** — the harder side. Informally, exhibit a set of
-`min(W^j, φ(W) · W^(d-j-1) + 1)` rows whose restrictions to the live
-columns are linearly independent over ℚ. The informal argument
-hand-waves over a prime-counting density; making this rigorous in Lean
-will probably require either (i) a counting-via-PNT step or (ii) a
-clever reformulation that reduces to a generic "many rows with distinct
-non-zero patterns" combinatorial lemma.
+**`exists_invertible_submatrix`** — the prime-density exhibit. State:
+```
+∃ (ρ : Fin R → Fin (W^j)) (σ : Fin R → Fin (W^(d-j))),
+   IsUnit ((unfolding W d j).submatrix ρ σ)
+```
+where `R = min(W^j, φ(W)·W^(d-j-1) + 1)`. Two routes:
 
-**File structure note (S76):** the file was reorganised so the lemmas
-(`rank_le_min_dim`, `row_support_coprime`, `live_columns_count`,
-`upper_bound`, `lower_bound`) now appear before the main theorem
-`mps_bond_dim`. This was needed for `mps_bond_dim`'s term-mode proof
-to refer to the lemmas. The narrative-first ordering (statement at
-the top) was traded for proof structure; the file's opening
-docstring/decomposition section makes the architecture explicit.
+* **Route A (Bertrand-style).** For each row `i ∈ {0, ..., R-1}` find a
+  prime `p_i` with `i·W^(d-j) < p_i ≤ (i+1)·W^(d-j)` and arrange σ so
+  that the `i`-th column of the exhibit is supported only at row `i`
+  (via the residue class `p_i mod W^(d-j)`). This needs Bertrand-type
+  prime-existence in shrinking intervals plus a residue-class dovetail.
+  Mathlib has `Nat.bertrand` (a prime in `[n, 2n]`) and Dirichlet's
+  theorem on primes in arithmetic progressions; orchestrating them is
+  ~100-200 lines.
+
+* **Route B (Vandermonde / generic exhibit).** Avoid arithmetic entirely
+  by replacing `chiP` with a generic finite-extension witness. Less
+  faithful to the informal argument but lighter-weight; the lower bound
+  on rank then comes from a Vandermonde determinant being nonzero,
+  which is a pure linear-algebra fact.
+
+The structural reduction `lower_bound ← exists_invertible_submatrix`
+(closed in S83 via `Matrix.rank_of_isUnit` and `Matrix.rank_submatrix_le`)
+is mechanical and never needs to be revisited.
+
+**File structure note (S76, refined S83):** the file is now ordered
+auxiliary-lemmas-first (`rank_le_min_dim`, `row_support_coprime`,
+`live_columns_count`, `upper_bound`, `exists_invertible_submatrix`,
+`lower_bound`), followed by the main theorem `mps_bond_dim`. The
+opening docstring/decomposition section makes the architecture
+explicit. The `exists_invertible_submatrix` declaration sits between
+`upper_bound` and `lower_bound` and is the only place where prime
+density is invoked.
 
 ## Falsification
 

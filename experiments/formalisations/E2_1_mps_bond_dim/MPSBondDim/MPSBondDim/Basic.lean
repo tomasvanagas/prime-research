@@ -352,18 +352,82 @@ theorem upper_bound
     _ ≤ S.card := finrank_span_finset_le_card S
     _ ≤ Nat.totient W * W ^ (d - j - 1) + 1 := hS_card
 
+/-!
+### The lower bound, reduced to a prime exhibit
+
+The lower bound is the harder direction: every measured `(W, d, j)`
+saturates the upper bound, and the informal argument
+(`novel/mps_bond_dimension.md`) hand-waves over a prime-counting density
+to exhibit `R := min(W^j, φ(W)·W^(d-j-1) + 1)` linearly independent rows.
+
+We isolate that content into a single existential lemma —
+`exists_invertible_submatrix` — which asserts the existence of an
+`R × R` invertible submatrix of the unfolding. The structural reduction
+from this exhibit to `lower_bound` is mechanical (mathlib's
+`Matrix.rank_of_isUnit` plus `Matrix.rank_submatrix_le`) and is closed
+unconditionally below. The exhibit itself is the only remaining `sorry`
+in the formalisation; it captures the prime-density content of the
+informal proof.
+-/
+
 /--
-Lower bound. Empirically saturated at every measured `(W, d, j)`. The
-informal argument identifies, among the `φ(W) * W^(d-j-1)` "live" columns,
-enough rows whose restriction is linearly independent over `ℚ` —
-exhibited via the prime-counting density of base-`W` blocks. The full
-formal argument is open.
+**Prime-exhibit existence.** There exist indexings `ρ : Fin R → Fin (W^j)`
+and `σ : Fin R → Fin (W^(d-j))` (where `R = min(W^j, φ(W)·W^(d-j-1)+1)`)
+such that the `R × R` submatrix of `unfolding W d j` along `(ρ, σ)` is a
+unit in `Matrix (Fin R) (Fin R) ℚ` (equivalently has nonzero determinant
+over `ℚ`).
+
+Informally, one chooses ρ as the natural inclusion (the first `R` rows)
+and σ to pick out columns each of which contains a prime in row 0 only —
+guaranteed by the density of primes in residue classes coprime to `W`
+modulo `W^(d-j)`. The IsUnit witness then comes from the resulting
+"diagonal-dominated" `R × R` exhibit. The full prime-counting argument is
+the *only* outstanding piece in the formal proof of E2.1; once
+formalised, both `lower_bound` and `mps_bond_dim` close immediately.
+
+Two proof routes are open for a future session:
+
+* (A) Use Bertrand-type prime existence in
+  `[i·W^(d-j) + 1, (i+1)·W^(d-j)]` for every `0 ≤ i < R`, plus a
+  dovetailing of residue classes mod `W^(d-j)`.
+* (B) Replace the prime-density appeal by a generic Vandermonde-style
+  exhibit over a finite extension of ℚ, sidestepping arithmetic
+  entirely. This is the lighter-weight path discussed in
+  `mps_bond_dim_notes.md`.
+-/
+theorem exists_invertible_submatrix
+    (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
+    ∃ (ρ : Fin (min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1)) → Fin (W ^ j))
+      (σ : Fin (min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1)) → Fin (W ^ (d - j))),
+      IsUnit ((unfolding W d j).submatrix ρ σ) := by
+  sorry
+
+/--
+Lower bound. Reduction-only: given the prime exhibit
+(`exists_invertible_submatrix`), the lower bound is closed mechanically
+by `Matrix.rank_of_isUnit` (an `R × R` unit matrix has rank `R`) followed
+by `Matrix.rank_submatrix_le` (rank only decreases when restricting to
+a submatrix). This proof contains no `sorry` of its own; its outstanding
+content lives entirely inside `exists_invertible_submatrix`.
 -/
 theorem lower_bound
     (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
     min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) ≤
       (unfolding W d j).rank := by
-  sorry
+  classical
+  -- Pull the prime exhibit.
+  obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix W d j hW hj_lo hj_hi
+  -- An `R × R` unit matrix over `ℚ` has rank `Fintype.card (Fin R) = R`.
+  have h_eq :
+      ((unfolding W d j).submatrix ρ σ).rank =
+        min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) := by
+    have h := Matrix.rank_of_isUnit ((unfolding W d j).submatrix ρ σ) hUnit
+    rw [Fintype.card_fin] at h
+    exact h
+  -- Restricting to a submatrix can only decrease the rank.
+  calc min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1)
+      = ((unfolding W d j).submatrix ρ σ).rank := h_eq.symm
+    _ ≤ (unfolding W d j).rank := Matrix.rank_submatrix_le _ _ _
 
 /--
 Trivial rank ceiling: any `m × n` matrix over a field has rank at most

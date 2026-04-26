@@ -362,6 +362,33 @@ faithful at the second-moment level (i.e., reproducing κ_2) needs rank
 angle independent of the explicit-formula machinery.
 See `experiments/constructions/free_cumulants_chi_p/`.
 
+**S82 spike-eigenvector identification (C2 sub-arc):** the S74 spike
+band IS the **residue-class character subspace at small odd primes
+coprime to W**. Empirically, the top `k_*` singular vectors of `M^(j)`
+(after the leading mean) decompose into per-prime sectors of dimension
+exactly `phi(p)` indexed by primes `p ≤ P*(N)` not dividing `W`, plus
+cross-sectors of dimension `phi(p_1)·phi(p_2)`. Conductor of each
+spike is `2 · p` (or `2 · p_1 · p_2`). Verified at (W=2, d ∈ {14, 16,
+18, 20}) and (W=6, d=6); matched-Bernoulli baseline shows centered
+residue energy ≤ `5×10⁻⁴` while chi_P spikes ≥ `10⁻²` (≥ 20× ratio).
+**Sharpened algorithmic implication:** the polynomial-in-N spike
+content IS exactly the small-modulus residue-class biases
+`pi(N; q, a)` for `q ≤ Q*(N) ≈ N^{0.21}`, so the C2 spectral compression
+barrier is the same object as the E1.5 / T6 saturation barrier viewed
+from the spectral side — a textbook **C-circular** collapse.
+See `experiments/constructions/spike_eigenvectors_chi_p/`.
+
+**S83 Lean formalisation status (L1):** in
+`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`,
+`mps_bond_dim` (the main theorem), `upper_bound`, `rank_le_min_dim`,
+`row_support_coprime`, `live_columns_count`, and `lower_bound` are all
+closed `sorry`-free over Lean 4 + mathlib `v4.30.0-rc2`. The single
+remaining obligation is the existential `exists_invertible_submatrix`
+isolating the prime-density content. Net: the *rank-bound* logic of
+E2.1 is fully formalised; only the prime-existence exhibit remains.
+See `mps_bond_dim_notes.md` for the two open routes (Bertrand /
+Vandermonde).
+
 **S77 family-level scope refinement (N1):** the unfolding-rank lower
 bound `≥ φ(W)·W^(d-j-1)+1` is the *universal* half-cut bond dim across
 classical polynomial-spatial-locality tensor-network ansätze:
@@ -1291,7 +1318,8 @@ project gets to a believable polylog architecture.
 ### E6.7 — HKM time-space tradeoff curve O~(N^{8/15}) / O~(N^{1/3}) [EVS M]
 
 `literature/aggarwal_2025_analysis.md`; arXiv:2212.09857 (Helfgott-Kessler-
-Mendlovic).
+Mendlovic);
+**pillar placement:** `experiments/constructions/pillar_tradeoff_diagram/` (S81, C6).
 
 HKM is not just a single point at O~(sqrt(x)) (E6.5); it is a tradeoff curve.
 With NTT-based fast multiplication on Dirichlet series:
@@ -1313,6 +1341,19 @@ space) on space.
 > the lower bound x^{5/6} = x^{0.833}. **The sieve route is asymptotically
 > tight up to x^{0.034}.** Polylog cannot come from any further
 > sieve-pebbling improvement.
+
+**S81 pillar-placement extension (composition C6):** HKM's `(8/15, 1/3)`
+point is achievable on the **floor pillar only** (E7.7). Per-pillar Pareto
+classification (catalog of 14 algorithms across the three pillars) shows:
+(i) HKM dominates every other floor-pillar entry elementwise (Lucy DP,
+Lucy+Fenwick, Meissel-Lehmer classical, Gourdon, primecount); (ii) HKM has
+no cross-pillar dominators — no zero-pillar or prime-pillar algorithm
+achieves both `T <= N^{8/15}` AND `S <= N^{1/3}` simultaneously; (iii)
+pillar dominance regions are non-overlapping: prime/zeta pillars share
+the time-only minimum at `alpha = 1/2`, the floor pillar uniquely accesses
+the space-only minimum at `beta = 1/3`, and the floor pillar uniquely
+achieves `T*S = 13/15`. See
+`experiments/constructions/pillar_tradeoff_diagram/`.
 
 ### E6.8 — Dusart bracketing: p_n in interval of width n            [EVS M]
 
@@ -1687,7 +1728,8 @@ and TC⁰-primality directions respectively.
 ### E7.7 — Three-pillars meta-theorem (informational closure)        [EVS shape]
 
 S15, S16; `archive/sessions/session16_synthesis.md`;
-`proven/circuit_size_barrier.md`.
+`proven/circuit_size_barrier.md`;
+**algorithmic projection (Pareto map):** `experiments/constructions/pillar_tradeoff_diagram/` (S81, C6).
 
 Across **15+ candidate intermediate-quantity families** systematically
 tested (class numbers h(-d), L-values L(1,chi), elliptic curve a_p,

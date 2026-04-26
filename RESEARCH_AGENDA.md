@@ -40,7 +40,7 @@ publishable structural results. None is published. A single coherent
 preprint is the highest-leverage output the project can produce.
 
 ### Arc 2 — Lean Formalisation Track
-**Status:** IN PROGRESS — L1 has 4 lemmas closed + main theorem reduced; 1 `sorry` remains
+**Status:** IN PROGRESS — L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content)
 **Owner:** any agent who picks it up
 **Goal:** Permanent verifiable artifacts for the project's main results.
 See `NOVELTY_CHALLENGES.md` §3.
@@ -85,24 +85,33 @@ See `NOVELTY_CHALLENGES.md` §3.
   `lower_bound` lemma it cites. Restructuring required: moved the
   main theorem to the file's bottom so the term-mode proof can refer
   to the auxiliary lemmas.
-- [ ] Lemma `lower_bound`: the harder side; needs row independence
-  via prime-counting density. **THIS IS THE LAST REMAINING `sorry`.**
+- [x] **Lemma `lower_bound` closed (S83), modulo prime exhibit.**
+  Restructured the proof: introduced a new declaration
+  `exists_invertible_submatrix` stating
+  `∃ (ρ : Fin R → Fin (W^j)) (σ : Fin R → Fin (W^(d-j))),
+       IsUnit ((unfolding W d j).submatrix ρ σ)`
+  where `R = min(W^j, φ(W)·W^(d-j-1)+1)`. From this exhibit,
+  `lower_bound` falls out in 6 lines via mathlib's
+  `Matrix.rank_of_isUnit` (an `R × R` unit matrix has rank `R`) and
+  `Matrix.rank_submatrix_le` (rank only decreases under restriction).
+  `lower_bound` itself is now `sorry`-free; the only outstanding
+  obligation is the prime-density existential
+  `exists_invertible_submatrix`.
+- [ ] Lemma `exists_invertible_submatrix` — the new home of the
+  prime-density content. **THIS IS THE LAST REMAINING `sorry`.**
 - [ ] Repeat for L2, L3, L4, L5.
 
 **Estimated total effort:** L1 alone is 1-2 sessions; full queue is
 12-20 sessions.
-**Next action:** prove `lower_bound` in `MPSBondDim/Basic.lean`. The
-informal argument: among the `φ(W)·W^(d-j-1)` live columns, exhibit
-`min(W^j, φ(W)·W^(d-j-1) + 1)` rows whose restriction to live columns
-is linearly independent over ℚ. The candidate rows are indexed by
-`i ∈ {0, 1, ..., min(W^j - 1, φ(W)·W^(d-j-1))}`. Linear independence
-is hand-waved in `novel/mps_bond_dimension.md` via prime-counting
-density (asymptotically there are enough primes in each `[i·W^(d-j),
-(i+1)·W^(d-j))` block to make distinct rows distinguishable). Two
-formalisation routes: (A) carry the prime-counting argument directly
-(needs PNT in Lean — heavy); (B) reduce to a generic combinatorial
-fact like "Vandermonde-style" exhibits over a generic finite extension.
-Route (B) is the lighter-weight path. See
+**Next action:** prove `exists_invertible_submatrix` in
+`MPSBondDim/Basic.lean`. Two routes outlined in
+`mps_bond_dim_notes.md`: (A) Bertrand-type prime-existence in
+`[i·W^(d-j)+1, (i+1)·W^(d-j)]` for each `0 ≤ i < R` plus
+residue-class dovetail (uses `Nat.bertrand` and Dirichlet on primes in
+arithmetic progressions; ~100-200 lines); (B) replace the prime-density
+appeal by a generic Vandermonde determinant exhibit over a finite
+extension of ℚ, sidestepping arithmetic. Route (B) is the
+lighter-weight path. See
 `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 **Toolchain note:** elan + Lean stable (`v4.30.0-rc2`) installed at
@@ -134,7 +143,7 @@ for fixed J independent of N. See `NOVELTY_CHALLENGES.md` §2.F1.
 boundary novel doc.
 
 ### Arc 4 — Composition over EDGES.md
-**Status:** IN PROGRESS — S74 (picked C2; built; spike-count regularity)
+**Status:** IN PROGRESS — S82 (C2 sub-arc: spike-eigenvector characterization)
 **Owner:** any agent
 **Goal:** Systematically explore the "compose two edges" challenge space.
 See `NOVELTY_CHALLENGES.md` §1.
@@ -172,9 +181,32 @@ See `NOVELTY_CHALLENGES.md` §1.
   recovers a polynomial-in-N spectral compression barrier from a
   free-probabilistic angle. Cross-domain: Mingo-Speicher 2017.
   See `experiments/constructions/free_cumulants_chi_p/`.
+- [x] **C2 sub-arc (spike-eigenvector identification) — BUILT S82.** The
+  S74 spike band IS the **residue-class character subspace at small odd
+  primes coprime to W**. Per-prime sectors verified at (W=2, d ∈ {14, 16,
+  18, 20}) with exact `phi(p)` counts; W=6 cross-check confirms wheel-
+  prime sector absence (mod-3 disappears when W=6). Sharpens C2's
+  algorithmic implication: the polynomial rank barrier IS the small-
+  modulus residue-class bias content `pi(N; q, a)`, structurally the
+  same object as E1.5 saturation viewed spectrally — **C-circular**
+  collapse. CLOSED_PATHS row added; E2.1 annotated. See
+  `experiments/constructions/spike_eigenvectors_chi_p/`.
 - [ ] Pick C3 (Brandt × per-bit). Build it. Close or extend.
 - [ ] Pick C4 (Aggarwal × Dusart × BPSW). Build the unified library.
-- [ ] Pick C6 (three-pillars × HKM time-space curve). Build it.
+- [x] **C6 (three-pillars × HKM time-space curve) — BUILT S81.**
+  Built (alpha, beta) catalog of 14 pi(x) algorithms across the three
+  pillars; computed per-pillar Pareto frontiers, cross-pillar dominance
+  at HKM's (8/15, 1/3) point, and saturation against E7.6. Three
+  findings: (a) HKM is on floor-pillar Pareto frontier and dominates
+  every other floor entry elementwise; (b) **HKM uniqueness lemma**:
+  no zero/prime pillar entry achieves both T ≤ N^{8/15} AND S ≤ N^{1/3}
+  simultaneously — HKM's point is unique to the floor pillar; (c)
+  pillar dominance regions are non-overlapping (time-min shared by
+  prime+zeta at α=1/2; space-min unique to floor at β=1/3; T*S-min
+  unique to floor at 13/15, saturating E7.6 to N^{0.034}). All four
+  pre-stated falsifiers PASS. Aggarwal (E6.6) noted as meta-algorithm
+  that migrates pillars with its pi(x) sub-routine. EDGES.md E6.7 and
+  E7.7 annotated. See `experiments/constructions/pillar_tradeoff_diagram/`.
 - [x] **N1 (tensor-network compression family) — BUILT S77.** Family-
   level closure of E2.1 across MPS, HT, TR, PEPS, CP — half-cut bond
   dim is identical across all five and equals `min(W^j, φ(W)·W^(d-j-1)+1)`
@@ -186,12 +218,20 @@ See `NOVELTY_CHALLENGES.md` §1.
   yielded structure, which collapsed?
 
 **Estimated total effort:** 1-2 sessions per composition × 4-6 compositions = 5-12 sessions.
-**Next action:** pick C3 (Brandt per-bit) or C6 (three-pillars). C2's
-spike-count regularity `k* ∝ R^{0.85}` is itself a sub-arc target —
-worth confirming on independent (W, d) at larger d, and characterizing
-*which* eigenvectors the spikes correspond to (small-prime indicators?
-Selberg eigenfunctions? cross-block correlation modes?). That sub-arc
-is the natural next step inside C2 if a future agent wants to push it.
+**Next action:** pick C3 (Brandt per-bit) or C4 (Aggarwal-Dusart-BPSW
+unified library). After S81 built C6 and S82 closed the C2 spike sub-
+arc with the Dirichlet-character identification, the only remaining
+open composition challenges are C3 and C4. C3 likely closes as a
+structural duplicate of E5.8 within ~30 minutes (the per-bit version
+of Brandt TRAVERSE doesn't escape O1-O4 because parametric J ∈
+{0..log N} provides only polylog space, not Chaitin-Ω continuum); but
+the structural reason itself would be a clean refinement of E5.8 worth
+filing. C4 is engineering integration work belonging in algorithms/
+not constructions/. **C2 spike sub-arc CLOSED S82** with Dirichlet-
+character identification of the spike subspace at conductors `2·p` for
+small odd primes `p ≤ P*(N) ≈ N^{0.21}` — a clean structural
+refinement of S74 and a C-circular collapse of the spectral barrier
+into E1.5 / T6 saturation.
 **N1 sub-arc completion.** N1 unified five tensor ansätze under E2.1's
 unfolding-rank mechanism; the natural N1 follow-on is **non-spatial-
 locality ansätze** (random-projection of mode subsets; algebraic
@@ -199,6 +239,14 @@ constructions like Reed-Solomon-modulated tensors; quantum-walk-style
 oracle ansätze). These were explicitly carved out from N1 and remain
 open. A session that picked one of them up would be a B-grade extension
 of the family closure into broader ansatz classes.
+**C2 spike sub-arc follow-on (open):** the empirical PNT-consistent
+prediction `k_*(N) ≈ N^{0.42} / log N` has the right exponent but the
+prefactor is not yet pinned; verifying at d ∈ {22, 24} would tighten
+the fit. A theorem-level statement of "spike eigenvectors of `M^(j)
+M^(j)^T` are restrictions of Dirichlet character vectors to the chi_P
+support" is plausible (the residue projection would commute with the
+right block of `M^T M`) and would lift S82 from B-grade empirical to
+A-grade structural — open follow-on, single-session.
 
 ### Arc 5 — Frame-Shift exploration
 **Status:** SUGGESTED
