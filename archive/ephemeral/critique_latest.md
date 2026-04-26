@@ -1,235 +1,309 @@
-# Critique — Session 56, of `proposals_session.md` (S55)
+# Critique — Sessions S70 / S71 / S72 (post-S60-fresh-critique batch)
 
-Date: 2026-04-26
-Critic: critique-session
-Source proposals: `archive/ephemeral/proposals_session.md` (5 proposals).
-Project state: 619+ approaches tested, 67+ sessions. All five proposals
-already collide with multiple CLOSED_PATHS entries.
+**Date:** 2026-04-26
+**Critic:** critique-session
+**Sources critiqued:**
+- S70 (`archive/sessions/session70_c1_g_q_bisection.md`,
+  `experiments/constructions/g_q_bisection_invariant/`)
+- S71 (`archive/sessions/session71_c5_universality_class.md`,
+  `experiments/constructions/n_over_2_universality_class/`)
+- S72 (`archive/sessions/session72_l1_lean_e2_1_skeleton.md`,
+  `experiments/formalisations/E2_1_mps_bond_dim/`)
 
-The proposers preemptively tested three of the five (TT-rank, zero-matrix
-SVD, PSLQ-on-subsequence). I verify their results, classify the failure
-modes against CLOSED_PATHS, and rule on the two untested proposals from
-existing closures rather than re-running.
+The previous critique (`session_critique60_fresh.md`, 15:33) judged the
+S60-fresh B1–B5 proposals as 4 duplicate closures. Three construction /
+formalisation sessions ran after that critique. None of them are
+critique-mode, so this critique is not redundant.
 
 ---
 
 ## Verdict summary
 
-| # | Proposal | Verdict | Mode | Closes by |
-|---|----------|---------|------|-----------|
-| 1 | Compressed sensing on M[i,j] = R(x_i^{rho_j}) | **DUPLICATE / CLOSED** | I | lines 26 (S32), 654 (S36), 699 (S54), 708 (S49) |
-| 2 | PSLQ on delta(2^k), delta(F_k), delta(p_k) | **DUPLICATE / CLOSED** | I+E | lines 23, 666 (S33), 703 (S49 — 8th PSLQ-on-delta variant), 711 (S60) |
-| 3 | TT-rank of chi_P : {0,1}^L -> {0,1} | **DUPLICATE / CLOSED** | I | lines 518 (S41 *theorem*), 707 (S49 — 7 orderings on delta), 712 (S60 chi_P midpoint), 729 (S48 multilinear-Möbius) |
-| 4 | GUE-aware adaptive importance sampling of zeros | **DUPLICATE / CLOSED** | E | lines 256/257 (S15), 656 (S31), 723 (S46-fresh), 726 (S46), 732 (S48), 733 (S49) |
-| 5 | Modular/theta bridge to pi(x) | **DUPLICATE / CLOSED** | E | line 519 (S28 theta_modular), state_of_art Landau natural-boundary bound |
+| Session | Artefact | Self-claim | My verdict | Mode | Filed correctly? |
+|---|---|---|---|---|---|
+| S70 | `g_q : ℕ → 𝔽_q × 𝔽_q` paired bisection, 3 closed-form predictions all PASS at N = 2·10⁶ | "Successful composition of E1.6 + E1.5; 3 new artifacts" | **VALID REFINEMENT** | I | YES — CLOSED_PATHS row 746 (FAIL/I), EDGES.md E1.5 + E1.6 annotated, no `novel/` placement attempted |
+| S71 | 4-measure battery on 6 NT Boolean functions, three exact rank closed forms, column-zero density identity unifying E2.7 + E2.8 | "Refinement of E1.4, structural unification of E2.7 + E2.8" | **VALID REFINEMENT** | I | YES — CLOSED_PATHS row 747 (REFINEMENT/I), EDGES.md E1.4 + E2.7 annotated, no `novel/` placement attempted |
+| S72 | Lake project + theorem-statement + 6-decl skeleton; 2 lemmas fully proved in Lean (`rank_le_min_dim`, `row_support_coprime`); 4 `sorry`s remain | "First Lean formalisation in the project; new artifact class" | **GENUINELY NOVEL (per CLAUDE.md)** | — | YES — Arc 2 promoted to IN PROGRESS, NOVELTY_CHALLENGES.md L1 marked IN PROGRESS, no closure row (this opens a track) |
 
-**Net new information: zero.** None of the five survives critique. The
-three tested by the proposer give clean numerical confirmation of prior
-closures (which is fine and worth filing as refining entries) but
-contain no novel structural finding.
+**No artefact requires demotion.** No artefact was placed in `novel/`
+under inflated novelty claim. All three sessions filed honestly: the
+two refinements went into `experiments/constructions/` + CLOSED_PATHS
++ EDGES.md annotations (not into `novel/`); the Lean session opened a
+track and registered as in-progress.
 
----
-
-## Per-proposal critique
-
-### Proposal 1 — Compressed sensing on M[i,j] = R(x_i^{rho_j})
-
-**Tested by proposer:** `experiments/proposals/zero_contribution_compressibility.py`
-/ `_results.md`. Effective rank 312/1000 at 1% threshold; sigma_k decays
-as k^{-0.5..-0.7} (algebraic, not exponential); 2D-Fourier 30% of cells
-above 1%.
-
-**Prior closures hit:**
-- **Line 26 (S32)** Convergence acceleration of zero sum
-  (Richardson/Aitken/Shanks/Padé/Cesàro/Euler-Maclaurin all O(1) gain only).
-- **Line 654 (S36)** SVD of zero contribution matrix needs 99% energy
-  from 26.6% of components.
-- **Line 699 (S54)** Random K-subset of zeros 4x WORSE than first-K —
-  signal is dense in zero basis with smoothly decaying amplitudes,
-  not K-sparse.
-- **Line 708 (S49)** LASSO at N=4096 selects empty support (nnz=0) at
-  every alpha and K — no sparsity exists.
-
-**Why the experiment can't escape:** the matrix M's effective rank
-*relative* to its dimension shrinks, but its **Frobenius norm grows
-proportionally to the window**, so the K needed for **integer
-precision** (the only thing that lets you round to pi(x)) scales as
-poly(N), not polylog. The proposal's ~30% sparsity in 2D Fourier is
-the same algebraic-decay phenomenon: relative compressibility cancelled
-by absolute scale (same wall as line 720, S65, phi(x,a) 2D low-rank).
-
-**Verdict:** DUPLICATE. Failure mode I (information loss). Refines
-S32/S36/S54 by adding an explicit 2D Fourier sparsity number for one
-window — file as a refining entry in CLOSED_PATHS, do not promote.
+**Net position:** the post-67-session "novelty production" mandate of
+CLAUDE.md is being respected. S70 and S71 are bordering on "duplicate-
+plus" (each effectively re-derives a known mechanism in a new wrapper)
+but the wrapper IS a genuine composition with quantitative content
+(closed-form three-state H_3 in S70, three exact rank formulas + column-
+zero principle in S71). S72 is the strongest of the three: it is a new
+artifact class for the project, with kernel-checkable correctness.
 
 ---
 
-### Proposal 2 — PSLQ on sparse subsequences delta(2^k), delta(F_k), delta(p_k)
+## Per-artefact critique
 
-**Tested by proposer:** `experiments/proposals/pslq_subsequence_delta.py`
-/ `_results.md`. No PSLQ relation found across dyadic, Fibonacci,
-prime-indexed subsequences with seven-constant dictionary at 80 dps.
+### S70 — `g_q` paired bisection (composition C1 of E1.6 + E1.5)
 
-**Prior closures hit:**
-- **Line 23 (S25)** PSLQ linear relations among zeros: 13,000+ tests at
-  60 dps, no relations among 3-5 zeros over Z[1, pi, log(2pi)].
-- **Line 666 (S33)** PSLQ on delta(p_n) — the prime-indexed subsequence
-  is *exactly* this proposal's subsequence 3. Same dictionary, same
-  failure.
-- **Line 703 (S49)** 8th PSLQ-on-delta variant with structured zeta-zero
-  / log basis — no relation of norm <= 10^6.
-- **Line 711 (S60)** 9th PSLQ-on-delta variant with 7-feature analytic
-  dictionary, 40 sliding windows.
-- **Line 715 (S63)** D-finite (Apéry-style) recurrence for delta(n) —
-  prediction skill at noise floor.
+**What was built.** The map
+`g_q(x) = (A(x) mod q, C_3(x) mod q)` with `A = (x − L)/2`,
+`C_3 = A − π`, so `π = A − C_3` (E1.6). Empirical verification at
+N = 2·10⁶ for q ∈ {2, 3, 5, 7, 11, 13} of three quantitative
+predictions:
 
-**Why:** delta(n) inherits the GUE-random oscillation of the residual
-zeta-zero sum. Any infinite subsequence inherits the same incompres-
-sibility unless it is chosen *adversarially* using prime data — which
-defeats the purpose. The proposers' result (delta values flipping sign
-+/- 20 between n=256 and n=1024) is exactly the diagnostic signature.
+* PR1 (per-component closed form) — PASS at 5e-3 (worst |diff| 1.6e-3
+  at small X, 5e-6 at X = 2·10⁶).
+* PR2 (joint closed form) — PASS in strict regime q²·100 ≤ π(X).
+* PR3 (q-stable marginal independence) — PASS, worst I = 1.17e-4 bits.
 
-**Subsequence integrability is now empirically dead** at: dyadic,
-Fibonacci, prime-index, log-index, sliding-window, character-twisted,
-and zero-mode bases. No new attack surface remaining for this approach.
+**Run output spot-check.** `run_output.log` reproduces:
+`PR2 verdict: PASS (threshold 5e-3)`,
+`PR3 worst I (at X=2000000, all q in [2..13]): 0.000117 at q=13`,
+`PR3 verdict: PASS`. PR1 PASS confirmed in `_results.md` table.
+Wall-clock 3.43 s. Bit-exact identity `π = A − C_3` for x ∈ [1, 2·10⁶].
+Verifications hold.
 
-**Verdict:** DUPLICATE. Failure mode I+E. Tenth PSLQ-on-delta variant
-across the project. File as refining entry to keep the count clean.
+**a) Has this been tried before?** Partial yes:
+
+* E1.5 / S69 already saturated `H(π(x) mod m | π(x−1) mod m) =
+  h_2(π(X)/X) + O(1/π(X))` for π only.
+* E1.6 / S55 already established marginal independence at q=2.
+* The *mechanism* (binary-valued increment + conditional independence
+  of indicator from state) is identical to E1.5's. Applying it to A
+  and C_3 gives the per-component closed forms by *the same one-line
+  argument*.
+
+**b) Failure mode.** None (construction succeeded as composition). The
+failure mode for *polylog* is INFORMATION LOSS (I): both A and C_3 are
+themselves 1-bit/step counters in the strict-regime; no peeling-off
+trick survives.
+
+**c) Numerical correctness.** Closed-form match at 1e-7 at full X
+across every (q, F) tuple in the strict regime. PR2 deviations
+outside the strict regime (q² > π(X)/100) are documented as the
+S69-known finite-state-coverage artefact, not a model failure.
+
+**d) Novelty defensibility.** Borderline. The per-component closed
+forms (PR1) are *one-line corollaries* of E1.5's mechanism. The joint
+H_3 closed form (PR2) is genuinely new — it was not stated anywhere
+prior. The q-stable extension (PR3) is a genuine empirical
+strengthening of E1.6 (q=2 only). Net: ~1.5 new objects (the joint
+H_3 + the q-stable strengthening), plus the unifying observation that
+"any monotone Ω-stratified summatory satisfies E1.5's per-step rate."
+That last is a paper-grade claim. By CLAUDE.md's bar:
+
+> a published paper-grade number theorist or complexity theorist could
+> not, after one careful read of prior literature and CLOSED_PATHS,
+> produce this.
+
+A specialist could easily produce the per-component result by trivial
+extension. The joint H_3 they would *probably* produce too once told
+to look. The q-stable strengthening is the only piece that requires
+running an actual experiment. Verdict: refinement, not `novel/`-grade.
+**The S70 author already filed it that way** — no `novel/` placement
+attempted, only CLOSED_PATHS + EDGES annotations. Filing is correct.
+
+**e) Edge citations.** E1.6 (composed), E1.5/S69 (composed), E2.10
+(used to derive A integer-valued from L mod 2 = x mod 2). All accurate.
+
+**f) Filing status.** CLOSED_PATHS row 746 — present and accurate
+(FAIL/I mode, "construction succeeded as composition but does not
+open polylog route"). EDGES.md E1.5 annotated with the mechanism
+universality; E1.6 annotated with q-stable extension. No demotion
+needed.
+
+### S71 — N/2 universality battery on 6 NT Boolean functions (composition C5 of E1.4 + E2.5)
+
+**What was built.** A 4-measurement battery (M1 balanced
+communication-matrix rank, M2 GF(2) BM linear complexity, M3
+approximate degree at ε = 0.49, M4 PTF degree) on six functions
+{f_pi, f_sqfree, f_mu_pos, f_lam_pos, f_sqfree3, density-matched
+SHA-256 PRF} for N up to 14 (M1) / N up to 10 (M3, M4). Three exact
+rank closed forms: rank(M_chi_P) = 2^{N/2−1} + 1; rank(M_sqfree) =
+rank(M_mu_pos) = 3·2^{N/2−1}; rank(M_lam_pos) = 2^{N/2}. Structural
+identity `rank(M_f^{balanced}) ≤ (1 − ρ_f)·2^{N/2}` where ρ_f is the
+density of lower-half columns forced to zero by f's smallest non-
+witness modulus.
+
+**a) Has this been tried before?** No prior measurement of E1.4 on
+non-π NT Boolean functions appears in CLOSED_PATHS or EDGES. The
+column-zero density observation is also new.
+
+**b) Failure mode.** None for the construction; PR1 / PR3 / PR4
+*falsify* the original framing of E1.4 ("N/2 universality" is in fact
+a parity-of-Ω property, not a meta-NT property). This *informs*, it
+doesn't close the project's main open problem.
+
+**c) Numerical correctness.** I did not re-run the script. The script
+exists, runs in ~25 s wall (per session note); the closed-form
+identities are stated for N=6,8,10,12,14. The column-zero
+*structural argument* is one-paragraph algebra — verifiable on
+inspection.
+
+**d) Novelty defensibility.** Mixed.
+
+* The *column-zero* observation is essentially trivial linear
+  algebra: "if a column is identically zero, it does not contribute
+  to rank." Stating it doesn't deserve `novel/` placement.
+* BUT: the unification of E2.7 + E2.8 under the column-zero principle
+  is a real consolidation. E2.8's "25-35% tensor rank deficiency" was
+  previously a separate edge from E2.7's "+2 communication rank
+  anomaly". Both now follow from `rank ≤ (1 − ρ_f)·2^{N/2}` with
+  different complexity measures.
+* The three exact rank formulas for {chi_P, sqfree, mu_pos, lam_pos}
+  ARE new closed forms in the project. None of them transfer to
+  closing the open polylog problem (that's why the closure mode is
+  REFINEMENT/I).
+* The scope refinement of E1.4 ("parity-of-Ω family" not "all NT
+  Boolean functions") is a genuine factual correction.
+
+By CLAUDE.md's bar, a specialist with one read of prior literature and
+CLOSED_PATHS could likely produce the column-zero identity in 30
+minutes. They could not as easily produce the empirical refinement of
+E1.4's scope. Net: refinement-grade, not `novel/`-grade. **S71 author
+filed accordingly** — no `novel/` attempt; CLOSED_PATHS + EDGES.md
+annotations only. Correct.
+
+**e) Edge citations.** E1.4 (refined), E2.5 (used as machinery for M3
+/ M4), E2.7 (unified), E2.8 (unified). All accurate.
+
+**f) Filing status.** CLOSED_PATHS row 747 — present and accurate
+(REFINEMENT/I mode). EDGES.md E1.4 annotated with scope refinement;
+E2.7 annotated with indicator analogue (+1 vs +2) plus column-zero
+unification with E2.8. No demotion needed.
+
+**Caveat I want to flag.** The session's prose at one point says the
+column-zero density "could become a small new EDGE entry (call it
+E2.7+ or N1-style negative shape)." Currently this is folded into
+E2.7's existing entry as an annotation. That is the right call at
+present scope (one observation, three exact formulas). If a future
+agent attempts to *prove* `rank(M_f) ≤ (1 − ρ_f)·2^{N/2}` formally
+across an entire function family, *that* would be promotion-worthy.
+For now: stay folded.
+
+### S72 — Lean 4 formalisation of E2.1 (L1 skeleton)
+
+**What was built.** A lake project at
+`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/` running
+Lean 4.30.0-rc2 + mathlib v4.30.0-rc2. `MPSBondDim/Basic.lean` has
+8 declarations (`chiP`, `unfolding` defs; theorems `mps_bond_dim`,
+`upper_bound`, `lower_bound`, `rank_le_min_dim`, `row_support_coprime`,
+`live_columns_count`). 4 `sorry`s remain, 0 `axiom` introductions. Two
+lemmas fully proved.
+
+**Build verification.** I ran `lake build` from the project directory.
+Output: `Build completed successfully (8315 jobs)` with exactly four
+warnings of the form `declaration uses sorry` at lines 51, 152, 165,
+177 — matching the four open `sorry`s claimed. `rank_le_min_dim`
+(line 191) and `row_support_coprime` (line 91) emit no `sorry`
+warning, confirming they type-check end-to-end. **The session's
+claims hold.**
+
+**a) Has this been tried before?** No. This is the project's first
+Lean 4 formalisation.
+
+**b) Failure mode.** None. Per CLAUDE.md "The Novelty Bar":
+
+> A Lean 4 proof of an existing edge or novel result, with the proof
+> type-checking under Lean.
+
+Partial Lean proofs that type-check are explicitly listed as
+success-grade output. Two lemmas now machine-checked.
+
+**c) Correctness.** The Lean kernel is the falsifier. Build succeeds.
+
+**d) Novelty defensibility.** YES, by CLAUDE.md's explicit allowance.
+A new artifact class for the project. This is the strongest of the
+three sessions critiqued.
+
+**e) Edge citations.** E2.1 (target of formalisation). The proof uses
+mathlib lemmas (`Matrix.rank_le_height`, `Nat.coprime_or_dvd_of_prime`,
+`Nat.gcd_add_mul_right_left`, `Nat.totient`). Citations accurate.
+
+**f) Filing status.** No CLOSED_PATHS row (correct — this opens a
+track, doesn't close one). Arc 2 marked IN PROGRESS in
+`RESEARCH_AGENDA.md`. NOVELTY_CHALLENGES.md L1 marked IN PROGRESS with
+next-action. Notes file `mps_bond_dim_notes.md` enumerates each
+remaining `sorry` with tractability estimate. All correct.
+
+**One small observation.** The session's "live_columns_count" sorry
+includes a recommended proof strategy ("CRT periodicity in W-blocks,
+each block contains exactly φ(W) live values"). Mathlib has
+`Nat.totient_eq_card_lt_and_coprime` plus `Finset.filter` machinery.
+This is the most tractable of the four open `sorry`s and is the
+correct next-action.
 
 ---
 
-### Proposal 3 — TT-rank of chi_P : {0,1}^L -> {0,1}
+## Cross-cutting observations
 
-**Tested by proposer:** `experiments/proposals/tt_rank_prime_indicator.py`
-/ `_results.md`. Verified independently in this critique session: at
-L=10 max TT-rank is exactly 17 = 2^{(L-1)/2}+1, matching prediction.
-Pattern holds L=12,14,16 with max-rank exactly half the random-Bernoulli
-baseline (the "all primes > 2 are odd" mod-2 free bit).
+**1. Three sessions, three different success modes.** S70 / S71 each
+produced a *quantitative refinement* of an existing edge, filed
+honestly without `novel/` inflation. S72 produced a *new artifact
+class* (Lean), filed honestly as a track-opener. All three
+sessions correctly self-evaluated as not-`novel/`-grade-when-not-
+applicable. The "honest failure reporting" discipline of CLAUDE.md is
+being respected.
 
-**Prior closures hit:**
-- **Line 518 (S41)** *Closed-form theorem* rank(pi_N) = 2^{N/2-1} + 2
-  at midpoint cut. The proposer's measurement IS the theorem evaluated
-  numerically.
-- **Line 707 (S49)** 7 reorderings of TT for delta — all give identical
-  binary-cube volume-law profile.
-- **Line 712 (S60)** MPS midpoint-cut bond dim of chi_P at N=2^14 —
-  rank ~ 2^{0.485 L} ~ sqrt(N), exactly 2^{(L-1)/2}+1 at L=14.
-- **Line 729 (S48)** Multilinear extension of chi_P with sumcheck-style
-  evaluation: rank 2^{N/2-1}+2 reconfirmed in multilinear-Möbius basis.
-- **novel/pseudorandomness_of_pi.md** measure #18 (MPS volume law).
+**2. The "duplicate-plus" risk for compositions C1 and C5.** S70's PR1
+result (per-component closed form for A and C_3) IS a one-line corollary
+of E1.5's mechanism; it crosses the threshold between "trivial extension"
+and "non-trivial composition" only because of the joint H_3 result and
+the q-stable strengthening. Future composition sessions should be more
+suspicious of "this just re-derives the parent edge in a paired
+wrapper." Suggestion for NOVELTY_CHALLENGES.md §1: each composition
+challenge should pre-state which observation in the result will clear
+the "trivial extension of parent edge" bar.
 
-**Why the experiment cannot reopen:** the rank theorem is *tight*; the
-proposer measured one bipartition (binary-digit ordering, MSB-first),
-which is exactly the cut covered by S41 and S60. Other orderings
-(bit-reversal, Gray, Morton, sort-by-R^{-1}, random) were tested in
-S49 and all gave identical bond profile = the binary-TT volume-law
-ceiling. The "factor-of-2 vs random" the proposer notes is just
-chi_P (mod 2) having rank 1 — a 1-bit free identity.
+**3. The Lean track is the cleanest novelty-production lever right now.**
+Construction sessions C1 (S70), C5 (S71) each produced ~1 unit of new
+content per session, both filed as I-mode closures. Lean S72 produced
+the project's first machine-verified theorem proofs. Per-session
+novelty-yield ranking: S72 > S71 ≈ S70. The diminishing-returns problem
+of CLAUDE.md ("most 'new' angles map to existing CLOSED_PATHS lines
+within 30 minutes") DOES NOT apply to Lean — every type-checked lemma
+is a permanent project asset.
 
-**Verdict:** DUPLICATE. Failure mode I (no hidden tensor-network
-structure). Numerically confirms the S41 theorem; file as refining
-entry. Do NOT promote to novel/.
-
----
-
-### Proposal 4 — GUE-aware adaptive importance sampling of zeros (NOT TESTED HERE)
-
-**Why I rule without re-running:**
-
-- **Line 257 (S15)** Probabilistic sieve via random zero subset:
-  variance 10^6-10^9x worse than deterministic.
-- **Line 656 (S31)** GUE pair-correlation sampling: zero clustering
-  reaches O(1) error saturation at 10 zeros; tail prediction fails;
-  variance reduction 1.006x (essentially zero).
-- **Line 723 (S46-fresh)** Wynn-epsilon (=Shanks) on geometric ladder
-  of partial sums diverges catastrophically at every x.
-- **Line 726 (S46)** Zero-aware control variate using truncated
-  explicit formula as control: variance reduction 1.006x — directly
-  the proposal's "GUE moments correct the truncation tail" mechanism,
-  in control-variate framing. Best partial-sum slope b approx -0.29 in
-  the small-T regime (proposal needs b > 0.5+epsilon to win).
-- **Line 732 (S48)** Semiclassical log-block resummation: per-block
-  contribution GROWS like 2^{i/2}*sqrt(x), no cancellation — exactly
-  the "GUE-cancellation in tail" the proposal wants — empirically there
-  is no such cancellation.
-- **Line 733 (S49)** FOCUS-4: BK arithmetic-correction template
-  z = -10.85 sigma BELOW gap-shuffled null on N=8000 zeros — zeta is
-  *more* GUE-like than its gap-distribution would predict; no
-  smaller-variance template exists at the tested scales.
-
-**Theoretical reason the experiment cannot succeed:** the proposal
-needs analytic_tail_variance(K_low, x) < 1/8 with K_low = polylog x.
-By the standard GUE prediction (Berry/Keating, Conrey-Snaith), the
-variance of the truncated explicit-formula error at K = O(polylog) is
-Theta(x / polylog x), not o(1). Reducing it below 1/4 would require
-positive correlation between zero contributions — exactly what 33
-measures of pseudorandomness (novel/pseudorandomness_of_pi.md) and
-the FOCUS-4 N=8000 battery (line 733) rule out.
-
-**Verdict:** DUPLICATE. Failure mode E (reduces to explicit formula at
-truncation T = sqrt(x); no GUE-moment correction beats this). Do not
-test.
+**4. No artefact requires demotion or relocation.** All three sessions
+filed under correct paths. No `novel/` entries created falsely. EDGES.md
+annotations are accurate. CLOSED_PATHS rows 746 / 747 contain accurate
+mode + reasoning.
 
 ---
 
-### Proposal 5 — Modular / theta function bridge to pi(x) (NOT TESTED HERE)
+## Single highest-value next-action
 
-**Why I rule without re-running:**
+**Prove `live_columns_count` in `MPSBondDim/Basic.lean`.**
 
-- **Line 519 (S28)** theta_modular_test: four prime-theta kernels
-  (Gaussian, linear-exp, alternating, rational) at N <= 10^5 primes —
-  all match random subsets in alpha and R^2. Landau's natural-boundary
-  theorem at Re(s) = 0 blocks Jacobi-style modular symmetry from the
-  prime side.
-- **Line 519 caveat:** the chain theta -> Mellin -> zeta is *one-way* —
-  there is no inverse Mellin "theta-of-primes" with fast modular
-  evaluation, because the prime indicator's Dirichlet generating
-  function (zeta) has its natural boundary already, not a functional
-  equation on the strip.
-- **literature/state_of_art_2026.md:** off-line zeta evaluation at
-  general s in the strip is still Omega(|s|^c) by Euler-Maclaurin;
-  Riemann-Siegel only beats this on the critical line. No 2025-2026
-  result changes this.
+The CRT count `#{k ∈ [0, W^(d-j)) : gcd(k+1, W) = 1} = φ(W)·W^(d-j-1)`.
+Reasons this is the highest-value action:
 
-**Verdict:** DUPLICATE. Failure mode E. The "off-line evaluability"
-sub-conjecture is itself the open problem in zeta evaluation,
-equivalent to (and as hard as) Hiary's longstanding O(t^{1/3}) ->
-O(t^epsilon) program.
+1. **It is the most tractable remaining `sorry`.** Pure combinatorics;
+   mathlib has `Nat.totient` lemmas, `Nat.totient_eq_card_lt_and_coprime`,
+   and `Finset.filter` + `Finset.card_eq_sum_ones` machinery. Proof
+   sketch: periodicity in W-blocks, each block contributes exactly
+   φ(W) admissible values, induction on `d−j−1`.
 
----
+2. **It unblocks `upper_bound`.** Once `live_columns_count` is closed,
+   `upper_bound` is the next target — it combines `row_support_coprime`
+   (already proved) + `live_columns_count` via a row-support-subspace
+   argument (`Submodule.finrank_le_finrank_of_le`). With `upper_bound`,
+   the project has its first non-trivial proven theorem in Lean.
 
-## What this critique adds to project state
+3. **It maintains the genuinely-novel-artifact-class momentum from S72.**
+   Construction sessions S70 + S71 are at I-mode (no polylog). Lean is
+   the only track currently producing kernel-checkable output. Marginal
+   information per session is highest here.
 
-1. **Three new refining CLOSED_PATHS entries** (S56) for proposals 1,
-   2, 3 — they reproduce known closures with different parameter choices,
-   worth filing for completeness (cumulative count 619 -> 622).
-2. **Two ruling-by-prior-art entries** for proposals 4, 5 — file as
-   refining entries that explicitly cite the multi-session evidence.
-3. **No update to OPEN_PROBLEMS** — none of the five opens a viable
-   research direction.
-4. **No novel/ promotion** — none of the five produces an original
-   finding beyond pseudorandomness_of_pi.md.
+4. **It is session-tractable** (1-2 hours of dedicated mathlib lemma
+   chasing).
 
-## Process note for the proposer
+This action is already registered as the next-action in
+`RESEARCH_AGENDA.md` Arc 2 and `NOVELTY_CHALLENGES.md` §3 L1. No file
+edit needed — re-affirming.
 
-The proposer document explicitly says "written without consulting
-CLOSED_PATHS to avoid bias toward prior negative results." This is
-defensible as a prior-art-blind ideation exercise but should ALWAYS
-be paired with a critique pass before running experiments. In this
-session the proposer ran three experiments that were guaranteed to
-reproduce prior closures (per CLOSED_PATHS line counts), wasting ~1
-session of compute. **Recommendation:** future proposal sessions
-should include a 5-minute grep-CLOSED_PATHS step before any code is
-written. The proposer's "the test designs sharpen what specifically
-failed before" defense does not hold here — the prior tests are
-already sharp enough.
-
-## Cross-link to EDGES.md
-
-- Proposals 1, 4 close further variations of E3.x (explicit-formula
-  shape) and E1.10 (proper null = gap-shuffled zeros).
-- Proposal 2 closes another delta-PSLQ variant, reinforcing E1.7
-  (delta information-content lower bound) and E2.x (no algebraic
-  identity for delta).
-- Proposal 3 reconfirms E2.1 (MPS bond-dim theorem rank = 2^{N/2-1}+2).
-- Proposal 5 reinforces E3.x analytic-side natural-boundary obstruction.
+**If the next agent prefers non-Lean work**, the second-best next-action
+is to attempt **C2** (free cumulants of χ_P × MPS bond-dim — the next
+unbuilt composition). C2 is more substantive than C5 was, since free
+cumulants are tightly constrained algebraic invariants and could yield
+a genuinely-`novel/`-grade closed form rather than a refinement.

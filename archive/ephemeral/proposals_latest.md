@@ -1,18 +1,29 @@
-I'll write proposals to ephemeral, then code and test the most promising ones. Let me start with the proposals document.
-Now let me code and test the most promising proposals. Starting with the TT-rank experiment (cheapest, most directly informative).
-Strong verdict: TT-rank scales as 2^{L/2-1} for primes vs 2^{L/2} for random — exactly halved (the "all primes > 2 are odd" bit), but still exponential. Let me write the results.
-Now Proposal 1: compressed sensing on the zeta-zero contribution matrix.
-Now Proposal 2: PSLQ subsequence hunt.
-## Summary
+I'll generate proposals for fast prime computation. Let me start by loading needed tools and checking the directory structure.
+Existing proposals already cover compressed sensing, PSLQ, and continued fractions. To stay fresh, I'll pivot to less-explored angles: hierarchical-matrix compression of the explicit-formula kernel, reservoir-computing prediction of delta-bits, determinant-representation hunt, and a modular-form / Hecke-trace sketch.
 
-Wrote 5 proposals to `archive/ephemeral/proposals_session.md`, then implemented and tested the three most tractable ones:
+Let me write the proposals file first.
+I'll append my fresh proposals to the existing session file rather than overwrite.
+Now let me write the four runnable experiments. I'll start with B1 (H-matrix kernel), then B3 (determinant hunt), B5 (halving), B2 (ESN), in order of expected runtime.
+The result is striking: kernel rank ≈ block width (linear fit beats log fit by 5x). H-matrix compression does NOT work on this kernel. Let me also test with more rows than columns (where H-matrix structure usually appears).
+Crystal-clear negative: kernel rank = block width exactly. The H-matrix approach is fundamentally blocked because the columns are independent characters x^{1/2+i*gamma_k} (Vandermonde structure → no compressibility). Let me record results and move to B3.
+Top candidates are essentially rediscovering `li(x) - log(x)·loglog(x)` — refined li, not a polylog representation. Let me probe extrapolation to larger x to confirm.
+The exponent 0.40 is borderline interesting but R²=0.11 is weak. Let me extend the experiment with larger n and windowed RMS to get a cleaner exponent.
+Asymptotic behavior of theta-residual is misleading: upper-window scaling is n^0.61, fully sqrt-chaos. The polylog look at low n is fitting artifact. Let me write up B5 honestly and move to B2.
+ESN trained 64% but tested 50% — pure overfitting, no generalization. Let me confirm with a larger run.
+All four experiments ran, results files written, no `__pycache__` to delete, `.run_state` set to 60. Final summary.
 
-**Proposal 3 — TT-rank of prime indicator** (`experiments/proposals/tt_rank_prime_indicator.py`): VERDICT CLOSED. TT-rank scales as exactly 2^{(L-1)/2} + 1, exactly half of random Bernoulli baseline (the "all primes > 2 are odd" bit). Exponential, not polylog. Confirms pseudorandomness picture cleanly.
+## Session summary
 
-**Proposal 1 — Compressed sensing on zeta-zero contribution matrix** (`experiments/proposals/zero_contribution_compressibility.py`): VERDICT CLOSED. Singular values decay algebraically as k^{-0.5 to -0.7} (effective rank ~312 of 1000 at 1% threshold). 2D Fourier basis: ~30% of coefficients above 1%. Polynomial compressibility, not polylog.
+Five fresh proposals drafted in `archive/ephemeral/proposals_session.md` (appended as second batch — prior batch from earlier session preserved). Four runnable experiments implemented under `experiments/proposals/`:
 
-**Proposal 2 — PSLQ subsequence hunt** (`experiments/proposals/pslq_subsequence_delta.py`): VERDICT CLOSED. No relations found on dyadic, Fibonacci-indexed, or prime-indexed subsequences. delta(n) values flip sign wildly (e.g., -20.77 at n=256, +21.05 at n=1024), confirming pseudorandomness on sparse probes too.
+| # | Idea | Verdict | Result |
+|---|------|---------|--------|
+| **B1** | H-matrix compression of explicit-formula kernel | **CLOSED** (structural) | Off-diagonal ranks = block width *exactly* (zero residual). The kernel `x^{1/2+i*gamma}` is Vandermonde-like; columns are independent characters. No off-diagonal cancellation possible. |
+| **B3** | Determinant representation `det M(x) = pi(x)` | **CLOSED** (equivalence) | Best k=2 candidate over 12-feature library is `li(x) - log(x)·loglog(x)`, with sqrt(x)-scale error tracking li(x) - π(x) exactly. |
+| **B5** | Self-correcting halving recursion `p(n) → p(n/2)` | **CLOSED** (info loss) | Asymptotic exponent of theta(n) residual is ~0.6 ≥ 0.5 — chaotic phases at scales n and n/2 add in RMS rather than cancel. Halving propagates, doesn't shrink, the entropy. |
+| **B2** | ESN on bit-0 of delta(n) | **CLOSED** (no signal) | Train acc 67%, test acc 45-50% — pure overfitting. Logistic on same features also at chance. Confirms entropy barrier on delta parity. |
+| **B4** | Hecke-trace coupling | sketch only (no code) | Left as future-arc proposal. |
 
-Proposals 4 (GUE-aware adaptive truncation) and 5 (theta/modular bridge) are documented but not tested — Proposal 4 needs an analytic variance estimate that's a session of its own, and Proposal 5 is intentionally speculative.
+Honest self-assessment: this session produced **4 clean negative closures** with concrete structural reasons, but **0 novel artifacts** (objects, compositions, proofs). By the project's own success criterion this is a "duplicate-shape" session — the fresh-frame proposals each map onto a known structural barrier within ~30 minutes of measurement. The B1 H-matrix result is the most pedagogically useful (clear Vandermonde argument explains why kernel-side compression fails, complementing prior signal-side compressed-sensing closures).
 
-`.run_state` set to 55. All `.py` files have companion `_results.md`. No `__pycache__` directories created.
+`.run_state` set to 60.

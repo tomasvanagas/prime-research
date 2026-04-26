@@ -24,11 +24,13 @@ File under `experiments/constructions/<name>/`. Cite the edges by ID
 in `definition.md`. Failure mode is "duplicate of [composed-edge-X]"
 or "construction-incoherent" if the object isn't well-defined.
 
-### C1 — A⊕C₃ bisection × 0.537-bits invariant
+### C1 — A⊕C₃ bisection × 0.537-bits invariant — **BUILT (S70)**
 **Edges:** E1.6 + E1.5
-**Object:** A function `g_q : ℕ → 𝔽_q` such that `g_q(x) = (A(x) + q·C_3(x)) mod q` (so q=2 reduces to E1.6 directly). Test whether the 0.537-bits-per-step invariant of E1.5 holds for `g_q` for q ∈ {3, 5, 7, 11, 13}. If yes, you've found a *family* of CRT-style invariants where E1.5 was a single statement.
-**Why novel:** E1.5 was tested only modulo {2..30} on π(x). Testing on the bisected components A and C_3 is new; the invariant might break for q > 2 (carrying useful information) or hold (deepening E1.5).
-**Falsification:** RMS deviation from 0.537 bits across q.
+**Object:** A function `g_q : ℕ → 𝔽_q × 𝔽_q` with `g_q(x) = (A(x) mod q, C_3(x) mod q)` (the paired bisection; q=2 recovers E1.6's two parities). Test whether the per-step entropy closed form (S69-sharpened E1.5) holds for `g_q` for q ∈ {3, 5, 7, 11, 13}. If yes, a *family* of E1.5-style invariants where the original was a single statement.
+**Why novel:** E1.5/S69 was for π(x) only. Testing on A and C_3 (and their joint state) is new.
+**Falsification:** PR1 = |H_emp(F mod q | prev) − h_2(F(X)/X)| < 5e-3 for F ∈ {π, A, C_3}; PR2 = joint H(g_q(x) | prev) − H_3(1−ρ_A, ρ_π, ρ_C3) < 5e-3; PR3 = I(A mod q ; C_3 mod q) < 0.01 bits at X = 2·10⁶.
+**Outcome (S70):** All three PASS at full N = 2·10⁶. Worst PR1 |diff| 1.6e-3 (at small X), 5e-6 at X = 2·10⁶; worst PR2 |diff| 8e-4 in strict regime q²·100 ≤ π(X); worst PR3 I = 1.17e-4 bits at q = 13. Three new artifacts: (i) per-component closed form extended from π to A, C_3 (mechanism applies to all monotone Ω-stratified summatories); (ii) **new joint closed form** `H(g_q | prev) = H_3(1−ρ_A, ρ_π, ρ_C3)`; (iii) q-stable strengthening of E1.6 marginal independence to q ≤ 13. Composition reveals destructive-interference picture: A, C_3 each carry 1 bit/step asymptotically, π carries 0 bits/step, marginally q-stably independent.
+**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S70). E1.5 and E1.6 annotated in EDGES.md.
 **Save under:** `experiments/constructions/g_q_bisection_invariant/`
 
 ### C2 — MPS bond-dim × free-probability moments
@@ -52,11 +54,13 @@ or "construction-incoherent" if the object isn't well-defined.
 **Falsification:** Wall-clock benchmarks at p(10^k) for k = 6, 9, 12, 15.
 **Save under:** `algorithms/aggarwal_dusart_bpsw/` (working algorithm goes in `algorithms/`, not `experiments/constructions/`).
 
-### C5 — N/2 universality × non-Boolean function
+### C5 — N/2 universality × non-Boolean function — **BUILT (S71)**
 **Edges:** E1.4 + E2.5
 **Object:** The N/2 universality (E1.4) is verified for π(x) mod 2 across 6 measures. Pick another natural number-theoretic Boolean function — e.g., `is_squarefree(n)`, `is_squarefree_AND_n_mod_3==1`, `mu(n) == +1`, `Liouville(n) == +1`. Run the same 6 N/2 measurements. If N/2 universality holds across multiple functions, you've found a *meta-theorem* about a class of NT functions; if it doesn't, you've found a function where π(x) mod 2 is special (which is also genuinely interesting).
 **Why novel:** The N/2 universality has only been measured on one function.
 **Falsification:** Per-function table of the 6 measurements.
+**Outcome (S71):** Ran cheap 4-measure subset (M1 comm-rank, M2 BM-LFSR, M3 approx-degree, M4 PTF) at N up to 14 on six functions {f_pi, f_sqfree, f_mu_pos, f_lam_pos, f_sqfree3, density-matched PRF}. **N/2 universality is NOT universal**: it holds tightly only for the parity-of-Omega family `{chi_P, mu_pos, lam_pos}` at adeg/PTF, but BREAKS for sqfree (below), sqfree3 (above), and PRF (below). M1 produces three distinct **closed-form rank regimes**: rank(M_chi_P) = 2^{N/2-1}+1 exactly; rank(M_sqfree) = rank(M_mu_pos) = 3·2^{N/2-1} exactly; rank(M_lam_pos) = 2^{N/2} (full). All three explained by the same structural identity: rank(M_f) ≤ (1−ρ_f)·2^{N/2} where ρ_f is the density of lower-half columns forced to zero by f's smallest non-witness modulus (chi_P: ρ=1/2 from "x even ⇒ x non-prime"; sqfree, mu_pos: ρ=1/4 from "4 | x ⇒ x non-squarefree"; lam_pos: ρ=0). M2 BM/2^N ≈ 0.50 universally — the LFSR test alone is non-distinguishing. **Status:** BUILT, no polylog opening. This **refines E1.4** (scope = parity-of-Omega family) and **unifies E2.7 + E2.8** by a single column-zero density principle.
+**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S71). E1.4 and E2.7 annotated in EDGES.md.
 **Save under:** `experiments/constructions/n_over_2_universality_class/`
 
 ### C6 — Three-pillars × HKM time-space curve
@@ -137,7 +141,7 @@ plus `<name>_notes.md`.
 `lean --run`). If it doesn't, the session is an in-progress formalisation,
 not a closure. Save the in-progress state to `RESEARCH_AGENDA.md`.
 
-### L1 — E2.1: MPS bond-dim identity (HIGHEST priority)
+### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S72)**
 **Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
 base W ≥ 2, for every cut 1 ≤ j < d:
 ```
@@ -148,6 +152,13 @@ where M^{(j)} is the (W^j × W^{d-j}) unfolding.
 is short, no deep number theory needed (just CRT + φ definition).
 **Estimated effort:** 1-2 sessions.
 **Save under:** `experiments/formalisations/E2_1_mps_bond_dim/`
+**S72 progress:** Lake project + mathlib `v4.30.0-rc2` installed; theorem
+statement + 5-lemma skeleton typechecks (`lake build` succeeds);
+`rank_le_min_dim` and `row_support_coprime` fully proved (no `sorry`,
+no `axiom`); 4 `sorry`s remain on `mps_bond_dim`, `upper_bound`,
+`lower_bound`, `live_columns_count`. **Next action:** prove
+`live_columns_count` (CRT periodicity argument). See
+`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 ### L2 — E1.5: 0.537-bits invariant
 **Statement:** For every modulus m ≥ 2, H(π(x) mod m | π(x-1) mod m) → c

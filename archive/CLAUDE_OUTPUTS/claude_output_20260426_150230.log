@@ -2009,3 +2009,659 @@ timeout 300 python3 /tmp/halving_v2.py 2>&1 | tail -60
       RMSE residual = 1.752e+02
       max |residual| = 6.921e+02
 Asymptotic behavior of theta-residual is misleading: upper-window scaling is n^0.61, fully sqrt-chaos. The polylog look at low n is fitting artifact. Let me write up B5 honestly and move to B2.
+  [Write] /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion_results.md
+  [Write] /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits.py
+  [Bash] timeout 300 python3 esn_delta_bits.py --n_max 3000 --reservoir 128 --seed 0 2>&1 | tail -40
+    [setup] n_max=3000, reservoir=128
+    [setup] computing li_inv on 3000 points (slow)
+      ...1000/3000  (0.3s)
+      ...2000/3000  (0.6s)
+      ...3000/3000  (0.9s)
+    [setup] train=2096 test=899 feature_dim=13
+    [base]  bit balance train: 0.5067, test: 0.4950
+    [base]  majority-class test acc = 0.4950  (unconditional bound = 0.5050, +/- 0.0334 = 2sigma)
+    [base]  logistic regression test acc = 0.5050
+    [esn]   training ridge readout...
+    [esn]   train acc = 0.6422, test acc = 0.5028
+    [base]  random-readout ESN test acc = 0.5050
+    
+    [verdict]
+      ESN advantage over unconditional majority = -0.0022
+      z-score = -0.13
+      CLOSED: ESN no advantage over baseline
+    
+    [save] wrote /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_data.json
+ESN trained 64% but tested 50% — pure overfitting, no generalization. Let me confirm with a larger run.
+  [Bash] timeout 300 python3 esn_delta_bits.py --n_max 8000 --reservoir 256 --seed 1 2>&1 | tail -20
+      ...3000/8000  (0.9s)
+      ...4000/8000  (1.2s)
+      ...5000/8000  (1.5s)
+      ...6000/8000  (1.8s)
+      ...7000/8000  (2.0s)
+      ...8000/8000  (2.3s)
+    [setup] train=5596 test=2399 feature_dim=13
+    [base]  bit balance train: 0.5023, test: 0.5069
+    [base]  majority-class test acc = 0.5069  (unconditional bound = 0.5069, +/- 0.0204 = 2sigma)
+    [base]  logistic regression test acc = 0.4931
+    [esn]   training ridge readout...
+    [esn]   train acc = 0.6737, test acc = 0.4477
+    [base]  random-readout ESN test acc = 0.4931
+    
+    [verdict]
+      ESN advantage over unconditional majority = -0.0592
+      z-score = -5.80
+      CLOSED: ESN no advantage over baseline
+    
+    [save] wrote /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_data.json
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_results.md
+  [Bash] find /apps/aplikacijos/prime-research/experiments/proposals -name "__pycache__" -type d 2>/dev/null; find /apps/aplikacijos/prime-research -name "__pycache__" -type d 2>/dev/null | head
+    (Bash completed with no output)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/proposals/*.py | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head; echo "---"; ls /apps/aplikacijos/prime-research/experiments/proposals/ | grep -E "(hmatrix|det_repr|halving|esn_delta)" | sort
+    ---
+    det_representation_hunt.py
+    det_representation_hunt_data.json
+    det_representation_hunt_results.md
+    esn_delta_bits.py
+    esn_delta_bits_data.json
+    esn_delta_bits_results.md
+    halving_recursion.py
+    halving_recursion_data.json
+    halving_recursion_results.md
+    hmatrix_kernel_compression.py
+    hmatrix_kernel_compression_data.json
+    hmatrix_kernel_compression_results.md
+  [Bash] echo 60 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    60
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+All four experiments ran, results files written, no `__pycache__` to delete, `.run_state` set to 60. Final summary.
+
+## Session summary
+
+Five fresh proposals drafted in `archive/ephemeral/proposals_session.md` (appended as second batch — prior batch from earlier session preserved). Four runnable experiments implemented under `experiments/proposals/`:
+
+| # | Idea | Verdict | Result |
+|---|------|---------|--------|
+| **B1** | H-matrix compression of explicit-formula kernel | **CLOSED** (structural) | Off-diagonal ranks = block width *exactly* (zero residual). The kernel `x^{1/2+i*gamma}` is Vandermonde-like; columns are independent characters. No off-diagonal cancellation possible. |
+| **B3** | Determinant representation `det M(x) = pi(x)` | **CLOSED** (equivalence) | Best k=2 candidate over 12-feature library is `li(x) - log(x)·loglog(x)`, with sqrt(x)-scale error tracking li(x) - π(x) exactly. |
+| **B5** | Self-correcting halving recursion `p(n) → p(n/2)` | **CLOSED** (info loss) | Asymptotic exponent of theta(n) residual is ~0.6 ≥ 0.5 — chaotic phases at scales n and n/2 add in RMS rather than cancel. Halving propagates, doesn't shrink, the entropy. |
+| **B2** | ESN on bit-0 of delta(n) | **CLOSED** (no signal) | Train acc 67%, test acc 45-50% — pure overfitting. Logistic on same features also at chance. Confirms entropy barrier on delta parity. |
+| **B4** | Hecke-trace coupling | sketch only (no code) | Left as future-arc proposal. |
+
+Honest self-assessment: this session produced **4 clean negative closures** with concrete structural reasons, but **0 novel artifacts** (objects, compositions, proofs). By the project's own success criterion this is a "duplicate-shape" session — the fresh-frame proposals each map onto a known structural barrier within ~30 minutes of measurement. The B1 H-matrix result is the most pedagogically useful (clear Vandermonde argument explains why kernel-side compression fails, complementing prior signal-side compressed-sensing closures).
+
+`.run_state` set to 60.
+--- Session ended ---
+Proposals saved to: ./archive/ephemeral/proposals_latest.md
+Sleeping 5 seconds before next run...
+
+=== Run #60 — Mode: critique — Sun Apr 26 15:27:01 UTC 2026 ===
+  [Bash] ls -la archive/ephemeral/proposals_latest.md archive/ephemeral/proposals_session.md 2>&1 | head -20
+    -rw-r--r-- 1 root root  3882 Apr 26 15:26 archive/ephemeral/proposals_latest.md
+    -rw-r--r-- 1 root root 22135 Apr 26 15:19 archive/ephemeral/proposals_session.md
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_latest.md
+    1	I'll generate proposals for fast prime computation. Let me start by loading needed tools and checking the directory structure.
+    2	Existing proposals already cover compressed sensing, PSLQ, and continued fractions. To stay fresh, I'll pivot to less-explored angles: hierarchical-matrix compression of the explicit-formula kernel, reservoir-computing prediction of delta-bits, determinant-representation hunt, and a modular-form / Hecke-trace sketch.
+    3	
+    4	Let me write the proposals file first.
+    5	I'll append my fresh proposals to the existing session file rather than overwrite.
+    6	Now let me write the four runnable experiments. I'll start with B1 (H-matrix kernel), then B3 (determinant hunt), B5 (halving), B2 (ESN), in order of expected runtime.
+    7	The result is striking: kernel rank ≈ block width (linear fit beats log fit by 5x). H-matrix compression does NOT work on this kernel. Let me also test with more rows than columns (where H-matrix structure usually appears).
+    8	Crystal-clear negative: kernel rank = block width exactly. The H-matrix approach is fundamentally blocked because the columns are independent characters x^{1/2+i*gamma_k} (Vandermonde structure → no compressibility). Let me record results and move to B3.
+    9	Top candidates are essentially rediscovering `li(x) - log(x)·loglog(x)` — refined li, not a polylog representation. Let me probe extrapolation to larger x to confirm.
+    10	The exponent 0.40 is borderline interesting but R²=0.11 is weak. Let me extend the experiment with larger n and windowed RMS to get a cleaner exponent.
+    11	Asymptotic behavior of theta-residual is misleading: upper-window scaling is n^0.61, fully sqrt-chaos. The polylog look at low n is fitting artifact. Let me write up B5 honestly and move to B2.
+    12	ESN trained 64% but tested 50% — pure overfitting, no generalization. Let me confirm with a larger run.
+    13	All four experiments ran, results files written, no `__pycache__` to delete, `.run_state` set to 60. Final summary.
+    14	
+    15	## Session summary
+    16	
+    17	Five fresh proposals drafted in `archive/ephemeral/proposals_session.md` (appended as second batch — prior batch from earlier session preserved). Four runnable experiments implemented under `experiments/proposals/`:
+    18	
+    19	| # | Idea | Verdict | Result |
+    20	|---|------|---------|--------|
+    21	| **B1** | H-matrix compression of explicit-formula kernel | **CLOSED** (structural) | Off-diagonal ranks = block width *exactly* (zero residual). The kernel `x^{1/2+i*gamma}` is Vandermonde-like; columns are independent characters. No off-diagonal cancellation possible. |
+    22	| **B3** | Determinant representation `det M(x) = pi(x)` | **CLOSED** (equivalence) | Best k=2 candidate over 12-feature library is `li(x) - log(x)·loglog(x)`, with sqrt(x)-scale error tracking li(x) - π(x) exactly. |
+    23	| **B5** | Self-correcting halving recursion `p(n) → p(n/2)` | **CLOSED** (info loss) | Asymptotic exponent of theta(n) residual is ~0.6 ≥ 0.5 — chaotic phases at scales n and n/2 add in RMS rather than cancel. Halving propagates, doesn't shrink, the entropy. |
+    24	| **B2** | ESN on bit-0 of delta(n) | **CLOSED** (no signal) | Train acc 67%, test acc 45-50% — pure overfitting. Logistic on same features also at chance. Confirms entropy barrier on delta parity. |
+    25	| **B4** | Hecke-trace coupling | sketch only (no code) | Left as future-arc proposal. |
+    26	
+    27	Honest self-assessment: this session produced **4 clean negative closures** with concrete structural reasons, but **0 novel artifacts** (objects, compositions, proofs). By the project's own success criterion this is a "duplicate-shape" session — the fresh-frame proposals each map onto a known structural barrier within ~30 minutes of measurement. The B1 H-matrix result is the most pedagogically useful (clear Vandermonde argument explains why kernel-side compression fails, complementing prior signal-side compressed-sensing closures).
+    28	
+    29	`.run_state` set to 60.
+    30	
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/proposals_session.md
+    1	# Proposals Session — Fresh Attack Vectors for Polylog p(n)
+    2	
+    3	Date: 2026-04-26
+    4	Author: proposal-session
+    5	Constraint: written WITHOUT consulting CLOSED_PATHS.md to avoid bias toward
+    6	prior negative results. Some proposals may overlap with closed paths in
+    7	spirit; the *test designs* are still useful because they sharpen what
+    8	specifically about prior attempts failed.
+    9	
+    10	Target: compute p(n) — the nth prime — exactly in O(polylog n).
+    11	Reduction: p(n) reduces to a single inversion of pi(x), so all proposals
+    12	attack pi(x) and the residual delta(n) = p(n) - R^{-1}(n).
+    13	
+    14	---
+    15	
+    16	## Proposal 1 — Compressed Sensing on the Zeta-Zero Contribution Matrix
+    17	
+    18	### Idea
+    19	From Riemann's explicit formula
+    20	    pi(x) = R(x) - sum_{rho} R(x^rho) - small corrections.
+    21	Build, for a target window of x-values, the "contribution matrix"
+    22	    M[i, j] = R(x_i^{rho_j}) + R(x_i^{conj(rho_j)})
+    23	                     for x_i in [N, 2N], j = 1..K zeros.
+    24	
+    25	The known fact is that the *full* sum is large (each row sums to a
+    26	correction comparable in magnitude to log x); the *novel question* is
+    27	whether M itself has very fast singular value decay (numerical
+    28	low-rank-ness) or sparse representation in some basis (Fourier in t,
+    29	wavelets in x, etc.). If sigma_k(M) decays like 2^{-k} or faster, then
+    30	O(polylog) zero contributions on a clever basis suffice to reconstruct
+    ... (556 more lines)
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/proposals/ 2>&1 | head -30
+    total 1568
+    drwxr-xr-x  2 root root  12288 Apr 26 15:26 .
+    drwxr-xr-x 16 root root   4096 Apr 26 15:01 ..
+    -rw-r--r--  1 root root   9980 Apr 25 23:50 borel_fejer_hybrid.py
+    -rw-r--r--  1 root root   5089 Apr 25 23:52 borel_fejer_hybrid_results.md
+    -rw-r--r--  1 root root  17300 Apr 25 21:04 candidate_generation.py
+    -rw-r--r--  1 root root   1488 Apr 25 21:04 candidate_generation_results.md
+    -rw-r--r--  1 root root   6588 Apr 25 21:37 cf_jfraction_pi.py
+    -rw-r--r--  1 root root   3099 Apr 25 21:38 cf_jfraction_pi_results.md
+    -rw-r--r--  1 root root  14978 Apr 25 21:04 class_field_splitting.py
+    -rw-r--r--  1 root root   1639 Apr 25 21:04 class_field_splitting_results.md
+    -rw-r--r--  1 root root   6364 Apr 26 09:12 critique49_basis_misspec.py
+    -rw-r--r--  1 root root    713 Apr 26 09:12 critique49_basis_misspec_results.md
+    -rw-r--r--  1 root root   9889 Apr 25 21:04 critique_incremental_delta.py
+    -rw-r--r--  1 root root   1635 Apr 25 21:04 critique_incremental_delta_results.md
+    -rw-r--r--  1 root root  12605 Apr 25 21:04 critique_verification_separation.py
+    -rw-r--r--  1 root root   1642 Apr 25 21:04 critique_verification_separation_results.md
+    -rw-r--r--  1 root root   7451 Apr 26 14:37 delta_pminus1_smoothness.py
+    -rw-r--r--  1 root root 122534 Apr 26 14:37 delta_pminus1_smoothness_data.npz
+    -rw-r--r--  1 root root   6497 Apr 26 14:38 delta_pminus1_smoothness_results.md
+    -rw-r--r--  1 root root   9398 Apr 26 15:21 det_representation_hunt.py
+    -rw-r--r--  1 root root   8232 Apr 26 15:21 det_representation_hunt_data.json
+    -rw-r--r--  1 root root   3727 Apr 26 15:22 det_representation_hunt_results.md
+    -rw-r--r--  1 root root   9999 Apr 26 15:25 esn_delta_bits.py
+    -rw-r--r--  1 root root    632 Apr 26 15:25 esn_delta_bits_data.json
+    -rw-r--r--  1 root root   3307 Apr 26 15:26 esn_delta_bits_results.md
+    -rw-r--r--  1 root root   5970 Apr 26 00:56 frobenius_crt_correlation.py
+    -rw-r--r--  1 root root   2814 Apr 26 00:56 frobenius_crt_correlation_results.md
+    -rw-r--r--  1 root root  20088 Apr 25 21:04 group_theoretic_prime_race.py
+    -rw-r--r--  1 root root   4797 Apr 25 21:04 group_theoretic_prime_race_results.md
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md /apps/aplikacijos/prime-research/EDGES.md /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md 2>&1
+       740 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+      1713 /apps/aplikacijos/prime-research/EDGES.md
+       166 /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+      2619 total
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/proposals/ | tail -40
+    -rw-r--r--  1 root root   3133 Apr 26 10:07 session35fresh_dirichlet_explicit_results.md
+    -rw-r--r--  1 root root   2994 Apr 26 10:00 session35fresh_mps_chi_p.py
+    -rw-r--r--  1 root root   3704 Apr 26 10:03 session35fresh_mps_chi_p_results.md
+    -rw-r--r--  1 root root   6236 Apr 26 10:04 session35fresh_pslq_delta.py
+    -rw-r--r--  1 root root   2854 Apr 26 10:06 session35fresh_pslq_delta_results.md
+    -rw-r--r--  1 root root   3574 Apr 26 09:59 session35fresh_walsh_hadamard.py
+    -rw-r--r--  1 root root   3009 Apr 26 10:03 session35fresh_walsh_hadamard_results.md
+    -rw-r--r--  1 root root   7616 Apr 26 08:57 session49_compressed_sensing_zeros.py
+    -rw-r--r--  1 root root   2178 Apr 26 09:07 session49_compressed_sensing_zeros_results.md
+    -rw-r--r--  1 root root 197356 Apr 26 08:54 session49_data.npz
+    -rw-r--r--  1 root root   8218 Apr 26 08:56 session49_mps_delta_orderings.py
+    -rw-r--r--  1 root root   1894 Apr 26 09:07 session49_mps_delta_orderings_results.md
+    -rw-r--r--  1 root root   8335 Apr 26 08:55 session49_neural_zero_residue.py
+    -rw-r--r--  1 root root   2071 Apr 26 09:08 session49_neural_zero_residue_results.md
+    -rw-r--r--  1 root root   2809 Apr 26 08:53 session49_precompute_data.py
+    -rw-r--r--  1 root root    580 Apr 26 09:07 session49_precompute_data_results.md
+    -rw-r--r--  1 root root   8392 Apr 26 10:54 session63fresh_dfinite_delta.py
+    -rw-r--r--  1 root root   3412 Apr 26 10:55 session63fresh_dfinite_delta_results.md
+    -rw-r--r--  1 root root   8829 Apr 26 10:56 session63fresh_mollifier_pi.py
+    -rw-r--r--  1 root root   3155 Apr 26 10:57 session63fresh_mollifier_pi_results.md
+    -rw-r--r--  1 root root   5765 Apr 26 10:59 session63fresh_newton_zerobudget.py
+    -rw-r--r--  1 root root   3694 Apr 26 11:00 session63fresh_newton_zerobudget_results.md
+    -rw-r--r--  1 root root   5750 Apr 26 10:58 session63fresh_rmt_moments.py
+    -rw-r--r--  1 root root   3457 Apr 26 10:58 session63fresh_rmt_moments_results.md
+    -rw-r--r--  1 root root  12370 Apr 25 21:04 smooth_number_subtraction.py
+    -rw-r--r--  1 root root   1684 Apr 25 21:04 smooth_number_subtraction_results.md
+    -rw-r--r--  1 root root   5231 Apr 25 21:44 stein_explicit_formula_decay.py
+    -rw-r--r--  1 root root   4520 Apr 25 21:46 stein_explicit_formula_decay_results.md
+    -rw-r--r--  1 root root  23516 Apr 25 21:04 tensor_network_sieve.py
+    -rw-r--r--  1 root root   1517 Apr 25 21:04 tensor_network_sieve_results.md
+    ... (10 more lines)
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion* /apps/aplikacijos/prime-research/experiments/proposals/hmatrix* /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits* /apps/aplikacijos/prime-research/experiments/proposals/det_representation_hunt* 2>&1
+    -rw-r--r-- 1 root root 9398 Apr 26 15:21 /apps/aplikacijos/prime-research/experiments/proposals/det_representation_hunt.py
+    -rw-r--r-- 1 root root 8232 Apr 26 15:21 /apps/aplikacijos/prime-research/experiments/proposals/det_representation_hunt_data.json
+    -rw-r--r-- 1 root root 3727 Apr 26 15:22 /apps/aplikacijos/prime-research/experiments/proposals/det_representation_hunt_results.md
+    -rw-r--r-- 1 root root 9999 Apr 26 15:25 /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits.py
+    -rw-r--r-- 1 root root  632 Apr 26 15:25 /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_data.json
+    -rw-r--r-- 1 root root 3307 Apr 26 15:26 /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_results.md
+    -rw-r--r-- 1 root root 6351 Apr 26 15:23 /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion.py
+    -rw-r--r-- 1 root root 1822 Apr 26 15:23 /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion_data.json
+    -rw-r--r-- 1 root root 3772 Apr 26 15:24 /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion_results.md
+    -rw-r--r-- 1 root root 7804 Apr 26 15:20 /apps/aplikacijos/prime-research/experiments/proposals/hmatrix_kernel_compression.py
+    -rw-r--r-- 1 root root 2333 Apr 26 15:20 /apps/aplikacijos/prime-research/experiments/proposals/hmatrix_kernel_compression_data.json
+    -rw-r--r-- 1 root root 3359 Apr 26 15:20 /apps/aplikacijos/prime-research/experiments/proposals/hmatrix_kernel_compression_results.md
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/hmatrix_kernel_compression_results.md
+    1	# B1 — Hierarchical-matrix compression of the explicit-formula kernel
+    2	
+    3	**Date:** 2026-04-26
+    4	**Verdict:** CLOSED — structural negative.
+    5	**Mode:** I (information-theoretic / structural impossibility), N (no structure to exploit).
+    6	**Cited edges (post-hoc, not consulted at design time):** to be added if EDGES.md
+    7	matches; the result here is independent of any edge.
+    8	
+    9	## What was tested
+    10	
+    11	The Riemann explicit formula evaluated on a grid of x-points decomposes as
+    12	a matrix-vector product
+    13	
+    14	    [psi_0(x_i)]_i  =  K v,
+    15	    K[i, k]  =  x_i^{1/2 + i gamma_k} / (1/2 + i gamma_k),
+    16	    v_k  =  -1.
+    17	
+    18	If K admits hierarchical low-rank structure (HSS / HODLR / H-matrix), then
+    19	each new x evaluation costs only O(N r log N) after a one-time
+    20	factorisation, with r = O(polylog) the typical off-diagonal rank.
+    21	
+    22	We measured off-diagonal ranks at successive dyadic block sizes for two
+    23	configurations:
+    24	
+    25	- 64 x 64  (square, x in [10^3, 10^4], first 64 zeros)
+    26	- 256 x 32 (tall, more x-points than zeros)
+    27	
+    28	## Result
+    29	
+    30	Both rank-vs-block-width measurements give **rank exactly equal to
+    ... (64 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/det_representation_hunt_results.md
+    1	# B3 — Determinant-representation hunt for pi(x)
+    2	
+    3	**Date:** 2026-04-26
+    4	**Verdict:** CLOSED — best k=2 candidate is a re-derived refinement of li(x).
+    5	**Mode:** E (equivalence to a known approximation), N (no genuinely new structure).
+    6	
+    7	## What was tested
+    8	
+    9	Hypothesis: there exists a polynomial-size matrix M(x) over a polylog-time
+    10	feature library such that det M(x) = pi(x).
+    11	
+    12	Search procedure:
+    13	
+    14	1. Build a 12-feature library:
+    15	
+    16	   ```
+    17	   {one, x, log x, loglog x, sqrt x, x/log x, log^2 x, li(x),
+    18	    1/x, 1/log x, x*loglog x, x - log x}
+    19	   ```
+    20	
+    21	2. Enumerate all 12^4 = 20,736 choices of 2x2 matrix
+    22	   M(x) = [[f_a, f_b], [f_c, f_d]] and score by RMSE of det M(x) - pi(x)
+    23	   on a 100-point grid x in [10, 5000].
+    24	
+    25	3. Also try a 3-parameter affine correction
+    26	   det M(x) + alpha_0 + alpha_1 x + alpha_2 log x = pi(x)
+    27	   to absorb known leading-order shifts.
+    28	
+    29	4. Extrapolate top-5 raw candidates to x in [6000, 10000].
+    30	
+    ... (74 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion_results.md
+    1	# B5 — Self-correcting recursive halving p(n) -> p(n/2)
+    2	
+    3	**Date:** 2026-04-26
+    4	**Verdict:** CLOSED — chaotic part of theta(n) still scales as sqrt(n)
+    5	asymptotically.
+    6	**Mode:** I (information loss is preserved by halving; conjectured cancellation
+    7	between scales does not occur).
+    8	
+    9	## What was tested
+    10	
+    11	Define theta(n) := p(n) - 2*p(n/2). The conjecture: the chaotic part
+    12	of theta is *smaller* than the chaotic part of p, so recursive halving
+    13	reduces to a polylog corrector at each level.
+    14	
+    15	Procedure:
+    16	
+    17	1. Compute p(n) for n = 1, ..., 50_000.
+    18	2. Form theta(n) at all n in [20, 50_000].
+    19	3. Fit theta(n) with an 8-term polylog basis
+    20	   {1, n, n log n, n log log n, log n, log^2 n, sqrt n, n/log n}.
+    21	4. Compute *windowed* RMS of the residual on geometric n-windows.
+    22	5. Power-law fit RMS ~ a n^b on the windows.
+    23	6. Compare with windowed RMS of delta(n) = p(n) - smooth(n) directly.
+    24	
+    25	## Result
+    26	
+    27	```
+    28	theta(n) - 8-term polylog fit  -- windowed RMS:
+    29	  n ~ 24      RMS = 82.1
+    30	  n ~ 116     RMS = 18.0
+    ... (73 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/esn_delta_bits_results.md
+    1	# B2 — Echo State Network on bit-0 of delta(n)
+    2	
+    3	**Date:** 2026-04-26
+    4	**Verdict:** CLOSED — ESN overfits training set, fails to generalise.
+    5	**Mode:** I (information-theoretic — no learnable signal).
+    6	
+    7	## What was tested
+    8	
+    9	Hypothesis: delta(n) := p(n) - li_inv(n) is the orbit of a finite-
+    10	dimensional dynamical system whose first coordinate equals delta(n).
+    11	An ESN should detect such structure even when the underlying map is
+    12	chaotic, because it has internal recurrent dynamics that capture
+    13	positional memory.
+    14	
+    15	Setup:
+    16	
+    17	- compute p(n), li_inv(n), delta(n) for n in [1, n_max].
+    18	- features per n: log n, log log n, normalised first/second-difference of
+    19	  delta, n mod q for q in {3,5,7,11,13}, prior 4 bits of delta(.) lookback.
+    20	  Feature dim = 13.
+    21	- target: bit 0 (parity) of round(delta(n)).
+    22	- ESN reservoir 128 or 256, leak 0.3, spectral radius 0.95, sparsity 0.1.
+    23	- Train on first 70% of n, test on last 30%.
+    24	- Baselines: majority-class, logistic on same features, random-readout.
+    25	
+    26	## Result
+    27	
+    28	### Run A: n_max = 3000, reservoir = 128
+    29	
+    30	```
+    ... (62 more lines)
+  [Grep] H-?matrix|HSS|HODLR|hierarchical|Vandermonde|Vandermonde-like|determinant.*pi|determinant.*representation|tensor.train|TT.rank|MPS|PSLQ|reservoir|ESN|halving|self.correct|recursion.*p\(n|p\(n/2|theta\(n\)|chaotic.*phase|GUE.*adapt|Hecke|modular.*form|theta.bridge|Mellin.*pi|compressed.sensing
+    19:| Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    23:| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    53:| LLL/PSLQ integer relations | FAIL | I | Coefficients grow as O(n^{1/3}) | 6 |
+    84:| PSLQ/LLL exhaustive identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) tested x=2..10000; all single-point PSLQ relations spurious (cross-validation residuals ~10^4); no recurrence (rms~0.31); Fourier confirms zeta-zero dominance | 18 |
+    97:| Batch Möbius sieve (recursive halving phi) | FAIL | E | Split prime set in half at each recursion level. Tree depth O(log(pi(√x))) but branching 2^{half_size}. Total leaves = 2^{pi(√x)} same as unpruned standard tree. At x=10^4, 30x slower than Lucy_Hedgehog despite pruning 64% of terms. Branching at x=10^6 would be 2^84 ~ 10^25. Mathematically identical to standard IE, just reordered. | 36 |
+    116:| Prime zeta P(s) Mobius extraction | FAIL | E | P(s) poles at rho, rho/2, rho/3... MORE terms than explicit formula; Vandermonde recovery cond~10^26 | 13 |
+    148:| Symbolic regression/PSLQ | FAIL | I | No pattern in delta(n) | 5 |
+    171:| MPS / tensor network | FAIL | I | Bond dimension ~ N^{0.49}, volume-law entanglement | 10 |
+    185:| Tensor sieve (MPS of divisibility DFAs) | FAIL | I | Transfer matrices full rank, volume-law SV entropy, no compression | 20 |
+    241:| Carry-propagation boundary (per-bit difficulty) | FAIL | I | Sharp sigmoid transition at ~60% from MSB: bits 0-7 are 95-100% correct from R^{-1}(n), bits 8-9 are medium (80-90%), bits 10+ are random (50%). Transition width only ~4 bits. No intermediate-difficulty bits to exploit hierarchically. Error ~ p(n)^{0.66}. | 40 |
+    338:| Recursive halving p(2n) from p(n) | FAIL | I | Error O(sqrt(n)*ln(n)) >> gap | 5 |
+    488:| PSLQ/LLL identity search for f(x)=pi(x)-R(x) | FAIL | I | All 6 relation types tested (linear, polynomial deg 2-4, recurrence, modular, functional, discrete derivative) x=2..10000. All single-point PSLQ relations spurious (cross-validation residuals ~10^4). Fourier confirms zeta-zero dominance. | 19 |
+    517:| Tensor network / MPS sieve | FAIL | I | Bond dim = primorial (volume-law entanglement); exponential | 20 |
+    518:| MPS bond dim of chi_P at base-W half cut | FAIL | E | Theorem: rank = min(W^j, phi(W)*W^{d-j-1}+1) at every cut; exact match for W in {2,6,30,210}. Half-cut ratio chi_P/random = phi(W)/W (=1/2, 1/3, 4/15, 8/35). MPS view recovers sqrt(N) Lagarias-Odlyzko barrier without zeta zeros; no polylog | 41 |
+    530:| Iterative zero-sum with self-correction | FAIL | E | Sensitivity <1 (converges), but to value ~√x from exact | 20 |
+    600:| Tensor network (MPS) Legendre sieve contraction | FAIL | I | Bond dim ~ 2^(0.33-0.43 * a), exponential in #primes. Sieve 5-20x more structured than random but still exponential. Dominant SV is rank-1 (floor(x)), corrections full-rank. O(sqrt(x)) unique floors don't help: non-local assignment to bipartitions. Confirms S10/S20 | 26 |
+    602:[Omitted long matching line]
+    630:| PSLQ identity search | FAIL | I | No integer relation found among pi(x), li, R, sqrt, log, zeta values with coefficients ≤1000. Known asymptotics are the only relations | 29 |
+    635:| Extended PSLQ identity search x=2..100000 | FAIL | I | 14-element basis (log,sqrt,roots,li-variants,zeta zero oscillations). 18 PSLQ tests, 15 relations with nonzero f-coeff -- ALL fail cross-validation (residuals 13-53000). Functional relations f(ax) vs f(x) for a=2,3,4: fail. Shift recurrences f(x)..f(x+10): fail. Extends S19 to 10x range | 29 |
+    638:| f(x) vs zeta values zeta(2..7) PSLQ | FAIL | I | PSLQ finds x-dependent relations with large coefficients (~10^6). Different coefficients at each x. Perfect-square x gives trivial sqrt relations. No universal algebraic relation | 29 |
+    640:| f(x) vs Ramanujan tau function | FAIL | I | Pearson r=+0.010, p=0.93. Spearman r=+0.054. Zero correlation. Different mathematical objects (weight-12 modular form vs zeta zero oscillations) | 29 |
+    668:| PSLQ/LLL on delta(n) (Ramanujan Library) | FAIL | I | delta(n) range [-130,102], std~33, lag-1 autocorr 0.95. PSLQ finds DIFFERENT relations per n (no universal formula). No recurrence order 1-6. No modular patterns. Best basis RMSE=31. 7th PSLQ/identity variant tested. See experiments/proposals/proposal19_ramanujan_library_delta.py | 33 |
+    679:[Omitted long matching line]
+    680:| J-fraction of pi(n)/n generating function (D-finiteness test) | FAIL | E | Hankel-determinant J-fraction coefficients (a_k, b_k) for k=0..11 from first 80 moments are erratic: b_3=-3, b_4=-8.28, b_12=-407.4. log\|H_k\| decays linearly in k but that is a trivial consequence of moments in [0,1] — NOT evidence of D-finiteness. pi(n) is not P-recursive at any low order. See experiments/proposals/cf_jfraction_pi.py | 43 |
+    683:| Reservoir computing on delta(n) (Dynamical Compressibility) | FAIL | I | ESN is a strict subset of recurrent dynamical systems; transformer (line 149, 1.1% accuracy), FNO, GP, PSLQ symbolic regression on delta(n) all already failed. delta(n) Kt entropy 5.58 bits/value (line 555). Polylog reservoir state cannot encode irreducible info. Symbolic-regression readout duplicates line 146. | 43 |
+    692:[Omitted long matching line]
+    700:[Omitted long matching line]
+    703:[Omitted long matching line]
+    704:[Omitted long matching line]
+    707:[Omitted long matching line]
+    ... (8 more lines)
+  [Bash] sed -n '600,740p' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | grep -n -E 'H-?matrix|HSS|HODLR|hierarchical|determinant|Vandermonde|halving|reservoir|ESN|chaotic|theta\(n|Hecke|Mellin|TT.rank|tensor.train|self.correct|recursion'
+    52:| Recursive prime counting (FMM-inspired) | FAIL | E | Aggressive recursion achieves O(log log x) depth but work catastrophically concentrated at depth 0: Theta(x^{2/3}/ln x). phi recursion tree has O(x^{2/3}/ln x) leaves. FMM analogy fails: no smooth kernel. Hierarchical sieve: large primes make O(x^{2/3}) irregular removals. Reduces to Meissel-Lehmer. See experiments/wildcard/recursive_prime_counting.py | 32 |
+    81:| J-fraction of pi(n)/n generating function (D-finiteness test) | FAIL | E | Hankel-determinant J-fraction coefficients (a_k, b_k) for k=0..11 from first 80 moments are erratic: b_3=-3, b_4=-8.28, b_12=-407.4. log\|H_k\| decays linearly in k but that is a trivial consequence of moments in [0,1] — NOT evidence of D-finiteness. pi(n) is not P-recursive at any low order. See experiments/proposals/cf_jfraction_pi.py | 43 |
+    84:| Reservoir computing on delta(n) (Dynamical Compressibility) | FAIL | I | ESN is a strict subset of recurrent dynamical systems; transformer (line 149, 1.1% accuracy), FNO, GP, PSLQ symbolic regression on delta(n) all already failed. delta(n) Kt entropy 5.58 bits/value (line 555). Polylog reservoir state cannot encode irreducible info. Symbolic-regression readout duplicates line 146. | 43 |
+    108:| Reordered tensor-train (TT) compression of delta(n) across 7 orderings | FAIL | I | Refines lines 171 (S10), 516 (S20), 599 (S26). At N=2^13=8192 with eps_rel=1e-3 SVD truncation, all seven tested orderings (identity, bit-reversal, Gray, Morton, 2-adic, sort-by-R^{-1}, random) AND a Gaussian-noise baseline produce IDENTICAL bond profile [2,4,8,16,32,64,64,32,16,8,4,2] = the binary-TT volume-law ceiling at every cut (min(2^j, 2^{L-j})). Smooth-cosine positive control gives bond=2 throughout, confirming SVD pipeline sensitivity. Bit-reversal/Gray/Morton are 2-adic isomorphisms of the binary cube and cannot change the half-cut min; sort-by-R^{-1} reorders smooth coordinate but residual delta is GUE-random regardless. Strongest empirical "ordering-independent volume-law" demonstration on record. See experiments/proposals/session49_mps_delta_orderings.py | 49 |
+    126:| Depth-5 multiplicative fingerprint (Hecke tau, sigma_1, n mod 30, n^6 mod 7) as primality oracle (S46-fresh) | FAIL | C | DUPLICATE-PLUS of line 689 (S46 Edixhoven-Couveignes tau-based prime detection). Empirical: depth-5 fingerprint (tau(n)-n^11-1 mod 691, tau(n) mod 5, sigma_1(n)-1-n, n mod 30, n^6 mod 7) achieves PERFECT separation of 1229 primes from 8770 composites in [2,10000] — useful quantitative anchor on the AKS-style oracle approach. BUT three barriers: (i) tau(n) for COMPOSITE n requires factoring via multiplicativity (Edixhoven 2011 gives polylog tau(p) under GRH only at primes, not at composites); GNFS factoring is subexp not polylog; (ii) even with a polylog primality oracle, counting primes in [1,x] with the oracle is pi(x) again — circular at meta level; (iii) depth-vs-bits floor: 5 features ≈ 26 bits per n; finite-domain perfect separation collapses asymptotically as ~ log(N) more bits needed at larger N. P-C's complexity claim "tau(n) mod l: O(polylog n)" is incorrect for composite n. See experiments/proposals/modular_fingerprint.py | 46 |
+    137:| TT-rank of prime indicator χ_P at L ∈ {10,12,14,16} (S55-fresh / S56 crit) | FAIL | I | DUPLICATE of line 518 (S41 *closed-form theorem* rank(π_N)=2^{N/2−1}+2 at midpoint cut), line 712 (S60 MPS midpoint chi_P at N=2^14), line 707 (S49 7 reorderings of TT for delta), line 729 (S48 multilinear-Möbius). Independent verification: at L=10 max TT-rank is exactly 17 = 2^{(L-1)/2}+1, matching S41 prediction. Empirical L=10..16 gives ratio ranks_prime / ranks_random_Bernoulli = 0.531, 0.516, 0.508, 0.504 → 0.5 — exactly the "all primes > 2 are odd" mod-2 free bit. Compression ratio (TT-params / 2^L) for primes at L=16: 1.18 (vs random 2.67, vs div-by-7 0.017). Numerically reconfirms the S41 theorem in TT-SVD framing; no novel structural finding. Closes Proposal 3 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/tt_rank_prime_indicator.py and _results.md. | 56 |
+    140:| Bessel-basis PSLQ identity search for f(x) = π(x) − R(x) (deep-focus revisit of Task 3 / S29) | FAIL | E | Strict extension of S29's PSLQ identity search to a basis disjoint from the elementary/li/sin-cos basis tested in S29: 10-element basis {f(x), 1, log x, √x, li(x), K_0(log x), I_0(log x), J_0(γ_1·log x), Y_0(γ_1·log x), K_0(2π·√(log x))} — i.e., adds modified-Bessel K/I, oscillatory-Bessel J/Y at the first zeta zero, and the partition-asymptotic kernel K_0(2π√·) from the Hardy-Ramanujan circle method. Motivated by Bessel kernels appearing in the Selberg trace formula (spectral-side K_{ir}) and Mellin-Barnes representations, where they could in principle donate an identity that elementary functions cannot. PSLQ at mpmath 50 dps for x ∈ {5000, 10000, 50000, 100000}, maxcoeff=10⁶, maxsteps=8000, with cross-validation at x+1000. Every fit produces tight residuals (1.9e-36 to 4.0e-35) with non-zero coeff(f) ∈ {2712, 5349, 10385}, but **all fail cross-validation by 4–5 orders of magnitude** (cross-check residuals 1.10e+04 / 6.03e+04). Random-control test: replacing f with same-σ Gaussian (σ ≈ 4.23) produces statistically indistinguishable signatures (fit residuals 8.5e-37 to 6.4e-35; cross-check 1.77e+04 to 1.60e+05). The Bessel basis carries no more identity-bearing structure for f(x) than a Gaussian random number; PSLQ's "tight relations" at finite precision are pure numerical coincidences. Rules out three concrete Bessel-shaped donors: Selberg-trace shadow at low order, partition-saddle reuse via K_0(2π√·), and modified-Bessel growth/decay scaffolding. Adds 23rd pseudorandomness measure (Bessel-basis PSLQ indistinguishability from Gaussian). Strengthens S29 verdict from "f(x) admits no identity in tested elementary basis" to "f(x) admits no identity in any basis tested including spectral-trace-related Bessel kernels." Cites E1.x, E3.x, E7.x. See experiments/algebraic/identity_search/bessel_basis_pslq.py and bessel_basis_pslq_results.md. | 68 |
+  [Grep] det.*\bm\(x\)\b|determinant.*pi\(x\)|determinant.*representation|det.*pi\b|VP.*polylog|algebraic.circuit|character.*matrix|kernel.*vandermonde|kernel.*matrix.*compression|H.matrix.*kernel|HSS.*kernel|k.x.k.matrix|2x2.matrix|li.x..log|halving.*p\(n\)|p\(2n\)|two scale.*recursion|theta\(n\) := p\(n\) - 2
+    268:| Determinantal complexity of pi(x) | OPEN | - | pi(x) = degree-N multilinear polynomial in bits. Found N×N det reps for N=2,3,4. dc(pi_N)=poly(N) iff pi(x)∈GapL. For N>=10, generic polynomials DON'T have N×N det reps — pi(x) would need special structure | 15 |
+    269:| Class numbers h(-d) as det entries | FAIL | E | h(-d) = (w*sqrt(d))/(2*pi)*L(1,chi_d) — equivalent to L-values; constants with no x-dependence; cannot be affine-linear matrix entries | 16 |
+    338:| Recursive halving p(2n) from p(n) | FAIL | I | Error O(sqrt(n)*ln(n)) >> gap | 5 |
+    393:| Matrix power encoding of pi(x) | FAIL | E | pi(x) mod m NOT an LRS for any m=2..16; 2x2 matrix search gives only constant outputs; confirms Mauduit-Rivat | 14 |
+    396:| Small matrix det = pi(x) search | FAIL | E | Redheffer full-rank, Lucy DP product dense. I-E fractional parts carry O(2^k) independent bits → no det smaller than 2^{sqrt(x)/2logx}. Must avoid floor functions entirely | 14 |
+    406:| Class number h(-d) as det entry | FAIL | E | h(-d) = (w*sqrt(d))/(2pi) * L(1,chi_d); constants, no x-dependence; equivalent to L-values | 16 |
+    408:| Elliptic curve a_p as det entry | FAIL | C | a_p defined only at primes; a_n for composite needs factoring; #E(Z/nZ) multiplicative, doesn't encode pi(x) | 16 |
+    426:| Sufficient statistics of floor values | FAIL | I | Any T with |T|=poly(log x) determining pi(x) must encode O(N/2) bits; hashing loses exactness | 16 |
+    680:| J-fraction of pi(n)/n generating function (D-finiteness test) | FAIL | E | Hankel-determinant J-fraction coefficients (a_k, b_k) for k=0..11 from first 80 moments are erratic: b_3=-3, b_4=-8.28, b_12=-407.4. log\|H_k\| decays linearly in k but that is a trivial consequence of moments in [0,1] — NOT evidence of D-finiteness. pi(n) is not P-recursive at any low order. See experiments/proposals/cf_jfraction_pi.py | 43 |
+    681:| Persistent homology of detrended primes (TCDP) | FAIL | I | 0-dim long-lived bar count is sub-(N/log N) but Cramér-model baseline is too — sublinearity is a generic property of bounded-detrended trajectories, not specific to primes. PH gives a measurement, not an inverse-map: recovering p_n from a barcode requires bar endpoints AND original 1D ordering of n, which IS pi(x). Re-confirms TDA closure (line 199). See experiments/proposals/persistent_homology_primes.py | 43 |
+    689:[Omitted long matching line]
+    725:[Omitted long matching line]
+    740:[Omitted long matching line]
+  [Bash] sed -n '1,80p' /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+    # Open Problems: Viable Research Directions
+    
+    Last updated: 2026-04-26 (Session 67 + S51 FOCUS-3 closure + S49 FOCUS-4 closure)
+    
+    > **Note for agents:** this file maintains the canonical record of which
+    > direction is *technically* still open in the polylog-π(x) frame. As of
+    > S67 the answer is "circuit complexity, but with all known technique
+    > families closed."
+    >
+    > Active research now lives in `NOVELTY_CHALLENGES.md` (composition,
+    > frame-shift, Lean, synthesis targets) and `RESEARCH_AGENDA.md`
+    > (multi-session arcs). Sessions should pick targets from those files,
+    > not from this one — this file's content has been mined exhaustively.
+    
+    These are the ONLY directions not yet proven closed. Everything else has been
+    tested (538+ approaches across 66 sessions) and confirmed to hit one of three
+    failure modes: Circularity, Equivalence, or Information Loss.
+    
+    **S66 status update — Chain E is computationally cornered.** All three
+    FOCUS-1 sub-attacks have now closed (S47 cyclotomic-CRT line 690; S61
+    non-cyclotomic ring line 714; S64 Frobenius transplant line 719; S66
+    Bernstein 2003 strengthened-gcd this session). Every modulus-twist and
+    gcd-strengthening of the AKS family reduces to growing-dim r×r MPOW over
+    the same r ~ log²n.
+    
+    **S51 status update — Chain E now closed for both known technique
+    families.** FOCUS-3 (Brandt MKtP) closed: Brandt 2024 (TCC, IACR ePrint
+    2024/687) diagonalisation is structurally welded to MKtP itself and does
+    not extend to fixed natural functions like π(x) mod 2 (E5.8). The hard
+    string is an oracle-dependent Kt-random prefix, the contradiction is
+    ... (50 more lines)
+  [Bash] sed -n '1,80p' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    # Closed Paths: Master Lookup (545+ Approaches)
+    
+    **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    
+    Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57, 198+ sub-agents)
+    
+    ## Failure Modes
+    - **C** = Circularity (needs primes to compute primes)
+    - **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    - **I** = Information Loss (smooth approximation loses critical bits)
+    
+    ---
+    
+    ## Analytic / Explicit Formula / Zeta Zeros
+    
+    | Approach | Verdict | Mode | Key Finding | Session |
+    |----------|---------|------|-------------|---------|
+    | Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    | Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    | 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    | Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    | Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    | PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    | DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    | Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    | Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    | Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    | Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    | Explicit formula + few zeros | FAIL | E | K^{-0.01} convergence | 5 |
+    | Explicit formula + 50 zeros | FAIL | I | More zeros can make WORSE | 6 |
+    ... (50 more lines)
+I have enough context. Let me verify the experiments ran cleanly, then produce the critique.
+  [Bash] find /apps/aplikacijos/prime-research/experiments/proposals -name "*.py" 2>&1 | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+  [Bash] find /apps/aplikacijos/prime-research/experiments -type d -name "__pycache__" 2>&1
+    <tool_use_error>Cancelled: parallel tool call Bash(find /apps/aplikacijos/prime-research/ex…) errored</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion.py
+    <tool_use_error>Cancelled: parallel tool call Bash(find /apps/aplikacijos/prime-research/ex…) errored</tool_use_error>
+  [Bash] find /apps/aplikacijos/prime-research/experiments/proposals -name "*.py" -print | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "DONE"
+    DONE
+  [Bash] find /apps/aplikacijos/prime-research/experiments -type d -name "__pycache__" -print; echo DONE
+    DONE
+  [Read] /apps/aplikacijos/prime-research/experiments/proposals/halving_recursion.py
+    1	"""
+    2	Proposal B5: Self-correcting recursive halving p(n) -> p(n/2).
+    3	
+    4	Define theta(n) := p(n) - 2*p(floor(n/2)).  By PNT,
+    5	    p(n)   ~ n log n,
+    6	    2*p(n/2) ~ 2 (n/2) log(n/2) = n log n - n log 2,
+    7	so theta(n) ~ n log 2 + (lower-order chaotic).
+    8	
+    9	Question: is the chaotic part of theta(n) *smaller* than the chaotic
+    10	part of p(n) alone?  If yes, recursive halving can reduce the per-step
+    11	unpredictability and yield a polylog algorithm via depth-log-n recursion.
+    12	
+    13	This script:
+    14	  1. computes theta(n) for n = 100, 200, ..., n_max.
+    15	  2. fits theta(n) = c_0 + c_1 n + c_2 n log n + c_3 n log log n
+    16	                   + c_4 sqrt(n) + (residual).
+    17	  3. measures residual scaling as a function of n (does residual / n^alpha
+    18	     vanish for some alpha < 1?).
+    19	
+    20	Decision rule:
+    21	  - residual ~ const  ->  theta is *smoothly* predictable (WIN)
+    22	  - residual ~ n^{0.5}  ->  reduces to original problem (CLOSED)
+    23	  - residual ~ n^a, 0 < a < 0.5  ->  ambiguous (refine the experiment)
+    24	
+    25	Usage:
+    26	    python3 halving_recursion.py
+    27	    python3 halving_recursion.py --n_max 50000 --step 100
+    28	"""
+    29	from __future__ import annotations
+    30	import argparse
+    ... (30 more lines)
+  [Bash] ls -la /apps/aplikacijos/prime-research/archive/ephemeral/critique* 2>&1 | head -10
+    -rw-r--r-- 1 root root 11571 Apr 26 14:28 /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+  [Read] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    1	# Critique — Session 56, of `proposals_session.md` (S55)
+    2	
+    3	Date: 2026-04-26
+    4	Critic: critique-session
+    5	Source proposals: `archive/ephemeral/proposals_session.md` (5 proposals).
+    6	Project state: 619+ approaches tested, 67+ sessions. All five proposals
+    7	already collide with multiple CLOSED_PATHS entries.
+    8	
+    9	The proposers preemptively tested three of the five (TT-rank, zero-matrix
+    10	SVD, PSLQ-on-subsequence). I verify their results, classify the failure
+    11	modes against CLOSED_PATHS, and rule on the two untested proposals from
+    12	existing closures rather than re-running.
+    13	
+    14	---
+    15	
+    16	## Verdict summary
+    17	
+    18	| # | Proposal | Verdict | Mode | Closes by |
+    19	|---|----------|---------|------|-----------|
+    20	| 1 | Compressed sensing on M[i,j] = R(x_i^{rho_j}) | **DUPLICATE / CLOSED** | I | lines 26 (S32), 654 (S36), 699 (S54), 708 (S49) |
+    21	| 2 | PSLQ on delta(2^k), delta(F_k), delta(p_k) | **DUPLICATE / CLOSED** | I+E | lines 23, 666 (S33), 703 (S49 — 8th PSLQ-on-delta variant), 711 (S60) |
+    22	| 3 | TT-rank of chi_P : {0,1}^L -> {0,1} | **DUPLICATE / CLOSED** | I | lines 518 (S41 *theorem*), 707 (S49 — 7 orderings on delta), 712 (S60 chi_P midpoint), 729 (S48 multilinear-Möbius) |
+    23	| 4 | GUE-aware adaptive importance sampling of zeros | **DUPLICATE / CLOSED** | E | lines 256/257 (S15), 656 (S31), 723 (S46-fresh), 726 (S46), 732 (S48), 733 (S49) |
+    24	| 5 | Modular/theta bridge to pi(x) | **DUPLICATE / CLOSED** | E | line 519 (S28 theta_modular), state_of_art Landau natural-boundary bound |
+    25	
+    26	**Net new information: zero.** None of the five survives critique. The
+    27	three tested by the proposer give clean numerical confirmation of prior
+    28	closures (which is fine and worth filing as refining entries) but
+    29	contain no novel structural finding.
+    30	
+    ... (10 more lines)
+Now I have enough to write the critique. Let me draft it.
+  [Bash] grep -nE '^\| ' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | tail -5
+    736:| TT-rank of prime indicator χ_P at L ∈ {10,12,14,16} (S55-fresh / S56 crit) | FAIL | I | DUPLICATE of line 518 (S41 *closed-form theorem* rank(π_N)=2^{N/2−1}+2 at midpoint cut), line 712 (S60 MPS midpoint chi_P at N=2^14), line 707 (S49 7 reorderings of TT for delta), line 729 (S48 multilinear-Möbius). Independent verification: at L=10 max TT-rank is exactly 17 = 2^{(L-1)/2}+1, matching S41 prediction. Empirical L=10..16 gives ratio ranks_prime / ranks_random_Bernoulli = 0.531, 0.516, 0.508, 0.504 → 0.5 — exactly the "all primes > 2 are odd" mod-2 free bit. Compression ratio (TT-params / 2^L) for primes at L=16: 1.18 (vs random 2.67, vs div-by-7 0.017). Numerically reconfirms the S41 theorem in TT-SVD framing; no novel structural finding. Closes Proposal 3 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/tt_rank_prime_indicator.py and _results.md. | 56 |
+    737:| Compressibility of zeta-zero contribution matrix M[i,j]=Re(li(x_i^ρ_j)) at K=1000,2000 (S55-fresh / S56 crit) | FAIL | I | DUPLICATE of line 26 (S32 zero-sum convergence acceleration), line 654 (S36 SVD of zero contribution matrix needs 99% energy from 26.6%), line 699 (S54 random K-subset 4× WORSE than first-K), line 708 (S49 LASSO selects nnz=0 at every α). Window 1: x ∈ [1000,2000), K=1000 → effective rank 312/1000 at 1% threshold; σ_k decays algebraically as k^{−0.5..−0.7} (NOT exponential); 2D Fourier 30% of cells > 1% magnitude. Window 2: x ∈ [5000,6000), K=2000 → effective rank 147; 2D Fourier 9.7% > 1%. Same wall as S65 line 720 (φ(x,a) 2D low-rank): relative compressibility cancelled by absolute Frobenius-norm growth ∝ window size; integer-precision reconstruction needs K = poly(N), not polylog. Random-Gaussian baseline: effective rank 987 (essentially full); rank-10+noise control: 10. Closes Proposal 1 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/zero_contribution_compressibility.py and _results.md. | 56 |
+    738:| PSLQ on δ(n) restricted to dyadic / Fibonacci / prime-indexed subsequences (10th PSLQ-on-δ variant, S55-fresh / S56 crit) | FAIL | I+E | DUPLICATE-PLUS of line 666 (S33 PSLQ on δ(p_n) — *exactly* this proposal's third subsequence), line 703 (S49 8th PSLQ-on-δ variant with structured zeta-zero/log basis), line 711 (S60 9th PSLQ-on-δ variant 7-feature dictionary), line 715 (S63 D-finite recurrence). Three subsequences: dyadic n=2^k for k=1..11, Fibonacci n=F_k for k=3..14, prime n=p_k for k=1..14. Dictionary {1, ζ(2), ζ(3), γ_Euler, log 2, log π, log(2π)} at 80 dps, scalings {1, log n, √n, log log n}, PSLQ tol 1e-50, max coeff 1e12. NO relation found across any (subsequence, scaling, dictionary) combination. δ(2^k) values flip sign ±20 between consecutive doublings (k=8: −20.77; k=10: +21.05), confirming δ inherits GUE-random oscillation on every sparse probe. Subsequence integrability now empirically dead at: dyadic, Fibonacci, prime-index, log-index, sliding-window, character-twisted, zero-mode bases. Closes Proposal 2 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/pslq_subsequence_delta.py and _results.md. | 56 |
+    739:| Bessel-basis PSLQ identity search for f(x) = π(x) − R(x) (deep-focus revisit of Task 3 / S29) | FAIL | E | Strict extension of S29's PSLQ identity search to a basis disjoint from the elementary/li/sin-cos basis tested in S29: 10-element basis {f(x), 1, log x, √x, li(x), K_0(log x), I_0(log x), J_0(γ_1·log x), Y_0(γ_1·log x), K_0(2π·√(log x))} — i.e., adds modified-Bessel K/I, oscillatory-Bessel J/Y at the first zeta zero, and the partition-asymptotic kernel K_0(2π√·) from the Hardy-Ramanujan circle method. Motivated by Bessel kernels appearing in the Selberg trace formula (spectral-side K_{ir}) and Mellin-Barnes representations, where they could in principle donate an identity that elementary functions cannot. PSLQ at mpmath 50 dps for x ∈ {5000, 10000, 50000, 100000}, maxcoeff=10⁶, maxsteps=8000, with cross-validation at x+1000. Every fit produces tight residuals (1.9e-36 to 4.0e-35) with non-zero coeff(f) ∈ {2712, 5349, 10385}, but **all fail cross-validation by 4–5 orders of magnitude** (cross-check residuals 1.10e+04 / 6.03e+04). Random-control test: replacing f with same-σ Gaussian (σ ≈ 4.23) produces statistically indistinguishable signatures (fit residuals 8.5e-37 to 6.4e-35; cross-check 1.77e+04 to 1.60e+05). The Bessel basis carries no more identity-bearing structure for f(x) than a Gaussian random number; PSLQ's "tight relations" at finite precision are pure numerical coincidences. Rules out three concrete Bessel-shaped donors: Selberg-trace shadow at low order, partition-saddle reuse via K_0(2π√·), and modified-Bessel growth/decay scaffolding. Adds 23rd pseudorandomness measure (Bessel-basis PSLQ indistinguishability from Gaussian). Strengthens S29 verdict from "f(x) admits no identity in tested elementary basis" to "f(x) admits no identity in any basis tested including spectral-trace-related Bessel kernels." Cites E1.x, E3.x, E7.x. See experiments/algebraic/identity_search/bessel_basis_pslq.py and bessel_basis_pslq_results.md. | 68 |
+    740:| delta(n) conditioned on smoothness of p(n)-1 (S57) | FAIL | I | First test of delta(pi(p)) statistics partitioned by smoothness of p-1 (Pollard / Pocklington natural feature). N=9592 primes ≤ 10^5, delta computed via R^{-1}(n) ≈ p + f(p)·log(p) linearization (validated ±1 vs Newton-Rinv at 30 dps; bias independent of class). Smoothness ratio s(p)=log(LPF(p-1))/log(p) quartile-binned: per-class mean(delta) range 1.6 (single sigma fluctuation), std(delta) range 1.4, no monotonic trend. Pearson(s_ratio, delta) = +0.0049 (p=0.634), Spearman = +0.0018 (p=0.861), KS class-0-vs-class-3 D=0.0163 (p=0.909). Sophie-Germain sub-class (p=2q+1, q prime, N=670): mean/std within single sigma of others, KS p=0.947. Pearson(omega(p-1), |delta|)=+0.054 (p=1e-7) is statistically real but explains 0.3% variance and is fully attributable to both quantities co-scaling with p (Erdős-Kac log log p, |delta|~p^{0.57}). The ARITHMETIC sector (smoothness/factorization of p±1) is orthogonal to the TRANSCENDENTAL sector (zeta-zero residual delta); arithmetic features of p do not project onto delta in any detectable way. Adds 35th pseudorandomness measure to novel/pseudorandomness_of_pi.md. Cites T3, E1.1, E1.5, E1.7. See experiments/proposals/delta_pminus1_smoothness.py and _results.md. | 57 |
+Now I'll write the critique file and append CLOSED_PATHS rows.
+  [Write] /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md
+    The file /apps/aplikacijos/prime-research/archive/ephemeral/critique_latest.md has been updated successfully.
+Now let me append the four CLOSED_PATHS rows.
+  [Bash] tail -3 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | PSLQ on δ(n) restricted to dyadic / Fibonacci / prime-indexed subsequences (10th PSLQ-on-δ variant, S55-fresh / S56 crit) | FAIL | I+E | DUPLICATE-PLUS of line 666 (S33 PSLQ on δ(p_n) — *exactly* this proposal's third subsequence), line 703 (S49 8th PSLQ-on-δ variant with structured zeta-zero/log basis), line 711 (S60 9th PSLQ-on-δ variant 7-feature dictionary), line 715 (S63 D-finite recurrence). Three subsequences: dyadic n=2^k for k=1..11, Fibonacci n=F_k for k=3..14, prime n=p_k for k=1..14. Dictionary {1, ζ(2), ζ(3), γ_Euler, log 2, log π, log(2π)} at 80 dps, scalings {1, log n, √n, log log n}, PSLQ tol 1e-50, max coeff 1e12. NO relation found across any (subsequence, scaling, dictionary) combination. δ(2^k) values flip sign ±20 between consecutive doublings (k=8: −20.77; k=10: +21.05), confirming δ inherits GUE-random oscillation on every sparse probe. Subsequence integrability now empirically dead at: dyadic, Fibonacci, prime-index, log-index, sliding-window, character-twisted, zero-mode bases. Closes Proposal 2 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/pslq_subsequence_delta.py and _results.md. | 56 |
+    | Bessel-basis PSLQ identity search for f(x) = π(x) − R(x) (deep-focus revisit of Task 3 / S29) | FAIL | E | Strict extension of S29's PSLQ identity search to a basis disjoint from the elementary/li/sin-cos basis tested in S29: 10-element basis {f(x), 1, log x, √x, li(x), K_0(log x), I_0(log x), J_0(γ_1·log x), Y_0(γ_1·log x), K_0(2π·√(log x))} — i.e., adds modified-Bessel K/I, oscillatory-Bessel J/Y at the first zeta zero, and the partition-asymptotic kernel K_0(2π√·) from the Hardy-Ramanujan circle method. Motivated by Bessel kernels appearing in the Selberg trace formula (spectral-side K_{ir}) and Mellin-Barnes representations, where they could in principle donate an identity that elementary functions cannot. PSLQ at mpmath 50 dps for x ∈ {5000, 10000, 50000, 100000}, maxcoeff=10⁶, maxsteps=8000, with cross-validation at x+1000. Every fit produces tight residuals (1.9e-36 to 4.0e-35) with non-zero coeff(f) ∈ {2712, 5349, 10385}, but **all fail cross-validation by 4–5 orders of magnitude** (cross-check residuals 1.10e+04 / 6.03e+04). Random-control test: replacing f with same-σ Gaussian (σ ≈ 4.23) produces statistically indistinguishable signatures (fit residuals 8.5e-37 to 6.4e-35; cross-check 1.77e+04 to 1.60e+05). The Bessel basis carries no more identity-bearing structure for f(x) than a Gaussian random number; PSLQ's "tight relations" at finite precision are pure numerical coincidences. Rules out three concrete Bessel-shaped donors: Selberg-trace shadow at low order, partition-saddle reuse via K_0(2π√·), and modified-Bessel growth/decay scaffolding. Adds 23rd pseudorandomness measure (Bessel-basis PSLQ indistinguishability from Gaussian). Strengthens S29 verdict from "f(x) admits no identity in tested elementary basis" to "f(x) admits no identity in any basis tested including spectral-trace-related Bessel kernels." Cites E1.x, E3.x, E7.x. See experiments/algebraic/identity_search/bessel_basis_pslq.py and bessel_basis_pslq_results.md. | 68 |
+    | delta(n) conditioned on smoothness of p(n)-1 (S57) | FAIL | I | First test of delta(pi(p)) statistics partitioned by smoothness of p-1 (Pollard / Pocklington natural feature). N=9592 primes ≤ 10^5, delta computed via R^{-1}(n) ≈ p + f(p)·log(p) linearization (validated ±1 vs Newton-Rinv at 30 dps; bias independent of class). Smoothness ratio s(p)=log(LPF(p-1))/log(p) quartile-binned: per-class mean(delta) range 1.6 (single sigma fluctuation), std(delta) range 1.4, no monotonic trend. Pearson(s_ratio, delta) = +0.0049 (p=0.634), Spearman = +0.0018 (p=0.861), KS class-0-vs-class-3 D=0.0163 (p=0.909). Sophie-Germain sub-class (p=2q+1, q prime, N=670): mean/std within single sigma of others, KS p=0.947. Pearson(omega(p-1), |delta|)=+0.054 (p=1e-7) is statistically real but explains 0.3% variance and is fully attributable to both quantities co-scaling with p (Erdős-Kac log log p, |delta|~p^{0.57}). The ARITHMETIC sector (smoothness/factorization of p±1) is orthogonal to the TRANSCENDENTAL sector (zeta-zero residual delta); arithmetic features of p do not project onto delta in any detectable way. Adds 35th pseudorandomness measure to novel/pseudorandomness_of_pi.md. Cites T3, E1.1, E1.5, E1.7. See experiments/proposals/delta_pminus1_smoothness.py and _results.md. | 57 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    735	| Brandt 2024 (TCC) MKtP diagonalisation → π(x) mod 2 lower bound (FOCUS-3) | FAIL | E | Brandt 2024 "Lower Bounds for Levin-Kolmogorov Complexity" (TCC, IACR ePrint 2024/687) proves MKtP ∉ DTIME[O(n)] unconditionally (Thm 1) plus three sharper conditional results (Thm 2 one-sided heuristic; Cor 1 quadratic for RAM; Cor 2 slightly super-linear) via a length-monotonic depth-first traversal TRAVERSE_{c_Ω,c_Kt} that uses 1-Kt-randomness of Chaitin's Ω prefixes to bypass the black-box barrier. The technique relativizes and is **not subject to algebrization or Natural Proofs (T4)**, satisfying FOCUS-3's stated promise. **HOWEVER it does not extend to π(x) mod 2** for four orthogonal reasons: (O1) the hard string z that TRAVERSE produces is an oracle-dependent Kt-random prefix, NOT a fixed natural function — π_N is fixed per N and Brandt has no mechanism to use a "fast π-decider" to construct z; (O2) the contradiction is `Kt(z) ≥ |z|` ∧ `Kt(z) ≤ |M| + log₂ t` — self-referential Kt on both sides — and there is no analog of `f-hardness(z) ≥ |z|` for a fixed Boolean function f = π mod 2; (O3) Lemma 2's 1-Kt-randomness of Ω prefixes is the *only* black-box-barrier-bypass ingredient, and there is no density of "π-hard inputs" (π is total and in DTIME[x^{2/3}]); (O4) Brandt produces UNIFORM-TIME lower bounds, not circuit lower bounds — Chain E (E5.3) needs a circuit lower bound and Brandt explicitly avoids the Williams/Hirahara algorithmic-method route precisely because that's the route subject to Natural Proofs on stronger classes. Empirical pseudorandomness of π(x) mod 2 (E1.9, 33 measures, novel/pseudorandomness_of_pi.md) is consistent with π_N being Kt-random but does not establish it asymptotically and would itself face T4. Bounded-Kt simulator (3-bit-op stack VM, L_MAX=12, T_MAX=4096) confirms TRAVERSE behaves as in the paper (descends on Kt-random, right-steps on compressible) and that π_N is incompressible by short bounded-VM programs at all tested N ∈ {3..10}. Cumulative effect: with E7.10 (AKS modulus-twist orthogonality, S61/S64/S66) closing the AKS family and this closure ruling out Brandt-class diagonalisation-via-meta-complexity, **Chain E is now closed for both known technique families**; only an entirely-new lower-bound technique or a non-AKS TC⁰ primality test remains. Suggested EDGE: E5.8 — Brandt 2024 is structurally welded to MKtP. Cites E5.3, E5.5, E1.9, E7.10, T4. See experiments/constructions/brandt_mktp/. | 51 |
+    736	| TT-rank of prime indicator χ_P at L ∈ {10,12,14,16} (S55-fresh / S56 crit) | FAIL | I | DUPLICATE of line 518 (S41 *closed-form theorem* rank(π_N)=2^{N/2−1}+2 at midpoint cut), line 712 (S60 MPS midpoint chi_P at N=2^14), line 707 (S49 7 reorderings of TT for delta), line 729 (S48 multilinear-Möbius). Independent verification: at L=10 max TT-rank is exactly 17 = 2^{(L-1)/2}+1, matching S41 prediction. Empirical L=10..16 gives ratio ranks_prime / ranks_random_Bernoulli = 0.531, 0.516, 0.508, 0.504 → 0.5 — exactly the "all primes > 2 are odd" mod-2 free bit. Compression ratio (TT-params / 2^L) for primes at L=16: 1.18 (vs random 2.67, vs div-by-7 0.017). Numerically reconfirms the S41 theorem in TT-SVD framing; no novel structural finding. Closes Proposal 3 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/tt_rank_prime_indicator.py and _results.md. | 56 |
+    737	| Compressibility of zeta-zero contribution matrix M[i,j]=Re(li(x_i^ρ_j)) at K=1000,2000 (S55-fresh / S56 crit) | FAIL | I | DUPLICATE of line 26 (S32 zero-sum convergence acceleration), line 654 (S36 SVD of zero contribution matrix needs 99% energy from 26.6%), line 699 (S54 random K-subset 4× WORSE than first-K), line 708 (S49 LASSO selects nnz=0 at every α). Window 1: x ∈ [1000,2000), K=1000 → effective rank 312/1000 at 1% threshold; σ_k decays algebraically as k^{−0.5..−0.7} (NOT exponential); 2D Fourier 30% of cells > 1% magnitude. Window 2: x ∈ [5000,6000), K=2000 → effective rank 147; 2D Fourier 9.7% > 1%. Same wall as S65 line 720 (φ(x,a) 2D low-rank): relative compressibility cancelled by absolute Frobenius-norm growth ∝ window size; integer-precision reconstruction needs K = poly(N), not polylog. Random-Gaussian baseline: effective rank 987 (essentially full); rank-10+noise control: 10. Closes Proposal 1 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/zero_contribution_compressibility.py and _results.md. | 56 |
+    738	| PSLQ on δ(n) restricted to dyadic / Fibonacci / prime-indexed subsequences (10th PSLQ-on-δ variant, S55-fresh / S56 crit) | FAIL | I+E | DUPLICATE-PLUS of line 666 (S33 PSLQ on δ(p_n) — *exactly* this proposal's third subsequence), line 703 (S49 8th PSLQ-on-δ variant with structured zeta-zero/log basis), line 711 (S60 9th PSLQ-on-δ variant 7-feature dictionary), line 715 (S63 D-finite recurrence). Three subsequences: dyadic n=2^k for k=1..11, Fibonacci n=F_k for k=3..14, prime n=p_k for k=1..14. Dictionary {1, ζ(2), ζ(3), γ_Euler, log 2, log π, log(2π)} at 80 dps, scalings {1, log n, √n, log log n}, PSLQ tol 1e-50, max coeff 1e12. NO relation found across any (subsequence, scaling, dictionary) combination. δ(2^k) values flip sign ±20 between consecutive doublings (k=8: −20.77; k=10: +21.05), confirming δ inherits GUE-random oscillation on every sparse probe. Subsequence integrability now empirically dead at: dyadic, Fibonacci, prime-index, log-index, sliding-window, character-twisted, zero-mode bases. Closes Proposal 2 of S55. Critique cites: archive/ephemeral/critique_latest.md. See experiments/proposals/pslq_subsequence_delta.py and _results.md. | 56 |
+    739	| Bessel-basis PSLQ identity search for f(x) = π(x) − R(x) (deep-focus revisit of Task 3 / S29) | FAIL | E | Strict extension of S29's PSLQ identity search to a basis disjoint from the elementary/li/sin-cos basis tested in S29: 10-element basis {f(x), 1, log x, √x, li(x), K_0(log x), I_0(log x), J_0(γ_1·log x), Y_0(γ_1·log x), K_0(2π·√(log x))} — i.e., adds modified-Bessel K/I, oscillatory-Bessel J/Y at the first zeta zero, and the partition-asymptotic kernel K_0(2π√·) from the Hardy-Ramanujan circle method. Motivated by Bessel kernels appearing in the Selberg trace formula (spectral-side K_{ir}) and Mellin-Barnes representations, where they could in principle donate an identity that elementary functions cannot. PSLQ at mpmath 50 dps for x ∈ {5000, 10000, 50000, 100000}, maxcoeff=10⁶, maxsteps=8000, with cross-validation at x+1000. Every fit produces tight residuals (1.9e-36 to 4.0e-35) with non-zero coeff(f) ∈ {2712, 5349, 10385}, but **all fail cross-validation by 4–5 orders of magnitude** (cross-check residuals 1.10e+04 / 6.03e+04). Random-control test: replacing f with same-σ Gaussian (σ ≈ 4.23) produces statistically indistinguishable signatures (fit residuals 8.5e-37 to 6.4e-35; cross-check 1.77e+04 to 1.60e+05). The Bessel basis carries no more identity-bearing structure for f(x) than a Gaussian random number; PSLQ's "tight relations" at finite precision are pure numerical coincidences. Rules out three concrete Bessel-shaped donors: Selberg-trace shadow at low order, partition-saddle reuse via K_0(2π√·), and modified-Bessel growth/decay scaffolding. Adds 23rd pseudorandomness measure (Bessel-basis PSLQ indistinguishability from Gaussian). Strengthens S29 verdict from "f(x) admits no identity in tested elementary basis" to "f(x) admits no identity in any basis tested including spectral-trace-related Bessel kernels." Cites E1.x, E3.x, E7.x. See experiments/algebraic/identity_search/bessel_basis_pslq.py and bessel_basis_pslq_results.md. | 68 |
+    740	| delta(n) conditioned on smoothness of p(n)-1 (S57) | FAIL | I | First test of delta(pi(p)) statistics partitioned by smoothness of p-1 (Pollard / Pocklington natural feature). N=9592 primes ≤ 10^5, delta computed via R^{-1}(n) ≈ p + f(p)·log(p) linearization (validated ±1 vs Newton-Rinv at 30 dps; bias independent of class). Smoothness ratio s(p)=log(LPF(p-1))/log(p) quartile-binned: per-class mean(delta) range 1.6 (single sigma fluctuation), std(delta) range 1.4, no monotonic trend. Pearson(s_ratio, delta) = +0.0049 (p=0.634), Spearman = +0.0018 (p=0.861), KS class-0-vs-class-3 D=0.0163 (p=0.909). Sophie-Germain sub-class (p=2q+1, q prime, N=670): mean/std within single sigma of others, KS p=0.947. Pearson(omega(p-1), |delta|)=+0.054 (p=1e-7) is statistically real but explains 0.3% variance and is fully attributable to both quantities co-scaling with p (Erdős-Kac log log p, |delta|~p^{0.57}). The ARITHMETIC sector (smoothness/factorization of p±1) is orthogonal to the TRANSCENDENTAL sector (zeta-zero residual delta); arithmetic features of p do not project onto delta in any detectable way. Adds 35th pseudorandomness measure to novel/pseudorandomness_of_pi.md. Cites T3, E1.1, E1.5, E1.7. See experiments/proposals/delta_pminus1_smoothness.py and _results.md. | 57 |
+    741	
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update the CLOSED_PATHS header line to reflect new entries.
+  [Bash] sed -n '1,8p' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    # Closed Paths: Master Lookup (545+ Approaches)
+    
+    **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    
+    Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57, 198+ sub-agents)
+    
+    ## Failure Modes
+    - **C** = Circularity (needs primes to compute primes)
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now write the session synthesis and finalize.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ 2>&1 | tail -10
+    session62_k_min_extended.md
+    session63_proposals_critique.md
+    session64_frobenius_transplant.md
+    session65_tg_kernel_audit.md
+    session66_bernstein_smaller_r.md
+    session67_focus2_e211_pretest.md
+    session68_task3_bessel_basis.md
+    session69_focus4_pi_mod_2k_saturation.md
+    session_critique46.md
+    session_critique50.md
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session_critique60_fresh.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session_critique60_fresh.md
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; echo 61 > /apps/aplikacijos/prime-research/.run_state; cat /apps/aplikacijos/prime-research/.run_state
+    60
+    ---
+    61
+  [Bash] find /apps/aplikacijos/prime-research/experiments -type d -name "__pycache__" -print; echo "DONE_PYCACHE_CHECK"; find /apps/aplikacijos/prime-research/experiments/proposals -name "*.py" -print | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; echo "DONE_RESULTS_CHECK"
+    DONE_PYCACHE_CHECK
+    DONE_RESULTS_CHECK
+Hygiene clean: no stray `__pycache__`, every `.py` has a results file, `.run_state` set to 61.
+
+## Session summary
+
+Critique of the second batch of proposals (B1–B5) in
+`archive/ephemeral/proposals_session.md`. The proposer ran B1, B2, B3, B5 as
+live experiments and self-classified all four as CLOSED.
+
+| # | Proposal | My verdict | Closes by |
+|---|----------|-----------|-----------|
+| B1 | H-matrix kernel compression | **DUPLICATE-PLUS** (kernel-side Vandermonde) | lines 116, 720, 25 |
+| B2 | ESN on bit-0 of delta(n) | **DUPLICATE** | line 84/683 (verbatim prior) |
+| B3 | Determinant rep hunt at k=2 | **DUPLICATE** (refined-li algebra closure) | lines 396, 393, 268, 269 |
+| B4 | Hecke-trace coupling (sketch) | **DUPLICATE** (Sato-Tate + factoring blockers) | mod-forms closure, 408, 739 |
+| B5 | Halving recursion p(n)→p(n/2) | **DUPLICATE-PLUS** (independence-of-scales) | line 338 |
+
+Net new information ≈ two refining structural arguments, zero novel
+artifacts. The proposer's honest self-assessment ("4 clean negative
+closures, 0 novel artifacts — duplicate-shape session") is correct.
+
+Files written:
+- `archive/ephemeral/critique_latest.md` — full per-proposal critique.
+- 5 new rows in `status/CLOSED_PATHS.md` (header timestamp updated).
+- `archive/sessions/session_critique60_fresh.md` — session synthesis.
+
+`.run_state` set to 61.
+
+Suggested next-actions for the next agent (recorded in the synthesis):
+(a) compose B1 kernel-side closure with line 654 signal-side closure into a
+joint hierarchical-compression dichotomy; or (b) Lean-formalise the B5
+independence-of-scales lemma.
+--- Session ended ---
+Sleeping 5 seconds before next run...
+
+=== Run #61 — Mode: normal — Sun Apr 26 15:33:35 UTC 2026 ===
+Sleeping 5 seconds before next run...

@@ -1,262 +1,304 @@
 #!/bin/bash
 
 # ============================================================
-# PRIME RESEARCH: MODE-ROTATING AUTONOMOUS LOOP
+# PRIME RESEARCH: NOVELTY-FIRST AUTONOMOUS LOOP (S70+ rewrite)
 # ============================================================
-# Cycles through 5 research modes to break the plateau:
-#   1. normal    - Read CLAUDE.md, explore open problems
-#   2. wildcard  - Fresh thinking, NO closed paths, first principles
-#   3. focused   - Deep dive on one task from FOCUS_QUEUE.md
-#   4. propose   - Generate novel approaches (without seeing failures)
-#   5. critique  - Evaluate proposals against 500+ closed paths
+# Cycles through 5 modes optimised for *genuine novelty production*
+# rather than disciplined-duplicate-closure:
+#
+#   1. novelty       - Pick a NOVELTY_CHALLENGES.md §2 / §4 / §5 target
+#   2. construction  - Pick a NOVELTY_CHALLENGES.md §1 composition target,
+#                      build it under experiments/constructions/
+#   3. arc           - Continue a RESEARCH_AGENDA.md multi-session arc
+#   4. lean          - Work on a NOVELTY_CHALLENGES.md §3 Lean formalisation
+#   5. critique      - Verify recent work, enforce novelty bar
+#
+# Replaces the prior {normal, wildcard, focused, propose, critique}
+# rotation. The "no-anchor" propose and wildcard prompts produced ~70%
+# duplicate-shape outputs at the project's current saturation (per S60
+# critic's diagnosis), and `focused` mode rotated through a stale
+# FOCUS_QUEUE.md (all tasks marked COMPLETED). All four are now retargeted
+# to read NOVELTY_CHALLENGES.md and RESEARCH_AGENDA.md instead.
+#
+# Critique mode is preserved largely as-is — it was working correctly.
 # ============================================================
 
 
 # ============================================================
-# PROMPT: Normal Mode
+# PROMPT: Novelty Mode
 # ============================================================
-PROMPT_NORMAL=$(cat << 'ENDPROMPT'
-# MISSION
-Make a breakthrough in computing the nth prime p(n) EXACTLY without bruteforcing/sieving/enumeration.
-Target: p(10^100) in <1 second, 100% accurate. Current best is O(x^{2/3}) -- you need O(polylog).
+PROMPT_NOVELTY=$(cat << 'ENDPROMPT'
+# NOVELTY SESSION
 
-# FIRST: READ CLAUDE.md
-Start by reading CLAUDE.md. It contains the project status, directory layout,
-and rules. It points to status/ files for closed paths and open problems.
+Mission: produce ONE new mathematical artefact for the project this session.
+"Artefact" = an object, identity, proof, refinement, or composition that did
+not exist in the project before this session.
 
-# PROJECT STRUCTURE
-- status/CLOSED_PATHS.md  -- 500+ approaches already tried. SEARCH before proposing anything.
-- status/OPEN_PROBLEMS.md -- The ONLY viable research directions. Focus here.
-- status/BEST_ALGORITHMS.md -- Current best working code.
-- proven/                 -- Mathematically proven barriers with citations.
-- novel/                  -- Our original insights.
-- algorithms/             -- Working, tested code only.
-- literature/             -- All references and 2026 state of the art.
-- experiments/<topic>/    -- Past experiments organized by topic.
-- data/                   -- Zeta zeros for explicit formula work.
+# START HERE (in this order)
+1. Read NOVELTY_CHALLENGES.md. Pick a single-session target from
+   §2 (frame-shift questions), §4 (negative-shape conjectures), or
+   §5 (synthesis targets) that fits your time budget. State the target
+   ID (F_x, N_x, S_x) explicitly at the start of your work.
+2. Read CLAUDE.md for the workflow rules — especially "The Novelty Bar"
+   section, which is the success criterion for this session.
+3. Read EDGES.md for the edge IDs your target references.
+4. Cross-check: search status/CLOSED_PATHS.md for any prior closure
+   of your target. If your target turns out to already be closed,
+   document why and pick another.
 
-# HOW TO WORK
-1. Read CLAUDE.md and status/OPEN_PROBLEMS.md
-2. Pick a direction from OPEN_PROBLEMS.md (or propose a genuinely new one)
-3. Check status/CLOSED_PATHS.md to confirm it has not been tried
-4. Spin sub-agents to explore in parallel (save context!)
-5. Save experiments to experiments/<topic>/
-6. Update status/CLOSED_PATHS.md when you close an approach
+# EXECUTE
+- Build code that runs.
+- Cite EDGES.md edge IDs for every claim.
+- Pre-state your falsification criterion BEFORE running the experiment,
+  in your <name>_results.md file.
+- File the artefact under the location the challenge specifies.
+- If your work refines an existing edge: update EDGES.md inline
+  (edit the existing entry; do NOT create a new edge for a refinement).
+- If your work produces a genuinely new structural fact: add a new
+  EDGES.md entry with EVS rating and "why this is an edge" line.
+- If your work produces a paper-grade insight: add a novel/<name>.md.
 
-# ALSO CHECK
-- Read archive/ephemeral/critique_latest.md if it exists -- it may contain NOVEL proposals
-  that survived critique and are worth implementing.
-
-# FILE PLACEMENT (STRICT)
-- Every .py script MUST have a companion <name>_results.md alongside it.
-- Do NOT create multiple versions of the same script (no foo.py, foo_v2.py, foo_quick.py).
-  Refactor the original or use command-line arguments.
-- novel/ is ONLY for genuinely original findings not in published literature.
-- Session syntheses go to archive/sessions/.
-- Proven barriers go to proven/.
-- Ephemeral outputs (proposals, critiques) go to archive/.
-- Results format is .md only. No .txt for human-readable results.
-- Delete __pycache__ directories before finishing.
+# CLOSE
+- Update RESEARCH_AGENDA.md if your work advances or starts an arc.
+- Update NOVELTY_CHALLENGES.md to mark your target as closed / partial /
+  in-progress, with a one-line outcome note.
+- Write archive/sessions/sessionNN_<topic>.md with the 4-question
+  CLAUDE.md self-evaluation at the end.
+- Add a CLOSED_PATHS row ONLY if your work CLOSES an attack route
+  (refinements of existing edges stay in EDGES.md, not CLOSED_PATHS).
 
 # RULES
-- DO NOT touch run.sh or FOCUS_QUEUE.md
-- Update CLAUDE.md only for significant status changes (new best algorithm, major barrier)
-- Use sub-agents to save context window
+- DO NOT modify run.sh or FOCUS_QUEUE.md.
+- If your selected target collapses to a duplicate within 15 minutes
+  of starting, file the closure honestly and switch to another target.
+- Honest failure reporting beats inflated success. If your session
+  produces no novel artefact, say so in the synthesis — do not pretend.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
 
 
 # ============================================================
-# PROMPT: Wildcard Mode (fresh thinking, no anchoring)
+# PROMPT: Construction Mode
 # ============================================================
-PROMPT_WILDCARD=$(cat << 'ENDPROMPT'
-# FRESH PERSPECTIVE SESSION
+PROMPT_CONSTRUCTION=$(cat << 'ENDPROMPT'
+# CONSTRUCTION SESSION
 
-You are attacking one of the great open problems in computational number theory:
-computing p(n) -- the nth prime number -- EXACTLY in O(polylog(n)) time.
+Mission: BUILD a new mathematical object — circuit, ring, transform,
+representation, or algorithm — that didn't exist in the project before.
 
-Current best: O(x^{2/3}) via Meissel-Lehmer combinatorial sieve.
-Target: p(10^100) in <1 second, 100% accuracy.
+# START HERE (in this order)
+1. Read NOVELTY_CHALLENGES.md §1 "Composition Challenges". Pick C_x
+   (C1, C2, C3, C4, C5, or C6). State the target ID explicitly.
+2. Read EDGES.md entries for the edge IDs your composition uses
+   (e.g., C1 = E1.6 + E1.5). Get the technical content into context.
+3. Read CLAUDE.md "Construction Discipline" section.
+4. Read experiments/constructions/README.md for layout convention.
 
-The smooth approximation R^{-1}(n) gives ~50% of digits in O(polylog) time.
-The remaining ~50% encode oscillatory contributions from Riemann zeta zeros.
+# EXECUTE
+- Build under experiments/constructions/<descriptive_name>/.
+- Required files:
+    <name>.py            — runnable code that builds + evaluates the object
+    <name>_results.md    — what it does, what it doesn't, verdict, falsification
+    definition.md        — signature + intended relationship to π(x), citing
+                           the edge IDs by name
+- Code MUST run on small inputs. A theoretical-only essay is NOT a
+  construction; turn it into code or save it under archive/ephemeral/.
+- Pre-state your falsification criterion in <name>_results.md BEFORE
+  running.
 
-## YOUR MISSION
-Do NOT start by reading CLAUDE.md or status/CLOSED_PATHS.md.
-This is a FRESH THINKING session. Start from first principles.
+# NOVELTY BAR (strict)
+- Failed constructions are valuable: file CLOSED_PATHS row with mode
+  (C/E/I or "construction-incoherent" if the object turned out
+  ill-defined). The failure mode itself is information.
+- Built object that turns out equal to an existing edge: file as
+  DUPLICATE-PLUS honestly, with the closest existing edge ID.
+- Genuinely novel object that does something non-trivial: add a
+  novel/<name>.md entry describing what it is, what it does, and what
+  it doesn't.
 
-## APPROACH
-1. Think about analogies from other fields where "impossible" barriers were broken:
-   - Shor's algorithm broke factoring via quantum Fourier transform
-   - Compressed sensing broke Nyquist via sparsity assumptions
-   - AlphaFold broke protein folding via learned energy landscapes
-   - Fast multipole method broke N-body from O(N^2) to O(N) via hierarchy
-   - Candes-Tao broke matrix completion via nuclear norm relaxation
-   What is the analogous structural insight for prime counting?
+# CLOSE
+- Update RESEARCH_AGENDA.md Arc 4 ("Composition over EDGES.md")
+  milestone for whichever C_x you tackled.
+- Update NOVELTY_CHALLENGES.md §1 to mark C_x as built / partial / closed.
+- Write archive/sessions/sessionNN_<topic>.md with self-evaluation.
 
-2. Brainstorm at least 5 genuinely unconventional ideas. Spirit examples:
-   - Can primes be characterized by a DYNAMICAL SYSTEM with fast-forwardable orbits?
-   - Is there a PROBABILISTIC identity that gives exact answers?
-   - Can pi(x) be encoded as a LINEAR ALGEBRA problem over a clever ring/field?
-   - Can AUTOMATED THEOREM PROVING search for novel identities?
-   - Is there a HIERARCHICAL DECOMPOSITION of the sieve that enables recursion?
-   - Can the zeta zero sum be replaced by a SPECTRAL SHORTCUT?
-   - Does the ADELIC perspective give a fast algorithm via local-global?
-
-3. For each idea: write pseudocode, test on small cases (n < 10000), analyze complexity.
-
-4. Search the internet for latest 2025-2026 papers. Look in unexpected places:
-   quantum information, algebraic topology, machine learning theory, cryptography.
-
-## SAVING & FILE RULES
-- Save experiments to experiments/wildcard/
-- Every .py script MUST have a companion <name>_results.md alongside it.
-- Do NOT create multiple versions of the same script. One script per experiment.
-- Promising findings go to novel/ (ONLY if genuinely original, not in published literature).
-- Better algorithms go to algorithms/
-- Delete __pycache__ directories before finishing.
-- DO NOT read CLAUDE.md or status/CLOSED_PATHS.md
-- DO NOT spend time proving things impossible
+# RULES
+- DO NOT modify run.sh or FOCUS_QUEUE.md.
+- One construction per session. Time-budget the work.
+- If C_x collapses to a duplicate within 15 minutes, switch to another C_y.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
 
 
 # ============================================================
-# PROMPT: Focused Mode (deep dive on one task)
+# PROMPT: Arc Continuation Mode
 # ============================================================
-PROMPT_FOCUSED=$(cat << 'ENDPROMPT'
-# DEEP FOCUS SESSION — Task #__TASK_NUM__
+PROMPT_ARC=$(cat << 'ENDPROMPT'
+# ARC CONTINUATION SESSION
 
-This is a DEEP FOCUS session. Work on exactly ONE research direction
-for the entire session. No broad exploration, no topic switching.
+Mission: advance a multi-session research arc by one concrete step.
 
-## YOUR TASK
-Read FOCUS_QUEUE.md in the project root. Work on Task #__TASK_NUM__.
-Follow the task description: run every experiment listed, write code,
-test hypotheses, and record results.
+# START HERE (in this order)
+1. Read RESEARCH_AGENDA.md. Look at "Active arcs". Pick an arc with
+   status "IN PROGRESS" first (it has accumulated state and a clear
+   next-action). If none in progress, pick an OPEN arc with the cleanest
+   next-action — preferably one whose next-action you can complete in
+   this session.
+2. Mark the chosen arc as `Status: IN PROGRESS — Run #<your_run>` at
+   session start, in RESEARCH_AGENDA.md.
+3. Read EDGES.md for any edge IDs the arc references.
+4. Read CLAUDE.md for the workflow rules.
 
-## CONTEXT
-- Read CLAUDE.md for project status and existing knowledge
-- Read status/OPEN_PROBLEMS.md for background on your task
-- Check experiments/ for any prior work on this topic
+# EXECUTE
+- Work on the arc's stated `Next action:`.
+- One arc per session. Don't context-switch.
+- Save artefacts to the location the arc specifies.
+- Tick off milestone checkboxes in RESEARCH_AGENDA.md as you complete them.
 
-## RULES
-- Stay focused on Task #__TASK_NUM__. Do NOT explore other directions.
-- Write code and run experiments. This is NOT a theory-only session.
-- Save all experiments to the directory specified in FOCUS_QUEUE.md.
-- Every .py script MUST have a companion <name>_results.md alongside it.
-- Do NOT create multiple versions of the same script. One script per experiment.
-- Significant discoveries: update CLAUDE.md and novel/ (novel/ is ONLY for genuinely
-  original findings not in published literature -- NOT session summaries or barriers).
-- Session syntheses go to archive/sessions/. Proven barriers go to proven/.
-- Closed directions: update status/CLOSED_PATHS.md with evidence
-- Use sub-agents for parallel experiments
-- Delete __pycache__ directories before finishing.
-- DO NOT touch run.sh or FOCUS_QUEUE.md
+# IF THE ARC IS BLOCKED
+If during the session you discover the arc is blocked on missing user
+input, missing external data, or an unsolved sub-problem:
+- Update the arc's status to BLOCKED with a one-line reason.
+- Pick a NOVELTY_CHALLENGES.md single-session target instead.
+- Use the rest of the session for that.
+
+# CLOSE
+- Update the arc's milestones AND its `Next action:` field.
+- If you completed the arc, move it to "Closed arcs" with a one-line
+  summary and pointer to the resulting artefact.
+- If your work created a new sub-arc, register it under "Active arcs".
+- Write archive/sessions/sessionNN_<topic>.md with self-evaluation.
+
+# RULES
+- DO NOT modify run.sh or FOCUS_QUEUE.md.
+- The next-action discipline matters most. The next agent should be
+  able to pick up without re-reading the arc's full history.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
 
 
 # ============================================================
-# PROMPT: Propose Mode (generate ideas without seeing failures)
+# PROMPT: Lean Formalisation Mode
 # ============================================================
-PROMPT_PROPOSE=$(cat << 'ENDPROMPT'
-# PROPOSAL SESSION
+PROMPT_LEAN=$(cat << 'ENDPROMPT'
+# LEAN FORMALISATION SESSION
 
-You are a mathematician attacking the problem of computing p(n) -- the nth prime --
-exactly in O(polylog(n)) time.
+Mission: produce or advance a machine-checked Lean 4 proof of an
+EDGES.md entry or a novel/ result.
 
-## BACKGROUND
-- Prime number theorem: p(n) ~ n*ln(n)
-- R^{-1}(n) gives ~50% of digits in O(polylog) time
-- Riemann explicit formula: pi(x) = R(x) - sum_rho R(x^rho) - ...
-  Requires O(sqrt(x)) zeta zeros for exact results
-- Meissel-Lehmer: O(x^{2/3}) via inclusion-exclusion on floor(x/k) values
-- The correction delta(n) = p(n) - R^{-1}(n) has O(log n) bits but costs O(x^{2/3}) to compute
+# START HERE (in this order)
+1. Read NOVELTY_CHALLENGES.md §3 "Lean 4 Formalisation Queue" — the
+   current queue is L1..L5 in priority order.
+2. Read RESEARCH_AGENDA.md Arc 2 ("Lean Formalisation Track") to see
+   any in-progress work.
+3. Read experiments/formalisations/README.md for layout convention.
+4. If experiments/formalisations/ has only a README and no in-progress
+   subdirectory: pick L1 (E2.1 MPS bond-dim) — it is the cleanest entry
+   point.
+5. Read the edge entry in EDGES.md for whatever you are formalising.
 
-## YOUR MISSION
-Propose AT LEAST 3 concrete approaches. For each:
-1. State the mathematical idea clearly
-2. Write pseudocode (runnable Python preferred)
-3. Analyze the time complexity
-4. Identify the key assumption or conjecture it relies on
-5. Design a computational test for n < 10000
+# FIRST-TIME SETUP (if needed)
+- Verify Lean 4 + mathlib4 are installable in this environment:
+    curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
+- Initialise lake project under experiments/formalisations/<edge_id>/:
+    lake new <edge_id>
+- Add mathlib4 as a dependency in lakefile.lean.
+- Verify `lake build` succeeds on the empty project before adding any
+  theorem.
 
-IMPORTANT: Do NOT read CLAUDE.md or status/CLOSED_PATHS.md for this session.
-We want fresh ideas unconstrained by prior analysis.
+# EXECUTE
+- Stage 1: write theorem statement only (no proof). Verify type-checks.
+- Stage 2: write proof skeleton with `sorry` placeholders for every
+  lemma. Verify type-checks.
+- Stage 3: fill in lemmas one at a time. Verify type-checks after each.
+- Stage 4: complete the main proof. No `sorry`, no new `axiom`.
 
-Search the internet for latest papers, tools, and techniques that might help.
-Look in unexpected fields: quantum computing, cryptography, compressed sensing,
-algebraic topology, representation theory, information theory.
+A session that completes any one stage is a success. Partial progress
+with `sorry` is acceptable as long as Lean still type-checks.
 
-## CREATIVE DIRECTIONS TO CONSIDER
-- Algebraic geometry / etale cohomology shortcuts for counting
-- Quantum-inspired classical algorithms (dequantization)
-- Machine learning on the RESIDUAL delta(n), not the primes
-- Automated conjecture generation via PSLQ / LLL / OEIS
-- Connections to other counting problems with known fast algorithms
-- Modular forms / automorphic L-functions
-- Operator-theoretic approaches (trace formula shortcuts)
-- Information-theoretic: prove O(polylog) is achievable via entropy arguments
+# DISCIPLINE
+- The Lean file MUST type-check at session end. If it doesn't,
+  debug or revert before halting.
+- Save the in-progress state explicitly to RESEARCH_AGENDA.md Arc 2,
+  with a clear next-action for the next agent.
 
-## SAVING & FILE RULES
-- Save detailed proposals to archive/ephemeral/proposals_session.md (NOT novel/).
-- If any idea works on small cases, save code to experiments/proposals/
-  with a companion <name>_results.md for each .py script.
-- Do NOT create multiple versions of the same script. One script per experiment.
-- Only move a proposal to novel/ if it is genuinely original AND survives testing.
-- Delete __pycache__ directories before finishing.
+# CLOSE
+- Update RESEARCH_AGENDA.md Arc 2 milestones.
+- Update NOVELTY_CHALLENGES.md §3 to mark L_x as in-progress or
+  complete.
+- Write archive/sessions/sessionNN_<topic>.md with self-evaluation.
+
+# RULES
+- DO NOT modify run.sh or FOCUS_QUEUE.md.
+- If Lean+mathlib4 cannot be installed in this environment, write
+  the theorem statements as `<name>_lean_pending.md` (informal proof
+  sketch + the Lean theorem statement as code blocks) so the next
+  agent can pick up when toolchain is available. Note the toolchain
+  status in RESEARCH_AGENDA.md Arc 2.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
 
 
 # ============================================================
-# PROMPT: Critique Mode (evaluate proposals rigorously)
+# PROMPT: Critique Mode
 # ============================================================
 PROMPT_CRITIQUE=$(cat << 'ENDPROMPT'
 # CRITIQUE SESSION
 
-You are a rigorous mathematical critic evaluating proposed approaches
-to computing p(n) in O(polylog(n)) time.
+You are a rigorous mathematical critic evaluating recent project work
+against the project's novelty bar (CLAUDE.md "The Novelty Bar" section).
 
-## YOUR TASK
-1. Read archive/ephemeral/proposals_latest.md for the latest proposals.
-   If missing/empty, try archive/ephemeral/proposals_session.md instead.
-   If neither exists, read CLAUDE.md and status/OPEN_PROBLEMS.md for context,
-   then search the internet for any 2025-2026 papers proposing new prime algorithms.
+# YOUR TASK
+1. Identify the most recent session(s) since your last critique:
+   - List archive/sessions/sessionNN_*.md by mtime, take the most recent 1-3.
+   - List archive/ephemeral/proposals_latest.md and proposals_session.md
+     if either has content newer than the last critique_latest.md.
+2. Read the artefacts those sessions produced (their .py + _results.md +
+   any novel/ entries they added).
+3. Read EDGES.md and status/CLOSED_PATHS.md THOROUGHLY.
 
-2. Read status/CLOSED_PATHS.md THOROUGHLY. It contains 500+ tested approaches.
-
-3. For EACH proposal, evaluate:
-   a) Has this exact approach been tried? (check CLOSED_PATHS.md)
+4. For EACH artefact / proposal, evaluate:
+   a) Has this exact approach been tried before? Cite CLOSED_PATHS line
+      numbers and EDGES.md edge IDs.
    b) Does it fall into a known failure mode?
-      - CIRCULARITY: needs primes to compute primes
-      - EQUIVALENCE: reduces to explicit formula / zeta zero sum
-      - INFORMATION LOSS: smooth approximation loses ~170 bits
-   c) Is the complexity analysis correct?
-   d) What is the specific mathematical obstacle?
-   e) VERDICT: NOVEL / DUPLICATE / FLAWED
+      - CIRCULARITY (C): needs primes to compute primes
+      - EQUIVALENCE (E): reduces to known explicit-formula / sieve / MPOW
+      - INFORMATION LOSS (I): smooth approximation loses oscillatory bits
+      - CONSTRUCTION-INCOHERENT: object turned out ill-defined
+   c) Is the complexity / numerical claim correct?
+   d) Is the novelty claim defensible? Apply CLAUDE.md's novelty bar:
+      "a published-paper-grade number theorist or complexity theorist
+      could not, after one careful read of prior literature and
+      CLOSED_PATHS, produce this."
+   e) For NOVEL artefacts: name the edges they cite/compose; verify
+      the citation is accurate.
+   f) For DUPLICATE work: file a CLOSED_PATHS row pointing at the
+      parent line numbers.
+   g) For INFLATED novelty (e.g. an entry placed in novel/ that is
+      really an EDGES.md refinement): demote it. Move the content into
+      the existing EDGES.md edge as a refinement note, and delete (or
+      empty) the novel/ entry.
 
-4. For NOVEL proposals: design a concrete experiment to test the core hypothesis.
-   Use sub-agents to actually RUN the experiment and report results.
+5. Identify the single highest-value next-action and write it into
+   NOVELTY_CHALLENGES.md or RESEARCH_AGENDA.md as appropriate.
 
-5. For PARTIALLY novel proposals: extract the novel component and test it separately.
+# SAVE
+- archive/ephemeral/critique_latest.md — full per-artefact critique.
+- status/CLOSED_PATHS.md — duplicate / closed-path entries.
+- archive/sessions/sessionNN_critique.md — session synthesis with the
+  4-question CLAUDE.md self-evaluation.
 
-## SAVING & FILE RULES
-- Save your critique to archive/ephemeral/critique_latest.md (NOT novel/).
-- NOVEL proposals that survive critique: add to status/OPEN_PROBLEMS.md
-  and save evidence to novel/ (novel/ is ONLY for genuinely original findings).
-- DUPLICATE proposals: note which CLOSED_PATHS entry they match.
-- Session synthesis documents go to archive/sessions/.
-- If you run experiments, every .py MUST have a companion <name>_results.md.
-- Do NOT create multiple versions of the same script. One script per experiment.
-- Update CLAUDE.md if your analysis reveals new insights.
-- Delete __pycache__ directories before finishing.
-- DO NOT touch run.sh or FOCUS_QUEUE.md
+# RULES
+- DO NOT modify run.sh or FOCUS_QUEUE.md.
+- Be honest. The critic's job is enforcement of the novelty bar, NOT
+  protection of recent work. If a session produced only duplicates,
+  say so plainly.
+- If multiple recent sessions are critique-mode, this one is redundant —
+  pivot to the next-action you would have identified, and run it.
 - When you find the breakthrough, respond with exactly: I FOUND IT!!!
 ENDPROMPT
 )
@@ -281,8 +323,10 @@ echo "Raw JSON log:       $JSONFILE"
 # ============================================================
 # MODE ROTATION CONFIG
 # ============================================================
-MODES=("normal" "wildcard" "focused" "propose" "critique")
-NUM_FOCUS_TASKS=4
+# Rotation order: novelty -> construction -> arc -> lean -> critique
+# The first four are content-producing modes; critique enforces the
+# novelty bar on what they produced. Net cycle: 4 production + 1 audit.
+MODES=("novelty" "construction" "arc" "lean" "critique")
 
 
 # ============================================================
@@ -304,23 +348,19 @@ while true; do
     MODE_IDX=$(( (RUN - 1) % ${#MODES[@]} ))
     MODE=${MODES[$MODE_IDX]}
 
-    # For focused mode: compute which task to work on (cycles 1-4)
-    CYCLE=$(( (RUN - 1) / ${#MODES[@]} ))
-    TASK_NUM=$(( (CYCLE % NUM_FOCUS_TASKS) + 1 ))
-
     # Select prompt based on mode
     case $MODE in
-        normal)
-            CURRENT_PROMPT="$PROMPT_NORMAL"
+        novelty)
+            CURRENT_PROMPT="$PROMPT_NOVELTY"
             ;;
-        wildcard)
-            CURRENT_PROMPT="$PROMPT_WILDCARD"
+        construction)
+            CURRENT_PROMPT="$PROMPT_CONSTRUCTION"
             ;;
-        focused)
-            CURRENT_PROMPT="${PROMPT_FOCUSED//__TASK_NUM__/$TASK_NUM}"
+        arc)
+            CURRENT_PROMPT="$PROMPT_ARC"
             ;;
-        propose)
-            CURRENT_PROMPT="$PROMPT_PROPOSE"
+        lean)
+            CURRENT_PROMPT="$PROMPT_LEAN"
             ;;
         critique)
             CURRENT_PROMPT="$PROMPT_CRITIQUE"
@@ -337,13 +377,10 @@ while true; do
     echo ""
     echo "============================================================"
     echo "=== Run #$RUN — Mode: $MODE — $(date) ==="
-    if [ "$MODE" = "focused" ]; then
-        echo "=== Focus Task: #$TASK_NUM ==="
-    fi
     echo "============================================================"
     echo "" | tee -a "$LOGFILE"
     echo "=== Run #$RUN — Mode: $MODE — $(date) ===" | tee -a "$LOGFILE"
-    echo '{"run":'"$RUN"',"mode":"'"$MODE"'","task_num":'"$TASK_NUM"',"timestamp":"'"$(date -Iseconds)"'"}' >> "$JSONFILE"
+    echo '{"run":'"$RUN"',"mode":"'"$MODE"'","timestamp":"'"$(date -Iseconds)"'"}' >> "$JSONFILE"
     : > "$TMPFILE"
     : > "$ASSISTFILE"
 
@@ -424,10 +461,13 @@ tmp_f.close()
 assist_f.close()
 " "$JSONFILE" "$LOGFILE" "$TMPFILE" "$ASSISTFILE"
 
-    # For propose mode: save proposals for the next critique run
-    if [ "$MODE" = "propose" ]; then
-        cp "$ASSISTFILE" "$PROPOSALS_FILE"
-        echo "Proposals saved to: $PROPOSALS_FILE" | tee -a "$LOGFILE"
+    # If a session generated freeform proposals and saved them, surface them
+    # for the next critique run. (Most production modes won't, but if any
+    # session leaves novel proposals in proposals_session.md, copy to latest.)
+    if [ -f "./archive/ephemeral/proposals_session.md" ]; then
+        if [ ! -f "$PROPOSALS_FILE" ] || [ "./archive/ephemeral/proposals_session.md" -nt "$PROPOSALS_FILE" ]; then
+            cp "./archive/ephemeral/proposals_session.md" "$PROPOSALS_FILE"
+        fi
     fi
 
     # Check for breakthrough

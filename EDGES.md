@@ -106,7 +106,14 @@ N-bit p(n), the hard region is bits 0.6·N .. N (asymptotic).
 
 `proven/complexity.md` §"Circuit Complexity"; S12;
 `proven/circuit_size_barrier.md`;
-**closed-form sharpening:** `experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation_results.md` (S69, F2).
+**closed-form sharpening:** `experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation_results.md` (S69, F2);
+**generalisation to bisection components and joint state:**
+`experiments/constructions/g_q_bisection_invariant/` (S70, C1) — same
+mechanism (binary increment + conditional independence of indicator from
+state) applies to *any* monotone Ω-stratified summatory; verified for
+A(x) and C_3(x), and for the joint state `(A mod q, C_3 mod q)` which
+satisfies `H(g_q(x) | g_q(x-1)) = H_3(1 - rho_A, rho_pi, rho_C3) +
+O(1/pi(X))` in regime q^2 << pi(X).
 
 **Sharpened statement.** For every modulus m and every X with
 `m <= pi(X)/100`,
@@ -148,6 +155,7 @@ m **vanishes** in the limit, regardless of m.
 ### E1.6 — pi(x) mod 2 bisects into two statistically-independent bits  [EVS M]
 
 S55; `experiments/sieve/pi_mod_q_fixed/liouville_modular_structure_results.md`.
+**q-stable extension:** `experiments/constructions/g_q_bisection_invariant/` (S70, C1).
 
 Via the verified identity `pi(x) = (x - L(x))/2 - C_3(x)`,
 
@@ -159,11 +167,22 @@ where `A(x) = (x - L(x))/2`. **Both bits are uniform on {0,1}** (H(A) =
 H(C_3) = 1.00000 bits) and **statistically independent** (mutual info
 1.94 × 10⁻⁵ bits, verified on x ∈ [1, 2 × 10⁶]).
 
+**S70 q-stable extension (composition C1):** the marginal independence
+extends from q = 2 to all prime q in {3, 5, 7, 11, 13}, with mutual
+information `I( A(x) mod q ; C_3(x) mod q ) <= 1.2 * 10^-4` bits on
+x ∈ [1, 2 * 10⁶] (worst case q = 13). Combined with the per-component
+S70 finding that A and C_3 each carry asymptotically 1 bit/step
+(`rho_A, rho_C3 -> 1/2`) while their integer difference π carries 0
+bits/step (`rho_pi -> 0`), the bisection has a *destructive-interference*
+character: two high-rate channels cancel into one low-rate channel.
+
 > Why this is an edge: the parity question is split into two equal halves
 > with no shared structure to exploit. A polylog algorithm for *one* side
 > still needs the other. Crucially: if (and only if) some future technique
 > handles A mod 2 cheaply, then C_3 mod 2 is the entire residual problem
 > (not "a fraction of the residual"). The split is informationally clean.
+> The q-stable extension means the "no shared structure" property is not
+> a q = 2 artefact — it persists across all prime moduli probed.
 
 ### E1.7 — delta(n) long-range correlation is INDIRECT (AR(7) + Hurst crossover) [EVS M]
 
@@ -290,6 +309,17 @@ S28 synthesis. Five independent measures land on the same threshold:
 Empirically: bits 0..N/2 are oscillatory, bits N/2..N are smooth.
 **This is not a barrier per se; it's a bisection of the problem into a
 solved half (smooth) and an unsolved half (oscillatory).**
+
+**S71 scope refinement (C5):** the N/2 boundary holds tightly for the
+**parity-of-Omega family** `{chi_P, f_mu_pos, f_lam_pos}` (where adeg
+and PTF degree match `ceil(N/2)` at every tested N up to 10), but
+NOT for all natural NT Boolean functions: `f_sqfree` falls below
+(adeg = 4 < 5 at N = 10 because density 6/pi^2 is far from the
+worst-case 1/2), `f_sqfree3` exceeds (adeg = 4 > 3 at N = 6, 6 > 5
+at N = 10), and density-matched PRF falls below. The universality is
+real but smaller in scope than the original framing suggested. See
+`experiments/constructions/n_over_2_universality_class/` and
+EDGES.md E2.7 cross-reference.
 
 ---
 
@@ -458,6 +488,23 @@ The "+2" is **the entire signal** distinguishing chi_P from random
 > Edge value: minimal but non-trivial. The "+2" is the only piece of
 > exploitable algebraic structure in the matrix, and it is exactly what
 > makes pi(x) special.
+
+**S71 indicator analogue + structural unification (C5):**
+For the **indicator** chi_P (vs the counting function pi(x) used here),
+the analogous balanced split gives `rank(M_chi_P) = 2^{N/2-1} + 1`
+exactly (verified N=6,8,10,12,14). The "+1 vs +2" is not a discrepancy:
+M_pi adds a constant column from the cumulative integral, M_chi_P does
+not. Both are special cases of the **column-zero density bound**:
+`rank(M_f^{balanced}) <= (1 - rho_f) * 2^{N/2}`, where rho_f is the
+fraction of lower-half indices b for which `f(a*2^{N/2} + b) = 0`
+for every row a. For chi_P, even-b columns are zero (x even => x
+non-prime for x > 2), so rho_chi_P = 1/2; for sqfree and mu_pos,
+b mod 4 == 0 columns are zero (4 | x => x non-squarefree), so
+rho = 1/4 and rank = 3 * 2^{N/2-1} exactly; for lam_pos, no column is
+forced to zero (lambda(4) = +1), so rho = 0 and rank = 2^{N/2}. This
+is a **structural unification** with E2.8's 25-35% tensor rank
+deficiency: same column-zero principle, different complexity measure.
+See `experiments/constructions/n_over_2_universality_class/`.
 
 ### E2.8 — chi_P is 25-35% simpler than random in tensor rank       [EVS L]
 
@@ -1643,7 +1690,7 @@ negative-shape × positive — and use complementary structure.
 | E2.1 (MPS bond-dim) × free-probability | OPEN | C2 |
 | E5.8 (Brandt obstructions) × E1.3 (per-bit difficulty) | OPEN | C3 |
 | E6.6 (Aggarwal binary search) × E6.8 (Dusart bracket) × E5.1 (BPSW) | OPEN | C4 |
-| E1.4 (N/2 universality) × E2.5 (multilinear poly) on non-π | OPEN | C5 |
+| E1.4 (N/2 universality) × E2.5 (multilinear poly) on non-π | BUILT (S71) | C5 — refined E1.4, unified E2.7+E2.8 by column-zero density |
 | E7.7 (three pillars) × E6.7 (HKM tradeoff) | OPEN | C6 |
 
 ### Triple-edge compositions worth scoping
