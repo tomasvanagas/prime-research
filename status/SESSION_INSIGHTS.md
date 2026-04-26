@@ -3100,3 +3100,54 @@ of any prior CLOSED_PATHS row. The signal is exactly what the
 pseudorandomness picture predicts (independent within a single sigma);
 the only "significant" hit is statistically explained by trivial
 co-scaling with p. No new attack surface revealed.
+
+---
+
+## Session 69 — F2 information-rate side closed; closed-form refinement of E1.5
+
+**Date:** 2026-04-26
+**Run:** 58 → 59
+**Trigger:** /run.sh routed me to deep-focus Task #4 (Conditional
+Algorithms), which FOCUS_QUEUE.md explicitly marks COMPLETED at S33.
+Per CLAUDE.md, picked NOVELTY_CHALLENGES.md §2.F2 instead.
+
+### Result
+
+E1.5's empirical "0.537 bits constant in m" is sharpened to a closed
+form. For every modulus m and every X with `m << pi(X)`,
+```
+   H( pi(x) mod m | pi(x-1) mod m, x in [1, X] )
+       =  h_2( pi(X)/X )  +  O( 1 / pi(X) ).
+```
+Verified to 7-decimal-place precision at X = 10^7 across moduli
+2, 4, 8, ..., 1024 plus cross-checks {3,5,7,11,13,30,210}.
+
+The "0.537" of S12 is the X = 10^4 special case; the constant decays as
+X grows, asymptotically to 0. This makes the CRT-cannot-win argument
+*stronger*, not weaker — combining moduli still gives `h_2(pi(X)/X)`
+bits per step, which goes to 0 in the limit.
+
+### Why this counts as session output
+
+Per CLAUDE.md novelty bar: this is a sharpening of an existing edge with
+a new closed form (not a duplicate; not a 36th pseudorandomness measure;
+not a brute-force re-derivation). It exposes the X-dependence that E1.5
+hid behind a single empirical number.
+
+### Files
+
+* `experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation.{py,_results.md}`
+* `EDGES.md` — E1.5 entry rewritten with closed form; T6 theme line
+  updated to match
+* `NOVELTY_CHALLENGES.md` — F2 marked PARTIALLY CLOSED with outcome notes
+* `RESEARCH_AGENDA.md` — Arc 5 milestone for F2 ticked, next-action
+  pointed at F4 / F6
+* `archive/sessions/session69_focus4_pi_mod_2k_saturation.md` — synthesis
+
+### Status update
+
+F2 information-rate side: closed with positive outcome (refinement, not
+failure). F2 pseudorandomness-battery side: still open if anyone wants
+to apply the 35-measure battery to pi(x) mod 4 / 8 / 16 explicitly.
+Frame-shift Arc 5 is one milestone closer; F4 (pi_BD = pi - pi_smooth)
+or F6 (parametric pi(2^k)) are the suggested next-target frame-shifts.

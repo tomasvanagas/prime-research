@@ -51,10 +51,13 @@ T5. **Three-pillars constraint (E7.7):** any new informationally-complete
     candidate intermediate-quantity families have been individually
     closed against this constraint (S15, S16).
 
-T6. **CRT-mod-m information rate (E1.5):** every modulus m gives
-    H(pi(x) mod m | pi(x-1) mod m) = 0.537 bits constant. Combining
-    moduli adds linearly, never multiplicatively — CRT-style chains
-    cannot win.
+T6. **CRT-mod-m information rate (E1.5):** every modulus m << pi(X)
+    gives `H(pi(x) mod m | pi(x-1) mod m) = h_2(pi(X)/X) + O(1/pi(X))`,
+    independent of m (S69 closed-form sharpening of S12's "0.537 bits";
+    that constant is the X = 10^4 special case). Combining moduli adds
+    linearly, never multiplicatively — CRT-style chains cannot win.
+    The asymptotic per-step rate goes to 0 as X to infinity, since
+    pi(X)/X to 0.
 
 ---
 
@@ -99,28 +102,48 @@ N-bit p(n), the hard region is bits 0.6·N .. N (asymptotic).
 > is enough — you don't have to break the whole barrier, only the first
 > bit past the cliff.
 
-### E1.5 — pi(x) mod m has invariant conditional entropy 0.537 bits  [EVS H]
+### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
 
 `proven/complexity.md` §"Circuit Complexity"; S12;
-`proven/circuit_size_barrier.md`.
+`proven/circuit_size_barrier.md`;
+**closed-form sharpening:** `experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation_results.md` (S69, F2).
 
-For every modulus m tested in {2, 3, ..., 30}:
-
+**Sharpened statement.** For every modulus m and every X with
+`m <= pi(X)/100`,
 ```
-   H( pi(x) mod m | pi(x-1) mod m )  =  0.537 bits  (constant in m)
+   H( pi(x) mod m | pi(x-1) mod m, x in [1, X] )
+       =  h_2( pi(X)/X )  +  O( 1 / pi(X) )
 ```
+where `h_2(p) = -p log_2 p - (1-p) log_2 (1-p)` is the binary entropy.
+The "0.537 bits" of S12 is specifically the value at X = 10^4 (where
+`h_2(pi(10^4)/10^4) = h_2(0.1229) = 0.5376`); the constant tracks prime
+density and **decays as X grows**:
 
-A universal constant 0.537 bits / step — the SAME value for every modulus.
-This is the bit-rate at which pi(x) mod m carries new information per
-unit increment of x.
+| X | pi(X)/X | h_2(pi(X)/X) |
+|---|---------|---------------|
+| 10^4 | 0.1229  | 0.5376  |
+| 10^5 | 0.0959  | 0.4559  |
+| 10^6 | 0.0785  | 0.3969  |
+| 10^7 | 0.0665  | 0.3526  |
 
-> Why this is an edge: the constancy across m proves that **CRT
-> reconstruction cannot win** — knowing pi(x) mod m for any m gives
-> exactly 0.537 bits of new info per step, so combining k moduli scales
-> linearly (not multiplicatively) and offers no compression. It also
-> says pi(x) mod 2 is *exactly as hard* as pi(x) mod m for any other m.
-> The number itself, 0.537 ≈ ln(2) / log(2) × const, is a quantitative
-> signature of the 1/log(x) prime density.
+Verified to 7-decimal precision at X = 10^7 across moduli m in {2..1024}
+(powers of 2 plus cross-checks). For m approaching pi(X), the conditional
+entropy collapses below the closed form (the state pi(x-1) mod m starts
+encoding x itself).
+
+**Asymptotic implication.** As X to infinity, `pi(X)/X to 0` and hence
+the per-step rate `h_2(pi(X)/X) to 0`. The information rate of pi(x) mod
+m **vanishes** in the limit, regardless of m.
+
+> Why this is an edge: the constancy across m (in regime m << pi(X))
+> proves that **CRT reconstruction cannot win** — knowing pi(x) mod m
+> for any m gives exactly h_2(pi(X)/X) bits of new info per step, so
+> combining k moduli scales linearly (not multiplicatively) and offers
+> no compression. It also says pi(x) mod 2 is *exactly as hard* as
+> pi(x) mod m for any other m. The mechanism is closed-form: since
+> `pi(x) - pi(x-1) = 1[x prime] in {0,1}`, the conditional entropy is
+> `h_2(P[x prime]) = h_2(pi(X)/X)` whenever the prime indicator is
+> conditionally independent of the state — which holds for m << pi(X).
 
 ### E1.6 — pi(x) mod 2 bisects into two statistically-independent bits  [EVS M]
 
@@ -1599,6 +1622,62 @@ removed.
 
 ---
 
+## 12. Open composition spaces
+
+Edges are catalogued individually (§1-§7); their *interactions* are
+mostly unexplored. Compositions are the cheapest source of genuinely
+new mathematical objects at the project's current maturity. See
+`NOVELTY_CHALLENGES.md` §1 for the active composition challenges.
+
+The pair-space `EDGES.md × EDGES.md` is large (~68² ≈ 4600 entries);
+most pairs are uninteresting (e.g. composing two analytic edges from §3
+typically just stacks errors). The interesting compositions cross
+sections — algebraic × analytic, information × computational,
+negative-shape × positive — and use complementary structure.
+
+### Cross-section pair grid (which composition has been built?)
+
+| Pair | Status | Where |
+|------|--------|-------|
+| E1.6 (A⊕C₃ bisection) × E1.5 (0.537-bit invariant) | OPEN | C1 |
+| E2.1 (MPS bond-dim) × free-probability | OPEN | C2 |
+| E5.8 (Brandt obstructions) × E1.3 (per-bit difficulty) | OPEN | C3 |
+| E6.6 (Aggarwal binary search) × E6.8 (Dusart bracket) × E5.1 (BPSW) | OPEN | C4 |
+| E1.4 (N/2 universality) × E2.5 (multilinear poly) on non-π | OPEN | C5 |
+| E7.7 (three pillars) × E6.7 (HKM tradeoff) | OPEN | C6 |
+
+### Triple-edge compositions worth scoping
+
+- **E1.5 + E1.6 + E2.10** — three "modular structure" edges. Conjecture: the
+  free identity L mod 2 = x mod 2 (E2.10) extends to a *family* of free
+  identities indexed by the bisection (E1.6) at rate 0.537 bits/step (E1.5).
+  If true, this would be a single statement subsuming three edges.
+- **E2.1 + E2.7 + E2.8** — three "structural rank" edges (MPS bond-dim,
+  communication rank +2, tensor rank 25-35% below random). The ratios
+  φ(W)/W (E2.1), 1+2/2^{N/2} (E2.7), 0.65-0.75 (E2.8) might be facets of
+  a single underlying rank-deficiency invariant. Worth a unified
+  statement attempt.
+- **E5.5 + E5.6 + E5.7** — three "TC⁰ frontier" edges (formula bound
+  2^{N/2-O(1)}, nonuniform TC⁰ unconditional, #TC⁰ ⊆ NC open). Composition:
+  is there a function in nonuniform TC⁰ that requires formula-size
+  2^{N/2-O(1)} AND whose counting class falls outside NC? If so, π(x)
+  is consistent with this spec — but does the spec FORCE π(x) outside
+  uniform TC⁰?
+
+### Unexplored cross-section frontier
+
+These edges have NEVER been composed with any other edge:
+
+- E2.4 Cloitre 2025 effective analytic recurrence (× anything)
+- E3.10 Cully-Hugill-Lee improved error term (× any algorithmic edge)
+- E4.2 Lucy DP transition matrices unipotent (× spectral edges)
+- E4.7 Prime parity stream h_μ deficit 0.020 nats (× pseudorandomness battery)
+- E6.4 90/10 split in sieve update spectrum (× compression edges)
+
+Each of these is a one-session composition target.
+
+---
+
 *Compiled: 2026-04-25, scanning Sessions 1-49 (690+ closed paths).
 Extended: 2026-04-26 deep file-by-file review — added E1.7, E1.8, E2.11,
 E2.12, E3.12, E6.7, E6.8, E6.9, E7.8, E7.9 plus the finite-size DCT
@@ -1627,4 +1706,8 @@ TCC MKtP-diagonalisation is structurally welded to MKtP and does not
 extend to natural functions like π(x) mod 2). With E7.10 + E5.8,
 **Chain E is closed for both known technique families** (AKS-style and
 diagonalisation-via-meta-complexity).
+Extended: 2026-04-26 post-S67 mature-state rebalance — added §12 "Open
+composition spaces" listing the unexplored cross-section edge pairs as
+the new high-leverage direction. Active research targets are now in
+`NOVELTY_CHALLENGES.md` and long-horizon arcs in `RESEARCH_AGENDA.md`.
 This document is alive — extend it with new edges as they appear.*

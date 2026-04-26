@@ -2,6 +2,16 @@
 
 Last updated: 2026-04-26 (Session 67 + S51 FOCUS-3 closure + S49 FOCUS-4 closure)
 
+> **Note for agents:** this file maintains the canonical record of which
+> direction is *technically* still open in the polylog-π(x) frame. As of
+> S67 the answer is "circuit complexity, but with all known technique
+> families closed."
+>
+> Active research now lives in `NOVELTY_CHALLENGES.md` (composition,
+> frame-shift, Lean, synthesis targets) and `RESEARCH_AGENDA.md`
+> (multi-session arcs). Sessions should pick targets from those files,
+> not from this one — this file's content has been mined exhaustively.
+
 These are the ONLY directions not yet proven closed. Everything else has been
 tested (538+ approaches across 66 sessions) and confirmed to hit one of three
 failure modes: Circularity, Equivalence, or Information Loss.

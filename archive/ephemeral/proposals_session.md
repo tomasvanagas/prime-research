@@ -307,3 +307,279 @@ For each tested proposal:
 3. **Proposal 2 (PSLQ subsequence)** — cheap, low expected payoff.
 4. **Proposal 4 (GUE truncation)** — needs variance analysis.
 5. **Proposal 5 (theta bridge)** — too theoretical for this session.
+
+---
+
+# === SECOND PROPOSAL BATCH (same date, fresh angles) ===
+
+The prior batch above (compressed sensing on zero contribution matrix,
+PSLQ on subsequences, TT-rank, GUE truncation, theta bridge) overlaps
+heavily with what's already runnable under `experiments/proposals/`.
+The five proposals below intentionally pivot to angles that are
+**structurally distinct** from those frames, with different mathematical
+objects of attack.
+
+| # | Frame                                            | Object of attack                               | Win condition                                    |
+| - | ------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------ |
+| B1 | Hierarchical-matrix kernel compression          | The explicit-formula sum as a low-rank operator | HSS rank << #zeros for the relevant kernel slab  |
+| B2 | Reservoir-computing dynamics on delta(n) bits   | The bit-residual sequence as a chaotic signal  | ESN beats a random predictor on bit 0 of delta   |
+| B3 | Determinant-representation hunt for pi(x)       | A small auxiliary matrix M(x) with det = pi(x) | Empirical agreement on first 10^4 values         |
+| B4 | Modular-form / Hecke-trace coupling             | pi(x) as a difference of two trace formulas    | Algebraic cancellation reduces to polylog work   |
+| B5 | Self-correcting recursive halving p(n)->p(n/2)  | A recursion with provable polylog corrector    | A working recursion with measurable shrink rate  |
+
+---
+
+## Proposal B1. Hierarchical-matrix (H-matrix) compression of the explicit-formula kernel
+
+### Idea
+
+The Riemann explicit formula gives, schematically,
+    psi_0(x) = x - sum_rho x^rho/rho - log(2 pi) - (1/2) log(1 - x^{-2}).
+For x evaluated at a vector of test points {x_1, ..., x_M} this is the
+matrix-vector product [psi_0(x_i)]_i  =  K v with K_{i,k} = x_i^{rho_k}/rho_k.
+Naive cost of M evaluations using N zeros is `O(M N)`.
+
+**Compressed sensing attacks the *vector* v** (sparsity in zero basis,
+prior batch's Proposal 1). **This proposal attacks the *kernel* K itself.**
+If K admits an H-matrix / HODLR / HSS decomposition with hierarchical
+ranks r << N, then evaluating it on M new points costs `O((M+N) r log)`.
+
+The novel question: does K(x, gamma) = x^{1/2 + i gamma}/(1/2 + i gamma)
+have the **off-diagonal low-rank structure** that H-matrices exploit? The
+GUE statistics of zeros are local; H-matrices care about pair (i,k)
+"distance" |x_i - x_k| or |gamma_i - gamma_k|. The kernel oscillates in
+the second slot at rate log x, so for nearby gammas the kernel rows are
+nearly proportional --- which is exactly the H-matrix favorable case.
+
+### Pseudocode
+
+```python
+import numpy as np
+from mpmath import zetazero
+def kernel_block(x_grid, gamma_grid):
+    s = 0.5 + 1j*gamma_grid
+    return np.exp(np.log(x_grid)[:,None] * s[None,:]) / s[None,:]
+def hssranks(K, eps=1e-10):
+    n = K.shape[1]
+    out = []
+    for level in range(int(np.log2(n))):
+        m = 2**level
+        block = K[:, :m]
+        s = np.linalg.svd(block, compute_uv=False)
+        out.append(int(np.sum(s > eps*s[0])))
+    return out
+gammas = np.array([float(zetazero(k).imag) for k in range(1, 65)])
+xs = np.linspace(1e3, 1e4, 64)
+print(hssranks(kernel_block(xs, gammas)))
+```
+
+### Complexity
+
+If empirical HSS ranks are O(polylog), one-time `O(N r^2)` precomputation
+gives O(N r log N) per evaluation. **Crucial caveat:** the win is contingent
+on shrinking N from O(sqrt(x)) to polylog(x) using H-matrix-style
+hierarchical cancellation. That extra step is the conjecture.
+
+### Key conjecture
+
+The off-diagonal blocks of K(x, gamma), restricted to any fixed dyadic
+window of x and zeros up to height T, have epsilon-ranks
+O(log T  log(1/eps)).
+
+### Test for n < 10000
+
+64 test points x in [10^3, 10^4], 64 zeros, build K, compute rank-vs-block
+size curve. Plateau at O(log) -> genuine effect; linear growth -> closed.
+
+Code: `experiments/proposals/hmatrix_kernel_compression.py`.
+
+---
+
+## Proposal B2. Reservoir-computing dynamics on delta(n) bit residuals
+
+### Idea
+
+Reservoir computing (echo state networks, ESN) is the **dequantized cousin
+of recurrent quantum systems**: a fixed random recurrent network with only
+the readout layer trained. Recent work shows ESNs learn chaotic attractors
+with state size polylog in prediction horizon. Riemann zero phases are
+GUE-random but **deterministic** --- they *are* a chaotic dynamical system
+in the Hilbert-Polya picture.
+
+Train an ESN on bit-0 of delta(n) := p(n) - round(R^{-1}(n)) for n in a
+training window. Input at step n: log-features (log n, R^{-1}(n) mod 1,
+n mod q for small q). Output: bit-0 of delta(n). If the ESN beats 50% on
+held-out window, **the entropy barrier is partially broken**.
+
+Distinct from gradient-boosting attempts because the ESN has **internal
+recurrent dynamics** that hold positional memory across n -> n+1
+transitions.
+
+### Pseudocode
+
+```python
+import numpy as np
+class ESN:
+    def __init__(self, in_dim, res_dim=512, sr=0.95, sparsity=0.1):
+        self.W_in = np.random.randn(res_dim, in_dim) * 0.1
+        W = np.random.randn(res_dim, res_dim)
+        W *= (np.random.random(W.shape) < sparsity)
+        W *= sr / max(abs(np.linalg.eigvals(W)))
+        self.W = W
+        self.h = np.zeros(res_dim)
+    def step(self, u):
+        self.h = np.tanh(self.W @ self.h + self.W_in @ u)
+        return self.h
+    def fit(self, U, y):
+        H = np.array([self.step(u) for u in U])
+        self.W_out = np.linalg.lstsq(H, y, rcond=None)[0]
+```
+
+### Complexity
+
+Training `O(T res_dim^2)`, inference `O(res_dim^2)`. Polylog inference if
+res_dim is polylog.
+
+### Key conjecture
+
+There exists a finite-dimensional dynamical system whose orbit, projected
+to its first coordinate, agrees with bit-0 of delta(n).
+
+### Test for n < 10000
+
+Train on n in [2000, 7000], evaluate on n in [7001, 10000]. Win = >2%
+above majority-class baseline.
+
+Code: `experiments/proposals/esn_delta_bits.py`.
+
+---
+
+## Proposal B3. Determinant-representation hunt for pi(x)
+
+### Idea
+
+Many counting problems admit determinant representations: spanning trees
+(matrix-tree), tilings (Kasteleyn), non-intersecting paths (LGV),
+constructible-sheaf characteristics (Frobenius). **Hypothesis to test**:
+there exists a polynomial-size matrix M(x) with polylog-time computable
+entries such that det M(x) = pi(x) (or a simple algebraic variant).
+
+Empirical attack: for k=2, 3, ..., parameterise M(x) by k^2 functions
+chosen from a feature library {1, log x, R^{-1}(x), li(x), x^{1/2},
+x mod q, ...}. Score by L2 error of det M(x) - pi(x) over x = 10..10^4.
+
+### Pseudocode
+
+```python
+import itertools, numpy as np
+def hunt(k=2, F_lib=...):
+    best = (np.inf, None)
+    for choice in itertools.product(F_lib, repeat=k*k):
+        M = build(choice)  # shape (k, k, T)
+        d = np.array([np.linalg.det(M[..., t]) for t in range(T)])
+        err = np.linalg.norm(d - pi_target)
+        if err < best[0]:
+            best = (err, choice)
+    return best
+```
+
+### Complexity
+
+If a positive hit at small k exists, det M(x) is `O(k^omega)` = polylog,
+giving directly an O(polylog) algorithm.
+
+### Key conjecture
+
+pi(x) is in the algebraic-circuit class VP rather than VNP --- i.e.,
+expressible by polynomial-size determinants over polylog-computable entries.
+
+### Test for n < 10000
+
+k=2 with 12-feature library = 12^4 = 20736 candidates. Top-10 by L2
+error vs pi on 1000 evaluation points.
+
+Code: `experiments/proposals/det_representation_hunt.py`.
+
+---
+
+## Proposal B4. Modular-form / Hecke-trace coupling (sketch only)
+
+### Idea
+
+For weight-2 newform f on Gamma_0(N), Eichler-Selberg gives
+sum_{p<=x} g(a_p(f)) in time *independent of x* for polynomial g.
+If we find f and g such that g(a_p) = 1 for all p, then pi(x) inherits
+fast evaluation. Hard part: a_p has Sato-Tate distribution; no fixed
+polynomial g equals 1 on it. A *family* of forms {f_N} with growing
+levels gives more spectrum to play with --- a CRT-style combination
+might work.
+
+This is an organising sketch, not yet a runnable experiment. The "build a
+polynomial that equals 1 on Hecke spectra" is itself research-grade.
+
+### Test for n < 10000
+
+Pick N = 11 (smallest level with cusp form), enumerate a_p for p < 10^4
+(can use mpmath / sage), fit polynomials g of deg <= 4 to minimize
+sum |g(a_p) - 1|. If best fit error stays bounded as p grows -> open;
+diverges -> closed.
+
+Code: `experiments/proposals/hecke_trace_sketch.py` (data-only this session).
+
+---
+
+## Proposal B5. Self-correcting recursive halving p(n) -> p(n/2)
+
+### Idea
+
+Define theta(n) := p(n) - 2 p(n/2). By PNT, the leading O(log n) "smooth"
+terms in p(n) and 2 p(n/2) cancel (modulo a `n log 2` shift). The remaining
+*chaotic* part of theta might be **smaller than the chaotic part of p(n)
+alone** because of GUE phase coherence between near-multiplicative scales.
+If theta has a polylog-predictable structure, recurse: depth log n levels,
+polylog work each, total polylog^2.
+
+### Pseudocode
+
+```python
+def p_via_recursion(n, base_table):
+    if n < len(base_table):
+        return base_table[n]
+    a = p_via_recursion(n//2, base_table)
+    theta_est = theta_predictor(n, a)
+    cand = 2*a + theta_est
+    return correct_locally(cand, n)  # local prime walk
+```
+
+### Complexity
+
+If theta_predictor is `O(log n)` and correct_locally shrinks search to
+`O(log^c n)`, total is `O(log^{c+1} n)`.
+
+### Key conjecture
+
+theta(n) := p(n) - 2 p(n/2) is *more predictable* than p(n) directly,
+because the leading 50% of digits cancel and the remaining 50% partially
+re-cancel via near-multiplicative GUE coherence.
+
+### Test for n < 10000
+
+Compute theta(n) for n = 100, 200, ..., 10000. Fit theta(n) - n log 2
+to polynomial in log n. If residual / sqrt(n) -> 0: open, if not: closed
+(reduces to direct estimation problem).
+
+Code: `experiments/proposals/halving_recursion.py`.
+
+---
+
+## Honest priors
+
+| Proposal      | Prior of new info | Risk of duplicate-shape          |
+| ------------- | ----------------- | -------------------------------- |
+| B1 H-matrix   | medium-high       | low (kernel-side, not signal)    |
+| B2 Reservoir  | low-medium        | medium (ML-on-residuals family)  |
+| B3 Det-hunt   | medium            | low (algebraic-circuit family)   |
+| B4 Modular    | low (sketch only) | medium (Hecke family)            |
+| B5 Halving    | medium            | low (recursion is fresh)         |
+
+I will run B1, B2, B3, B5 as live experiments and leave B4 as a sketch.
