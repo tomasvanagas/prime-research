@@ -2,7 +2,7 @@
 
 **Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
 **Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
-**Build status:** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). The general-case `sorry` is unchanged.)
+**Build status (S137):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
 **No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
 
 ## What this file formalises
@@ -48,6 +48,30 @@ The proof is decomposed into 8 declarations:
 | `chiP_eleven_eq_one` *(S107)*  | `chiP 11 = 1`                                  | **done** |
 | `exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1` *(S107)* | W=4 corner exhibit (no Bertrand) | **done** |
 | `mps_bond_dim_W_eq_4_d_eq_j_plus_1` *(S107)* | W=4 corner case `rank = 3` (sorry-free) | **done** |
+| `chiP_nineteen_eq_one` *(S117)*       | `chiP 19 = 1`                            | **done** |
+| `chiP_twenty_three_eq_one` *(S117)*   | `chiP 23 = 1`                            | **done** |
+| `exists_invertible_submatrix_W_eq_5_d_eq_j_plus_1` *(S117)* | W=5 corner exhibit (no Bertrand, BlockTriangular route) | **done** |
+| `mps_bond_dim_W_eq_5_d_eq_j_plus_1` *(S117)* | W=5 corner case `rank = 5` (sorry-free) | **done** |
+| `chiP_thirty_one_eq_one` *(S122)*     | `chiP 31 = 1`                            | **done** |
+| `exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1` *(S122)* | W=6 corner exhibit (no Bertrand, det_fin_three with row choice {0,1,5}) | **done** |
+| `mps_bond_dim_W_eq_6_d_eq_j_plus_1` *(S122)* | W=6 corner case `rank = 3` (sorry-free) | **done** |
+| `chiP_seventeen_eq_one` *(S128)*       | `chiP 17 = 1`                            | **done** |
+| `chiP_thirty_seven_eq_one` *(S128)*    | `chiP 37 = 1`                            | **done** |
+| `exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1` *(S128)* | W=8 corner exhibit (no Bertrand, BlockTriangular route) | **done** |
+| `mps_bond_dim_W_eq_8_d_eq_j_plus_1` *(S128)* | W=8 corner case `rank = 5` (sorry-free) | **done** |
+| `chiP_fifty_nine_eq_one` *(S129)*           | `chiP 59 = 1`                            | **done** |
+| `chiP_eighty_nine_eq_one` *(S129)*          | `chiP 89 = 1`                            | **done** |
+| `chiP_one_hundred_nine_eq_one` *(S129)*     | `chiP 109 = 1`                           | **done** |
+| `chiP_one_hundred_twenty_seven_eq_one` *(S129)* | `chiP 127 = 1`                       | **done** |
+| `exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1` *(S129)* | W=12 corner exhibit (4 non-leading rows + BlockTriangular route) | **done** |
+| `mps_bond_dim_W_eq_12_d_eq_j_plus_1` *(S129)* | W=12 corner case `rank = 5` (sorry-free) | **done** |
+| `chiP_twenty_nine_eq_one` *(S137)*               | `chiP 29 = 1`                            | **done** |
+| `chiP_forty_three_eq_one` *(S137)*               | `chiP 43 = 1`                            | **done** |
+| `chiP_one_hundred_seventy_nine_eq_one` *(S137)*  | `chiP 179 = 1`                           | **done** |
+| `chiP_two_hundred_eleven_eq_one` *(S137)*        | `chiP 211 = 1`                           | **done** |
+| `chiP_two_hundred_ninety_three_eq_one` *(S137)*  | `chiP 293 = 1`                           | **done** |
+| `exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1` *(S137)* | W=18 corner exhibit (R=7, BlockTriangular route, mixed leading/non-leading rows) | **done** |
+| `mps_bond_dim_W_eq_18_d_eq_j_plus_1` *(S137)* | W=18 corner case `rank = 7` (sorry-free) | **done** |
 
 (Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
 `Nat.le_antisymm` of the auxiliary lemmas. As of S83, `lower_bound` is
@@ -220,6 +244,298 @@ the prime-density argument from the deep portion.
   instance over a wheel `W ≥ 3`.** Pattern is reusable: any `W` with
   an explicit invertible `(R(W) × R(W))` chiP-submatrix in the first
   `R(W)` rows of the `d − j = 1` slab admits the same closure.
+
+* **Route A''''' (orthogonal corner, `W = 5`). DONE S117.**
+  Closed `exists_invertible_submatrix` for `(W = 5, d = j + 1)` via four
+  new declarations: `chiP_nineteen_eq_one`, `chiP_twenty_three_eq_one`,
+  `exists_invertible_submatrix_W_eq_5_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5`
+  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+  `propext, Classical.choice, Quot.sound`. The matrix is `5^j × 5`; we
+  pick **all five columns** (the dead column at `k = 4` contributes the
+  diagonal entry `chiP 5 = 1` which bumps rank from `4 = φ(5)` to `5`)
+  and rows `{0, 1, 2, 3, 4}` (available since `5^j ≥ 5` for `j ≥ 1`).
+
+  **First non-`det_fin_three` proof.** Mathlib has `Matrix.det_fin_three`
+  but no `det_fin_four` / `det_fin_five`. Instead, `ρ` and `σ` are chosen
+  as *permutations* such that the `5 × 5` submatrix is upper triangular
+  with `1` on the diagonal:
+  ```
+     ⎡ chiP  5, chiP  4, chiP  1, chiP  2, chiP  3 ⎤   ⎡ 1, 0, 0, 1, 1 ⎤
+     ⎢ chiP 20, chiP 19, chiP 16, chiP 17, chiP 18 ⎥   ⎢ 0, 1, 0, 1, 0 ⎥
+     ⎢ chiP 15, chiP 14, chiP 11, chiP 12, chiP 13 ⎥ = ⎢ 0, 0, 1, 0, 1 ⎥.
+     ⎢ chiP 10, chiP  9, chiP  6, chiP  7, chiP  8 ⎥   ⎢ 0, 0, 0, 1, 0 ⎥
+     ⎣ chiP 25, chiP 24, chiP 21, chiP 22, chiP 23 ⎦   ⎣ 0, 0, 0, 0, 1 ⎦
+  ```
+  Concretely `ρ : Fin 5 → Fin (5^j)` permutes original rows to
+  `(0, 3, 2, 1, 4)` and `σ : Fin 5 → Fin (5^((j+1)-j))` permutes original
+  columns to `(4, 3, 0, 1, 2)`. The diagonal hits the five primes
+  `{5, 19, 11, 7, 23}` and the lower triangle hits the ten composites
+  `{20, 15, 14, 10, 9, 6, 25, 24, 21, 22}` — all in `[1, 25]`.
+
+  **Determinant via `det_of_upperTriangular`.** The proof:
+  - Pre-compute the 5 diagonal entries (each = 1) and the 10 below-
+    diagonal entries (each = 0) via 15 `change → rw [h_sub] → norm_num →
+    chiP_..._eq_one / simp [chiP, ¬ Nat.Prime _]` steps.
+  - Establish `(submatrix Mρ Mσ).BlockTriangular id` by `intro i k h_lt`
+    and `fin_cases i <;> fin_cases k`. The 15 vacuous cases (where
+    `id k < id i` is false) close via
+    `simp [id_eq, Fin.lt_def] at h_lt` then
+    `exact absurd h_lt (by decide)`. The 10 below-diagonal cases reduce
+    to `exact hLij`.
+  - Apply `Matrix.det_of_upperTriangular` to rewrite the determinant as
+    `∏ i, M i i`, then `Fin.prod_univ_five` to expand to a 5-term product.
+    Substitute the 5 diagonal entries and finish with `norm_num`.
+
+  Uses `Nat.prime_two, prime_three, prime_five, prime_seven, prime_eleven,
+  prime_nineteen, prime_twenty_three` (via the `chiP` helpers) and
+  decidability of non-primality for `1, 4, 6, 9, 10, 14, 15, 20, 21, 22,
+  24, 25`. ~250 Lean lines. **Third unconditional `mps_bond_dim` instance
+  over a wheel `W ≥ 3`; the first instance with `R = W`** (so all `W`
+  columns must be retained); **the first instance using
+  `det_of_upperTriangular`** rather than a `det_fin_n` formula. The
+  technique scales to every wheel `W` for which we can exhibit a
+  permutation of `Fin W` that triangularises the slab `chiP 1 .. chiP W^2`
+  — the existence of such a permutation is a finite check at each `W`,
+  not a number-theoretic fact.
+
+  **Why no `upper_bound` here.** Unlike W=4 (where `rank_le_width`
+  gives only `rank ≤ 4`, not the sharp `≤ 3`), at W=5 the column count
+  `5^((j+1)-j) = 5` exactly equals `R = min(5^j, 5) = 5`, so
+  `rank_le_width` directly yields the sharp upper bound.
+
+* **Route A'''''' (orthogonal corner, `W = 6`). DONE S122.**
+  Closed `exists_invertible_submatrix` for `(W = 6, d = j + 1)` via three
+  new declarations: `chiP_thirty_one_eq_one`,
+  `exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3`
+  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+  `propext, Classical.choice, Quot.sound`. The matrix has `6^(d-j) =
+  6` columns; live columns are `{0, 4}` (residues `1, 5 (mod 6)`), so
+  `R = φ(6) + 1 = 3`. We pick the two live columns plus dead column
+  `1` (which contributes `chiP 2 = 1` at row `0`).
+
+  **Row choice subtlety (the key novelty over W ∈ {2, 3, 4, 5}).** The
+  first three rows of the `6 × 6` slab are *not* linearly independent:
+  rows `1, 2, 3` (corresponding to `chiP 7..12, 13..18, 19..24`) all
+  have the identical support pattern `(1, 0, 0, 0, 1, 0)`, since each
+  of those windows contains exactly two primes at residues `1, 5 (mod 6)`.
+  We therefore pick rows `{0, 1, 5}` — the row-`5` window `chiP 31..36`
+  is `(1, 0, 0, 0, 0, 0)` because `31` is the only prime in that window
+  and it sits at residue `1 (mod 6)` (column `0`). With `ρ ↦ (0, 1, 5)`
+  and `σ ↦ (0, 1, 4)` the `3 × 3` submatrix is
+  ```
+     ⎡ chiP  1, chiP  2, chiP  5 ⎤   ⎡ 0, 1, 1 ⎤
+     ⎢ chiP  7, chiP  8, chiP 11 ⎥ = ⎢ 1, 0, 1 ⎥
+     ⎣ chiP 31, chiP 32, chiP 35 ⎦   ⎣ 1, 0, 0 ⎦
+  ```
+  of determinant `+1` (computed via `Matrix.det_fin_three`); the unit
+  witness is `isUnit_one`. **First orthogonal-corner instance where
+  the working row set is not `{0, 1, ..., R-1}`** — every prior corner
+  (W ∈ {2, 3, 4, 5}) used the leading rows.
+
+  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 6`, so
+  we cite the general `upper_bound`, evaluating to `φ(6) · 6^0 + 1 =
+  3` (same pattern as W=4).
+
+  Uses `Nat.prime_two, prime_three, prime_five, prime_seven,
+  prime_eleven, prime_thirty_one` (last new at S122, all
+  `decide`-checkable) and decidability of non-primality for `1, 8,
+  32, 35`. ~190 Lean lines. **Sixth unconditional `mps_bond_dim`
+  instance; fourth instance over a wheel `W ≥ 3`.** Sets the template
+  for higher-`W` corners where the first `R` rows are LD: identify
+  the row pattern of the `W × W` slab and pick a row-set spanning all
+  three live-column-residues plus a single dead column.
+
+* **Route A''''''' (orthogonal corner, `W = 8`). DONE S128.**
+  Closed `exists_invertible_submatrix` for `(W = 8, d = j + 1)` via
+  four new declarations: `chiP_seventeen_eq_one`,
+  `chiP_thirty_seven_eq_one`,
+  `exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5`
+  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+  `propext, Classical.choice, Quot.sound`. The matrix is `8^j × 8`;
+  live columns are `{0, 2, 4, 6}` (residues `1, 3, 5, 7 (mod 8)`,
+  i.e. `k + 1` odd), so `R = φ(8) + 1 = 5`. We pick the four live
+  columns plus dead column `1` (the unique dead column whose `chiP`
+  at row 0 is non-zero, since `chiP 2 = 1`).
+
+  **Triangulation via permutation (BlockTriangular route, à la W=5).**
+  The first 5 rows `{0, 1, 2, 3, 4}` of the `8 × 8` slab restricted to
+  cols `{0, 1, 2, 4, 6}` are linearly independent. The permutation
+  `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` triangularises the
+  `5 × 5` submatrix:
+  ```
+     ⎡ chiP 17, chiP 18, chiP 19, chiP 23, chiP 21 ⎤   ⎡ 1, 0, 1, 1, 0 ⎤
+     ⎢ chiP  1, chiP  2, chiP  3, chiP  7, chiP  5 ⎥   ⎢ 0, 1, 1, 1, 1 ⎥
+     ⎢ chiP  9, chiP 10, chiP 11, chiP 15, chiP 13 ⎥ = ⎢ 0, 0, 1, 0, 1 ⎥.
+     ⎢ chiP 25, chiP 26, chiP 27, chiP 31, chiP 29 ⎥   ⎢ 0, 0, 0, 1, 1 ⎥
+     ⎣ chiP 33, chiP 34, chiP 35, chiP 39, chiP 37 ⎦   ⎣ 0, 0, 0, 0, 1 ⎦
+  ```
+  with diagonal primes `{17, 2, 11, 31, 37}`.
+
+  **Determinant via `det_of_upperTriangular`.** Same skeleton as W=5:
+  pre-compute the 5 diagonal entries (each `= 1`) and the 10 below-
+  diagonal entries (each `= 0`); establish `BlockTriangular id` by
+  `fin_cases i <;> fin_cases k`; apply `det_of_upperTriangular`,
+  `Fin.prod_univ_five`, then `norm_num`.
+
+  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 8`,
+  not the sharp `rank ≤ 5 = φ(8) + 1`. We cite the general
+  `upper_bound`, which evaluates to `φ(8) · 8^0 + 1 = 4 · 1 + 1 = 5`
+  in this corner (same pattern as W=4 and W=6).
+
+  Uses `Nat.prime_two, prime_eleven, prime_thirty_one` (existing) and
+  `Nat.prime_seventeen, prime_thirty_seven` (new at S128, all
+  `decide`-checkable), plus decidability of non-primality for
+  `1, 9, 10, 25, 26, 27, 33, 34, 35, 39`. ~280 Lean lines.
+  **Seventh unconditional `mps_bond_dim` instance; fifth instance
+  over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`
+  (after W=5).** Confirms that the BlockTriangular pattern from W=5
+  scales to wheels with composite `W` and `R < W` (`R = 5` here, vs.
+  `R = W = 5` at W=5).
+
+* **Route A^{(8)} (orthogonal corner, `W = 12`). DONE S129.**
+  Closed `exists_invertible_submatrix` for `(W = 12, d = j + 1)` via
+  six new declarations: `chiP_fifty_nine_eq_one`,
+  `chiP_eighty_nine_eq_one`, `chiP_one_hundred_nine_eq_one`,
+  `chiP_one_hundred_twenty_seven_eq_one`,
+  `exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5`
+  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+  `propext, Classical.choice, Quot.sound`. The matrix is `12^j × 12`;
+  live columns are `{0, 4, 6, 10}` (residues `1, 5, 7, 11 (mod 12)`),
+  giving `φ(12) = 4` live columns. We need `R = φ(12) + 1 = 5`
+  columns total, so we add one dead column with `chiP` non-zero at
+  row 0 — two candidates exist (`k = 1` with `chiP 2 = 1` and `k = 2`
+  with `chiP 3 = 1`); we pick `k = 1`.
+
+  **Skipping `W ∈ {7, 9, 10, 11}` is structural, not bookkeeping.** All
+  four W's hit the same obstruction: NO `R × R` sub-matrix of the
+  `W × W` slab admits a triangulation with rows `< W` (which is the
+  binding constraint at `j = 1`). For W=7, the 7-prime live-col matrix
+  has all column-counts `≥ 2` (no greedy single-1 col exists). For
+  W=9, after fixing `(r0, c2)` as the unique pairing for the dead col,
+  the remaining `6 × 6` sub-matrix decomposes into two **block-
+  diagonal** `3 × 3` blocks (left rows/cols disjoint from right),
+  neither of which admits standalone upper-triangulation; closing W=9
+  needs `Matrix.det_of_blockTriangular` (multi-session new technique).
+  W=10 has all candidate row sets generating only rank 2 (the
+  multiplicity-2 residue pattern). W=11 is prime so behaves like W=7.
+
+  **Triangulation via NON-LEADING rows (W=12).** The first 5 rows
+  `{0, 1, 2, 3, 4}` of the `12 × 12` slab give linearly dependent
+  windows (row 1 and row 3 have identical support pattern at the chosen
+  cols). Non-leading rows `{4, 7, 9, 10}` each contribute a distinct
+  prime at a distinct column, breaking the linear-dependence. The
+  permutation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)`
+  triangularises the `5 × 5` submatrix:
+  ```
+     ⎡ chiP   2, chiP   1, chiP   7, chiP  11, chiP   5 ⎤   ⎡ 1, 0, 1, 1, 1 ⎤
+     ⎢ chiP 110, chiP 109, chiP 115, chiP 119, chiP 113 ⎥   ⎢ 0, 1, 0, 0, 1 ⎥
+     ⎢ chiP 122, chiP 121, chiP 127, chiP 131, chiP 125 ⎥ = ⎢ 0, 0, 1, 1, 0 ⎥.
+     ⎢ chiP  50, chiP  49, chiP  55, chiP  59, chiP  53 ⎥   ⎢ 0, 0, 0, 1, 1 ⎥
+     ⎣ chiP  86, chiP  85, chiP  91, chiP  95, chiP  89 ⎦   ⎣ 0, 0, 0, 0, 1 ⎦
+  ```
+  with diagonal primes `{2, 109, 127, 59, 89}` and below-diagonal
+  composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`.
+
+  **Determinant via `det_of_upperTriangular`.** Same skeleton as W=5
+  and W=8: pre-compute the 5 diagonal entries (each `= 1`) and the 10
+  below-diagonal entries (each `= 0`); establish `BlockTriangular id`
+  by `fin_cases i <;> fin_cases k`; apply `det_of_upperTriangular`,
+  `Fin.prod_univ_five`, then `norm_num`.
+
+  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 12`,
+  not the sharp `rank ≤ 5 = φ(12) + 1`. We cite the general
+  `upper_bound`, which evaluates to `φ(12) · 12^0 + 1 = 4 · 1 + 1 = 5`
+  (same pattern as W=4, W=6, W=8).
+
+  Uses `Nat.prime_two` (existing) and four new `chiP_X_eq_one` helpers
+  for `X ∈ {59, 89, 109, 127}` (all `decide`-checkable), plus
+  decidability of non-primality for
+  `49, 50, 55, 85, 86, 91, 95, 110, 121, 122`. ~370 Lean lines.
+  **Eighth unconditional `mps_bond_dim` instance; sixth instance
+  over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`
+  (after W=5 and W=8).** **First instance using FOUR non-leading rows**
+  — extends S122's W=6 single-non-leading-row trick (rows `{0, 1, 5}`)
+  to the maximally non-leading regime where only row `0` is leading.
+
+* **Route A^{(9)} (orthogonal corner, `W = 18`). DONE S137.**
+  Closed `exists_invertible_submatrix` for `(W = 18, d = j + 1)` via
+  six new declarations: `chiP_twenty_nine_eq_one`,
+  `chiP_forty_three_eq_one`, `chiP_one_hundred_seventy_nine_eq_one`,
+  `chiP_two_hundred_eleven_eq_one`, `chiP_two_hundred_ninety_three_eq_one`,
+  `exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7`
+  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+  `propext, Classical.choice, Quot.sound`. The matrix is `18^j × 18`;
+  live columns are `{0, 4, 6, 10, 12, 16}` (residues `1, 5, 7, 11, 13, 17
+  (mod 18)`), giving `φ(18) = 6` live columns. We need `R = 7`, so we add
+  one dead column with `chiP` non-zero — two candidates exist (`k = 1`
+  with `chiP 2 = 1` and `k = 2` with `chiP 3 = 1`); we pick `k = 1`.
+
+  **Triangulation via mixed leading/non-leading rows (W=18).**
+  The leading rows `{0, 1, 2, 3, 4, 5, 6}` of the 18×18 slab admit no
+  triangulation; rows `2` and `5` have identical support at the 7 chosen
+  columns. Picking rows `{0, 1, 2, 6, 9, 11, 16}` works — in particular
+  rows `9, 11, 16` contribute primes `179, 211, 293` at distinct columns
+  while the leading rows `0, 1, 2, 6` cover the other four diagonal
+  primes `{2, 29, 43, 109}`. Permutation
+  `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)`
+  triangularises the `7 × 7` submatrix:
+  ```
+     ⎡ chiP   2, chiP   7, chiP  17, chiP  11, chiP  13, chiP   1, chiP   5 ⎤   ⎡ 1, 1, 1, 1, 1, 0, 1 ⎤
+     ⎢ chiP  38, chiP  43, chiP  53, chiP  47, chiP  49, chiP  37, chiP  41 ⎥   ⎢ 0, 1, 1, 1, 0, 1, 1 ⎥
+     ⎢ chiP 164, chiP 169, chiP 179, chiP 173, chiP 175, chiP 163, chiP 167 ⎥   ⎢ 0, 0, 1, 1, 0, 1, 1 ⎥
+     ⎢ chiP  20, chiP  25, chiP  35, chiP  29, chiP  31, chiP  19, chiP  23 ⎥ = ⎢ 0, 0, 0, 1, 1, 1, 1 ⎥.
+     ⎢ chiP 200, chiP 205, chiP 215, chiP 209, chiP 211, chiP 199, chiP 203 ⎥   ⎢ 0, 0, 0, 0, 1, 1, 0 ⎥
+     ⎢ chiP 110, chiP 115, chiP 125, chiP 119, chiP 121, chiP 109, chiP 113 ⎥   ⎢ 0, 0, 0, 0, 0, 1, 1 ⎥
+     ⎣ chiP 290, chiP 295, chiP 305, chiP 299, chiP 301, chiP 289, chiP 293 ⎦   ⎣ 0, 0, 0, 0, 0, 0, 1 ⎦
+  ```
+  with diagonal primes `{2, 43, 179, 29, 211, 109, 293}` and below-
+  diagonal composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164,
+  169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`.
+
+  **Determinant via `det_of_upperTriangular`.** Same skeleton as W=5,
+  W=8, W=12: pre-compute the 7 diagonal entries (each `= 1`) and the
+  21 below-diagonal entries (each `= 0`); establish `BlockTriangular id`
+  by `fin_cases i <;> fin_cases k`; apply `det_of_upperTriangular`,
+  `Fin.prod_univ_seven`, then `norm_num`.
+
+  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 18`,
+  not the sharp `rank ≤ 7 = φ(18) + 1`. We cite the general
+  `upper_bound`, which evaluates to `φ(18) · 18^0 + 1 = 6 · 1 + 1 = 7`
+  (same pattern as W=4, W=6, W=8, W=12).
+
+  **Recursion-depth lesson.** The five new prime helpers (29, 43, 179,
+  211, 293) and the not-prime helpers for composites ≥ 150 cannot use
+  `decide` — they hit Lean's `maxRecDepth`. Switching to `norm_num`
+  resolves this; this is the file's first use of `norm_num` for
+  primality (existing helpers up to W=12 stayed under the limit at
+  `decide`).
+
+  Uses `Nat.prime_two` (existing) and five new `chiP_X_eq_one` helpers
+  for `X ∈ {29, 43, 179, 211, 293}` (all `norm_num`-checkable; `decide`
+  hits `maxRecDepth` for the largest two), plus `chiP_one_hundred_nine_eq_one`
+  (existing from S129). ~520 Lean lines (the largest single-corner block
+  in the file). **Ninth unconditional `mps_bond_dim` instance; seventh
+  instance over a wheel `W ≥ 3`; fourth instance using
+  `det_of_upperTriangular` (after W=5, W=8, W=12).** **First instance
+  with `R = 7`.**
+
+  **Why W=14 is structurally obstructed (negative shape edge).**
+  Like W ∈ {7, 9, 10, 11}, W=14 cannot be closed by leading-row
+  triangulation. Concretely: the 14×14 W=14 j=1 slab has rank 7 (so
+  `mps_bond_dim` holds), but exhaustive search over column permutations
+  + greedy row selection within `[0, 14)` finds zero upper-triangulations.
+  The obstruction: rows 2 and 5 of the W=14 slab have identical support
+  pattern `(1, 1, 0, 1, 0, 1)` at cols `{0, 2, 4, 8, 10, 12}` (cf. the
+  primes `29, 31, 37, 41` resp. `71, 73, 79, 83`); any 7-row set must
+  include only one of them, and the remaining 13-row pool plus 1-row
+  redundancy structure does not admit a triangulation. The closure
+  needs `Matrix.det_of_blockTriangular` (the same multi-session technique
+  W=9 needs).
 
 * **Route A'''' (orthogonal corner, `W = 4`). DONE S107.**
   Closed `exists_invertible_submatrix` for `(W = 4, d = j + 1)` via

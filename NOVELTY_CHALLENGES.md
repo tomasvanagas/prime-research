@@ -130,13 +130,98 @@ VR-PH is O(M^3). See
 
 **Successor challenges (proposed in S96):**
 
-**§D2.a — PH of W=210 W-tricked normalised gaps.** The W-trick at
-W = 210 restores Gowers uniformity at U^2 to within 0.1% (E2.13).
-Test whether W-tricking the gap sequence (primes coprime to 210 in a
-single residue class, re-normalised) erases the T0/T1 deficit. If
-yes, E2.17 is exactly E2.13 in topological clothes. If no, PH
-detects an obstruction beyond singular-series cancellation. Cost:
-1 session.
+**§D2.a — CLOSED (S117, mode E, B-grade refinement of E2.17).**
+W=210 W-trick on prime-gap sequence: filter to `q ≡ b (mod 210)` for
+b ∈ {1, 11, 13}, Cramér-normalise as `x_n = g_n / (φ(W) log q_n)`,
+re-run Takens+ripser PH. **Outcome: F_a holds for the serial-
+correlation component.** z(W-tricked PRIMES; B2)_T0 = −1.99 / T1 =
+−0.67 (M=1000, d=3, x≈10⁶, three residues pooled), versus S96
+unconditioned z(B2)_T0 = −7.45 / T1 = −4.05 — collapse by 3.7×–6×
+across all (M, d, x) cells tested. At x ≈ 5·10⁶ even cleaner:
+|z(B2)| ≤ 1 on both summaries. The B1 (IID Exp(1)) deficit is
+preserved/amplified because the W-tricked gap MARGINAL is non-Exp(1)
+(gaps are multiples of W, giving a discrete spectrum). **E2.17
+decomposes** as serial-correlation (HL k-tuple) + marginal-
+distribution (gap-quantisation) components: W-trick kills the first
+and structurally amplifies the second. **E2.17 refined inline** —
+sixth leg of the W-trick HL-fingerprint family alongside E2.13 /
+E2.14 / E2.15 / E2.16 / E2.20. See
+`experiments/topological/persistent_homology_w_trick/persistent_homology_w_trick_results.md`,
+`archive/sessions/session117_d2a_ph_w_trick.md`.
+
+**Successor challenges (proposed in S117):**
+
+**§D2.a.1 — CLOSED (S124, mode E, B-grade refinement of E2.17).**
+PH on the residual marginal-distribution component. Adding B3 = IID
+inverse-transform samples from the W-tricked empirical CDF (Devroye
+1986 §II.2.1; *continuous* envelope without discreteness) to the
+S117 baselines, at M=1000, d=3, x≈10⁶, three residues pooled:
+z(P_W; B3)_T0 = −0.05, z(P_W; B3)_T1 = +0.46 (vs S117 B1: −9.07 /
++5.56; B2: −1.99 / −0.67). Robust across d ∈ {2,3,4}: |z(B3)| ≤ 0.65
+on every cell. **Refines E2.17** to a three-component decomposition:
+(i) **marginal-envelope component** (~7–9σ on T0; the W-tricked
+marginal variance ≈ 0.55 vs Exp(1) variance 1, support shifted off
+zero by gap-quantum 0.318) — dominant; absorbed by B3.
+(ii) **discreteness component** (~1–3σ on T0; B2 mean > B3 mean,
+discrete-grid permutation has higher T0 than continuous-envelope IID)
+— sub-leading.
+(iii) **residual serial-correlation component** (~1–2σ on T0;
+S117's W-tricked gap-correlation residual) — sub-leading.
+Components (ii) and (iii) partially cancel on the (PRIMES_W vs B3)
+comparison, which is why z(B3) ≈ 0. Pre-stated F_a HOLDS on absolute
+thresholds, partially fails on relative |Δz| ≤ 1 condition for d=2,3
+(the failure IS the new content). See
+`experiments/topological/persistent_homology_w_trick_marginal_b3/persistent_homology_w_trick_marginal_b3_results.md`,
+`archive/sessions/session124_d2a1_ph_marginal_b3.md`.
+
+**§D2.a.2 — Vary W and trace S^(W)_PH.** Replicate the experiment at
+W ∈ {2, 6, 30, 210, 2310} and quantify how the serial component of
+E2.17 decays in W. Predicted: a "PH analogue of S^(W)_2 / S^(W)_3"
+HL singular-series structure, parallel to E2.13's Gowers W-scan.
+Cost: 1 session.
+
+**Successor challenges (proposed in S124):**
+
+**§D2.a.1.i — CLOSED (S131, mode E, B-grade refinement of E2.17).**
+B4 = IID with replacement from the W-tricked empirical PMF, run
+alongside B1/B2/B3 at d ∈ {2, 3, 4}, M=1000, K=20, three residues.
+Three of four pre-stated falsifiers (F_i.2 discreteness direction,
+F_i.3 T1 consistency, F_i.4 duplicate-count) PASS at all d. F_i.1
+T0 IID-vs-permutation **MARGINAL FAIL** at d=3 (|Δz| = 2.11 vs
+threshold 2.0); the failure is fully explained by the duplicate-
+point cloud-compression artifact of IID-with-replacement sampling
+(0.368M duplicate values per draw create zero-distance pairs in
+the Takens cloud, which contribute zero-length H_0 bars but do not
+affect H_1 loops — F_i.3 PASS at |Δz|_T1 = 0.08 confirms the H_0-
+specific localisation). **NEW T0 component Δ_duplicate ≈ 2-3
+mean-gap** (B2 vs B4) isolated; technical book-keeping for any
+future PH-on-IID study. Δ_serial_residual after disentanglement is
+bounded by ≤ 1σ on T0 (S124's "1-2σ" tightened). E2.17 refined
+inline with four-way decomposition.
+See `experiments/topological/persistent_homology_w_trick_discrete_b4/persistent_homology_w_trick_discrete_b4_results.md`,
+`archive/sessions/session131_d2a1i_ph_discrete_b4.md`.
+
+**Successor challenges (proposed in S131):**
+
+**§D2.a.1.iii — H_0-persistence-without-zero-bars renormalisation.**
+Re-compute T0 over only the **non-degenerate** H_0 bars (bars with
+finite, nonzero death time). With ≈ 0.368M zero-length bars
+filtered out of B4, B4 should match B2 within 0.5σ on the
+renormalised T0 — an alternative discreteness probe that bypasses
+the duplicate-compression term. Cost: 1 session.
+
+**§D2.a.1.iv — Stratified IID baseline B6.** Sample WITHOUT
+replacement M' = 0.632M values uniformly from x, then permute. This
+has fewer effective points (matching B4's effective unique count
+≈ 632) but no duplicates. The (B6 − B2) gap isolates the *fewer-
+points-effect* from the *duplicate-compression-effect*. Cost: 1
+session.
+
+**§D2.a.1.ii — Sliding-bandwidth KDE B5(σ).** Vary smoothing
+bandwidth σ from 0 (≈ B2 discrete) to a large value (≈ near-Exp(1)
+smooth) and trace z(P_W; B5(σ)) on T0 / T1. Predicted: a sigmoidal
+crossover at σ ≈ grid-spacing / 2 ≈ 0.16 where the discreteness
+component switches off. Cost: 1 session.
 
 **§D2.b — Persistence-image vector classifier.** Replace scalar
 T0/T1/L0/L1 with the persistence-image vector (Adams et al. 2017
@@ -244,12 +329,18 @@ or "construction-incoherent" if the object isn't well-defined.
 **Successor (S105):** C3.a — arithmetic-primitive bounded-Kt VM. Extend the 8-op stack VM with primitives like `LOG2`, `LI_APPROX`, `DIV_LOG`, `GEO_SUM` (R^{-1} kernel), then re-measure `Kt_b'(s_J^(N))`. Question: does the bounded-Kt cut shift from `J* ≈ N − log₂ N` toward E1.3's `0.5N`? If yes, R^{-1}-kernel-equipped VM resolves the smooth/oscillatory transition; if no, a new Kt-cut hierarchy emerges indexed by VM richness. Save under `experiments/constructions/brandt_per_bit_arith_vm/`. Cost: 1 session.
 **Save under:** `experiments/constructions/brandt_per_bit/`
 
-### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle
+### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle — **BUILT (S120)**
 **Edges:** E6.6 + E6.8 + E5.1
 **Object:** Build a *unified* p(n) library that combines all three: Aggarwal's `O(sqrt(n) log^4 n)` binary-search reduction, Dusart's narrow bracket of width n, and BPSW as a TC⁰ primality oracle. The composition is non-trivial because BPSW is conditional. Build it, benchmark vs `algorithms/v10_c_accelerated.py`. The novel content is whether the conditional BPSW step propagates correctly through Aggarwal's wrapper.
 **Why novel:** No published primecount-style library combines all three. Even the integration is publishable.
 **Falsification:** Wall-clock benchmarks at p(10^k) for k = 6, 9, 12, 15.
+**Outcome (S120):** Three modes built (`agg`, `bpsw`, `hybrid`); F1 (sympy.prime agreement) HOLDS at n ∈ {10⁴..10⁷}; F3 (hybrid 10×-faster than bpsw) HOLDS at 21×/34×/53× over n ∈ {10⁴..10⁶}; F2 (hybrid 1.5×-faster than agg) HOLDS only with C-accelerated pi (1.64× at n = 10⁷); fails in pure Python (1.30×); F4 (U-shape K-curve) HOLDS only with fast pi oracle: optimal `K*` shifts as `K* ~ pi_cost / bpsw_cost`. **Net new content**: (a) **K* depends on the pi/bpsw cost ratio** — Python `pi_lucy`: K* = width (composition collapses to E6.8 + E5.1, no Aggarwal narrowing); C-Lucy: K* ≈ 16K ≈ √width at n = 10⁷; HKM projection: K* small constant. This cost-ratio knob is invisible in Aggarwal 2025's asymptotic analysis. (b) **BPSW conditionality propagates 1-to-1 through Aggarwal's wrapper**, not amplified — a single BPSW pseudoprime in the final bracket shifts the answer by exactly one prime; the wrapper does not compound conditionals. (c) **Dusart bracket alone is worth ~50× over naive BPSW-from-2** (predicted `2 log p_n`, observed 21-53×). **Closure mode E** (constant-factor re-arrangement; no asymptotic improvement). The asymptotic falsifier on p(10^k) for k ≥ 9 is bottlenecked by Lucy DP / HKM in pi(x), not by the composition itself. Cites E5.1, E6.6, E6.8 (annotated S120). See `algorithms/aggarwal_dusart_bpsw/`.
+**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S120). E5.1, E6.6, E6.8 annotated in EDGES.md.
 **Save under:** `algorithms/aggarwal_dusart_bpsw/` (working algorithm goes in `algorithms/`, not `experiments/constructions/`).
+
+### C4.a — Replace `pi_lucy` with HKM/primecount and re-locate K* (NEW, follow-up to S120)
+**Why:** S120's K-sweep showed U-shape only with C-accelerated Lucy DP (K* ≈ √width at n = 10⁷). The natural extension: replace the Lucy DP oracle with primecount or a tractable HKM port (the asymptotically O~(√x) algorithm from Hirsch-Kessler-Mendlovic 2024) and trace the optimal K. **Predicted outcome**: K* drops further toward small constant ≪ √width, and the hybrid scheme's gain over `agg` shrinks toward zero in the asymptotic limit (Aggarwal-pure dominates). If TRUE, the C4 composition is a *finite-x*-only improvement; if K* stays at √width even with HKM, BPSW retains constant-factor value asymptotically — a cleaner phrasing of "BPSW saves the trailing pi-call regime even at the asymptotic frontier."
+**Save under:** `algorithms/aggarwal_dusart_bpsw/hkm_extension/`. Cost: 1-2 sessions.
 
 ### C5 — N/2 universality × non-Boolean function — **BUILT (S71)**
 **Edges:** E1.4 + E2.5
@@ -283,12 +374,41 @@ or "construction-incoherent" if the object isn't well-defined.
 **Predicted outcome:** Same — calibration absorbs the gap; PRIMES sits in the calibrated distribution. If FALSIFIED at N=8 (calibrated needs M much larger than PRIMES), the bit_0 explanation breaks at higher N and a residual mechanism enters — A-grade material.
 **Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/n8_extension/`
 
-### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES at N=8 (NEW from S84)
-**Question:** S84 showed depth-2 W=1 needs ≥17 gates at N=8 (sub-family closure). What is the W-vs-M tradeoff curve? Specifically: for W ∈ {2, 3, 4, 8, 16}, what is the smallest M such that depth-2 sign-threshold (bottom W, top W=1) computes PRIMES at N=8?
-**Why composition:** composes E5.3 (PRIMES TC^0 open) with S84's measurement framework. The W-vs-M curve characterises the "weight complexity" of PRIMES — a quantity not previously measured in the project.
-**First step:** Modify `sat_depth2_ilp.py` from S84 to scan W ∈ {2, 4} with M ∈ {4, 6, 8, 10, 12, 16}. Use a 30-min ILP timeout per cell (MILP solver: CBC). Plot the (W, M) infeasible/feasible boundary.
-**Predicted outcome:** M decreases as W increases, with M ≈ 5-8 at W=4 and possibly M=2 or 3 at W=8 (since unbounded weight gives M=1 lookup table). The shape of the boundary is the new quantitative content.
-**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_weight_tradeoff/` (extend S84).
+### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES — **BUILT (S127)**
+**Edges:** E5.3 + S84 framework + E1.6 / C7-S89.
+**Pivot from spec:** the N=8 ILP did not terminate within session budget at any cell beyond M ≥ 4 even at W=1 (S84 already reported this). N=6 was used as the headline scale; the N=4 cross-N analog was added as validation.
+**Outcome (S127):** First measured weight-vs-size tradeoff curve for any natural NT Boolean function in depth-2 sign-threshold class.
+- **N=6 curve: M\*(W) = (6, 4, 3, 3, 3, 3, 3, 3) at W ∈ {1, 2, 3, 4, 8, 16, 32, 64}**, with `M*(W=1) = 6` from S84 column enumeration, all other cells from this session. M=2 UNSAT proven up to W=64 (4-5 s each); M=3 SAT proven at W ∈ {3, 4, 8, 16, 32, 64} (6-65 s, witnesses verified 64/64); M=3 UNSAT proven at W=2 (277 s).
+- **Structural floor at M\*=3 reached at W=3 and held through W=64** — 16× weight increase yields zero gate reduction.
+- **N=4 cross-N analog:** PRIMES `M* ∈ {3, 2, 2, 2}`, random `M* ∈ {4, 3, 3, 3}` at `W ∈ {1, 2, 4, 8}`; F4 (PRIMES easier than random) holds with Δ=1 gate at every W.
+- **N=6 random control (seed 1):** even at 600 s budget per cell the `(W=4, M=3)` random cell is UNKNOWN, vs PRIMES (W=4, M=3) SAT in 113 s. Time-asymmetry is itself a structural gap (in search-problem complexity, not necessarily circuit complexity).
+
+**Falsifiers verdict:** F1 (flat plateau) FAILS as predicted — `M*(N=6)` decreases. F2 (geometric decay) HOLDS at W=1→2 and W=2→4 then FAILS (saturates) from W=4. F3 (M=1 collapse at finite W) FAILS up to W=64. F4 (PRIMES easier than random) HOLDS at N=4 with Δ=1 gate at every W; partial evidence at N=6 via time-asymmetry. F5 (N=4 closed-form `M*(W ≥ 3)=1`) FAILS — `M*(N=4)=2` even at W=8.
+
+**Status:** BUILT, no polylog opening. **Refines E5.3** with quantitative `(W, M*)` curve at N=6, the first such measurement for any natural NT function. **Refines C7-S89** PRIMES-vs-random gap from a single-W observation to a curve. CLOSED_PATHS row added (S127). E5.3 annotated.
+**Save under:** `experiments/constructions/d2_sign_threshold_w_m_tradeoff/`
+
+### C8.a — N=8 partial scan (NEW from S127, follow-up)
+**Why:** The C8 spec originally targeted N=8 but the N=8 ILP scaling pushed the work to N=6. The N=8 column at non-trivial W is genuinely unmeasured. S84 reports the W=1 column is `M ≥ 17` (column-enum partial bound, k_max=5).
+**Predicted shape:** by the N=4 → N=6 progression (`M*(W=∞) ≈ 2 → 3`), expect `M*(N=8, W=∞) ∈ {4, 5, 6}` — a structural floor in single-digits even at unbounded weight. The transition `W` at which the floor is reached should also grow with N.
+**Save under:** `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n8_extension/`. Cost: 1-2 sessions (each cell allow ≥ 30-min CBC, parallelise across W).
+
+### C8.b — Random-control F4 resolution at N=6 — **BUILT (S135)**
+**Edges composed:** E5.3 + S84 framework + E1.6 / C7-S89 + C8/S127.
+**Object:** Extended column enumeration `Θ(N, W) = {distinct sign-threshold truth tables on N inputs with weights in {-W..W}}` to W ≥ 2 (catalog sizes K(W=1) = 1458, K(W=2) = 30,898, K(W=3) = 218,066). Run S84's `depth2_search` on PRIMES vs density-matched random N=6 across multiple seeds.
+**Why novel:** S127's joint (alpha-bilinear) ILP returned UNKNOWN on every random `(W ≥ 4, M=3)` cell within 600 s. The cross-encoding shift (column-enum) eliminates the bilinear constraints and resolves the M=3 cells in 147–230 s.
+**Falsification:** F0/F0' sanity (PRIMES reproduces S84/S127); F1 (random easier at W=2 → REJECTED); F2 (Δ=0 tie at W=2); F3 (Δ ≥ 1 strict, requires M=4 UNSAT proof); F4 (cross-seed robust).
+**Outcome (S135):** **F0, F0' HOLD; F1 REJECTED on every seed; F2 partially established; F3 UNRESOLVED (random M=4 UNKNOWN at 600 s); F4 HOLDS at three seeds {1, 5, 42}.** Random N=6 W=2 M=2,3 are both UNSAT for every tested seed (M=2 in 130–196 s, M=3 in 147–230 s); PRIMES W=2 M=3 UNSAT in 157 s, M=4 SAT in 181 s. **`M*(rand_s; W=2) ≥ 4 = M*(PRIMES; W=2)` for s ∈ {1, 5, 42}**, robust direction-confirmation of F4. Magnitude (Δ = 0 vs Δ ≥ 1) remains open at W=2 because random M=4 cells exceed CBC's 600 s budget at K=30898. Cross-encoding finding for the S84 framework: column-enum proves W=2 M=3 UNSAT 1.8× faster than joint-ILP on PRIMES; intractable joint-ILP M=3 random cells become tractable in column-enum.
+**Status:** BUILT, no polylog opening. **Refines E5.3** (PRIMES `M*(W=2) = 4` not breakable by density-matched random) and **C7-S89/E1.6** (W=2 PRIMES-vs-random gap holds in direction even outside calibrated-oddness regime).
+**Save under:** `experiments/constructions/d2_sign_threshold_w_m_tradeoff/random_n6_resolution/`
+
+**Successor challenges (proposed in S135):**
+
+**C8.b.i — Random M=4 W=2 SAT search via greedy/LNS.** CBC ILP UNSAT proof on (random, W=2, M=4) is intractable; a greedy triple-enum or local search may find a SAT witness if one exists. If no SAT in ~1 h CPU, empirical evidence for `M*(rand; W=2) ≥ 5` (Δ ≥ 1 strict). Cost: 1 session. Save under `random_n6_resolution/m4_search/`.
+
+**C8.b.ii — Tighter F4 via W=3 column-enum on random.** K=218,066 at W=3 borderline. PRIMES W=3 M=3 SAT (S127, 65 s); does random M=3 stay UNSAT at W=3? If yes across multiple seeds, F4 strengthens by one weight-doubling step. Cost: 1-2 sessions (each cell ~600-1200 s).
+
+**C8.b.iii — Seed-distribution of random M\*.** Run N=6 W=2 M=3 across 100+ seeds in parallel. Empirical histogram of M\*(rand) tests "random is always ≥ 4" vs "random is sometimes 3 on a non-trivial seed fraction". With 32-core parallelism + ~150 s/cell, ≈ 10 min wall-clock. Cost: 1 session.
 
 ---
 
@@ -361,7 +481,7 @@ plus `<name>_notes.md`.
 `lean --run`). If it doesn't, the session is an in-progress formalisation,
 not a closure. Save the in-progress state to `RESEARCH_AGENDA.md`.
 
-### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107)**
+### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107, S117, S122, S128, S129, S137)**
 **Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
 base W ≥ 2, for every cut 1 ≤ j < d:
 ```
@@ -400,10 +520,67 @@ for every `j ≥ 1`, sorry-free. The matrix has 4 columns but `R = 3`
 (column 3 is `chiP` at multiples of 4, all zeros), so this is the
 **first orthogonal corner where `rank_le_width` is not tight** —
 required citing the general `upper_bound` lemma for the upper direction.
-**Next action:** Route A''''' (`W ∈ {5, 6}`). `W = 6` should be a
-straightforward `3 × 3` mirror of S107; `W = 5` requires a `5 × 5`
-invertible submatrix construction. Or Route C (mathlib PNT for the
-low-density regime — leaves saturating half-cut open). See
+**S117 progress:** Extended Route A''''' to `W = 5` —
+`mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5`
+for every `j ≥ 1`, sorry-free. First instance with `R = W` (all `W`
+columns retained); first instance using `Matrix.det_of_upperTriangular`
+(BlockTriangular id route) rather than `Matrix.det_fin_three`.
+**S122 progress:** Extended Route A'''''' to `W = 6` —
+`mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3`
+for every `j ≥ 1`, sorry-free. **First orthogonal-corner instance where
+the working row set is not `{0, 1, ..., R-1}`**: rows `{1, 2, 3}` of
+the `6 × 6` slab are linearly dependent (each has identical support
+pattern `(1, 0, 0, 0, 1, 0)` from primes `{7, 11}, {13, 17}, {19, 23}`),
+so the construction uses rows `{0, 1, 5}` with `chiP 31` (the smallest
+"row-5 prime") providing the third linearly independent row. Returns
+to `det_fin_three` (since `R = 3`) plus `upper_bound` (since
+`rank_le_width` gives only `rank ≤ 6`). Sets the template for higher-
+`W` corners where the first `R` rows of the `W × W` slab are LD.
+**S128 progress:** Extended Route A''''''' to `W = 8` —
+`mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5`
+for every `j ≥ 1`, sorry-free, via the BlockTriangular route with
+permutation `ρ ↦ (2, 0, 1, 3, 4)`, `σ ↦ (0, 1, 2, 6, 4)`, diagonal
+primes `{17, 2, 11, 31, 37}`, and `det_of_upperTriangular` +
+`Fin.prod_univ_five`. **Seventh unconditional instance.** **W=7
+deferred** (no leading-row triangulation; needs `det_fin_seven`
+or Laplace expansion).
+**S129 progress:** Extended Route A^{(8)} to `W = 12`, **skipping
+the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** —
+`mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5`
+for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`,
+`σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`,
+below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`.
+**First instance using FOUR non-leading rows** — extends S122's
+single-non-leading-row trick to the maximally non-leading regime.
+**Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`;
+third instance using `det_of_upperTriangular`.** Skip-rationale: W=9
+has clean block-diagonal structure (1+3+3) but neither 3×3 block
+admits standalone upper-triangulation; closing W=9 cleanly requires
+`Matrix.det_of_blockTriangular` (a new technique not yet used in
+the file). W=7, W=10, W=11 hit similar obstructions.
+**S137 progress:** Extended Route A^{(9)} to `W = 18` —
+`mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7`
+for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`,
+`σ ↦ (1, 6, 16, 10, 12, 0, 4)`, diagonal primes
+`{2, 43, 179, 29, 211, 109, 293}`, 21 below-diagonal composites.
+**First instance with `R = 7`** — uses `Fin.prod_univ_seven` (mathlib).
+**First instance using `norm_num` for primality** — `decide` hits
+Lean's `maxRecDepth` for primes ≥ 150 (e.g. 179, 211, 293). Pre-search
+showed **W = 14 (also R=7) is structurally obstructed**: rows 2 and 5
+of the 14×14 j=1 slab have identical support pattern at the chosen 7
+cols, joining `{7, 9, 10, 11}` as needs-`det_of_blockTriangular`.
+**Ninth unconditional `mps_bond_dim` instance; seventh instance over a
+wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.**
+**Next action (post-S137):** Either (a) Route A^{(10)} `W = 9` corner via
+`Matrix.det_of_blockTriangular` (multi-session — the first non-
+upper-triangular determinant in the file; same technique closes W=7,
+W=10, W=11, W=14, W=15), or (b) Route A^{(11)} for even higher `R`:
+W=16 gives R=9, W=20 has clean leading-row triangulation per S137's
+Python pre-search (`ρ ↦ (0, 2, 9, 14, 12, 1, 7, 16, 10)`,
+`σ ↦ (1, 6, 18, 12, 0, 2, 8, 16, 10)`), uses `Fin.prod_univ_nine` if
+mathlib has it (else manual chain via `Fin.prod_univ_succ`). Or (c)
+Route C (mathlib PNT for the low-density regime — leaves saturating
+half-cut open). See
 `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 ### L2 — E1.5: 0.537-bits invariant

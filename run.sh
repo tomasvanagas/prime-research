@@ -674,17 +674,17 @@ ENDPROMPT
 # ============================================================
 # INFRASTRUCTURE
 # ============================================================
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-LOGFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.log"
-JSONFILE="./archive/CLAUDE_OUTPUTS/claude_output_${TIMESTAMP}.json"
+# Each run gets its own LOGFILE and JSONFILE — set inside the main
+# loop. The script-invocation timestamp is recorded once for grouping.
+INVOCATION_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 TMPFILE=$(mktemp)
 ASSISTFILE=$(mktemp)
 PROPOSALS_FILE="./archive/ephemeral/proposals_latest.md"
 CRITIQUE_FILE="./archive/ephemeral/critique_latest.md"
 trap 'rm -f "$TMPFILE" "$ASSISTFILE"' EXIT
 
-echo "Human-readable log: $LOGFILE"
-echo "Raw JSON log:       $JSONFILE"
+echo "Run.sh invocation started at: $INVOCATION_TIMESTAMP"
+echo "Per-run logs: ./archive/CLAUDE_OUTPUTS/claude_output_<timestamp>_run<N>.{log,json}"
 
 
 # ============================================================
@@ -870,6 +870,12 @@ compute_override() {
 # MAIN LOOP
 # ============================================================
 while true; do
+    # Per-run log files — each run gets its own pair so logs don't
+    # accumulate into one giant file across the whole script invocation.
+    RUN_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    LOGFILE="./archive/CLAUDE_OUTPUTS/claude_output_${RUN_TIMESTAMP}_run${RUN}.log"
+    JSONFILE="./archive/CLAUDE_OUTPUTS/claude_output_${RUN_TIMESTAMP}_run${RUN}.json"
+
     MODE_IDX=$(( (RUN - 1) % ${#MODES[@]} ))
     MODE=${MODES[$MODE_IDX]}
 
@@ -924,8 +930,9 @@ while true; do
     echo ""
     echo "============================================================"
     echo "=== Run #$RUN — Mode: $MODE — $(date) ==="
+    echo "    Log:  $LOGFILE"
+    echo "    JSON: $JSONFILE"
     echo "============================================================"
-    echo "" | tee -a "$LOGFILE"
     echo "=== Run #$RUN — Mode: $MODE — $(date) ===" | tee -a "$LOGFILE"
     echo '{"run":'"$RUN"',"mode":"'"$MODE"'","timestamp":"'"$(date -Iseconds)"'"}' >> "$JSONFILE"
     : > "$TMPFILE"

@@ -1,0 +1,12 @@
+import MPSBondDim.Basic
+
+#print axioms E2_1.chiP_seventeen_eq_one
+#print axioms E2_1.chiP_thirty_seven_eq_one
+#print axioms E2_1.exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1
+#print axioms E2_1.mps_bond_dim_W_eq_8_d_eq_j_plus_1
+#print axioms E2_1.chiP_fifty_nine_eq_one
+#print axioms E2_1.chiP_eighty_nine_eq_one
+#print axioms E2_1.chiP_one_hundred_nine_eq_one
+#print axioms E2_1.chiP_one_hundred_twenty_seven_eq_one
+#print axioms E2_1.exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1
+#print axioms E2_1.mps_bond_dim_W_eq_12_d_eq_j_plus_1

@@ -4884,3 +4884,1013 @@ A-grade target but produced a structural negative with two distinct
 quantitative obstructions, a new edge E7.14, and a four-family
 closure observation that compresses the project's PRIMES ∈ TC⁰
 attack space).
+
+## Session 117 — D2.a PH of W=210 W-tricked normalised prime gaps
+
+**Mode.** novelty (B-grade target).
+**Cross-domain technique.** Persistent homology + Green-Tao W-trick
+(both already USED; this is a *composition* of two existing techniques).
+
+**Question.** NOVELTY_CHALLENGES.md §D2.a: does the W=210 W-trick
+erase the E2.17 PH deficit on the prime-gap delay embedding?
+
+**What I built.** `experiments/topological/persistent_homology_w_trick/`
+— filtered primes to a single residue class b mod 210 (b ∈ {1, 11, 13},
+gcd(b, 210) = 1, φ(W) = 48), Cramér-normalised gaps as
+`x_n = g_n / (φ(W) log q_n)`, ran identical Takens (τ=1) + ripser
+Vietoris-Rips PH pipeline as S96. Five (M, d, x_start) configurations
+× 3 residues × 20 baselines per arm.
+
+**Empirical headline.** z(W-tricked PRIMES; B2)_T0 collapses from S96's
+−7.45 to **−1.99** (M=1000 d=3 x=10⁶ pooled), and to **−0.78** at
+x=5·10⁶. T1 from −4.05 to **−0.67** / **+0.47**. Across d ∈ {2, 3, 4}:
+|z(B2)| ≤ 2.5 on every cell. At the original S96 anchor (M=2000 d=3
+x=10⁶, single b=1): T0 z(B2) = −2.87 (3.0× reduction), T1 z(B2) =
+−2.08 (5.8× reduction). Meanwhile z(B1) is preserved or amplified
+(T1 sign-flips positive at d ∈ {3, 4} M=1000) because the W-tricked
+gap MARGINAL is non-Exp(1) — gaps quantised to multiples of W=210
+giving discrete spectrum on quasi-grid spacing ≈ 0.318 in delay
+embedding.
+
+**Structural decomposition.** E2.17 PH deficit = (HL serial-correlation,
+killed by W=210 W-trick) + (gap-quantisation marginal, preserved in B2,
+amplified in B1). The serial component is now anchored to the same
+S^(W)_k → 1 mechanism that drives E2.13 / E2.14 / E2.15 / E2.16 / E2.20.
+**E2.17 refined inline** (no new edge — quantitative refinement of the
+existing PH-deficit statement).
+
+**Sixth-leg confirmation.** PH joins Gowers U^k (E2.13), Anderson
+Lyapunov (E2.14), algebraic immunity (E2.15), DPP failure (E2.16),
+subword complexity (E2.20) as the SIXTH orthogonal observable
+detecting the HL singular-series signature with the same W-trick
+fingerprint pattern.
+
+**Successor challenges (S117).** D2.a.1 — KDE-fitted continuous-marginal
+B3 baseline to fully isolate the marginal effect. D2.a.2 — W-scan
+W ∈ {2, 6, 30, 210, 2310} to trace S^(W)_PH parallel to E2.13's
+Gowers W-cascade.
+
+**Files.** New: `experiments/topological/persistent_homology_w_trick/`
+(.py + 6 .json + .log + _results.md);
+`archive/sessions/session117_d2a_ph_w_trick.md`.
+Modified: `EDGES.md` (E2.17 refinement block),
+`NOVELTY_CHALLENGES.md` (§D2.a marked CLOSED + 2 successors),
+`status/CLOSED_PATHS.md` (S117 row appended),
+`RESEARCH_AGENDA.md` (D2.a moved to closed-S117).
+
+**Self-grade.** B (substantive refinement of E2.17 — quantitative
+serial-vs-marginal decomposition with 5 measurement cells, sixth-leg
+HL-fingerprint confirmation, two successor challenges. Pre-stated
+falsifiers F_a/F_b/F_c held only partially; the actual outcome is an
+asymmetric erasure that the binary falsifiers did not anticipate, but
+is mechanistically clean once decomposed by baseline).
+
+
+## Session 120 — C4 (Aggarwal × Dusart × BPSW unified p_n library) — B-grade
+
+**Mode.** construction (NOVELTY_CHALLENGES §1 C4).
+**Cross-domain technique.** None — composes three EDGES already in
+the project's catalogue (E5.1 BPSW, E6.6 Aggarwal, E6.8 Dusart).
+
+**Question.** NOVELTY_CHALLENGES C4: does combining all three edges
+into a single p_n library produce wall-clock or structural value
+beyond the parts? Specifically, how does conditional BPSW propagate
+through Aggarwal's binary-search wrapper?
+
+**What I built.** `algorithms/aggarwal_dusart_bpsw/` —
+`aggarwal_dusart_bpsw.py` with three modes: `agg` (Aggarwal binary
+search on `pi_lucy(x)`, no BPSW), `bpsw` (BPSW-walk from 2, no Dusart),
+and the C4-proper `hybrid` (Aggarwal narrowing to width K, then
+BPSW-walk in `[L, R]` for residual `n - π(L−1)` primes). Standalone
+correct BPSW (strong-MR base 2 + strong Lucas with Selfridge D-search,
+perfect-square rejection) and Lucy_Hedgehog DP `pi(x)` in pure Python;
+optional C-Lucy hook through `algorithms/v10_c_accelerated.py`.
+
+**Empirical headline.** All three modes agree with `sympy.prime(n)` at
+n ∈ {1..1000, 10⁴, 10⁵, 10⁶, 10⁷}. Wall-clock at n=10⁶, K=64 (pure
+Python `pi_lucy`): agg = 379 ms, bpsw = 15.27 s, hybrid = 291 ms
+(F1 + F3 hold, F2 partially fails — only 1.30× rather than 1.5×).
+With C-accelerated `pi_lucy`: at n=10⁷ agg_C = 54 ms, hybrid_C K=16384
+= 33 ms (1.64× — F2 holds).
+
+**K-sweep finding.** With pure-Python pi the K-sweep is **monotone
+decreasing** in time (optimum at K = bracket-width, no Aggarwal
+narrowing). With C-accelerated pi at n=10⁷ the **U-shape appears** with
+K* ≈ 16384 ≈ √(bracket width). The optimal K satisfies
+`K* ~ pi_cost / bpsw_cost` — a knob invisible at asymptotic-order
+analysis (Aggarwal 2025 implicit K=1, Aggarwal-pure regime).
+
+**Three structural findings.** (a) **K* depends on the pi/bpsw
+cost ratio** — Python Lucy: K* = width; C-Lucy: K* ≈ √width;
+HKM/primecount projection: K* ≈ const ⇒ Aggarwal-pure dominates.
+(b) **BPSW conditionality propagates 1-to-1** through Aggarwal's
+wrapper, not amplified — a single BPSW pseudoprime in `[L, R]` shifts
+the answer by exactly one prime; Aggarwal's narrowing runs on
+`pi_lucy`, not on BPSW. (c) **Dusart bracket alone is worth ~50×**
+over naive BPSW-from-2, matching predicted `2 log p_n` ≈ 30-50 at
+n = 10⁴-10⁷; observed 21×/34×/53×.
+
+**Verdict.** BUILT, no polylog opening, no new edge. Closure mode E
+(constant-factor re-arrangement, asymptotic Aggarwal bound preserved).
+Refines E5.1 (BPSW), E6.6 (Aggarwal), E6.8 (Dusart) inline; CLOSED_PATHS
+row added (S120). One successor challenge proposed: **C4.a**
+(replace `pi_lucy` with primecount or HKM port and re-locate K*).
+
+**Files.** New: `algorithms/aggarwal_dusart_bpsw/{aggarwal_dusart_bpsw.py,
+definition.md, aggarwal_dusart_bpsw_results.md, bench_*.log}`;
+`archive/sessions/session120_c4_aggarwal_dusart_bpsw.md`.
+Modified: `EDGES.md` (E5.1, E6.6, E6.8 inline annotations),
+`NOVELTY_CHALLENGES.md` (C4 marked BUILT + C4.a proposed),
+`RESEARCH_AGENDA.md` (Arc 4 C4 milestone closed),
+`status/CLOSED_PATHS.md` (S120 row).
+
+**Self-grade.** B (substantive composition with three structural
+findings: K-knob cost-ratio dependency, 1-to-1 BPSW conditional
+propagation, Dusart-alone leverage quantification). Composition is a
+practical-constant tightening of Aggarwal 2025, not asymptotic; this
+is honest B-grade — the artifact is real and the falsifiers have
+mixed outcomes (F1, F3 hold; F2 holds in fast-pi regime; F4 holds in
+fast-pi regime, fails in slow-pi regime). No polylog opening or
+A-grade content.
+
+---
+
+## Session 121 — L1 Lean: orthogonal corner `(W = 5, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+
+**Mode.** ARC CONTINUATION — Arc 2 (Lean Formalisation Track), Route A''''' from
+`mps_bond_dim_notes.md`.
+
+**What S121 produced.** Four sorry-free Lean 4 declarations in
+`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`:
+1. `chiP_nineteen_eq_one` — `chiP 19 = 1` (uses `Nat.prime_19`).
+2. `chiP_twenty_three_eq_one` — `chiP 23 = 1` (uses `Nat.prime_23`).
+3. `exists_invertible_submatrix_W_eq_5_d_eq_j_plus_1` — for every `j ≥ 1`,
+   exhibits the prime-density existential at `(W = 5, d = j + 1)`.
+4. `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for
+   every `j ≥ 1`.
+
+`#print axioms` confirms only `propext, Classical.choice, Quot.sound`.
+
+**Construction.** `ρ : Fin 5 → Fin (5^j)` permutes original rows to
+`(0, 3, 2, 1, 4)`; `σ : Fin 5 → Fin (5^((j+1)-j))` permutes original columns
+to `(4, 3, 0, 1, 2)`. The resulting `5 × 5` submatrix is upper triangular with
+`1` on the diagonal (diagonal primes `{5, 19, 11, 7, 23}`; below-diagonal
+composites `{20, 15, 14, 10, 9, 6, 25, 24, 21, 22}`).
+
+**Why a structurally new technique.** Mathlib has `det_fin_two`, `det_fin_three`
+but no `det_fin_four` or `det_fin_five`. At `W ∈ {2, 3, 4}` the corner proofs
+all used `det_fin_three` (or `det_fin_two` for W=2's `j = 1`). At W=5 we hit
+`R = W = 5` for the first time — the dead-column drop trick of W=4 doesn't apply
+(every column is needed). The proof pivots to `Matrix.det_of_upperTriangular`:
+1. Pre-compute 5 diagonal entries (each = 1) and 10 below-diagonal entries (each = 0).
+2. Establish `BlockTriangular id` by `fin_cases i <;> fin_cases k`. The 15
+   vacuous `k.val < i.val` cases close via `simp [id_eq, Fin.lt_def] at h_lt;
+   exact absurd h_lt (by decide)`. The 10 below-diagonal cases close via
+   `exact hLij`.
+3. Apply `Matrix.det_of_upperTriangular` → `∏ i, M i i`, expand via
+   `Fin.prod_univ_five`, substitute diagonal entries, finish with `norm_num`.
+
+**Position in the corner family.**
+`W = 2 (j = 1)`: `det_fin_two` + Bertrand (S98).
+`W = 2 (d = j + 1)`: `det_fin_two` (S99).
+`W = 3 (d = j + 1)`: `det_fin_three` (S106).
+`W = 4 (d = j + 1)`: `det_fin_three` + drop dead col + general `upper_bound` (S107).
+**`W = 5 (d = j + 1)`: `BlockTriangular id` + `Fin.prod_univ_five` (S121).**
+
+**Path forward.** Routes A', A'', A''', A'''', A''''' close `W ∈ {2, 3, 4, 5}`.
+The technique scales to every `W` admitting a chiP-permutation triangulation
+of the `W × W` slab `chiP 1 .. chiP W^2` (a finite combinatorial check at
+each `W`). Next single-session targets:
+* **Route A'''''' (W = 6)** — `R = 3` so back to `det_fin_three`; trickier
+  row choice `{0, 1, 5}` since rows 1 and 2 of the slab are linearly dependent.
+* **Route A''''''' (W ∈ {7, 8, 9})** — same BlockTriangular template as W=5.
+
+**Files.**
+Created: 4 new declarations in `MPSBondDim/Basic.lean`; `session121` synthesis.
+Modified: `mps_bond_dim_notes.md` (Route A''''' entry, declaration table);
+`RESEARCH_AGENDA.md` (Arc 2 status to S121, new milestone, next-action revised).
+
+**Self-grade.** B (substantive technique pivot from `det_fin_three` to
+`BlockTriangular id`, unlocking `R ≥ 4` corner instances; the W=4 → W=5 jump
+required identifying the absence of `det_fin_five` in mathlib and finding the
+permutation-triangulation route). No polylog opening; the general
+`exists_invertible_submatrix` `sorry` is unchanged.
+
+---
+
+## S122 — L1 Lean: W=6 orthogonal corner closed (Route A'''''')
+
+**Mode:** ARC CONTINUATION (Arc 2). **Date:** 2026-04-27. **Self-grade:** B.
+
+**Result.** Three new sorry-free Lean 4 declarations (axiom-clean: only
+`propext, Classical.choice, Quot.sound`):
+1. `chiP_thirty_one_eq_one : chiP 31 = 1`.
+2. `exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1 (j) (hj : 1 ≤ j) :
+   ∃ ρ σ, IsUnit ((unfolding 6 (j+1) j).submatrix ρ σ)` exhibiting the
+   prime-density existential at `(W = 6, d = j + 1)`.
+3. `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for
+   every `j ≥ 1`.
+
+**Construction.** `ρ : Fin 3 → Fin (6^j)` maps `(0, 1, 2) ↦ (0, 1, 5)` and
+`σ : Fin 3 → Fin (6^((j+1)-j))` maps `(0, 1, 2) ↦ (0, 1, 4)`. Live cols are
+`{0, 4}` (residues `1, 5 (mod 6)`) plus dead col `1` (`chiP 2 = 1` at row 0).
+The `3 × 3` submatrix `[[chiP 1, chiP 2, chiP 5], [chiP 7, chiP 8, chiP 11],
+[chiP 31, chiP 32, chiP 35]] = [[0, 1, 1], [1, 0, 1], [1, 0, 0]]` has
+determinant `+1` via `Matrix.det_fin_three`; unit witness is `isUnit_one`.
+
+**The novelty over W ∈ {2, 3, 4, 5}.** First orthogonal-corner instance where
+the working row set is *not* `{0, 1, ..., R-1}`. Reason: rows `1, 2, 3` of
+the W=6 slab are linearly dependent — each window `chiP 7..12, 13..18, 19..24`
+has identical support pattern `(1, 0, 0, 0, 1, 0)` (primes `{7, 11}`,
+`{13, 17}`, `{19, 23}` respectively). Row 5's window `chiP 31..36` has
+pattern `(1, 0, 0, 0, 0, 0)` — the prime `31` sits at residue `1 (mod 6)`,
+not `5 (mod 6)`, breaking the LD pattern and unlocking rank 3. Conjecturally
+all primorial wheels `W ≥ 6` exhibit this LD pattern, so the row-skipping
+template will be needed for `W ∈ {30, 210}`.
+
+**Position in the corner family.**
+`W = 2 (j = 1)`: `det_fin_two` + Bertrand (S98).
+`W = 2 (d = j + 1)`: `det_fin_two` (S99).
+`W = 3 (d = j + 1)`: `det_fin_three` (S106).
+`W = 4 (d = j + 1)`: `det_fin_three` + drop dead col + general `upper_bound` (S107).
+`W = 5 (d = j + 1)`: `BlockTriangular id` + `Fin.prod_univ_five` (S121/S117).
+**`W = 6 (d = j + 1)`: `det_fin_three` + `upper_bound` + non-leading row choice `{0, 1, 5}` (S122).**
+
+**Path forward.** Routes A', A'', A''', A'''', A''''', A'''''' close
+`W ∈ {2, 3, 4, 5, 6}`. Next single-session targets:
+* **Route A''''''' (W = 7)** — second `R = W` instance; needs `BlockTriangular id`
+  with `7 × 7` triangulation (no `det_fin_seven` in mathlib).
+* **Route A''''''' (W ∈ {8, 9})** — both have `R < W` (W=8: R=5, W=9: R=7);
+  leading-row LD pattern needs verification before choosing `ρ`.
+* **Route C (mathlib PNT)** — closes the low-density regime; ambitious;
+  leaves saturating half-cut open.
+
+**Files.**
+Created: 3 new declarations in `MPSBondDim/Basic.lean`; `session122` synthesis.
+Modified: `mps_bond_dim_notes.md` (Route A'''''' entry, declaration table);
+`RESEARCH_AGENDA.md` (Arc 2 status to Run #118 / S122, new milestone,
+next-action revised); `NOVELTY_CHALLENGES.md` (L1 progress entry, next-action).
+
+**Self-grade.** B (first non-leading-row choice in the corner family;
+identifies LD pattern that scales to all primorial wheels `W ≥ 6` and
+informs the row-choice template for `W = 30, 210`). No polylog opening;
+the general `exists_invertible_submatrix` `sorry` is unchanged.
+
+
+## Session 123 — §C2 wild swing: orders 4, 5, 6 of zeta-zero correlations
+
+**Mode:** wild swing (single ambitious target). **Grade: B** (negative-shape
+edge — first orders-4-to-6 confirmation of GUE structure). 
+
+**Target:** ATTACK_VECTORS §C2 — Conrey-Snaith higher-order arithmetic
+corrections to GUE at orders 4, 5, 6 in the zeta-zero point process.
+
+**Three independent probes at N=8000** (γ ≤ 8148, Riemann-vM unfolded):
+
+(A) `R_n(0, s, 2s, ..., (n-1)s) = det[K((j-i)s)]` for n ∈ {4, 5, 6} at
+    s ∈ {0.5..5}; max |z_vs_theory| = 2.36σ (n=4, s=2.0). The n=5 raw 6σ
+    deviation at s=2.0 is reproduced by matched-finite-N GUE Monte Carlo
+    (K=20 batches × 1200 evs each), so it is **Poisson-shot-noise on
+    `n_ref · tol⁴ ≈ 12` expected tuples**, NOT arithmetic content.
+
+(B) k-th nearest-neighbor spacings `P_k(s)` for k ∈ {0..5} (probes up
+    to 7-point correlation): rms vs GUE pool ∈ [0.09, 0.22] across k
+    growing monotonically; per-bin |z_vs_GUE_pool| ≤ 1.5× sample-noise
+    scale at every k.
+
+(C) Higher cumulants `κ_n(L)` for n ∈ {2..6} at L ∈ {1..64}: at L ≥ 8
+    all |z_vs_GUE_batches| < 2.1σ for n=3..6. The variance signal `k_2`
+    retains its ~9σ rigidity z-score at L=32 (the GUE-rigidity signal,
+    refining E1.10 / E7.1). Even cumulants k_4, k_6 deviate strongly at
+    L=1, 2 between Riemann-vM and semicircle-unfolded GUE — finite-N
+    unfolding mismatch, not arithmetic content (eliminated at L ≥ 8).
+
+**Mechanism (closure mode I — information loss):** the Conrey-Snaith
+higher-order arithmetic correction at order n scales as `1/L²` where
+`L = log(γ/2π) ≈ 6.5`. Empirical noise floor for n-correlations at
+N=8000 is `1/√(n_tuples)` which exceeds the predicted correction by
+1.5+ orders of magnitude. Detection demands Odlyzko zeros at γ ≥ 10⁶
+(same `N ≥ 0.81 L⁴`-style scaling barrier as §C1/S71).
+
+**Subsidiary structural result.** Gap-shuffled null gives spurious
+26σ z-scores in P_k probes — **gap-shuffled is the WRONG null** for
+higher-order GUE-vs-arithmetic discrimination because it destroys
+GUE rigidity. Refines E1.10's scope (gap-shuffled is the right null
+for prime-frequency probes only).
+
+**Refines E7.1** from "GUE up to order 3" (S25/S45/S57) to "GUE up to
+order 6 across (P_k for k ≤ 5, R_n for n ≤ 6, κ_n for n ≤ 6)."
+Promotes `CROSS_DOMAIN_TECHNIQUES.md` §1 row "Sine-kernel n-correlation
+determinant" implicit USED (n=2,3) → USED (n ≤ 6) with mode E.
+Adds Conrey-Snaith arithmetic corrections row USED (mode I).
+
+**Files.** `experiments/analytic/zeta_structure/n_correlations_4_5_6/`,
+`archive/sessions/session123_c2_higher_order_zero_correlations.md`.
+
+**Successor proposals** (per CLAUDE.md self-extension):
+- C2.a §C3 (bespoke statistic on zeros) with the GUE-batch null built
+  in S123 — ready-made comparator. Single session.
+- C2.b Pfaffian higher-order identities — UNUSED in the project.
+- C2.c FHK joint moments of `|ζ(1/2 + iγ)|^k` (Fyodorov-Hiary-Keating
+  2012) — UNUSED, log-correlated random fields / Gaussian
+  multiplicative chaos. 2-3 sessions.
+
+
+## Session 124 — §D2.a.1 PH on continuous-marginal-matched baseline B3
+
+**Mode:** novelty (single-session, B-grade target). **Grade: B**
+(refinement of E2.17 with three-way decomposition).
+
+**Target:** NOVELTY_CHALLENGES §D2.a.1 (proposed S117) — PH on a
+continuous-quantile baseline that matches the W-tricked empirical
+marginal, isolating the marginal-envelope component of E2.17 from
+the discreteness component.
+
+**Construction.** Inverse-transform sampling on the linearly-
+interpolated empirical CDF of the W-tricked Cramér-normalised
+gaps (Devroye 1986 §II.2.1): `sorted_x = sort(x)`; for `u ~ U(0,1)`
+return `sorted_x[i] + frac*(sorted_x[i+1] - sorted_x[i])`. This
+produces a continuous distribution sharing the empirical marginal
+envelope but without the discrete grid.
+
+**Result.** At M=1000, d=3, x ≈ 10⁶, three residues b ∈ {1, 11, 13}
+pooled, K=20: z(P_W; B3)_T0 = −0.05, z(P_W; B3)_T1 = +0.46. Robust
+across d ∈ {2, 3, 4}: |z(B3)| ≤ 0.65 on every cell.
+Cross-validation: re-run B1/B2 with new seed reproduces S117
+z-scores to within 0.6σ.
+
+**Three-component decomposition (refines E2.17 from S117's
+two-component).** PH deficit on bare prime gaps (S96, ≥ 5σ) =
+(i) **marginal-envelope component** ~7-9σ on T0 — the W-tricked
+marginal variance (≈ 0.55) and gap-quantum-shifted support differ
+from Exp(1); B3 absorbs this entirely;
+(ii) **discreteness component** ~1-3σ on T0 — B2 mean > B3 mean
+across all (d, b) cells (B2 discrete-grid permutation gives higher
+T0 than B3 continuous IID); per-residue significance 1.7-4.8σ;
+(iii) **residual serial-correlation** ~1-2σ on T0 — S117's
+residual gap correlation among primes p > 7 within a residue class.
+
+Components (ii) and (iii) **partially cancel** on (PRIMES_W vs B3):
+B2 is ~+5 above B3 mean on T0, PRIMES_W is ~-5 below B2 mean on
+T0; null on B3. This explains why z(P_W; B3) ≈ 0 even though both
+sub-components individually are 1-3σ.
+
+**Net new content.** PH detects the HL singular-series fingerprint
+of the W-tricked gap sequence PRIMARILY through the marginal CDF
+shape — not through discrete-grid quantisation, not through
+residual gap correlation. The marginal-envelope is the dominant
+singular-series carrier in the PH observable.
+
+**Pre-stated F_a HOLDS on absolute thresholds; partial violation
+on relative |Δz(B3, B2)| ≤ 1 condition for d ∈ {2, 3} on T0 IS
+the new content.** B3 absorbs even more of the deficit than B2 on
+T0 because B3 has wider variance (no constraint to exact M=1000
+empirical values), pushing z toward zero faster.
+
+**Files.** `experiments/topological/persistent_homology_w_trick_marginal_b3/`,
+`archive/sessions/session124_d2a1_ph_marginal_b3.md`.
+
+**Successor proposals** (per CLAUDE.md self-extension):
+- D2.a.1.i pure-discrete IID baseline B4 (sample from empirical
+  PMF without interpolation) — directly isolates discreteness
+  sub-component. 1 session.
+- D2.a.1.ii sliding-bandwidth KDE B5(σ) — predicts sigmoidal
+  crossover at σ ≈ 0.16 (= grid-spacing/2). 1 session.
+
+## Session 125 — §D.D20 Friedman / Ramanujan spectral gap of prime-Cayley graph
+
+**Mode:** frontier wild_swing (single-session A-grade attempt). **Grade: B**
+case (i) — primes are Friedman-typical once support and parity matched.
+
+**Target:** ATTACK_VECTORS §D.D20 — for prime N, abelian Cayley graph
+`G_N = Cay(Z/NZ, S_N)` with `S_N = {±p mod N : p prime, p < N^c}`.
+Test the Ramanujan ratio `r_N := λ_2 / (2 √(d-1))` for super-/sub-/
+Ramanujan-typical behaviour relative to Friedman 2008's reference.
+
+**Setup.** FFT-based λ_2 over a 5 × 2 grid: `N ∈ {509, 1009, 4001,
+16001, 65537}` × `c ∈ {0.5, 2/3}`. Four control ensembles × 100
+seeds (uniform Z/NZ; support [2, M); parity-matched odd-only [3, M);
+W=6-coprime [3, M)). Two bands measured: full and minor-arc
+`k ∈ [N/4, 3N/4]`. Diagnostic: re-ran B3 against "primes minus p=2".
+
+**Result.** Bare `r_N(prime)` ranges 2.05 → 11.30 (sub-Ramanujan by
+orders of magnitude), but reduces to two trivial finite-N artefacts:
+(i) bounded-support FFT spike at `k = 1` (cos(2π p/N) ≈ 1 for p < M ≪
+N; Vinogradov bound does NOT apply since q = N is unbounded by M);
+(ii) parity-frequency spike at `k ≈ (N-1)/2` modulated by single even
+prime p=2. Z-score progression (full band): vs uniform = +5..+66
+(trivial); vs support-matched = +0.7..+1.9 (within ±2σ on 10/10).
+Z-score progression (minor band): vs odd-matched = -31..-15622
+(parity-spike artefact); vs odd-matched with p=2 removed from prime
+set = +0.5..+2.1 (within ±2σ on 10/10).
+
+**Mechanism (closure mode E).** Both spikes reduce to closed-form
+finite-N effects matching empirics quantitatively. After both
+matched controls, no Hardy-Littlewood mod-q residual is detected at
+the scales tested — the bounded-support and parity dominators are
+an order of magnitude larger than any HL singular-series correction.
+
+**Net new content.** Adds **EDGE E7.16** (negative-shape, abelian-
+Cayley spectral category). FIRST abelian-Cayley measurement of the
+prime exp sum's Friedman / Ramanujan ratio. CROSS_DOMAIN_TECHNIQUES
+§1 row "Random regular graph spectral gap (Friedman)" promoted
+PROPOSED → USED-E. CLOSED_PATHS row at S125. The
+abelian-Cayley-spectral attack family is now closed alongside E7.12
+(fixed-generator (Z/nZ)\* spectrum probes ω(n)), E7.13 (Szegedy
+walks).
+
+**Pre-stated F1 (A-grade) FALSIFIED. F2 (B-grade case (i)) HOLDS.**
+
+**Files.** `experiments/algebraic/friedman_ramanujan_prime_cayley/`,
+`archive/sessions/session125_d20_friedman_ramanujan_prime_cayley.md`.
+
+**Successor proposals.** D20.a Cheeger constant (cross-domain:
+combinatorial expansion); D20.b primorial N + c=1; D20.c
+**non-abelian LPS Ramanujan graphs `Cay(SL_2(F_p), primes)`** —
+introduces NEW cross-domain technique (LPS 1988 *Combinatorica* 8,
+UNUSED). Recommended successor.
+
+---
+
+## Session 126 — D22 Hodge L_1 spectrum of the coprimality flag complex
+
+**Mode.** Cross-domain attack from `ATTACK_VECTORS.md §D.D22`.
+Attacks the question "does the higher-order (k ≥ 1) Hodge Laplacian
+spectrum of an arithmetic flag complex carry circuit-complexity
+content invisible to L_0 (CLOSED 356/387/E7.12/E7.16)?"
+
+**Cross-domain technique imported.** Combinatorial Hodge Laplacian on
+simplicial complexes (Eckmann 1944; Friedman 1996; Horak-Jost 2013;
+Lim 2020 *SIAM Review* 62 = arXiv:1507.05379). FIRST quantitative
+project use of higher-order Hodge `L_k` (k ≥ 1).
+
+**Setup.** Build the coprimality flag complex `K_N := \{σ ⊆ [2..N] :
+σ is pairwise coprime\}`; construct boundary matrices B_1, B_2, B_3;
+diagonalise `L_1 = B_1^T B_1 + B_2 B_2^T` at N ∈ {8, 12, 16, 24, 32,
+48, 64, 96, 128}. 5–30 matched-density Erdős-Rényi flag-complex
+controls per N. Channelled mathematician: Friedman.
+
+**Pre-stated A-target NOT met:** uniform `λ_2^{(1)} > c > 0` spectral
+gap distinct from ER is non-monotone in N (Z[λ_min] = +5.5σ at N=48
+but +2.5σ at N=64).
+
+**Pre-stated B-grade case (E) FALSIFIED:** spectra do NOT match within
+KS noise floor (KS p < 1e-300 at N = 128).
+
+**Pre-stated B-grade case (I) trivially FALSIFIED:** β_1, β_2 = 0
+deterministically by Bertrand's postulate (universal-vertex cone
+collapse).
+
+**Actual outcome — B-grade structural negative-shape closure plus
+sharp new empirical identity (E7.17).**
+
+> **F1 — Hodge KERNEL is deterministically trivial.** β_0(K_N) = 1,
+> β_k(K_N) = 0 for k ≥ 1, all N ≥ 3. By Bertrand: ∃ prime p ∈ (N/2, N];
+> p is universal in G_N (gcd(p, v) = 1 for v ≠ p ∈ [2, N]); K_N is a
+> cone hence contractible.
+>
+> **F2 — λ_max(L_1) = |V| = N − 1 EXACTLY** (residual ≤ 1e-13) at all
+> 9 tested N. ER controls saturate at `p|V| + O(\sqrt{|V|}) < |V|`.
+>
+> **F3 (main empirical theorem).** `mult(λ_max(L_1, K_N) = |V|) =
+> C(k+1, 2) = k(k+1)/2` where `k = π(N) − π(N/2)`. Verified perfectly
+> at all 9 N: (8,2,3), (12,2,3), (16,2,3), (24,4,10), (32,5,15),
+> (48,6,21), (64,7,28), (96,9,45), (128,13,91).
+>
+> **Mechanism (proof sketch via Horak-Jost 2013 join spectrum).**
+> K_N = Δ^{k-1} \ast F(H) where Δ^{k-1} is the (k-1)-simplex on the
+> Bertrand primes U and H = G_N − U; multiplicity at λ = |V| equals
+> #(0-faces ∪ 1-faces of Δ^{k-1}) = k + C(k,2) = C(k+1, 2). Full
+> proof = single-page exercise.
+>
+> **F4 — L_1 mean shift = triple-coprime singular series.** Trace
+> identity: `mean(L_1) = 2 + 3|T|/|E|`, so coprime-vs-ER mean shift
+> is `3(T_cp − T_ER)/|E|` with `T_cp / T_ER → ∏_p (1 − 3/p² + 2/p³)
+> / (6/π²)³ ≈ 1.27628`. Empirical at N=128: 1.273. Z[mean(L_1)] grows
+> 3.04 → 4.40 → 5.82 → 9.48 → **18.33σ at N=128**. KS p drops from
+> 1.9e-11 (N=32) to < 1e-300 (N=128).
+
+**Net new content.** Adds **EDGE E7.17** (mult identity + cone
+collapse + mean shift): first project edge tying a *higher-order*
+Hodge spectral quantity to a prime-counting fingerprint
+(`π(N) − π(N/2)`). CROSS_DOMAIN_TECHNIQUES §1 row "Hodge / Laplacian
+on simplicial complexes (higher-order L_k, k ≥ 1)" promoted PROPOSED
+(D22) → USED E with edge E7.17. CLOSED_PATHS row at S126.
+
+**Files.** `experiments/topological/hodge_coprimality_flag/`,
+`archive/sessions/session126_d22_hodge_coprimality_flag.md`.
+
+**Successor proposals (S126).** D22.a `N^{1/2}`-sieved coprimality
+flag complex (test if F3 persists when small-prime hubs are removed);
+D22.b non-trivial β_2/β_3 search by removing universal-Bertrand-prime
+vertices manually to break cone collapse; D22.c chi_P-induced
+sub-flag-complex on prime vertices only with sparser arithmetic edges
+(twin-prime / Goldbach adjacency).
+
+## Session 127 — C8 (depth-2 sign-threshold W-vs-M tradeoff for PRIMES)
+
+**Construction session, B-grade.**
+
+C8 from NOVELTY_CHALLENGES.md §1, composing E5.3 (PRIMES TC⁰ open
+frontier) × S84 ILP framework × E1.6 / C7-S89 (oddness predictor).
+Built `experiments/constructions/d2_sign_threshold_w_m_tradeoff/` with
+a W-parameterised extension of S84's `sat_depth2_ilp.encode_depth2`.
+
+**Headline measurement (N=6, weight 18/64):**
+
+| W   | 1 | 2 | 3 | 4 | 8 | 16 | 32 | 64 |
+|-----|---|---|---|---|---|----|----|----|
+| M*  | 6 | 4 | 3 | 3 | 3 | 3  | 3  | 3  |
+
+`M*(W=1)=6` from S84 column enumeration; all other cells from this
+session via direct ILP. M=2 UNSAT proven at every W ≥ 4 (CBC 2-5 s);
+M=3 SAT at W ∈ {3, 4, 8, 16, 32, 64} (CBC 6.8-65 s, witness verified
+64/64); M=3 UNSAT proven at W=2 (CBC 277 s); M=4 SAT at W=2 (17 s).
+
+**Net new structural fact:** PRIMES at N=6 has a **structural floor
+M\*=3 in depth-2 sign-threshold complexity, reached at modest weight
+W=3, and held all the way through W=64**. Doubling W beyond 4 (16×
+total weight increase) yields zero gate reduction. This is *not* a
+geometric-decay regime (`M ∝ 1 / log W` folklore expectation) — the
+curve "step-downs and plateaus" sharply.
+
+**Pre-stated falsifier verdicts (5 of 5 pre-stated before any cell):**
+- F1 (flat plateau M\*=6 at every W): **FAILS** as predicted.
+- F2 (geometric decay `M*(2W) ≤ M*(W)/2 + 1`): HOLDS at W=1→2 and
+  W=2→4 ; FAILS (saturates) from W=4 onwards.
+- F3 (M=1 collapse at finite W): FAILS up to W=64.
+- F4 (PRIMES easier than random at W ≥ 2): HOLDS at N=4 with Δ=1
+  gate at every W; partial evidence at N=6 — random `(W=4, M=3)`
+  cell is UNKNOWN even after CBC 600 s, where matching PRIMES cell
+  resolves SAT in 113 s.
+- F5 (N=4 closed-form `M*(W ≥ 3)=1`): FAILS — depth-1 PRIMES at N=4
+  is infeasible even at W=8.
+
+**N=4 cross-N analog (validation):** PRIMES `M* ∈ {3, 2, 2, 2}`,
+random (seed 42) `M* ∈ {4, 3, 3, 3}` at `W ∈ {1, 2, 4, 8}` —
+1-gate gap in PRIMES's favour at every W tested.
+
+**Witness circuit (N=6, W=4, M=3) verified 64/64.** The three
+half-spaces are not arithmetically natural (no isolated residue
+class or bit-pattern); the ILP found an opaque-but-specific cover
+of the prime indicator.
+
+**No polylog opening.** Mode E (extended measurement of S84 W=1-only
+column to W ≤ 64 grid). **Refines E5.3** with quantitative `(W, M*)`
+data point at N=6, the first such measurement for any natural NT
+function. **Refines C7-S89** PRIMES-vs-random gap from a single-W
+observation to a curve. CLOSED_PATHS row added; E5.3 annotated;
+NOVELTY_CHALLENGES C8 marked BUILT; spawned successors C8.a (N=8
+extension) and C8.b (random-control F4 resolution at N=6 via
+column-enumeration alternative encoding).
+
+**Cross-domain ingredient:** none — this is purely circuit-complexity
+/ ILP work. Per CLAUDE.md "Cross-Domain Imports", a B-grade-or-lower
+target by construction; the value is quantitative refinement of
+existing edges, not novel mechanism. The composition's "interaction"
+content is the *coupling* between the W-axis (gate-side weight bound)
+and the M-axis (gate-side count) — these were studied independently
+in S84 and never together for PRIMES.
+
+**Files:**
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/d2_w_m_tradeoff.py`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/d2_w_m_tradeoff_results.md`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/definition.md`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n4_grid.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_primes_60s.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_primes_highW.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_primes_w24_m3.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_primes_w3_m3.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_rand_seed1.{json,log}`
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/n6_rand_M3_seed1_long.{json,log}`
+- `archive/sessions/session127_c8_d2_sign_threshold_w_m_tradeoff.md`
+
+
+## Session 128 — Arc 2 (L1 Lean): orthogonal corner `(W = 8, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+
+**Mode:** Arc 2 continuation. Picked the cleanest single-session item
+from RESEARCH_AGENDA.md "Route A^{(7)} — extend BlockTriangular pattern
+to W ∈ {7, 8, 9}". Selected **W = 8** (not W = 7) after empirical row-
+column matching analysis showed W = 7's first 7 rows admit no
+triangulation — both perfect matchings reduce to a 3×3 sub-issue on
+rows {2, 4, 6} × cols {0, 2, 4} where every column has exactly two
+1's, blocking the standard triangulation greedy.
+
+**What this session produced.** Four new sorry-free Lean 4
+declarations in `experiments/formalisations/E2_1_mps_bond_dim/
+MPSBondDim/MPSBondDim/Basic.lean`:
+
+- `chiP_seventeen_eq_one : chiP 17 = 1` (`Nat.prime_seventeen` decide).
+- `chiP_thirty_seven_eq_one : chiP 37 = 1` (`Nat.prime_thirty_seven`
+  decide).
+- `exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ,
+   IsUnit ((unfolding 8 (j+1) j).submatrix ρ σ)`.
+- `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 8 (j+1) j).rank
+   = 5`.
+
+`#print axioms` confirms only `[propext, Classical.choice, Quot.sound]`
+for all four. `lake build` succeeds (8315 jobs, 14 s incremental); the
+single pre-existing `sorry` at line 467 (general `exists_invertible_submatrix`)
+is unaffected and still the only outstanding obligation.
+
+**Mathematical content.** For `W = 8`, `d = j+1`, `R = min(8^j, φ(8) +
+1) = 5`. Live cols `{0, 2, 4, 6}` (residues `1, 3, 5, 7 (mod 8)`) plus
+dead col `1` (the unique dead col with `chiP 2 = 1` at row 0). The
+permutation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)`
+triangularises the `5 × 5` submatrix:
+
+```
+   diagonal primes :  17, 2, 11, 31, 37
+   lower triangle  :  composites in {1, 9, 10, 25, 26, 27, 33, 34, 35, 39}
+```
+
+with determinant `1`.
+
+**Proof technique.** Mirrors `mps_bond_dim_W_eq_5_d_eq_j_plus_1` (S117)
+exactly: `Matrix.det_of_upperTriangular` + `Fin.prod_univ_five` after
+establishing `BlockTriangular id` via `fin_cases i <;> fin_cases k`.
+The 15 vacuous (`k.val < i.val` false) cases close via
+`simp [id_eq, Fin.lt_def] at h_lt; exact absurd h_lt (by decide)`.
+The 10 below-diagonal cases reduce to precomputed `hL..` zero facts.
+Upper bound via the general `upper_bound` lemma (since `rank_le_width`
+gives only `rank ≤ 8`, not `rank ≤ 5`).
+
+**Net new structural fact.** **Seventh unconditional `mps_bond_dim`
+instance; fifth instance over a wheel `W ≥ 3`; second instance using
+`det_of_upperTriangular` (after W=5).** Confirms that the
+BlockTriangular template scales to wheels with composite `W` and
+`R < W` (R = 5 here vs `R = W = 5` at W=5). Sets the pattern for any
+wheel `W` admitting a chiP-permutation triangulation of a `5 × 5`
+or larger submatrix.
+
+**Why W = 7 was deferred.** The 7×7 chiP slab is invertible (det = ±2
+by hand-Laplace), but no row/column permutation triangularises it —
+the residual 3×3 sub-issue forms an irreducible cycle of 1's. Closing
+W=7 cleanly needs either `Matrix.det_fin_seven` (absent in mathlib),
+manual Laplace expansion, or a non-leading row set for `j ≥ 2`
+(analogous to the W=6 row-5 trick at S122). Multi-session.
+
+**No polylog opening.** Mode E (extension of an unconditional
+mps_bond_dim corner, route A''''''' added to the closed-route family).
+B-grade not A-grade because the proof technique is structurally
+identical to S117 (W=5); the novelty is empirical (a specific
+permutation at W=8 was found and verified) rather than methodological.
+
+**Files:**
+- `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean` (+~280 lines)
+- `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md` (S128 update)
+- `RESEARCH_AGENDA.md` (Arc 2 milestone added; Route A^{(8)} for W=9 is the next-action)
+- `archive/sessions/session128_l1_lean_w8_corner.md`
+
+
+## Session 131 — §D2.a.1.i PH on pure-discrete IID baseline B4 (B-grade)
+
+**Mode:** novelty / B-grade target (NOVELTY_CHALLENGES.md §D2.a.1.i,
+proposed S124).
+**Self-grade: B** — substantive refinement of E2.17 with four-way
+decomposition; the new "Δ_duplicate" sub-component is a clean
+H_0-specific cloud-geometry artifact, isolated for the first time.
+
+**Target.** S124's three-way decomposition (envelope ≫ discreteness
+≳ serial-residual) was indirect — the "discreteness" reading came
+from a single (B2 − B3) gap on T0, where B2's permutation structure
+might confound a pure discreteness effect. Add B4 = IID with
+replacement from the empirical PMF (same support as B2, but each
+draw independent and ~37 % duplicate); compare (B4 − B3) to (B2 − B3)
+and (B4 − B2) to isolate sub-effects.
+
+**Result.** F_i.2 (discreteness direction) and F_i.3 (T1 consistency)
+PASS at all d ∈ {2, 3, 4}; F_i.4 (duplicate count 0.368M) PASS.
+F_i.1 marginal FAIL at d=3 only (|Δz|_T0 = 2.11 vs 2.0 threshold);
+the failure is **fully captured by F_i.4**: ≈ 0.368M duplicate values
+per B4 draw create zero-distance pairs in the Takens delay cloud,
+contributing zero-length H_0 bars and reducing T0. H_1 (loops) is
+unaffected — confirmed by F_i.3's |Δz|_T1 = 0.08 at d=3.
+
+**New T0 component Δ_duplicate.** (B2 − B4)_T0 = +1.87 / +2.56 /
++2.91 across d ∈ {2, 3, 4}, monotone in d, NULL on T1. This is a
+deterministic property of the IID-with-replacement *sampling rule*
+— any natural number-theoretic indicator with non-degenerate
+empirical PMF will exhibit it under such baselines. Bookkeeping
+overhead for any future PH-on-IID study, not a primes-structural
+feature.
+
+**Four-way decomposition (refines E2.17 inline).**
+```
+E2.17 PH-deficit
+ = Δ_envelope        (~7-9σ T0)            [B1 vs B3, S117]
+ + Δ_discreteness    (~3-7 mean-gap T0;
+                      baseline-INDEPENDENT
+                      — both B2 and B4
+                      lift T0 above B3
+                      with same sign)      [B3 vs {B2, B4}; S124+S131]
+ + Δ_duplicate       (~2-3 mean-gap T0,
+                      NULL T1;
+                      NEW S131)            [B2 vs B4]
+ + Δ_serial_residual (≤ 1σ T0;
+                      tightened from
+                      S124's 1-2σ)         [P_W vs B4]
+```
+
+**Files:**
+- `experiments/topological/persistent_homology_w_trick_discrete_b4/persistent_homology_w_trick_discrete_b4.py`
+- `experiments/topological/persistent_homology_w_trick_discrete_b4/persistent_homology_w_trick_discrete_b4_results.md`
+- `EDGES.md` — refined E2.17 with S131 four-way decomposition
+- `NOVELTY_CHALLENGES.md` — §D2.a.1.i CLOSED; §D2.a.1.iii and
+  §D2.a.1.iv successors added
+- `status/CLOSED_PATHS.md` — new row at session 131
+- `archive/sessions/session131_d2a1i_ph_discrete_b4.md`
+
+
+## Session 133 — §C7 Fyodorov-Hiary-Keating ζ-amplitude max statistics (B-grade)
+
+**Mode:** novelty (frontier attack — A-grade target, B-grade fallback).
+Vector: ATTACK_VECTORS.md §C.C7. Recommended next pick per S132 critique
+single-pick annotation. **Self-grade: B-grade case (ii) — ambitious
+failure, mode I.** Mathematician channel: **Bourgain** (extreme-value
+statistics of log-correlated random fields).
+
+**Cross-domain technique:** Gaussian multiplicative chaos (Saksman-Webb
+2018 ζ-on-mesoscopic-scale GMC limit) and Fyodorov-Hiary-Keating 2012
+freezing-transition extreme-value conjecture for `|ζ(1/2 + it)|`.
+**First project use of GMC** — promotes CROSS_DOMAIN_TECHNIQUES.md §3
+row PROPOSED (C7) → **USED I** with new edge **E7.18**.
+
+**Setup.** K = 100 unit-length windows per anchor at T ∈ {10⁴, 10⁵,
+10⁶} (windows spaced by 10 to kill inter-window correlations); M = 200
+evenly-spaced log|ζ(1/2 + it)| samples per window via mpmath dps = 15
+(Riemann-Siegel internally). Per-window stats: max, argmax,
+second_max, pointwise mean / variance. Total wall-time ~21 min on one
+core.
+
+**Result (two clean empirical facts):**
+
+1. **FHK normalisation works at the MEAN level.** M_T :=
+   max_{t∈[T,T+1]} log|ζ(1/2+it)| − log log T + (3/4) log log log T
+   has empirical mean {−0.699, −0.632, −0.641} ± {0.067, 0.083,
+   0.082} sem at T = {10⁴, 10⁵, 10⁶}. Pairwise Z(M_T mean diff) ∈
+   {0.63, 0.55, −0.08} — all small. Pooled M_∞-mean = **−0.657 ±
+   0.045** over 300 windows. Empirical determination of the FHK
+   universal intercept.
+
+2. **FHK Gumbel(loc, 1/2) SHAPE is NOT detectable at finite T ≤ 10⁶.**
+   M_T variance {0.452, 0.692, 0.677} vs FHK pred π²/24 = 0.4112 —
+   ratio 1.10×, 1.68×, 1.65× (sustained 1.47×). Bootstrap 95% CIs
+   at T ≥ 10⁵ exclude the FHK prediction. Skewness {0.02, 0.15, 0.14}
+   vs Gumbel +1.139 — distribution is approximately SYMMETRIC. Excess
+   kurtosis {−0.72, −0.85, −0.14} vs Gumbel +2.4 — PLATYKURTIC. KS to
+   free Gauss = {0.061, 0.062, 0.050}; KS to FHK Gumbel(1/2) = {0.088,
+   0.169, 0.128}; ratio (Gauss/Gumbel) = {0.69, 0.37, 0.39} — Gauss
+   preferred at every T. Vuong z (Gauss vs Gumbel) = {−1.79, −1.43,
+   −1.58} (joint Z ≈ −2.8).
+
+The Selberg-CLT-secondary-correction test (signature (b)) is
+inconclusive: max grows ~as `log log T` (Selberg leading constant)
+without the FHK -3/4 log log log T correction, but the deviation is
+at most 2.2σ over the widest baseline T = 10⁴ → 10⁶, below 5σ A-grade
+threshold.
+
+**Why B-grade (not C):** the test PRODUCED a structural positive —
+**first quantitative bound on FHK convergence rate at finite T** in
+project-internal or published work, plus the empirical determination
+of the FHK universal intercept M_∞-mean = −0.657 ± 0.045 (giving GMC
+moment-generating constant `c ≈ 0.151` under FHK Gumbel form, vs RMT-
+side prediction `c ≈ 0.79` Bourgade-Kuan; factor-5 finite-T gap).
+
+**Mechanism for closure mode I:** Saksman-Webb 2018 proved ζ on
+mesoscopic scale converges to GMC; FHK Gumbel limit is a refined
+consequence of log-correlation theory applied to that asymptotic GMC.
+Published literature does not address finite-T convergence rate.
+Empirically: mean convergence is FAST, shape convergence is SLOW.
+Pre-freezing log-correlated noise is approximately Gaussian (CLT on
+the scale-summed log-correlation kernel); the freezing transition
+producing the heavy-tailed Gumbel structure has not yet activated at
+T ≤ 10⁶.
+
+**What this rules out:** detection of FHK Gumbel-shape signature at
+K = 100, T ≤ 10⁶ is closed; either larger T (Hiary's `O(t^{4/13+ε})`
+ζ algorithm enabling T = 10⁹–10¹²), larger K (≥ 10⁴ windows), or
+larger window scale (mesoscopic δ = (log T)^α per Saksman-Webb) is
+required.
+
+**Adds EDGE E7.18.** First ζ-amplitude edge of the project,
+complementary to the closed POSITION-side family (E7.1 GUE-statistical
+zeros, E1.10 gap-shuffled control, E3.13 BK arithmetic correction below
+noise, E7.15 automorphic Hecke L(s, Δ) basis ~3× obstructed).
+
+**Successor challenges (S133 self-extension):**
+
+- **C7.a** mesoscopic-window FHK at the Saksman-Webb scale (window
+  length δ = (log T)^{1/2} or (log T)) — same cross-domain (GMC),
+  single session at T = 10⁶, tests whether shape-convergence
+  accelerates at the scale where Saksman-Webb proved sharp GMC
+  convergence.
+- **C7.b** joint argmax × prime alignment — argmax distribution
+  approximately uniform (KS 0.16-0.20); does conditioning on prime-
+  power proximity reveal arithmetic structure? *NEW cross-domain*:
+  HL pair-correlation-density extension to amplitude extremum
+  positions. Single session.
+- **C7.c** higher-order Keating-Snaith joint moments μ_λ at λ ∈
+  {2, 3, 4} — *NEW cross-domain* (Keating-Snaith arXiv:math/0006046),
+  reuses S133 per-window data.
+
+**Files:**
+- `experiments/analytic/zeta_structure/fhk_amplitude_max/` (driver,
+  analyzer, JSON, log, results.md).
+- `EDGES.md` — added §E7.18 entry inline.
+- `CROSS_DOMAIN_TECHNIQUES.md` — promoted §3 GMC/FHK row PROPOSED →
+  USED I with edge E7.18.
+- `ATTACK_VECTORS.md` — §C.C7 marked CLOSED with one-line outcome;
+  full closure entry in "Closed attacks" section.
+- `status/CLOSED_PATHS.md` — added §C7 closure row at session 133.
+- `archive/sessions/session133_c7_fhk_amplitude_max.md`.
+
+---
+
+## Session 134 — D10: Mahler measure of the prime indicator polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n
+
+**Mode:** cross-domain attack. **Target:** ATTACK_VECTORS.md §D10.
+**Cross-domain technique imported:** Mahler measure / Lehmer's conjecture
+/ log Weil height (Smyth 2008 CUP; Lehmer 1933 *Ann. Math.* 34; Boyd
+1981 *Canad. Math. Bull.* 24; Dobrowolski 1979 *Acta Arith.* 34). Jensen's
+formula `log m(f) = ∫₀¹ log|f(e^{2π i θ})| dθ` evaluated by FFT.
+**Channelled mathematician:** Boyd / Smyth.
+**Self-grade: B** (substantive refinement / quantitative novelty).
+
+**Outcome:** B-grade negative-shape edge **E2.20**. Constant Mahler-
+measure deficit `Δ_∞ ≈ −0.307 ± 0.001 nat` between PRIMES and density-
+matched Bernoulli baselines, plateauing from `N = 2^{16}`. z(MATCH) =
+−337σ at N = 2^{18}. f_N(z)/z² **irreducible over Q[z]** at N ∈
+{64, 128, 256}; **zero cyclotomic share** rules out the A-grade
+roots-of-unity polylog evaluator hypothesis.
+
+**Falsifier outcomes (pre-registered):**
+- **F1 (Lehmer-typical) REFUTED:** PRIMES `−110σ` from density-matched
+  Bernoulli at N = 2^{18}.
+- **F2 (cyclotomic / A-grade) REFUTED:** sympy Q[z] factorisation at
+  N ∈ {64, 128, 256} yields f_N(z) = z² · g_N where g_N is irreducible
+  of degree 59, 125, 249. No Φ_n(z) divides f_N. m(f_N) = Θ(√N) — no
+  poly-log compressibility.
+- **F3 (intermediate / B-grade) HOLDS:** constant-deficit `Δ_∞` plateau,
+  monotone in N, robust at N ∈ [10³, 2.6·10⁵].
+
+**Headline data:**
+
+| N      | density | PRIMES log m | BERN mean ± std | MATCH mean ± std | deficit | z(BERN) | z(MATCH) |
+|-------:|--------:|-------------:|------------------|------------------|--------:|--------:|---------:|
+|  1 024 | 0.16797 |    +1.93322  | +2.2003 ± 0.029 | +2.2045 ± 0.011 | −0.267  |  −9.36  |  −23.53  |
+|  4 096 | 0.13770 |    +2.52079  | +2.8065 ± 0.018 | +2.8101 ± 0.007 | −0.286  | −15.50  |  −43.78  |
+| 16 384 | 0.11597 |    +3.12807  | +3.4265 ± 0.010 | +3.4267 ± 0.004 | −0.299  | −30.93  |  −86.51  |
+| 65 536 | 0.09982 |    +3.74616  | +4.0533 ± 0.006 | +4.0530 ± 0.002 | −0.307  | −56.23  | −186.83  |
+|131 072 | 0.09347 |    +4.06307  | +4.3696 ± 0.004 | +4.3694 ± 0.001 | −0.307  | −79.62  | −307.28  |
+|262 144 | 0.08774 |    +4.37956  | +4.6868 ± 0.003 | +4.6875 ± 0.001 | −0.307  |−110.19  | −337.74  |
+
+**Slope identity (`log m ≈ α log N + β`):**
+- α_PRIMES = 0.4566, β_PRIMES = −1.317
+- α_BERN = 0.4577, β_BERN = −1.023
+- The deviation is in the intercept (`β_PRIMES − β_BERN ≈ −0.30`), not
+  the slope. PRIMES carries random-Bernoulli SCALING but a strictly
+  smaller constant.
+
+**Cross-validation:** Jensen-FFT vs mpmath polyroots Jensen formula
+`log m = log|a_d| + Σ log max(1, |α_i|)` agree to 4 decimal places at
+N ∈ {64, 128}.
+
+**Direction same as E2.17 (PH):** PRIMES log m **smaller** than density-
+matched random — primes are *more constrained* than iid in algebraic
+height, just as primes are *more constrained* in topological persistence.
+Coherent under-randomness pattern across two distinct invariants.
+
+**Mechanism (conjectural):** Hardy-Littlewood pair correlations
+(`R_2(t) = S(t) · d²` ≠ d²) shift the Jensen integral down by a constant
+relative to iid; or major-arc structure of the prime exponential sum
+contributes a Cesàro-summed constant via integration of `log|S(a/q)|`
+near rationals. **D10.a successor proposed** to derive `Δ_∞ = −0.307`
+from H-L singular series and test reduction to E2.13 / E2.16.
+
+**Adds EDGE E2.20.** First algebraic-height / multiplicative-height
+measurement of χ_P. **6th orthogonal pseudorandomness measure category**
+after E2.13 (Gowers), E2.14 (Anderson), E2.15 (algebraic immunity),
+E2.16 (DPP failure), E2.17 (PH).
+
+**Successor challenges (S134 self-extension):**
+
+- **D10.a — singular-series fingerprint of Δ_∞.** Compute H-L major-arc
+  Cesàro Jensen contribution and test reduction to E2.13/E2.16. Cross-
+  domain reuse: Vaughan's identity / Vinogradov decomposition.
+- **D10.b — twin-prime / Goldbach Mahler analogue.** Δ_∞^{twin} vs
+  Δ_∞^{prime} — fingerprint sub-family or universal under-randomness?
+- **D10.c — Liouville signed Mahler.** `g_N(z) = Σ_{n≤N} λ(n) z^n`
+  full-density ±1 polynomial, predict `Δ_∞^{Liouville} ≈ 0`.
+
+**Files:**
+- `experiments/algebraic/mahler_measure_chi_p/` (driver, results.md, JSON).
+- `EDGES.md` — added §E2.20 entry inline.
+- `CROSS_DOMAIN_TECHNIQUES.md` — promoted §2 Mahler-measure row
+  PROPOSED → USED I with edge E2.20.
+- `ATTACK_VECTORS.md` — §D.D10 marked CLOSED with one-line outcome;
+  full closure entry in "Closed attacks" section.
+- `status/CLOSED_PATHS.md` — added §D10 closure row at session 134.
+- `archive/sessions/session134_d10_mahler_chi_p.md`.
+
+
+## Session 135
+**C8.b — Random-control F4 resolution at N=6 via column enumeration.**
+
+Built extended catalog `Θ(N=6, W) = {distinct sign-threshold truth
+tables on 6 bits with weights in {-W..W}}` for W ∈ {1, 2, 3} (sizes
+1458, 30898, 218066). Ran S84's `depth2_search` ILP at K=30898 (W=2)
+on PRIMES and density-matched random (seeds 1, 5, 42) at M ∈ {2, 3, 4}.
+
+**Result (B-grade refinement of E5.3 + S127's C8 F4):**
+
+- PRIMES W=1 K=1458: M=5 UNSAT, M=6 SAT (matches S84).
+- PRIMES W=2 K=30898: M=3 UNSAT (157 s), M=4 SAT (181 s, gates=4
+  verified=64/64) — matches S127.
+- Random N=6 W=2: M=2 UNSAT (130–196 s) AND M=3 UNSAT (147–230 s) at
+  ALL three seeds {1, 5, 42}. M=4 W=2 seed=42 UNKNOWN at 618 s.
+
+**`M*(rand_s; W=2) ≥ 4 = M*(PRIMES; W=2)`** for s ∈ {1, 5, 42},
+robustly across three seeds.
+
+**Cross-encoding methodological finding:** column-enum (pre-fixed
+bottom-layer catalog Θ) proves W=2 M=3 UNSAT 1.8× faster than S127's
+joint-ILP on PRIMES (157 s vs 277 s); resolves random M=3 cells
+joint-ILP couldn't touch in 600 s by eliminating alpha-bilinear
+constraints `v[k] = sel[k] AND beta[k]`.
+
+**Refines C8/S127's F4 at N=6** from "unresolved at W ≥ 4" to
+"direction-confirmed at W=2 across 3 seeds; magnitude (Δ=0 vs Δ ≥ 1)
+between 0 and 1 gate." **Refines E5.3** with: PRIMES `M*(W=2; N=6)
+= 4` is not breakable by replacing PRIMES with density-matched random.
+**Refines C7-S89/E1.6** with: even outside the calibrated-oddness
+regime (where bit_0 mass is matched), the W=2 PRIMES-vs-random gap
+holds in direction.
+
+**Closure mode E. No polylog opening.**
+
+Successors proposed: C8.b.i greedy/LNS SAT search on random M=4 W=2;
+C8.b.ii W=3 column-enum on random K=218K; C8.b.iii seed-distribution
+histogram across 100+ seeds in 32-core parallel ≈ 10 min wall-clock.
+
+**Files:**
+- `experiments/constructions/d2_sign_threshold_w_m_tradeoff/random_n6_resolution/`
+  (definition.md, extended_enum.py, extended_enum_results.md + 7 JSON/log pairs).
+- EDGES.md E5.3 annotated with S135 sharpening.
+- NOVELTY_CHALLENGES.md C8.b marked BUILT.
+- RESEARCH_AGENDA.md Arc 4 milestone added.
+- status/CLOSED_PATHS.md row added at S135.
+- archive/sessions/session135_c8b_random_n6_resolution.md.
+
+## Session 137 — Arc 2 (L1 Lean): orthogonal corner `(W = 18, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+
+**Mode:** Lean formalisation (Arc 2, L1).
+
+**What:** Extended Route A^{(9)} of `mps_bond_dim_notes.md` to W=18.
+Added theorems `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 18 (j+1) j).rank = 7`
+and `exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1`, plus five new
+`chiP_X_eq_one` helpers for X ∈ {29, 43, 179, 211, 293}. Sorry-free,
+`#print axioms` returns only `[propext, Classical.choice, Quot.sound]`.
+
+**Triangulation:** ρ ↦ (0, 2, 9, 1, 11, 6, 16) and σ ↦ (1, 6, 16, 10, 12, 0, 4)
+on a `7 × 7` upper-triangular submatrix with diagonal primes
+{2, 43, 179, 29, 211, 109, 293} and 21 below-diagonal composites.
+Determinant via `Matrix.det_of_upperTriangular` + `Fin.prod_univ_seven`.
+
+**Two new pieces of file-level lore:**
+1. **`norm_num` rather than `decide`** is required for primality of
+   numbers ≥ 150 (179, 211, 293 hit Lean's `maxRecDepth` under
+   `decide`). All five new `chiP_X_eq_one` and 12 of the 21
+   `not_prime` helpers (those for composites ≥ 150) use `norm_num`.
+2. **W=14 is structurally obstructed** for leading-row triangulation
+   (rows 2 and 5 of the W=14 j=1 slab share support pattern
+   `(1, 1, 0, 1, 0, 1)` at the seven chosen cols; exhaustive Python
+   pre-search finds zero upper-triangulations with `ρ < 14`). W=14 joins
+   {7, 9, 10, 11} as needs-`det_of_blockTriangular`.
+
+**Status post-S137:** the orthogonal-corner family is closed for
+`W ∈ {2, 3, 4, 5, 6, 8, 12, 18}` (the prime-power-free W ≤ 18 except
+the structurally-obstructed quintet {7, 9, 10, 11, 14}). Ninth
+unconditional `mps_bond_dim` instance; seventh over a wheel `W ≥ 3`;
+fourth using `det_of_upperTriangular`; first with `R = 7`.
+
+**Self-grade: B.** Refinement of the existing Route A^{(8)} pattern;
+not a frontier breakthrough. The mathematical content (W=18 rank = 7)
+is implied by E2.1 already verified empirically. The novelty is the
+*Lean* content — the explicit triangulation, the `Fin.prod_univ_seven`
+usage, the `norm_num` recursion-depth lesson, and the W=14 negative-
+shape observation.
+
+**Next-action:** Either Route A^{(10)} (`Matrix.det_of_blockTriangular`
+to close W=9, multi-session) or Route A^{(11)} (W=20 with R=9 via
+manual `Fin.prod_univ_succ` chain since mathlib's `Fin.prod_univ_X`
+caps at `X = 8`). Route A (Hoheisel) remains beyond a single session.
+
+**Files:**
+- `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+  — added ~520 lines (W=18 block).
+- `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
+- `RESEARCH_AGENDA.md` Arc 2.
+- `NOVELTY_CHALLENGES.md` §3 L1.
+- `archive/sessions/session137_l1_lean_w18_corner.md`.
+
