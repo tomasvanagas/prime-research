@@ -1,16 +1,16 @@
-# Critique — post-S85 batch (covers S83, S84, S85)
+# Critique — post-S101 batch (covers S95–S101)
 
-**Date:** 2026-04-26 (this critique fires immediately after S85).
-**Prior critique:** `archive/sessions/session78_critique.md` covered S74,
-S75, S76, S71-redux, S77.
-**Sessions critiqued here (most recent 1-3 per CLAUDE.md):** S83 (Lean
-`lower_bound` reduction), S84 (SAT TC^0 §A1 wild swing), S85
-(`frontier_gen` producing 5 new ATTACK_VECTORS entries).
+**Date:** 2026-04-27 (this critique fires after S101).
+**Prior critique:** `archive/ephemeral/critique_latest.md` (rolled over to
+session94/`session94_critique.md`) covered S91, S92, S93 with a roll-up
+of S87–S90 self-grades.
+**Sessions covered here:** S95 (D7 DPP/PPP fit), S96 (D2 PH on Takens
+embedding), S97 (frontier_gen, 5 new vectors D9–D13), S98 (L1 Lean
+corner W=2, j=1), S99 (L1 Lean orthogonal corner W=2, d=j+1), S100
+(G1 Liouville Anderson Lyapunov), S101 (D6.c μ-weighted χ_P U²).
 
-Sessions S79 / S80 / S81 / S82 fall between this critique and the prior
-one; they are not the "most recent 1-3" so they are graded but not
-re-audited per-artefact here. Their grades enter the A-grade scarcity
-roll-up in §6 below.
+The CLAUDE.md rubric says "most recent 1-3 sessions"; here the queue
+deepened past the prior critique by 7 sessions, so all are audited.
 
 ---
 
@@ -18,581 +18,588 @@ roll-up in §6 below.
 
 | Session | Self-grade | Critic verdict | Demotion? |
 |---|---|---|---|
-| S83 (Lean lower_bound reduction) | B | **B (confirmed)** | No |
-| S84 (SAT TC^0 §A1 wild swing) | B | **B (confirmed)** | No |
-| S85 (frontier_gen, 5 vectors)   | B | **B (confirmed; ceiling)** | No |
+| S95 (D7 DPP/PPP) | B | **B (confirmed)** | No |
+| S96 (D2 PH Takens)| B | **B (confirmed)** | No |
+| S97 (frontier_gen) | B | **B (confirmed)** | No |
+| S98 (L1 Lean corner j=1) | C | **C (confirmed)** | No |
+| S99 (L1 Lean orthogonal corner) | C | **C (confirmed)** | No |
+| S100 (G1 λ-Anderson) | B | **B (confirmed)** | No |
+| S101 (D6.c μ·χ_P) | B | **B (borderline; confirmed)** | No |
 
 No artefact requires relocation, demotion, or rewriting of EDGES.md
-annotations. All three sessions produced a real artefact (Lean file +
-verified `lake build`, Python scripts + JSON + results.md, or 5 new
-ATTACK_VECTORS entries with cross-domain citations) and graded
-themselves correctly as B. None inflated to A; none deflated to C/F.
+annotations. All seven sessions produced real, verifiable artefacts;
+all self-graded honestly per CLAUDE.md "Three Grades"; cross-domain
+citations spot-checked; numerical claims cross-referenced from JSON
+data files; CLOSED_PATHS rows present for the four vector-closing
+sessions (S95→761, S96→763, S100→764). One discipline gap noted in §8
+(S101 closed §D6.c via inline E2.13 refinement but did not file a
+parallel CLOSED_PATHS row — minor; per project precedent (C6, C7)
+NOVELTY_CHALLENGES closures DO get rows).
 
-The critique-level concern is the same as in the prior critique:
-
-* **A-grade scarcity has *deepened*.** 0 A-grade sessions in the last
-  10 production sessions (S75 → S85). Per CLAUDE.md ("≥ 1 A-grade per
-  10-session window" target; "0 A-grade in 20-session window" =
-  framework not progressing), we are at the second half of the warning
-  range. See §6.
-
-The framework's response (auto-fired `frontier_gen` at S85) is healthy.
-The remaining question is whether any of the new vectors (D6 / B1 /
-A4 / B4 / C4 / D5) actually produces an A-grade attack. The next-action
-push (§7) is to commit one session to **D6** (Gowers norms on χ_P) as
-the highest-leverage A-grade-shaped attempt.
+The dominant critique-level concern is **A-grade scarcity** (§6).
+Counting from S83 onward (S82 was the last A-grade self-claim per the
+prior critique chain), **0 A-grade sessions in the last 18+ production
+sessions**. We have now exceeded CLAUDE.md's 20-session warning
+threshold for "framework producing maintenance, not progress" by every
+plausible counting convention.
 
 ---
 
-## 1. S83 — Lean L1: `lower_bound` reduced to `exists_invertible_submatrix`
+## 1. S95 — D7 DPP/PPP/signed-K/complex-Hermitian-K fit to the prime sequence
 
 **Artefact:**
-`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
-lines 355-431 (the new `exists_invertible_submatrix` declaration plus
-the 6-line `lower_bound` proof that consumes it). Annotations to
-`mps_bond_dim_notes.md` (table updated to 8 declarations + status row
-flipped); `RESEARCH_AGENDA.md` Arc 2 milestone tick;
-`NOVELTY_CHALLENGES.md` §3 L1 progress note; `EDGES.md` E2.1
-annotation refreshed.
+* `experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit.py`
+  (kernel-fit framework; 5 falsifiers).
+* `experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit_results.md`
+* `experiments/constructions/primes_dpp_ppp_fit/main_run.json` (raw).
+* New `EDGES.md` E2.16 entry (3-point structural closure).
+* `status/CLOSED_PATHS.md` row 761.
+* `ATTACK_VECTORS.md §D.D7` marked CLOSED.
+* `CROSS_DOMAIN_TECHNIQUES.md` §3 DPP entry promoted PROPOSED → USED I.
+* `NOVELTY_CHALLENGES.md` §D7 closed; §D7.b (Pfaffian) and §D7.c
+  (α-determinantal) successors filed.
 
-### 1a. Has this exact approach been tried before?
+### 1a. Has this approach been tried before?
 
-The structural reduction (rank-bound logic ⇐ invertible-submatrix
-existential) is the standard mathlib-friendly factoring; it was hinted
-at in S76 but not isolated as its own declaration. Prior to S83 the
-informal proof in `novel/mps_bond_dimension.md` mixed the two
-concerns (rank inequality + prime-existence) inline. **Verdict: not
-duplicate.** The factoring is new to the project.
+Spot-checked CLOSED_PATHS for "DPP", "determinantal point process",
+"point process". Zero prior closures on point-process-theoretic kernel
+fits to χ_P. The "determinantal" matches in EDGES.md (lines 484–493,
+1403, 1776) all refer to *determinantal complexity* (Mulmuley-Sohoni
+GCT, dc(π_N) ∈ GapL) — a different mathematical object. The Cramér
+model is the trivial K = 0 PPP; nobody had tested non-trivial K.
+**Genuinely new.**
 
-### 1b. Failure mode
+### 1b. Failure-mode classification
 
-Not applicable — the reduction itself type-checks, and the residual
-work (`exists_invertible_submatrix`) is cleanly stated.
+Mode I (information loss). The HL singular series factorises over
+PRIMES; DPP/PPP correlations factorise over PAIRS. Pairwise
+admissibility cannot detect multi-body inadmissibility. Closure is
+*structural* in a category not previously articulated as a kernel-
+factorisation obstruction.
 
-### 1c. Proof correctness — verified
+### 1c. Numerical claims
 
-I ran `lake build` from
-`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/`:
+Spot-verified from `main_run.json`:
+* F1 (DPP pair-level K² < 0): all 15 admissible even t in [2,30] give
+  K²_DPP < 0. ✓
+* F2 (PPP pair-level K² < 0 at odd t > 1): 14/14. ✓
+* F3 (PPP 3-point gap): 18/19 triples exceed 10%; max 79.16% on
+  3-AP (0,6,12) and (0,12,18), (0,18,24). ✓
+* F4 (real-signed K): σ_req max |0.77| ≠ ±1 on all 19 triples. ✓
+* F5 (complex-Hermitian phase fit): residual 0.0746 ≫ 0.01 noise
+  floor across 200 LM/trust-region restarts on 13 phase variables. ✓
 
-```
-⚠ [8313/8315] Replayed MPSBondDim.Basic
-warning: MPSBondDim/Basic.lean:271:30: unused variable `hj_lo`
-warning: MPSBondDim/Basic.lean:398:8: declaration uses `sorry`
-Build completed successfully (8315 jobs).
-```
+### 1d. Novelty defensibility
 
-Exactly one `sorry` remains, on `exists_invertible_submatrix` (line
-398). The `lower_bound` proof (line 413) is `sorry`-free, as S83
-claims, and reduces mechanically to `Matrix.rank_of_isUnit` +
-`Matrix.rank_submatrix_le`. The `unused variable hj_lo` linter warning
-on `upper_bound` is cosmetic, not a correctness issue.
+Above the C-grade refinement floor: cross-domain technique (DPP)
+genuinely new to the project; falsification mechanism (prime-by-prime
+vs pair-by-pair factorisation) is a NEW articulation; 3-point level
+distinguishes E2.16 from prior 2-point closures (E2.13–E2.15).
 
-The proof body of `lower_bound`:
+Below the A-grade bar: no positive kernel; no polylog opening; no
+overturning of the HL = χ_P-structure picture. Result is structural
+negative.
 
-```
-classical
-obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix W d j hW hj_lo hj_hi
-have h_eq :
-    ((unfolding W d j).submatrix ρ σ).rank =
-      min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1) := by
-  have h := Matrix.rank_of_isUnit ((unfolding W d j).submatrix ρ σ) hUnit
-  rw [Fintype.card_fin] at h
-  exact h
-calc min (W ^ j) (Nat.totient W * W ^ (d - j - 1) + 1)
-    = ((unfolding W d j).submatrix ρ σ).rank := h_eq.symm
-  _ ≤ (unfolding W d j).rank := Matrix.rank_submatrix_le _ _ _
-```
+### 1e. Edges cited / composed
 
-Six lines, two mathlib lemmas, no axioms. Exactly as claimed.
+E2.13 (Gowers U^k), E2.14 (Anderson Lyapunov), E2.15 (algebraic
+immunity), E1.10 / E3.13 / E7.1 (pseudorandomness battery). Adds
+E2.16 as the 3-point complement. Citations accurate.
 
-### 1d. Novelty defensible?
+### 1f. Grade
 
-CLAUDE.md grants A-grade for "a Lean 4 proof of a non-trivial theorem
-(≥ 50 lines, no sorry, no axiom)". The cumulative L1 file is well
-over 460 lines and now uses *no* `axiom`, but **one** `sorry` remains
-(`exists_invertible_submatrix`). Per CLAUDE.md's literal A-grade rule
-the file is not yet A-grade. The S83 self-grade of **B** (substantive
-mid-arc refinement) is correct.
-
-The reduction is a textbook factoring — any Lean / mathlib expert
-would suggest it. What's substantive is that S83 *executed* it cleanly
-in 6 lines and isolated the prime-density existential as the single
-remaining obligation. That isolation is the actual deliverable: the
-next agent inherits a strictly cleaner problem ("exhibit an `R × R`
-invertible submatrix") rather than the previous tangled obligation
-("prove a rank inequality that requires a prime-density argument").
-
-**Verdict: B confirmed.** The Lean track is one closed `sorry` away
-from A-grade. The closing session for `exists_invertible_submatrix`
-will be the right moment to grade the cumulative L1 work A.
-
-### 1e. Cited edges
-
-E2.1 (formalisation target). The internal mathlib citations
-(`Matrix.rank_of_isUnit`, `Matrix.rank_submatrix_le`, `Fintype.card_fin`)
-are accurate — confirmed by `lake build` succeeding.
-
-### 1f. EDGES.md / docs
-
-`mps_bond_dim_notes.md` decomposition table now lists 8 declarations
-with `lower_bound` flipped to **done** and `exists_invertible_submatrix`
-introduced as the sole `sorry`. Faithful to the actual file state.
-Routes A (Bertrand-style) and B (Vandermonde-style) for closing the
-existential are documented in the file's docstring and in
-`mps_bond_dim_notes.md`.
-
-**Verdict: B confirmed. No demotion.**
+**Self-graded B; confirmed B.** "Ambitious frontier attack from
+ATTACK_VECTORS.md that failed but failed informatively — failure
+mode was structural" (CLAUDE.md B-grade case (ii)). Five pre-stated
+falsifiers, all hold quantitatively; cross-domain technique imported
+correctly with foundational reference; new edge in fresh category.
 
 ---
 
-## 2. S84 — SAT TC^0 §A1 wild swing at N=8
+## 2. S96 — D2 Persistent Homology of Takens-embedded χ_P gaps
 
-**Artefact:** `experiments/circuit_complexity/sat_tc0_primes_n8/`
-(11 Python scripts, 12 JSON / log files, `sat_tc0_primes_n8_results.md`).
-ATTACK_VECTORS.md §A1 marked as **partial closure** (line 788; W=1
-sign-threshold sub-family at N=8 closed, depth-5 size-2000 enumeration
-remains open). `status/CLOSED_PATHS.md` row 754. Self-extension to
-`NOVELTY_CHALLENGES.md` proposed (calibrated-1-bit random control).
+**Artefact:**
+* `experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p.py`
+* `experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p_results.md`
+* JSON files: `main_run_d{2,3,4}.json`, `main_run_d3_x5M.json`,
+  `scale_M{500,1000,2000,4000}.json`.
+* `EDGES.md` E2.17 added.
+* `status/CLOSED_PATHS.md` row 763.
+* `CROSS_DOMAIN_TECHNIQUES.md`: PH PROPOSED → USED I.
+* `ATTACK_VECTORS.md §D.D2` closed.
 
-### 2a. Has this exact approach been tried before?
+### 2a. Tried before?
 
-CLOSED_PATHS line 129 ("Nonlinear sieve: bitwise/TC^0", S14) and
-line 676 ("Depth-2 threshold circuits for pi(x) LSB", S35) are the
-nearest neighbours.
+S10 mention ("TDA of prime gaps", `persistent_homology_primes.py`)
+was qualitatively gtda-based, no Poisson baseline, "noise-dominated"
+verbatim — file row 681 in CLOSED_PATHS. S96 supersedes it: K=20
+Poisson + K=20 gap-permutation baselines, ripser persistent H₀/H₁,
+multi-window / multi-dim / scaling sweeps. Quantitative regime is new;
+conclusion direction is the OPPOSITE (deviation, not noise floor).
+**Genuinely new at the quantitative level.**
 
-* Line 129 used bit-feature + AND on `pi(x)` (not PRIMES) and reported
-  generalisation failure. S84 measures depth-2 *sign-threshold* sizes
-  on the PRIMES indicator — different model, different measurement.
-* Line 676 reported `PTF degree = N/2` for `pi(x) LSB` (an LP-tight
-  upper bound under the `2x − 1` symmetric encoding). S84 reports
-  PTF degrees `{2, 3, 3, 3, 4}` for `PRIMES` at `N ∈ {4..8}` in the
-  `{0,1}`-input monomial basis. The two encodings are not directly
-  comparable (LSB-of-pi vs. is-prime), and the chosen monomial basis
-  for S84 is the standard one (line 676 used a centred basis where
-  `chiP(x) ↦ 2 chiP(x) − 1`). **Both are correct measurements; they
-  measure different functions in different bases.**
+### 2b. Failure-mode classification
 
-**Verdict: not duplicate.** S84 produces three measurements not in
-the project before:
+Mode I (information loss). PH is a measurement instrument, not an
+inverse map: recovering p_n from a barcode requires bar endpoints
+AND the original 1D ordering of n, which IS π(x). VR-PH costs O(M³)
+worst-case; no polylog opening.
 
-(i) PTF degree of PRIMES at N=4..8 in the standard monomial basis
-   (`2, 3, 3, 3, 4`).
-(ii) Exact depth-2 W=1 sign-threshold size at N=4 (M=3) and N=6 (M=6).
-(iii) Statistically significant PRIMES-vs-random gap at N=6 (PRIMES
-    M=6, all 10 random matched controls M ≥ 7).
+### 2c. Numerical claims
 
-### 2b. Failure mode
+Spot-verified:
+* Main run d=3, M=2000, x≈10⁶: T0 z(B1) = −10.31, z(B2) = −8.70,
+  rank 0/20. T1 z(B1) = −4.20, z(B2) = −11.99, rank 0/20.
+* Robustness x=5·10⁶: T0 z(B2) = −7.58, T1 z(B2) = −8.69. ✓
+* Cross-dim d∈{2,3,4}: T0 z(B2) ∈ [−8.7, −5.1]. ✓
+* M-scaling d=3: M=500 → T0 z(B1) = −4.2; M=4000 → T0 z(B1) = −17.8.
+  Super-linear growth — signal is AT LEAST linear in window size,
+  not finite-N noise. ✓
 
-**Mode I** (information loss). The W=1 sign-threshold size at N=8 is
-≥ 17 in the `k_max ≤ 5` candidate sub-family — strongly suggesting
-super-polynomial scaling, not polylog. The session correctly
-classifies this as the closure mode and explicitly declines to claim
-that §A1 is fully closed (depth-5 size-2000 enumeration remains
-intractable under their tools).
+### 2d. Novelty / mechanism
 
-**Verdict:** mode I correct, scoped honestly.
+Mechanism: HL k-tuple admissibility constrains consecutive gaps to
+repeat residue patterns (geometric self-similarity → small T0;
+suppressed delay-space "out-and-back" triangles → small T1). The B2
+control isolates serial-correlation component of the deviation.
 
-### 2c. Numerical claims — verified
+This is the FIFTH independent confirmation of the χ_P = HL
+equidistribution structure (after E2.13/14/15/16) in a FIFTH
+orthogonal mathematical category.
 
-Spot-checked `n6_robust.json` directly:
+### 2e. Grade
 
-* PRIMES at N=6: `min_M = 6`. Matches synthesis.
-* 10 random matched seeds: M=7 (4 seeds), M=8 (6 seeds). Matches.
-* All 10 random ≥ 7 ⇒ binomial null `Pr(X = 0)` with `p = 0.5` ten
-  times `= 2^{-10} ≈ 0.001`. The session quotes `p < 0.001`. Correct
-  if the null is "PRIMES depth-2 W=1 size is the *median* of the
-  random distribution" (which is what the binomial calculation
-  actually tests, not "PRIMES is below the *minimum*"). Mild abuse of
-  language, but the *direction* is correct and the magnitude
-  (0.001 vs. the theoretical 0.5^10 = 0.00097) is right.
-* PTF degrees: I did not re-run the LP, but the cited table is
-  internally consistent with 5 random seeds median values matching
-  PRIMES at N ∈ {4, 5, 7, 8} and one off-by-one at N=6 (PRIMES = 3,
-  random median = 3) — no asymmetry, as claimed.
-
-The single-bit predictor table (PRIMES bit-0 accuracy 70.3% at N=8 vs.
-random max single-bit 57.0%) is also correct: at N=8 the indicator
-function `1[x mod 2 = 1]` matches PRIMES on 53/54 odd primes + 127/128
-even composites + miss-2 = (53 + 127) / 256 = 0.703 — confirmed by
-direct computation (53 = number of odd primes ≤ 256 minus 2 itself; 127
-= even composites in [0, 255]; 2 itself is the lone "miss").
-
-**Verdict:** numerics correct; minor framing tightening on the
-binomial test (which is fine for a B-grade claim).
-
-### 2d. Novelty defensible?
-
-The PRIMES-vs-random depth-2 W=1 gap at N=6 is genuinely the FIRST
-project measurement where a circuit-complexity invariant of PRIMES
-empirically deviates from a matched-density random baseline. The
-session correctly notes that the gap REDUCES TO an elementary fact
-("most primes are odd"), which is well-known number theory and not
-deep arithmetic structure.
-
-So:
-
-* Per CLAUDE.md: A-grade requires either a TC^0 PRIMES circuit family
-  or a structural deviation that can't be explained elementarily.
-  S84 produced *neither*. The deviation is real but it's the oddness
-  effect, not new arithmetic.
-* B-grade requires substantive structural finding OR an ambitious
-  attack that fails informatively. S84 produced both: (a) the
-  structural mechanism (1-bit predictor advantage) is precise and
-  quantitative; (b) the §A1 wild swing failed informatively (W=1
-  size ≥ 17 at N=8 rules out the small-W sub-family).
-* C-grade would be pure verification. S84 produced new measurements
-  (PTF degrees, exact W=1 sizes, the gap) — above C-grade.
-
-The "first PRIMES circuit-complexity deviation" framing is novel
-but the underlying mechanism is elementary; the session
-correctly does NOT promote it to a `novel/` entry or a new EDGES.md
-edge.
-
-**Verdict: B confirmed.** The session was honest about the limitations
-(elementary mechanism, partial closure, no new edge). The session-end
-self-evaluation includes a precise falsification protocol
-(calibrated-1-bit random control) that the next agent can run to
-either confirm "gap = oddness" entirely or expose residual structure.
-
-### 2e. Cited edges
-
-E1.10 / E3.13 (cited as REINFORCED at PTF-degree level + DEVIATED at
-depth-2 W=1 with elementary mechanism), E5.3 / E7.10 (PRIMES-in-TC^0
-open + AKS depth orthogonality, supported), S20 / S28 (BDD complexity,
-different model), `novel/pseudorandomness_of_pi.md` (now warrants a
-"36th measure" footnote with elementary mechanism).
-
-The "warrants a footnote" framing is honest — the deviation is real
-but mechanism-attributable, so it doesn't break the broader pseudo-
-randomness thesis. Citations accurate.
-
-### 2f. CLOSED_PATHS row
-
-Row 754 (line numbers verified) cites E1.10, E3.13, E5.3, E7.10, S20,
-S28, the novel pseudorandomness file, and "S14 nonlinear sieve". The
-row honestly states that §A1 is NOT fully closed (W=1 sub-family only).
-Cross-references accurate.
-
-**Verdict: B confirmed. No demotion.**
+**Self-graded B; confirmed B.** Pre-stated F3 falsifier holds at
+≥ 5σ across all robustness checks. Cross-domain technique (TDA / PH)
+genuinely imported — Carlsson 2009 BAMS, Edelsbrunner-Harer 2010,
+ripser/Bauer 2021. Above C because new edge in new category;
+quantitative scaling sweep new to project. Below A because no polylog
+opening; same HL signal in new clothing.
 
 ---
 
-## 3. S85 — frontier_gen: 5 new ATTACK_VECTORS entries
+## 3. S97 — frontier_gen producing 5 new ATTACK_VECTORS entries (D9–D13)
 
-**Artefact:** five entries added to `ATTACK_VECTORS.md`:
+**Artefact:** five new entries added to `ATTACK_VECTORS.md`:
 
-* §A.A4 — Bounded-arithmetic provability of TC^0 primality witness
-  (lines 114-173).
-* §B.B4 — Voronin universality with effective shifts as polylog
-  approximator (lines 252-314).
-* §C.C4 — Anderson localisation in prime-driven discrete Schrödinger
-  operator (lines 391-458).
-* §D.D5 — Continuous-time quantum walk on graphs §D.D4 closed
-  (lines 556-624).
-* §D.D6 — Gowers U^k norms of χ_P (lines 625-694).
+* §D9 — Sum-product gain on F_p (Bourgain-Glibichuk-Konyagin 2006).
+* §D10 — Mahler measure m(f_N) of prime generating polynomial.
+* §D11 — Shadow tomography sample complexity for π(x).
+* §D12 — Compressed sensing of χ_P in AP dictionary.
+* §D13 — Subword complexity p_w(n) of χ_P as binary word.
 
-Cross-domain references registered in `CROSS_DOMAIN_TECHNIQUES.md`
-(verified: lines 36, 37, 106, 127, 134 contain the new PROPOSED
-entries with arXiv / textbook references).
+Plus `CROSS_DOMAIN_TECHNIQUES.md` updates (5 PROPOSED entries with
+survey URLs).
 
-### 3a. Has this approach been tried before?
+### 3a. Tried before?
 
-`frontier_gen` is a generation mode, not a closure mode. The relevant
-duplicate check is whether each of the 5 vectors corresponds to a
-prior closed path. I verified directly:
+Per S97 §"Cross-checks against CLOSED_PATHS.md", explicit cross-checks
+done against ~750 closures. Spot-verified:
+* Selberg trace formula closures (lines 200/347/520/593/653/656/716/
+  739) — distinct from D9–D13.
+* p-adic interpolation closures (lines 8, 10) — closed for von-
+  Mangoldt-side p-adic Mahler series, genuinely distinct from
+  COMPLEX Mahler MEASURE in D10. ✓
+* Goldreich-Levin (line 473) — distinct query model from D11 shadow
+  tomography. ✓
+* Fourier dictionary (line 47) — D12 uses STRUCTURED AP dictionary,
+  not Fourier. ✓
 
-* **A4 (bounded arithmetic / VTC^0):** zero matches in CLOSED_PATHS.md
-  for `bounded.arithmetic` / `VTC` / Buss / Cook-Nguyen. Zero matches
-  in EDGES.md. **Genuinely new.**
-* **B4 (Voronin universality):** zero matches in CLOSED_PATHS.md or
-  EDGES.md for `Voronin` / `universality`. The project has done
-  effective-zero-truncation (E3.2-E3.5) but never the universality
-  angle. **Genuinely new.**
-* **C4 (Anderson localisation):** one Lyapunov match in CLOSED_PATHS
-  (line 189, S40, "Ergodic fast-forward of prime gaps") but it is the
-  Lyapunov exponent of the *gap-sequence dynamical map*, NOT the
-  *Schrödinger transfer-matrix* Lyapunov exponent. Different operator,
-  different setup. The C4 entry is explicit on this. **Genuinely new.**
-* **D5 (CTQW):** S80 closed Szegedy walks on the same graphs (CLOSED_PATHS
-  line 752); the D5 entry directly addresses why CTQW does not inherit
-  the closure (different mixing invariant: gap vs band-edge). The
-  glued-trees precedent (Childs et al. 2003) shows CTQW can give
-  exponential speedup where Szegedy gives polynomial. **Genuinely
-  new and explicitly distinguished.**
-* **D6 (Gowers U^k norms of χ_P):** zero matches in CLOSED_PATHS for
-  Gowers / nilsequence. The published Green-Tao-Ziegler results are
-  for `Λ` (von Mangoldt-weighted), not the bare indicator `χ_P`.
-  **Genuinely new.**
+All five vectors carry foundational references (BGK 2006, Aaronson
+2018 arXiv:1711.01053, Smyth 2008 / Boyd 1981, Candes-Tao 2006,
+Cassaigne-Nicolas 2010 / Lind-Marcus 1995). Cross-domain reads done
+via WebFetch on each.
 
-**Verdict:** all 5 vectors pass the near-duplicate check. None are
-prior closures rephrased.
+### 3b. Generation-mode evaluation
 
-### 3b. Cross-domain ingredient verification
+Each vector has a single concrete first step, a pre-stated A-grade
+success criterion, a B-grade fallback, and a cross-domain ingredient
+that is UNUSED status in `CROSS_DOMAIN_TECHNIQUES.md`. The five
+techniques span 5 distinct mathematical categories not represented in
+the existing 35-measure pseudorandomness battery: joint additive-
+multiplicative combinatorics (D9), algebraic height (D10), quantum-
+info sample complexity (D11), structured-dictionary compressive
+sensing (D12), topological symbolic dynamics (D13).
 
-CLAUDE.md's autonomy-invariants section requires `frontier_gen` to
-draw from `CROSS_DOMAIN_TECHNIQUES.md` and to register new techniques
-there. S85 added 5 PROPOSED entries (A4 → bounded arithmetic, B4 →
-Voronin universality, C4 → Anderson localisation, D5 → CTQW, D6 →
-Gowers norms). All five have arXiv URLs / textbook references in the
-registry. **Verified.**
+### 3c. Grade
 
-### 3c. Falsification criteria
-
-Each vector has explicit:
-* "A-grade success" pre-stated.
-* "B-grade success" pre-stated (predicted closure mode).
-* "Failure profile (E / I / INC)".
-* Concrete first-session step.
-
-CLAUDE.md's autonomy-invariants require frontier_gen to include
-falsification criteria — confirmed for all 5.
-
-### 3d. Novelty defensible?
-
-CLAUDE.md is explicit that frontier_gen is **B-grade by construction**
-(the proposing session does no attack itself; it only produces
-targets). S85's self-grade rationale acknowledges this ceiling
-correctly. The honest grade is B, and S85 self-grades B with the
-explicit reasoning "I am NOT inflating to A". Correct.
-
-The information value of frontier_gen depends on whether attempted
-attacks against the proposed vectors actually produce A-grade work.
-S85's expected A-grade yield estimate (`1 - 0.85^5 ≈ 56%` across all
-5 attempts) is plausible but optimistic — historically the project's
-A-grade hit rate on attacks is much lower. A more conservative
-estimate: 20-30% across all 5.
-
-**Verdict: B confirmed (ceiling).**
-
-### 3e. Self-extension
-
-S85's "Self-extension" section provides 5 follow-on questions, one
-per vector, each B-grade-tractable. Useful padding for the framework's
-self-sustaining condition.
-
-### 3f. Next-action recommended
-
-S85 recommends `D6 first` (Gowers norms — single-session viable, U^2
-is a one-line FFT). I concur (see §7).
-
-**Verdict: B confirmed. No demotion.**
+**Self-graded B; confirmed B.** This is the second `frontier_gen`
+session in the rotation (S91 was the first; produced A5/C5/D7/D8).
+Five vectors at quality matching S91 — none confidently A-grade-likely,
+all genuinely UNUSED, all pre-flighted against CLOSED_PATHS. Auto-
+fired correctly per autonomy invariant (open-vector count nearing
+threshold; A-grade scarcity).
 
 ---
 
-## 4. Sessions critique-adjacent (S79 / S80 / S81 / S82) — grade roll-up only
+## 4. S98 — L1 Lean: corner case (W = 2, j = 1) of E2.1 closed unconditionally
 
-These four sessions sit between this critique and the prior one but
-fall outside the "most recent 1-3" scope. I do not re-audit them
-per-artefact; they enter the A-grade scarcity check below at their
-self-graded letter.
+**Artefact:** two new theorems in `experiments/formalisations/
+E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`:
+* `exists_invertible_submatrix_W_eq_2_j_eq_1`
+* `mps_bond_dim_W_eq_2_j_eq_1`
 
-* **S79 (A3 Cayley spectral primality)** — self-grade B. Frontier
-  attack on §A3, closed by structural reason (`(Z/p^kZ)*` cyclic for
-  odd primes ⇒ unit-group spectrum cannot distinguish primes from
-  prime powers). Produced new identity: number of integer eigenvalues
-  ≥ 2^ω(n). New EDGES.md entry E7.12. Honest B-grade ambitious failure.
-* **S80 (D4 Szegedy walks)** — self-grade B. Frontier attack on §D4,
-  closed E (joint condition "fast mixing + global primality eigenvector"
-  empirically incompatible across Cayley / coprime / divisor families).
-  New EDGES.md entry E7.13. Discovered ζ(2) Mertens identity for the
-  coprime graph stationary distribution (small but real). Honest B.
-* **S81 (C6 pillar tradeoff diagram)** — self-grade B. C6 composition
-  built (HKM uniquely on floor pillar at (8/15, 1/3)). The
-  structural classification claim is real but follows from existing
-  edges (E6.7 + E7.7) — substantive refinement, not new mathematical
-  fact. Honest B.
-* **S82 (C2 spike eigenvectors sub-arc)** — self-grade B. Identifies
-  S74's spike band as residue-class character subspaces at small
-  primes coprime to W; the C2 spectral barrier is now identified WITH
-  the E1.5 information-theoretic barrier (same object, two views).
-  Empirical, not theorem-level — A-adjacent if a clean character-
-  theoretic theorem follows. Honest B.
+`#print axioms`: `[propext, Classical.choice, Quot.sound]` only — no
+`sorryAx`, no new `axiom`. The general-case `exists_invertible_submatrix`
+`sorry` at line 467 is unchanged. ≈70 Lean lines.
 
-All four self-graded B; none inflated. Verdicts roll into §6.
+### 4a. Verification
+
+Bertrand's postulate (`Nat.exists_prime_lt_and_le_two_mul`) gives the
+prime in `(2^(d-1), 2·2^(d-1)]`; the (1,0) entry vanishes because
+`2 ∣ (2^(d-1) + 2)` and `2^(d-1) + 2 > 2`, so it cannot be prime. The
+upper-triangular structure with diagonal `(1, 1)` over ℚ gives `IsUnit`.
+This is Route A' from `mps_bond_dim_notes.md`, predicted by S90.
+
+### 4b. Grade
+
+**Self-graded C; confirmed C.** "A Lean translation of an already-
+proven informal argument, with the translation type-checking but
+introducing no new mathematical content" — fits CLAUDE.md C-grade
+exactly. The construction was pre-identified by S90; the Lean work is
+verification, not new mathematics. Honest self-grade-down per CLAUDE.md.
 
 ---
 
-## 5. Grade-correction summary across the whole post-S78 batch (S79 - S85)
+## 5. S99 — L1 Lean: orthogonal corner (W = 2, d = j + 1) closed unconditionally
 
-| Session | Self-grade | Critic | Reason for any delta |
-|---------|-----------|--------|----------------------|
-| S79     | B         | B      | Confirmed, ambitious failure with structural reason |
-| S80     | B         | B      | Confirmed, ambitious failure with cross-domain machinery |
-| S81     | B         | B      | Confirmed, refinement (composition follows from cited edges) |
-| S82     | B         | B      | Confirmed, structural refinement (A-adjacent if theorem follows) |
-| S83     | B         | B      | Confirmed, mid-arc Lean reduction (A on closing session) |
-| S84     | B         | B      | Confirmed, structural mechanism + partial §A1 closure |
-| S85     | B         | B      | Confirmed (frontier_gen ceiling); 5 fresh vectors |
+**Artefact:** three new theorems plus a small helper:
+* `chiP_three_eq_one`
+* `exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1`
+* `mps_bond_dim_W_eq_2_d_eq_j_plus_1`
 
-**Zero demotions across 7 sessions.** The framework's discipline is
-holding — agents are honestly grading down, not inflating. But all 7
-landed at B; none reached A.
+≈110 Lean lines. `#print axioms` clean — no `sorryAx`, no `axiom`.
+General sorry unchanged.
 
----
+### 5a. Verification
 
-## 6. A-grade scarcity check (CLAUDE.md "10/20 session windows")
+Mirror of S98 with structural simplification: only 2 columns (no
+Bertrand), so we take both. `(σ 0, σ 1) = (1, 0)` gives the identity
+matrix `[[chiP 2, chiP 1], [chiP 4, chiP 3]] = [[1, 0], [0, 1]]`.
+Uses only `Nat.prime_two`, `Nat.prime_three`, `Nat.not_prime_one`,
+`decide`-able `¬ Nat.Prime 4`. Together with S98, the union covers
+the entire `(j, d−j)` boundary at W = 2 (the L-shape on the parameter
+grid).
 
-CLAUDE.md targets:
-* "≥ 1 A-grade session per 10-session window" (target).
-* "0 A-grade sessions in last 20-session window" (warning).
+The dependent-rewrite gotcha is documented for future Lean sessions
+(prove the arithmetic identity as a separate `have`, chain via
+`linarith` rather than `rw`/`▸` inside dependent types).
 
-**Last 10 production sessions** (excluding critique S78):
-S75, S76, S77, S79, S80, S81, S82, S83, S84, S85.
+### 5b. Grade
 
-Grades (per prior critique + this critique): all **B**.
+**Self-graded C; confirmed C.** Same C-grade case as S98: Lean
+translation of S90-predicted Route A'' with no new mathematical
+content. Per CLAUDE.md self-grade-down rule, C is correct.
 
-**A-grade count in last 10: 0.**
-
-This satisfies the *target-miss* condition and is at the **first half
-of the warning range**. The prior critique (post-S77) already noted
-this trend; it has now persisted for an additional 7 production
-sessions. We are 11+ sessions into a no-A streak.
-
-**To check the full warning condition** ("0 A-grade in 20-session
-window"): the prior 10 production sessions before S75 are S65, S66, S67,
-S68, S69, S70, S71-original, S71-redux (= S78-counted), S72, S74. Per
-the earlier critiques (session_critique60_fresh.md, session73_critique.md)
-none of these self-graded A and the corresponding critiques confirmed
-B-or-below. So the 20-session window from S65 → S85 contains **0 A-grade
-sessions**.
-
-**This is the full warning state per CLAUDE.md.** "If 0 A-grade in
-20-session window: the framework is producing maintenance, not
-progress. The current frontier is exhausted and ATTACK_VECTORS.md
-needs new entries."
-
-S85's frontier_gen ALREADY responded to this warning by producing
-5 new entries (autonomy invariants worked as designed). The next
-production session must commit to attacking ONE of them seriously.
-The prior critique's recommendation (B1 polynomial method) was NOT
-picked up by any S78-S85 session; the agents went to A1 (S84), A3
-(S79), D4 (S80), Lean (S83), Arc 4 sub-arcs (S81, S82) instead. **The
-no-A streak will continue if the next 5 sessions also avoid the
-recommended vectors.**
-
-The framework's correct response now is a sustained push on A-grade
-vectors. Picking ONE A-grade vector and committing 1-3 sessions to
-it is more valuable than 5 sequential B-grade refinements.
+A note: C-graded Lean sessions advance the arc by milestone (Arc 2
+boundary now fully covered at W=2) without producing new edges. Two
+back-to-back C-grade sessions are fine in this context — they are
+verification work — but they pull the rotation away from the A-grade
+scarcity remediation.
 
 ---
 
-## 7. Single highest-value next-action
+## 6. S100 — G1 Liouville Anderson Lyapunov: spectral signature of Möbius pseudorandomness
 
-**Pick: §D.D6 (Gowers U^k norms of χ_P)** from `ATTACK_VECTORS.md`.
+**Artefact:**
+* `experiments/dynamical/liouville_anderson_lyapunov/`:
+  `liouville_anderson_lyapunov.py`, `liouville_anderson_lyapunov_analyze.py`,
+  three result JSONs (N=10⁵, 3·10⁵, 10⁶), `analysis_summary.json`,
+  `_results.md`.
+* `EDGES.md` E2.18 added.
+* `CROSS_DOMAIN_TECHNIQUES.md`: Möbius/nilsequence orthogonality (GT
+  2012) added as USED E.
+* `ATTACK_VECTORS.md §G.G1` closed.
+* `status/CLOSED_PATHS.md` row 764.
 
-This recommendation aligns with S85's "next-action for the next agent"
-and with `NOVELTY_CHALLENGES.md` §0 (already pointing at D6).
+### 6a. Tried before?
 
-**Why D6 over the alternatives:**
+S88 closed `chi_P` Anderson Lyapunov in the {0,1} encoding (88σ
+deviation, W=2310 cascade required). S100 uses the *centered
+multiplicative* {-1, +1} Liouville encoding — fundamentally different
+operator ensemble. The existing `chi_P_anderson_localisation` script's
+Liouville code path used `(1−λ)/2` ∈ {0, 1} (mod-2 indicator), which
+tests a different question. **Genuinely new.**
 
-* **Tractability.** U^2 is a one-line FFT computation: `‖f‖_{U^2}^4 =
-  (1/N^3) Σ_n |f̂(n)|^4`. Single Python session computes it for `N`
-  up to `2^{16}`. U^3 at `N = 4096` is ~7×10^{10} ops, overnight on
-  one core. A-grade-shaped first-step delivery in ONE session.
-* **Cross-domain fresh.** Gowers norms / Green-Tao-Ziegler inverse
-  theorem have NEVER been used in the project. The Λ-vs-χ_P
-  distinction (Green-Tao results are for von Mangoldt, not the bare
-  indicator) is the key. The χ_P U^k computation is not in published
-  literature.
-* **Falsification well-defined.** The two outcome shapes are sharp:
-  - `‖χ_P‖_{U^{k_0}} = Ω(1)` ⇒ Green-Tao-Ziegler identifies a
-    (k_0-1)-step nilsequence correlating with primes — first
-    nilsequence-shape arithmetic content in the project (A-grade).
-  - `‖χ_P‖_{U^k} = o(1)` to k=3 with quantitative rate ⇒ 36th-37th
-    pseudorandomness measure, qualitatively distinct from local
-    correlation tests (B-grade).
-* **Cuts orthogonally to S82's spike-eigenvector identification.**
-  S82 showed χ_P spectral structure at small primes via residue-
-  class characters. Gowers U^k probes nilsequence structure
-  (Heisenberg-like). The two pictures are independent — D6 either
-  reinforces or extends S82's "spectral barrier = information
-  barrier" identification.
+### 6b. Numerical claims
 
-**Backup choices if D6 doesn't fit the next session:**
+Spot-verified from JSONs:
+* N=10⁵, 50 seeds: max |z| = 1.78 at E=−0.236.
+* N=3·10⁵, 50 seeds: max |z| = 2.16 at E=+0.118.
+* N=10⁶, 100 seeds: max |z| = 2.04 at E=−2.006.
+* All below 51-energy Bonferroni z = 3.16. Argmax wanders.
+* χ²/K = 0.49–0.69 (sub-Rademacher).
+* Pastur-Figotin: γ_λ/γ_PF = 0.9317 (std 0.317), γ_Rad/γ_PF = 0.9309
+  (std 0.317) — identical to 4 decimals.
+* Chowla aggregate at N=10⁶: Σ z_h² = 4.77 vs χ²_16 mean 16
+  (more Rademacher-like than Rademacher).
 
-1. **§B.B1 (Croot-Lev-Pach polynomial method on χ_P).** Prior
-   critique recommended this; still untouched. Equally A-grade-shaped.
-   Pick this if the next agent is more comfortable with finite-field
-   linear algebra than with FFT-based correlation analysis.
-2. **L1 Lean closure: `exists_invertible_submatrix` (Route B,
-   Vandermonde-style).** This is the lighter-weight path to closing
-   E2.1 entirely in Lean. Once closed, the cumulative L1 file meets
-   CLAUDE.md's "Lean 4 proof of a non-trivial theorem (≥ 50 lines,
-   no sorry, no axiom)" A-grade rule. Single-session feasible if the
-   Vandermonde route is taken (avoids analytic NT).
+### 6c. Novelty / mechanism
 
-**Why not the new C4 / D5 / B4 / A4 from S85:**
+The PAIRED CONTRAST with S88/E2.14 is the new content: chi_P's
+spectral deviation is *exclusively* HL singular-series mod-q
+resonance; the canonical chi_P-twin (λ: density 1/2, centered,
+multiplicative) carries no such resonance and is spectrally featureless.
+First non-W-tricked spectral measurement at noise floor in the
+project's 38-measure battery.
 
-* C4 (Anderson localisation) — 2-session budget, requires careful
-  numerical setup (transfer-matrix product Lyapunov estimates).
-* D5 (CTQW) — also 2-session, requires Hamiltonian simulation infra.
-* B4 (Voronin) — heavy mpmath grind at high precision; no clear
-  single-session deliverable.
-* A4 (bounded arithmetic) — 2-3 sessions, mostly literature reading
-  before any experiment.
+Cross-domain ingredient (Möbius/nilsequence orthogonality) imported
+correctly — Green-Tao 2012 Annals = arXiv:0807.1736; Sarnak 2010 IAS
+lectures; Tao 2016 Forum Math Pi 4 = arXiv:1509.05422 (logarithmic-
+Chowla). Status correctly upgraded UNUSED → USED E.
 
-D6 / B1 / Lean-L1 are the only single-session-viable A-grade
-attempts in the current frontier.
+### 6d. Grade
 
-This recommendation is written into the next-action queue via
-NOVELTY_CHALLENGES.md §0 (which S85 already updated to point at D6).
-ATTACK_VECTORS.md §D.D6 is the canonical attack-spec.
+**Self-graded B; confirmed B.** B-grade case (i) ("refinement of an
+existing edge with a precise new statement that extends its scope") —
+E2.14 was χ_P-only, now extended to the multiplicative regime via
+E2.18. F1 (sustained |z|>5 not W-trick-removable) FALSE in a
+structurally-explained way. F2 (B-grade fallback) HOLDS strongly.
 
----
-
-## 8. Cleanup status
-
-* `find experiments/circuit_complexity/sat_tc0_primes_n8/ -name "*.py"`
-  — every script has a sibling `_results.md` (top-level
-  `sat_tc0_primes_n8_results.md` covers the whole subdirectory,
-  per the session's design).
-* `find experiments/formalisations/E2_1_mps_bond_dim/ -name "*.lean"`
-  — `Basic.lean` has its sibling `mps_bond_dim_notes.md` in the parent.
-* No `__pycache__` left behind (no Python run by this critique).
-* `lake build` confirmed clean (1 expected sorry, 0 axioms).
-* No "pending" labels remain in ephemeral docs for completed work.
-* No edits to `run.sh` or `FOCUS_QUEUE.md`.
+A note: this session is a "swing into the multiplicative regime" that
+the prior critique flagged as the project's highest-leverage frontier.
+The swing landed B (not A) but is still aligned with the right next-
+action direction.
 
 ---
 
-## 9. Self-evaluation (per CLAUDE.md)
+## 7. S101 — D6.c μ-weighted χ_P U² (family-level refinement of E2.13)
 
-**Q1. What did I produce that was not in the project before this session?**
-* A per-artefact verdict on the three most-recent sessions
-  (S83 / S84 / S85) with `lake build` re-verification confirming
-  the L1 Lean track is at one remaining `sorry` (line 398) post-S83.
-* A grade-correction roll-up across the entire post-S78 batch
-  (S79-S85): zero demotions, all seven sessions confirmed B.
-* Empirical re-verification of S84's PRIMES-vs-random gap from
-  `n6_robust.json` (PRIMES M=6, 4 seeds M=7, 6 seeds M=8 — matches
-  synthesis exactly).
-* CLOSED_PATHS / EDGES.md / CROSS_DOMAIN_TECHNIQUES.md cross-checks
-  for each of S85's 5 frontier vectors, confirming none are
-  duplicate-of-existing-closure.
-* An A-grade scarcity check across last 20 sessions: 0 A-grade —
-  full warning state per CLAUDE.md. Framework is producing
-  maintenance, not progress; the recent frontier_gen is the correct
-  response and the next session must attack one of its proposals.
-* A concrete recommended next-action: §D.D6 (Gowers norms on χ_P),
-  with B1 / L1-Lean as backup paths.
+**Artefact:**
+* `experiments/information_theory/mu_weighted_chi_p_uk/`:
+  `mu_weighted_chi_p_uk.py`, `wtrick_check.py`, `main_run.json`,
+  `wtrick_check.json`, `_results.md`.
+* `EDGES.md` E2.13 updated inline with family-level table and new
+  empirical constant `S_2^{sqfree} ≈ 1.0384`.
+* `NOVELTY_CHALLENGES.md §D6.c` marked CLOSED.
 
-**Q2. What edges did my work compose or cite?**
-Cited E2.1 (S83 reduction), E1.10, E3.13, E5.3, E7.10, S20, S28
-(S84 SAT TC^0 context), and the new vectors A4 / B4 / C4 / D5 / D6
-in ATTACK_VECTORS. No new edges composed (this is critique, not
-construction).
+### 7a. Literal vs pivoted target
 
-**Q3. If only duplicate closures, why?**
-Critique sessions don't produce closures; they audit. The audit
-found three honestly-graded B sessions (S83, S84, S85), confirming
-discipline is intact, but also surfaced the A-grade scarcity warning
-at the FULL 20-session window (up from the 10-session warning at
-the prior critique). The trend has deepened.
+Literal §D6.c: "does μ·χ_P kill the HL structure of χ_P at U²?"
+Trivial collapse: `μ(p) = −1` for every prime p, so `μ(n)·χ_P(n) ≡
+−χ_P(n)` pointwise; all Gowers norms are scale-invariant in absolute
+value, so `Q²(μ·χ_P) = Q²(χ_P) → S_2 ≈ 2.301`. No, μ·χ_P does NOT
+kill HL structure of χ_P.
 
-**Q4. Next-action for the next agent.**
-**Attempt §D.D6 (Gowers U^k norms of χ_P).** See §7 above.
-Backup: §B.B1 (polynomial method on χ_P) or L1 Lean
-`exists_invertible_submatrix` Route B (Vandermonde-style exhibit).
-All three are single-session A-grade-shaped attempts. The framework
-needs an A-grade hit; the next-action MUST be one of these three,
-not another B-grade refinement.
+Pivot to broader question: "does Möbius cancellation propagate from
+signed μ to its indicator level sets?" Built panel of 11 multiplicatively
+defined indicators on Z/NZ. Sharp dichotomy — Liouville-±1 indicators
+are Gowers-uniform (Q²→1.0000), Möbius-±1 indicators retain HL
+structure (Q²_∞ ≈ 1.0384, density 3/π² ≠ 1/2). Structural finding:
+"Möbius cancellation propagates to indicator level sets ONLY when the
+level set has density 1/2."
+
+### 7b. Numerical claims
+
+Spot-verified from `main_run.json`:
+* `chi_P` Q²: → S_2 ≈ 2.301 ✓
+* `sqfree`, `1[μ=+1]`, `1[μ=−1]` Q²: → 1.0384 (stable to 4 decimals
+  across N ∈ [2¹⁰, 2¹⁷]) ✓
+* `1[λ=±1]`: → 1.0000 ✓
+* W=210 collapse: every indicator → Q² ∈ [1.0000, 1.0041] ✓
+
+### 7c. Novelty content
+
+What's new:
+1. New empirical constant `S_2^{sqfree} ≈ 1.0384`.
+2. Family-level extension of E2.13's W-trick property (was χ_P-
+   specific, now spans prime / squarefree / k-almost-prime / Möbius-
+   level-set indicators).
+3. Structural explanation of S87's Liouville-uniformity result as a
+   *density-1/2 phenomenon*, not Liouville-specific.
+4. Documented closure of literal §D6.c (μ·χ_P ≡ −χ_P pointwise).
+
+What's NOT new:
+* Möbius randomness conjecture is folkloric (Sarnak).
+* Squarefree singular series via per-prime-squared admissible-pattern
+  enumeration is a routine HL computation — the closed form was not
+  derived here.
+* The W-trick property at W=210 was already known for χ_P.
+
+### 7d. Grade — borderline B vs C
+
+The self-grade B sits on the C/B boundary. Arguments for B:
+* Family-level refinement with new empirical constant `S_2^{sqfree}`.
+* Structural explanation of S87 (density-1/2 phenomenon) — new
+  mathematical content.
+* Pivot from trivial-collapse target to a broader question is honest
+  research behaviour.
+
+Arguments for C:
+* Refines E2.13 *inline*, not as a new edge.
+* Squarefree singular series for U² counts is a routine HL
+  computation; the closed form was not derived.
+* No A-grade reach.
+
+**Critic verdict: B confirmed (borderline).** The new constant
+`S_2^{sqfree} ≈ 1.0384` plus the density-1/2 structural fact (which
+unifies S87's Liouville-uniformity with the family-wide picture) is
+a precise new statement extending E2.13's scope — exactly CLAUDE.md
+B-grade case (i). The trivial-collapse handling and honest pivot are
+also B-grade behaviours. A C-grade demotion would be defensible but
+not necessary; the empirical constant alone clears the B/C boundary.
+
+### 7e. Discipline note
+
+S101 closed `NOVELTY_CHALLENGES §D6.c` but did NOT file a parallel
+`CLOSED_PATHS.md` row. Project precedent (C6/S81, C7/S89, both
+NOVELTY_CHALLENGES closures) DOES file rows. Minor. The next agent
+visiting CLOSED_PATHS housekeeping should add a one-row entry; or
+the family-level extension of E2.13 is documented inline in EDGES.md
+already and that may be deemed sufficient by the project conventions.
+
+---
+
+## 8. Discipline / hygiene roll-up
+
+* Every experiment has a `_results.md` in the same directory.
+* No `__pycache__` files left behind (per S95/S96/S100/S101 cleanup).
+* No `*_v2.py` / `_quick.py` variants.
+* Lean `lake build` passes with the unchanged general `sorry` and two
+  pre-existing unused-variable warnings; `#print axioms` shows the
+  new declarations are sorry-free.
+* CROSS_DOMAIN_TECHNIQUES.md updated: DPP, persistent homology, and
+  Möbius/nilsequence orthogonality all promoted PROPOSED/UNUSED →
+  USED I or E.
+* SESSION_INSIGHTS.md updated through S101.
+* RESEARCH_AGENDA.md Arc 2 (Lean track) advanced through S98/S99.
+* One minor gap: S101 did not file a CLOSED_PATHS row for §D6.c
+  (§7e above). Not blocking.
+
+---
+
+## 9. A-grade scarcity check (CRITICAL)
+
+CLAUDE.md threshold: "0 A-grade sessions in a 20-session window means
+the current frontier is exhausted and ATTACK_VECTORS.md needs new
+entries."
+
+### Last 18 production sessions (from S82 to S101, excluding S86, S94 critique):
+
+| Session | Topic                                  | Grade |
+|---------|----------------------------------------|-------|
+| S82     | spec-fork I3 (E1.6 closure)            | B-    |
+| S83     | L1 Lean lower bound reduction          | C     |
+| S84     | A1 SAT TC⁰ primes                      | B     |
+| S85     | frontier_gen (4 vectors)                | B     |
+| S87     | D6 Gowers U^k of χ_P                   | B     |
+| S88     | C4 Anderson localisation χ_P            | B     |
+| S89     | C7 calibrated d2 primes                 | C     |
+| S90     | L1 Lean trivial floor                   | C     |
+| S91     | frontier_gen (4 vectors)                | B     |
+| S92     | B1 algebraic immunity χ_P                | B     |
+| S93     | D6.b Λ vs χ_P U^k                      | B     |
+| S95     | D7 DPP/PPP fit                          | B     |
+| S96     | D2 PH on Takens embedding               | B     |
+| S97     | frontier_gen (5 vectors D9–D13)         | B     |
+| S98     | L1 Lean corner W=2, j=1                 | C     |
+| S99     | L1 Lean orthogonal corner               | C     |
+| S100    | G1 λ-Anderson Lyapunov                   | B     |
+| S101    | D6.c μ-weighted χ_P                    | B     |
+
+**Tally: 0 A, 12 B, 5 C, 1 B−, 0 F over 18 sessions.**
+
+This **exceeds CLAUDE.md's 20-session warning threshold by 0 sessions**
+already (18 → 20 in just 2 more sessions if the pattern continues).
+The framework is producing C-grade verification (5 of 18) and B-grade
+"new pseudorandomness measure / new HL-detection edge in fresh
+mathematical category" (12 of 18) — **maintenance, not progress**.
+
+### Diagnosis
+
+Cause is not mechanical:
+* `frontier_gen` is firing correctly (S85/S91/S97 all produced new
+  vectors with cross-domain grounding).
+* Cross-domain technique uptake is healthy: DPP, PH, Möbius/nil-seq
+  orthogonality, Anderson localisation all USED in 2026-04 sessions.
+* Discipline is good: no inflated grades, clean artefacts.
+
+Cause IS that **every B-grade session terminates at "structural
+negative — same HL signal in fresh clothing"**. The pattern E2.13 →
+E2.14 → E2.15 → E2.16 → E2.17 → E2.18 is "new instrument, same
+physics". Each is genuinely B-grade, but the cumulative knowledge gain
+is shallow at this point — we are very confident χ_P encodes HL
+equidistribution; we have no traction whatsoever on circumventing it.
+
+A-grade requires either:
+* A frontier attack from `ATTACK_VECTORS.md` that produces a *partial
+  positive result*, OR
+* A composition that exploits ≥ 2 edges to produce a non-trivial
+  arithmetic / cohomological / circuit identity, OR
+* A Lean proof of a non-trivial theorem (≥ 50 lines, no sorry, no
+  axiom) — Arc 2 is making progress toward this but the remaining
+  general-case `sorry` is gated on Hoheisel-grade short-interval
+  primes which the project does not have a path to in Lean.
+
+### Recommended remediation
+
+**Pick the most ambitious untouched ATTACK_VECTORS.md target with the
+cleanest A-grade pathway.** Per S97's own assessment, **D11 (Shadow
+tomography sample complexity for π(x))** has the cleanest A-grade
+pathway: it introduces a fundamentally new computational model
+(quantum-info-style sample complexity) that does not reduce to any
+existing closure family. Aaronson 2018 (arXiv:1711.01053) gives
+`Õ(ε⁻⁴ log⁴ M · log D)` shadow-tomography sample complexity for M
+observables on a D-dim Hilbert space; if χ_P-as-quantum-state admits
+a non-trivial random-Rademacher shadow giving K = poly(log N) for
+ALL π(M), M ≤ N, that would be a polylog QUERY-complexity result.
+Even an explicit `K ≥ Ω(N^β)` lower bound is B-grade and strengthens
+information-theoretic bounds with a query-complexity bound.
+
+Alternative top-tier picks (in priority order):
+1. **C5 (Stein's method finite-x Gaussianity of (π(x)−Li(x))/(√x/log x))**
+   — recommended as next-action by S95, S86, S82 / multiple sessions;
+   never attempted; cleanest single-session A-grade pathway in §C.
+2. **A5 (Maynard sieve weight as TC⁰ primality witness)** — proposed
+   in S91; unique cross-domain ingredient (multidimensional sieve
+   weights in TC⁰); never attempted.
+3. **D11 above.**
+4. **D9 (sum-product gain on F_p)** — cheap to execute; B-grade
+   likely; A-grade if HL gives sum-product bias.
+
+The B-grade-likely picks (D9, D10, D13) are NOT recommended next —
+they compound the maintenance pattern. **A-grade-ambitious or
+strategically-frame-shifting picks** (D11 / C5 / A5 / G3) should
+fire next.
+
+---
+
+## 10. Highest-value next-action
+
+Per CLAUDE.md "If multiple recent sessions are critique-mode, this
+one is redundant — pivot to the next-action you would have identified,
+and run it." This is a critique session not a redundant one (the prior
+critique was S94, ~8 sessions back), so the standard write-it-down
+discipline applies.
+
+**Single highest-value next-action:**
+
+> **Attempt ATTACK_VECTORS.md §C5 (Stein's method: quantitative
+> finite-x Gaussianity of `(π(x) − Li(x))/(√x/log x)`).** This
+> vector has been recommended as next-action by S82, S86, S95 and
+> never attempted. It carries the cleanest A-grade pathway among
+> open §C entries: Stein's method (Wasserstein bound via exchangeable
+> pairs or zero-bias coupling) on the standardised prime-counting
+> error, combined with explicit-formula moments, has the structural
+> shape of a published-paper-grade result if a finite-x Berry-Esseen
+> bound emerges. The B-grade fallback is a quantitative finite-x
+> Gaussianity statement that strengthens E3.13-family results
+> (zeta-zero GUE) into the additive π(x)−Li(x) regime.
+
+This will be written into ATTACK_VECTORS.md as the recommended next
+target via a "**RECOMMENDED NEXT (post-critique S94+)**" annotation
+on §C5. Backup: D11 (shadow tomography) per S97's own ranking.
+
+---
+
+## 11. Summary table
+
+* **Demotions:** 0.
+* **Inflations caught:** 0.
+* **Discipline issues:** 1 minor (S101 missing CLOSED_PATHS row for
+  §D6.c — non-blocking; documented above).
+* **A-grade scarcity:** 18 production sessions, 0 A-grades. **At
+  the 20-session warning threshold.**
+* **Next-action:** §C5 Stein's method (or backup D11 shadow tomography).
+
+— end of critique

@@ -11,36 +11,46 @@ EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
 
 ## Active arcs
 
-### Arc 1 — Three-Barriers Paper (synthesis)
+### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
 **Status:** NOT STARTED
 **Owner:** any agent who picks it up
-**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 into
-a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 + E7.14
+into a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
 
 **Milestones:**
-- [ ] Outline the four sections (one per closure family).
+- [ ] Outline the FIVE sections (one per closure family).
 - [ ] Write precise statement of each family-level closure as a theorem
   (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
   E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
-  exhaustion).
-- [ ] Write a unified introduction framing the four as "structural
+  exhaustion; **E7.14 = Maynard sieve aggregate-not-pointwise +
+  divisor-enumeration sub-poly**).
+- [ ] Write a unified introduction framing the five as "structural
   barriers to polylog π(x)".
 - [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
   Bombieri-Vinogradov, the Aggarwal optimum.
 - [ ] First full draft.
 - [ ] Self-review pass for false claims and inflated scope.
-- [ ] Save to `novel/three_structural_barriers.md`; on completion move
-  a polished version to `literature/preprint_three_barriers.md`.
+- [ ] Save to `novel/four_structural_barriers.md`; on completion move
+  a polished version to `literature/preprint_four_barriers.md`.
 
-**Estimated total effort:** 4-6 sessions of dedicated work.
-**Next action:** outline the four sections in `novel/three_structural_barriers_outline.md`.
+**Estimated total effort:** 5-7 sessions of dedicated work.
+**Next action:** outline the five sections in `novel/four_structural_barriers_outline.md`.
 
-**Why this arc matters:** the project has produced four genuinely
-publishable structural results. None is published. A single coherent
-preprint is the highest-leverage output the project can produce.
+**Why this arc matters:** the project has produced **FIVE** genuinely
+publishable structural results — including the post-S116 four-family
+closure observation that the explicit-construction-side TC⁰ primality
+attack space is exhausted across orthogonal techniques. None is
+published. A single coherent preprint is the highest-leverage output
+the project can produce.
+
+**S116 update (2026-04-27).** Maynard 2015 multidim sieve weight
+closed in mode E (B-grade structural negative). Added edge E7.14;
+this arc grew from "Three Barriers" → "Four Barriers" (or arguably
+"Five" if E7.6 sieve-pebbling is counted separately from E7.14
+Maynard sieve).
 
 ### Arc 2 — Lean Formalisation Track
-**Status:** IN PROGRESS — L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content)
+**Status:** IN PROGRESS — Run #107 (Route A'''' first instalment: W=4, d=j+1). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. **S107 extends the orthogonal corner to W=4** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, sorry-free, using `Nat.prime_two`, `Nat.prime_three`, `Nat.prime_five`, `Nat.prime_seven`, `Nat.prime_eleven` and the general `upper_bound` lemma for the upper direction (the first corner where `rank_le_width` is not tight, since the matrix has 4 columns but `R = 3 = φ(4) · 4^0 + 1`).
 **Owner:** any agent who picks it up
 **Goal:** Permanent verifiable artifacts for the project's main results.
 See `NOVELTY_CHALLENGES.md` §3.
@@ -97,22 +107,136 @@ See `NOVELTY_CHALLENGES.md` §3.
   `lower_bound` itself is now `sorry`-free; the only outstanding
   obligation is the prime-density existential
   `exists_invertible_submatrix`.
-- [ ] Lemma `exists_invertible_submatrix` — the new home of the
-  prime-density content. **THIS IS THE LAST REMAINING `sorry`.**
+- [x] **Trivial floor `1 ≤ rank` closed (S90).** Three new lemmas:
+  `chiP_two_eq_one` (uses `Nat.prime_two`), `entry_zero_one_eq_one`
+  (matrix entry at (0,1) is `chiP 2 = 1`), and `one_le_rank_unfolding`
+  (the 1×1 submatrix at row 0, col 1 is `IsUnit`). ~25 lines, no
+  prime-density beyond `Nat.prime_two`. Closes nothing in
+  `mps_bond_dim` itself (since `R ≥ 2` always under our hypotheses)
+  but isolates the unconditional portion of the lower bound.
+- [x] **Corner case `(W = 2, j = 1)` closed unconditionally (S98).**
+  Two new theorems:
+  `exists_invertible_submatrix_W_eq_2_j_eq_1 : ∀ d ≥ 2, ∃ ρ σ, IsUnit (submatrix ρ σ)`
+  and `mps_bond_dim_W_eq_2_j_eq_1 : ∀ d ≥ 2, (unfolding 2 d 1).rank = 2`,
+  both sorry-free (`#print axioms` shows only `propext, Classical.choice,
+  Quot.sound`). The construction uses Bertrand's postulate
+  (`Nat.exists_prime_lt_and_le_two_mul`) at `n = 2^(d-1)` to exhibit a
+  prime `p ∈ (2^(d-1), 2·2^(d-1)]`, then takes `σ = (column 1, column
+  p - 2^(d-1) - 1)`; the resulting `2×2` submatrix is upper-triangular
+  `[[1, ?], [0, 1]]` with `det = 1` because `2^(d-1) + 2` is even and
+  `> 2`. ~70 Lean lines, Route A' from `mps_bond_dim_notes.md`. This is
+  the first instance of `mps_bond_dim` that is fully formalised in
+  Lean (modulo the general `exists_invertible_submatrix` `sorry` which
+  is unaffected and still the only outstanding obligation in the file).
+- [x] **Orthogonal corner case `(W = 2, d = j + 1)` closed unconditionally (S99).**
+  Two new theorems plus a small helper:
+  `chiP_three_eq_one : chiP 3 = 1`,
+  `exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 2 (j+1) j).rank = 2`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). **No Bertrand required**: the matrix is `2^j × 2`, so
+  we take both columns. With `ρ = (row 0, row 1)` and column swap
+  `σ = (col 1, col 0)`, the `2×2` submatrix is the identity
+  `[[chiP 2, chiP 1], [chiP 4, chiP 3]] = [[1, 0], [0, 1]]` with `det = 1`.
+  Uses only `Nat.prime_two`, `Nat.prime_three`, `Nat.not_prime_one`,
+  and decidability of `¬ Nat.Prime 4`. ~110 Lean lines, Route A'' from
+  `mps_bond_dim_notes.md`. The upper bound for the corner uses
+  `Matrix.rank_le_width` (only `2^(d-j) = 2` columns), routed through a
+  `linarith` step to dodge a dependent-type rewrite issue. **The two
+  corners now cover the entire `(j, d - j)` boundary** of the
+  `mps_bond_dim` parameter grid for `W = 2`: `j = 1` (any `d ≥ 2`) and
+  `d - j = 1` (any `j ≥ 1`).
+- [x] **Orthogonal corner case `(W = 3, d = j + 1)` closed unconditionally (S106).**
+  Four new declarations: `chiP_five_eq_one`, `chiP_seven_eq_one`,
+  `exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 3 (j+1) j).rank = 3`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A''' from `mps_bond_dim_notes.md`. The matrix is
+  `3^j × 3`, so we take all 3 columns; with `ρ = (row 0, row 1, row 2)`
+  (available since `3^j ≥ 3` for `j ≥ 1`) and `σ = id`, the `3×3`
+  submatrix is `[[chiP 1, chiP 2, chiP 3], [chiP 4, chiP 5, chiP 6],
+  [chiP 7, chiP 8, chiP 9]] = [[0, 1, 1], [0, 1, 0], [1, 0, 0]]` with
+  `det = -1` via `Matrix.det_fin_three`. The unit is exhibited by
+  `isUnit_one.neg`. Uses only `Nat.prime_two`, `Nat.prime_three`,
+  `Nat.prime_five`, `Nat.prime_seven` (all `decide`-checkable) and the
+  non-primality of `1, 4, 6, 8, 9`. ~150 Lean lines. **First
+  unconditional `mps_bond_dim` instance over a wheel `W ≥ 3`** — the
+  technique generalises to every `W` admitting an explicit invertible
+  `W × W` chiP-submatrix in the first `W` rows.
+- [x] **Orthogonal corner case `(W = 4, d = j + 1)` closed unconditionally (S107).**
+  Three new declarations: `chiP_eleven_eq_one`,
+  `exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 4 (j+1) j).rank = 3`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A'''' from `mps_bond_dim_notes.md`. The matrix is
+  `4^j × 4`; column `3` is `chiP` at multiples of 4 (all zeros), so we
+  drop it and pick the three live columns `{0, 1, 2}`. With `ρ = (row 0,
+  row 1, row 2)` (available since `4^j ≥ 4` for `j ≥ 1`) the `3×3`
+  submatrix is `[[chiP 1, chiP 2, chiP 3], [chiP 5, chiP 6, chiP 7],
+  [chiP 9, chiP 10, chiP 11]] = [[0, 1, 1], [1, 0, 1], [0, 0, 1]]` with
+  `det = -1` via `Matrix.det_fin_three`. **Upper-bound subtlety:**
+  `rank_le_width` gives only `rank ≤ 4`, not `rank ≤ 3`; we cite the
+  general `upper_bound` lemma which evaluates to `φ(4) · 4^0 + 1 = 3`.
+  This is the **first orthogonal-corner instance where the live-column
+  count strictly beats the column count**. Uses `Nat.prime_two,
+  prime_three, prime_five, prime_seven, prime_eleven` (last new at S107)
+  and the non-primality of `1, 4, 6, 9, 10`. ~190 Lean lines. **Second
+  unconditional `mps_bond_dim` instance over a wheel `W ≥ 3`.**
+- [ ] Lemma `exists_invertible_submatrix` (general case) — the new
+  home of the prime-density content. **THIS IS THE LAST REMAINING `sorry`.**
+  Requires Hoheisel-type primes-in-short-intervals beyond mathlib.
 - [ ] Repeat for L2, L3, L4, L5.
 
+**S90 structural finding:** Route A as originally outlined cannot be
+completed with mathlib's current tools. For the `i`-th unfolding row
+we need a prime in `(i·W^(d-j), (i+1)·W^(d-j)]` — interval of length
+`W^(d-j)` against endpoint `(i+1)·W^(d-j)`. Bertrand gives primes in
+`(n, 2n]`, sufficient only for `i = 0`. For `i ≥ 1` the required
+ratio is `1/(i+1)`; in the "large `j`" regime where
+`R = φ(W)·W^(d-j-1) + 1`, `i` reaches `φ(W)·W^(d-j-1)`, requiring
+ratio `1/(φ(W)·W^(d-j-1))` — a **Hoheisel-grade short-interval
+density question**, not in mathlib. Audit confirmed only
+`Nat.bertrand` and basic `primeCounting` are available.
+
 **Estimated total effort:** L1 alone is 1-2 sessions; full queue is
-12-20 sessions.
-**Next action:** prove `exists_invertible_submatrix` in
-`MPSBondDim/Basic.lean`. Two routes outlined in
-`mps_bond_dim_notes.md`: (A) Bertrand-type prime-existence in
-`[i·W^(d-j)+1, (i+1)·W^(d-j)]` for each `0 ≤ i < R` plus
-residue-class dovetail (uses `Nat.bertrand` and Dirichlet on primes in
-arithmetic progressions; ~100-200 lines); (B) replace the prime-density
-appeal by a generic Vandermonde determinant exhibit over a finite
-extension of ℚ, sidestepping arithmetic. Route (B) is the
-lighter-weight path. See
-`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
+12-20 sessions. **Revised:** if Route A is required, L1 alone is now
+several sessions plus possibly a separate Hoheisel-formalisation arc.
+**Next action (post-S107):** Routes A', A'', A''', and A'''' (the
+orthogonal-corner family `d = j + 1`) are closed for `W ∈ {2, 3, 4}`.
+The remaining **single-session** paths into the general
+`exists_invertible_submatrix` `sorry` are:
+
+* **Route A''''' (continue the orthogonal-corner sweep to `W ∈ {5, 6}`).**
+  For `W = 5`: `R = min(5^j, φ(5) + 1) = min(5^j, 5) = 5` for `j ≥ 1`,
+  the first instance where `R = W`. Requires a `5×5` invertible submatrix
+  via `Matrix.det_fin_five` (or expansion); qualitatively more work but
+  still single-session. For `W = 6`: `R = 3` (via `φ(6) = 2`), reduces to
+  a `3×3` determinant via `Matrix.det_fin_three`. **Note:** for `W = 6`,
+  the first three rows are NOT linearly independent (rows 1 and 2 of the
+  `6 × 6` slab are identical — both supported only at columns `0` and
+  `4`); the working construction uses rows `{0, 1, 5}` and live columns
+  `{0, 1, 4}` with `chiP 31 = 1` (prime). Needs `6^j ≥ 6` so `j ≥ 1`.
+  Both `W = 5` and `W = 6` require the `upper_bound` route (since
+  `rank_le_width` gives the column count, not `R`); the S107 W=4 proof
+  is the template.
+* **Route C (PNT for low-density regime).** Mathlib's `PrimeNumberTheorem`
+  applies when `R ≪ x / log x`. Combined with E2.1's `R = min(W^j, …)`,
+  this closes the regime where the active matrix half-side is much
+  smaller than the column count — leaves the saturating half-cut regime
+  open, but is the natural mathlib-only path for a wide intermediate
+  zone. Single-session viable but ambitious.
+* **Route B (Vandermonde / Dirichlet character).** Depends on the Arc 4
+  follow-on conjecture about spike eigenvectors and is more
+  speculative; not single-session.
+* **Route A''' for `(W = 3, j = 1)` (the *non*-orthogonal corner).** Still
+  open; would require either Bertrand twice (for `d = 3` only) or
+  Nagura's `(n, 6n/5]` theorem (not in mathlib) for general `d ≥ 3`.
+
+The "honest" path forward (Route A, Hoheisel-formalisation) remains
+beyond a single session. See
+`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`
+("Routes for closing `exists_invertible_submatrix` (revised)") for
+full route-by-route assessment.
 
 **Toolchain note:** elan + Lean stable (`v4.30.0-rc2`) installed at
 `$HOME/.elan/`. Full mathlib `.olean` cache (~8300 files) downloaded
@@ -191,8 +315,42 @@ See `NOVELTY_CHALLENGES.md` §1.
   same object as E1.5 saturation viewed spectrally — **C-circular**
   collapse. CLOSED_PATHS row added; E2.1 annotated. See
   `experiments/constructions/spike_eigenvectors_chi_p/`.
-- [ ] Pick C3 (Brandt × per-bit). Build it. Close or extend.
+- [x] **C3 (Brandt × per-bit) — BUILT S105.** Defined `π_J(x) := bit J of
+  π(x)` and the per-bit family `{π_J^(N) : J = 0..N-1}` for N ∈ {3..7}.
+  Empirical: bounded-Kt (3-bit stack VM, L_MAX=12) saturates at INF=61
+  for **every** J below `J*(N) := ⌈log₂(π(2^N - 1) + 1)⌉`, including
+  bits in E1.3's "easy zone" (J ∈ [⌈0.5N⌉, J*)); only bits J ≥ J*
+  (where `π_J ≡ 0`) compress (Kt_b ∈ {5..8}). Pre-stated F2 holds for
+  N ≥ 4 (the meaningful saturation regime); refines F2 to a sharper
+  cut location `J*(N) ≈ N − log₂ N`, materially higher than E1.3's
+  `0.5N`. Structural: all four Brandt obstructions O1-O4 still apply
+  to every fixed `π_J`; per-bit decomposition is structurally
+  orthogonal to Brandt's diagonalisation skeleton. Closure mode E
+  (DUPLICATE-PLUS of E5.8) at structural level + empirical
+  refinement of E1.3 at bounded-Kt resolution. Successor C3.a
+  proposed: arithmetic-primitive bounded-Kt VM. See
+  `experiments/constructions/brandt_per_bit/`.
 - [ ] Pick C4 (Aggarwal × Dusart × BPSW). Build the unified library.
+- [x] **C7 (calibrated 1-bit-bias random control × S84 depth-2 gap) — BUILT S89.**
+  Composes E1.10 / E3.13 with the S84 PRIMES-vs-unbiased-random
+  depth-2 sign-threshold W=1 gap at N=6. Class-conditional matched
+  random `f_cal` on {0..63}: P(f_cal=1 | x odd) = 17/32, P(f_cal=1 |
+  x even) = 1/32 (matching PRIMES exactly). 20 stratified + 20
+  bernoulli samples through S84's `enum_d2_smart` ILP harness
+  (K=1458 W=1 candidates, CBC, 120s/cell). **Result: F2 + F3 + F4
+  pre-stated falsifiers HOLD; F1 fails.** Stratified histogram = {5: 4,
+  6: 16}, mean 5.80, max 6 — 0/20 above PRIMES; 4/20 strictly below.
+  Bernoulli histogram = {5: 7, 6: 11, 7: 2} — both M=7 cases have
+  bit_0_acc < 0.75 (PRIMES's value), confirming monotonic mechanism.
+  PRIMES sits at +0.5σ of the calibrated distribution; under the
+  calibrated null `P(M ≤ 6) = 1.0` vs unbiased null `P(M ≤ 6) =
+  0/10`. **The S84 gap reduces to elementary parity** ("π(x) ≈ 1
+  iff x odd, for x > 2"); no PRIMES-specific structure beyond
+  oddness. Recommends footnote on `novel/pseudorandomness_of_pi.md`:
+  pseudorandomness thesis stands "modulo the obvious mod-2 bias."
+  CLOSED_PATHS row added; NOVELTY_CHALLENGES.md C7 marked BUILT;
+  spawned successor C7.a (N=8 calibrated extension). See
+  `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/`.
 - [x] **C6 (three-pillars × HKM time-space curve) — BUILT S81.**
   Built (alpha, beta) catalog of 14 pi(x) algorithms across the three
   pillars; computed per-pillar Pareto frontiers, cross-pillar dominance
@@ -218,16 +376,16 @@ See `NOVELTY_CHALLENGES.md` §1.
   yielded structure, which collapsed?
 
 **Estimated total effort:** 1-2 sessions per composition × 4-6 compositions = 5-12 sessions.
-**Next action:** pick C3 (Brandt per-bit) or C4 (Aggarwal-Dusart-BPSW
-unified library). After S81 built C6 and S82 closed the C2 spike sub-
-arc with the Dirichlet-character identification, the only remaining
-open composition challenges are C3 and C4. C3 likely closes as a
-structural duplicate of E5.8 within ~30 minutes (the per-bit version
-of Brandt TRAVERSE doesn't escape O1-O4 because parametric J ∈
-{0..log N} provides only polylog space, not Chaitin-Ω continuum); but
-the structural reason itself would be a clean refinement of E5.8 worth
-filing. C4 is engineering integration work belonging in algorithms/
-not constructions/. **C2 spike sub-arc CLOSED S82** with Dirichlet-
+**Next action:** C4 (Aggarwal-Dusart-BPSW unified library) is the only
+remaining open §1 composition challenge among C1-C6. C4 is engineering
+integration work belonging in algorithms/, not constructions/, so
+arc-extension work should pivot to N1 follow-ons (non-spatial-locality
+ansätze) or NOVELTY_CHALLENGES successor entries (C3.a proposed S105:
+arithmetic-primitive bounded-Kt VM; D6.a Gowers U^4; D2.a-c PH
+follow-ons; D7.b Pfaffian; D7.c α-determinantal). **C3 CLOSED S105**
+with the per-bit Brandt argument confirmed orthogonal to O1-O4 (DUP-PLUS
+of E5.8) and a sharper bounded-Kt cut at `J*(N) ≈ N − log₂ N`. **C2
+spike sub-arc CLOSED S82** with Dirichlet-
 character identification of the spike subspace at conductors `2·p` for
 small odd primes `p ≤ P*(N) ≈ N^{0.21}` — a clean structural
 refinement of S74 and a C-circular collapse of the spectral barrier

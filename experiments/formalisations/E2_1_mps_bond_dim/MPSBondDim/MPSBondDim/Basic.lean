@@ -368,7 +368,76 @@ from this exhibit to `lower_bound` is mechanical (mathlib's
 unconditionally below. The exhibit itself is the only remaining `sorry`
 in the formalisation; it captures the prime-density content of the
 informal proof.
+
+The cheap part of the lower bound — `1 ≤ rank` — is closed
+unconditionally using just `Nat.prime_two` and the row-0 entry at column
+`k = 1` (which is `chiP 2 = 1`). The hard part is establishing
+`R ≤ rank` for `R ≥ 2`, which requires Hoheisel-type prime-density
+results (primes in shrinking-density intervals) that mathlib does not
+currently have.
 -/
+
+/--
+Trivial fact: `chiP 2 = 1` since `2` is prime. This is the only piece
+of the lower bound that is unconditional — no prime-density content.
+-/
+theorem chiP_two_eq_one : chiP 2 = 1 := by
+  simp [chiP, Nat.prime_two]
+
+/--
+The matrix entry `unfolding W d j ⟨0, _⟩ ⟨1, _⟩ = 1`. Concretely, the
+`(0, 1)` position of the unfolding equals `chiP(0 · W^(d-j) + 1 + 1) =
+chiP 2 = 1`. The hypotheses `h0` and `h1` ensure the indices are valid;
+the values `W, d, j` themselves are otherwise unconstrained at this
+intermediate step.
+
+This entry will witness `1 ≤ rank` in `one_le_rank_unfolding` below.
+-/
+theorem entry_zero_one_eq_one
+    (W d j : ℕ) (h0 : 0 < W ^ j) (h1 : 1 < W ^ (d - j)) :
+    unfolding W d j ⟨0, h0⟩ ⟨1, h1⟩ = 1 := by
+  change chiP (0 * W ^ (d - j) + 1 + 1) = 1
+  simp [chiP_two_eq_one]
+
+/--
+**Trivial lower bound:** `1 ≤ (unfolding W d j).rank`. This uses only
+`Nat.prime_two` (no prime-density beyond Bertrand). The witness is the
+`1 × 1` submatrix at row `0`, column `1`, whose entry is
+`chiP 2 = 1` ≠ 0, hence `IsUnit` over `ℚ`.
+
+This closes the `R = 1` portion of the lower bound. The remaining
+content of `exists_invertible_submatrix` (= `R ≤ rank` for `R ≥ 2`)
+requires primes in shrinking-density intervals (Hoheisel-type),
+which mathlib does not yet have.
+-/
+theorem one_le_rank_unfolding
+    (W d j : ℕ) (hW : 2 ≤ W) (hj_lo : 1 ≤ j) (hj_hi : j < d) :
+    1 ≤ (unfolding W d j).rank := by
+  have hWpos : 0 < W := by omega
+  have hWj_pos : 0 < W ^ j := Nat.pow_pos hWpos
+  have hdj : 1 ≤ d - j := Nat.sub_pos_of_lt hj_hi
+  -- `1 < W^(d-j)`: since `W ≥ 2` and `d - j ≥ 1`, `W^(d-j) ≥ W ≥ 2`.
+  have hWdj_gt_one : 1 < W ^ (d - j) := by
+    have : W ≤ W ^ (d - j) := by
+      have := Nat.pow_le_pow_right hWpos hdj
+      simpa using this
+    omega
+  -- Build the 1×1 submatrix: row index 0, column index 1.
+  let ρ : Fin 1 → Fin (W ^ j) := fun _ => ⟨0, hWj_pos⟩
+  let σ : Fin 1 → Fin (W ^ (d - j)) := fun _ => ⟨1, hWdj_gt_one⟩
+  -- Its single entry is `chiP 2 = 1`, so it is a unit in `Matrix (Fin 1) (Fin 1) ℚ`.
+  have hUnit : IsUnit ((unfolding W d j).submatrix ρ σ) := by
+    rw [Matrix.isUnit_iff_isUnit_det]
+    rw [Matrix.det_fin_one]
+    change IsUnit (unfolding W d j ⟨0, hWj_pos⟩ ⟨1, hWdj_gt_one⟩)
+    rw [entry_zero_one_eq_one W d j hWj_pos hWdj_gt_one]
+    exact isUnit_one
+  -- `rank` of a 1×1 unit matrix is 1; restricting can only decrease rank.
+  have h_eq : ((unfolding W d j).submatrix ρ σ).rank = 1 := by
+    have h := Matrix.rank_of_isUnit ((unfolding W d j).submatrix ρ σ) hUnit
+    simpa using h
+  calc 1 = ((unfolding W d j).submatrix ρ σ).rank := h_eq.symm
+    _ ≤ (unfolding W d j).rank := Matrix.rank_submatrix_le _ _ _
 
 /--
 **Prime-exhibit existence.** There exist indexings `ρ : Fin R → Fin (W^j)`
@@ -463,5 +532,644 @@ theorem mps_bond_dim
   Nat.le_antisymm
     (Nat.le_min.mpr ⟨rank_le_min_dim W d j, upper_bound W d j hW hj_lo hj_hi⟩)
     (lower_bound W d j hW hj_lo hj_hi)
+
+/-!
+### Corner case: `W = 2`, `j = 1` — closed unconditionally via Bertrand
+
+When `W = 2` and `j = 1`, the formula gives
+`R = min(2, φ(2) · 2^(d-2) + 1) = min(2, 2^(d-2) + 1) = 2` for every `d ≥ 2`.
+This corner case can be closed without any Hoheisel-grade prime-density
+result: Bertrand's postulate alone exhibits a `2 × 2` invertible
+submatrix, hence `lower_bound` (and therefore `mps_bond_dim`) holds
+unconditionally for `(W, j) = (2, 1)`.
+
+This is Route A' from `mps_bond_dim_notes.md`: a narrow but real closure
+using only mathlib's `Nat.exists_prime_lt_and_le_two_mul`.
+-/
+
+/--
+**Corner-case prime exhibit (W = 2, j = 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 2`, `j = 1`, where `R = min(2, 2^(d-2) + 1) = 2`. Closed
+unconditionally using only Bertrand's postulate
+(`Nat.exists_prime_lt_and_le_two_mul`).
+
+Construction: pick a prime `p ∈ (2^(d-1), 2 · 2^(d-1)]` (Bertrand at
+`n = 2^(d-1)`). Set
+* `ρ = id` on `Fin 2`,
+* `σ 0 = ⟨1, _⟩` (column with `chiP 2 = 1` in row 0),
+* `σ 1 = ⟨p − 2^(d-1) − 1, _⟩` (column with `chiP p = 1` in row 1).
+
+The 2×2 submatrix is upper-triangular:
+```
+   ⎡ chiP 2,                  ?                  ⎤   ⎡ 1, ? ⎤
+   ⎣ chiP (2^(d-1) + 2),      chiP p             ⎦ = ⎣ 0, 1 ⎦
+```
+since `2^(d-1) + 2` is even and `≥ 4`, hence not prime. The determinant
+is `1`, so the submatrix is a unit over `ℚ`.
+-/
+theorem exists_invertible_submatrix_W_eq_2_j_eq_1
+    (d : ℕ) (hd : 2 ≤ d) :
+    ∃ (ρ : Fin 2 → Fin (2 ^ 1))
+      (σ : Fin 2 → Fin (2 ^ (d - 1))),
+      IsUnit ((unfolding 2 d 1).submatrix ρ σ) := by
+  -- Setup.
+  have h_d_minus_one : 1 ≤ d - 1 := by omega
+  have h_pow_pos : 0 < 2 ^ (d - 1) := Nat.pow_pos (by norm_num)
+  have h_pow_ge_2 : 2 ≤ 2 ^ (d - 1) := by
+    calc (2 : ℕ) = 2 ^ 1 := by norm_num
+      _ ≤ 2 ^ (d - 1) := Nat.pow_le_pow_right (by norm_num) h_d_minus_one
+  -- Bertrand: prime `p ∈ (2^(d-1), 2 · 2^(d-1)]`.
+  obtain ⟨p, hp_prime, hp_lo, hp_hi⟩ :=
+    Nat.exists_prime_lt_and_le_two_mul (2 ^ (d - 1)) h_pow_pos.ne'
+  -- Index bounds.
+  have h_one_lt_pow : (1 : ℕ) < 2 ^ (d - 1) := by omega
+  have h_p_minus_lt : p - 2 ^ (d - 1) - 1 < 2 ^ (d - 1) := by omega
+  have h_zero_lt_pow_one : (0 : ℕ) < 2 ^ 1 := by norm_num
+  have h_one_lt_pow_one : (1 : ℕ) < 2 ^ 1 := by norm_num
+  -- Key non-primality fact: `2^(d-1) + 2` is even and `> 2`.
+  have h_not_prime : ¬ Nat.Prime (2 ^ (d - 1) + 2) := by
+    intro hp
+    have h_dvd : 2 ∣ 2 ^ (d - 1) + 2 := by
+      have h1 : 2 ∣ 2 ^ (d - 1) :=
+        dvd_pow_self 2 (Nat.one_le_iff_ne_zero.mp h_d_minus_one)
+      exact dvd_add h1 (dvd_refl 2)
+    rcases hp.eq_one_or_self_of_dvd 2 h_dvd with h | h
+    · omega
+    · omega
+  -- Build `ρ` and `σ`. We use ordinary `if-then-else` rather than `![_, _]`
+  -- to keep beta-reduction transparent for the four entry computations.
+  refine ⟨fun i => if i.val = 0 then ⟨0, h_zero_lt_pow_one⟩ else ⟨1, h_one_lt_pow_one⟩,
+          fun i => if i.val = 0 then ⟨1, h_one_lt_pow⟩ else
+                                        ⟨p - 2 ^ (d - 1) - 1, h_p_minus_lt⟩, ?_⟩
+  -- Reduce `IsUnit` of the matrix to `IsUnit` of its determinant, then compute.
+  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_two]
+  -- Compute the four entries.
+  have hM00 : unfolding 2 d 1 ⟨0, h_zero_lt_pow_one⟩ ⟨1, h_one_lt_pow⟩ = 1 := by
+    change chiP (0 * 2 ^ (d - 1) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  have hM10 :
+      unfolding 2 d 1 ⟨1, h_one_lt_pow_one⟩ ⟨1, h_one_lt_pow⟩ = 0 := by
+    change chiP (1 * 2 ^ (d - 1) + 1 + 1) = 0
+    have h_eq : 1 * 2 ^ (d - 1) + 1 + 1 = 2 ^ (d - 1) + 2 := by ring
+    rw [h_eq]
+    simp [chiP, h_not_prime]
+  have hM11 :
+      unfolding 2 d 1 ⟨1, h_one_lt_pow_one⟩
+        ⟨p - 2 ^ (d - 1) - 1, h_p_minus_lt⟩ = 1 := by
+    change chiP (1 * 2 ^ (d - 1) + (p - 2 ^ (d - 1) - 1) + 1) = 1
+    have h_eq : 1 * 2 ^ (d - 1) + (p - 2 ^ (d - 1) - 1) + 1 = p := by omega
+    rw [h_eq]
+    simp [chiP, hp_prime]
+  -- The (0, 1) entry is irrelevant; the determinant is `1·1 - x·0 = 1`.
+  -- Reduce the four `submatrix` accesses; the `if-then-else` with `Fin` literals
+  -- collapses, leaving the four explicit `unfolding` entries.
+  have h0 : (0 : Fin 2).val = 0 := rfl
+  have h1 : (1 : Fin 2).val = 1 := rfl
+  simp only [Matrix.submatrix_apply, h0, h1, if_true, Nat.one_ne_zero, if_false]
+  rw [hM00, hM10, hM11]
+  -- Goal: `IsUnit (1 * 1 - x * 0)` where `x` is the row-0 column-1 entry.
+  ring_nf
+  exact isUnit_one
+
+/--
+**Corner-case main theorem (W = 2, j = 1).** The unfolding rank is exactly
+`2` for every `d ≥ 2`. This is the only case of `mps_bond_dim` that is
+currently formalisable in mathlib: it follows from `upper_bound` +
+`rank_le_min_dim` for the `≤` direction and from
+`exists_invertible_submatrix_W_eq_2_j_eq_1` for the `≥` direction.
+
+The general `mps_bond_dim` requires `exists_invertible_submatrix` whose
+proof is the only remaining `sorry` in this file (Hoheisel-grade
+prime-density content).
+-/
+theorem mps_bond_dim_W_eq_2_j_eq_1
+    (d : ℕ) (hd : 2 ≤ d) :
+    (unfolding 2 d 1).rank = 2 := by
+  apply Nat.le_antisymm
+  · -- `≤ 2`: from `rank_le_min_dim` (i.e. `rank ≤ W^j = 2^1 = 2`).
+    have h := rank_le_min_dim 2 d 1
+    simpa using h
+  · -- `2 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_2_j_eq_1 d hd
+    have h_eq : ((unfolding 2 d 1).submatrix ρ σ).rank = 2 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 2 d 1).submatrix ρ σ) hUnit
+      simpa using h
+    calc (2 : ℕ) = ((unfolding 2 d 1).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 2 d 1).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### Corner case: `W = 2`, `d = j + 1` — closed unconditionally without Bertrand
+
+When `W = 2` and `d = j + 1` (so `d - j = 1`), the formula gives
+`R = min(2^j, φ(2) · 2^0 + 1) = min(2^j, 2) = 2` for every `j ≥ 1`.
+**Even simpler than the `(W = 2, j = 1)` case**: the matrix has only two
+columns, so we take both, and rows `{0, 1}` give the `2 × 2` submatrix
+```
+   ⎡ chiP 1, chiP 2 ⎤   ⎡ 0, 1 ⎤
+   ⎣ chiP 3, chiP 4 ⎦ = ⎣ 1, 0 ⎦
+```
+of determinant `−1`. Only `Nat.prime_two` and `Nat.prime_three` are used
+— no Bertrand, no prime-density beyond the explicit small primes.
+
+This case overlaps with the previous corner at `(j, d) = (1, 2)` (which
+is also `j = 1`, `d = j + 1 = 2`); the new content is `j ≥ 2`.
+-/
+
+/--
+`chiP 3 = 1` since `3` is prime.
+-/
+theorem chiP_three_eq_one : chiP 3 = 1 := by
+  have h_prime_3 : Nat.Prime 3 := by decide
+  simp [chiP, h_prime_3]
+
+/--
+**Corner-case prime exhibit (W = 2, d = j + 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 2`, `d = j + 1`, where `R = min(2^j, 2) = 2` for every `j ≥ 1`.
+Closed unconditionally using only `Nat.prime_two` and `Nat.prime_three`
+(no Bertrand, no Hoheisel).
+
+Construction: with the column-swap σ
+* `ρ = id` on `Fin 2`,
+* `σ 0 = ⟨1, _⟩`, `σ 1 = ⟨0, _⟩`,
+
+the `2 × 2` submatrix is
+```
+   ⎡ unfolding (0, 1),  unfolding (0, 0) ⎤   ⎡ chiP 2, chiP 1 ⎤   ⎡ 1, 0 ⎤
+   ⎣ unfolding (1, 1),  unfolding (1, 0) ⎦ = ⎣ chiP 4, chiP 3 ⎦ = ⎣ 0, 1 ⎦
+```
+of determinant `1`, hence `IsUnit` over `ℚ`.
+-/
+theorem exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 2 → Fin (2 ^ j))
+      (σ : Fin 2 → Fin (2 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 2 (j + 1) j).submatrix ρ σ) := by
+  -- The exponent simplifies: `(j + 1) - j = 1`, hence `2 ^ ((j + 1) - j) = 2`.
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 2 ^ j := Nat.pow_pos (by norm_num)
+  have h_one_lt_pow_j : 1 < 2 ^ j := by
+    calc (1 : ℕ) < 2 := by norm_num
+      _ = 2 ^ 1 := by norm_num
+      _ ≤ 2 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_pow_dj_pos : 0 < 2 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_one_lt_pow_dj : 1 < 2 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- Build `ρ` as identity-on-`Fin 2`, `σ` as the column swap (0 ↔ 1).
+  refine ⟨fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩ else ⟨1, h_one_lt_pow_j⟩,
+          fun i => if i.val = 0 then ⟨1, h_one_lt_pow_dj⟩ else ⟨0, h_pow_dj_pos⟩, ?_⟩
+  -- Reduce `IsUnit` of the `2 × 2` submatrix to `IsUnit` of its determinant.
+  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_two]
+  -- Compute the four entries.
+  -- Entry (0, 0) of submatrix = unfolding(0, 1) = chiP(0·2^((j+1)-j) + 1 + 1) = chiP 2.
+  have hM00 : unfolding 2 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 2 ^ ((j + 1) - j) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  -- Entry (0, 1) of submatrix = unfolding(0, 0) = chiP(0·… + 0 + 1) = chiP 1 = 0.
+  have hM01 : unfolding 2 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨0, h_pow_dj_pos⟩ = 0 := by
+    change chiP (0 * 2 ^ ((j + 1) - j) + 0 + 1) = 0
+    simp [chiP, Nat.not_prime_one]
+  -- Entry (1, 0) of submatrix = unfolding(1, 1) = chiP(1·2 + 1 + 1) = chiP 4 = 0.
+  have hM10 :
+      unfolding 2 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 2 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_not_prime_4 : ¬ Nat.Prime 4 := by decide
+    simp [chiP, h_not_prime_4]
+  -- Entry (1, 1) of submatrix = unfolding(1, 0) = chiP(1·2 + 0 + 1) = chiP 3 = 1.
+  have hM11 :
+      unfolding 2 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨0, h_pow_dj_pos⟩ = 1 := by
+    change chiP (1 * 2 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    change chiP (1 * 2 + 0 + 1) = 1
+    have h_eq3 : (1 * 2 + 0 + 1 : ℕ) = 3 := by norm_num
+    rw [h_eq3]
+    exact chiP_three_eq_one
+  -- Reduce the `if-then-else` ρ, σ at the four `(0, 0), (0, 1), (1, 0), (1, 1)` cells.
+  have h0 : (0 : Fin 2).val = 0 := rfl
+  have h1 : (1 : Fin 2).val = 1 := rfl
+  simp only [Matrix.submatrix_apply, h0, h1, if_true, Nat.one_ne_zero, if_false]
+  rw [hM00, hM01, hM10, hM11]
+  -- Goal: `IsUnit (1 * 1 - 0 * 0)` over `ℚ`.
+  ring_nf
+  exact isUnit_one
+
+/--
+**Corner-case main theorem (W = 2, d = j + 1).** The unfolding rank is
+exactly `2` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_2_j_eq_1`
+and is fully formalised in Lean (no `sorry`, no `axiom`).
+
+This case overlaps the `(W = 2, j = 1)` corner at `j = 1, d = 2`; the
+genuinely new content is the family `j ≥ 2`. Together with the previous
+corner, we now have unconditional Lean proofs of `mps_bond_dim` whenever
+either `j = 1` or `d - j = 1` — i.e. on the entire boundary of the
+`(j, d - j)` grid.
+-/
+theorem mps_bond_dim_W_eq_2_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 2 (j + 1) j).rank = 2 := by
+  apply Nat.le_antisymm
+  · -- `≤ 2`: `unfolding 2 (j+1) j` has only `2^((j+1)-j) = 2^1 = 2` columns,
+    -- so its rank is at most `2` by `Matrix.rank_le_width`.
+    have h := (unfolding 2 (j + 1) j).rank_le_width
+    have h_eq : 2 ^ ((j + 1 : ℕ) - j) = 2 := by
+      have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+      rw [h_sub]; norm_num
+    linarith
+  · -- `2 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 2 (j + 1) j).submatrix ρ σ).rank = 2 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 2 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (2 : ℕ) = ((unfolding 2 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 2 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### Corner case: `W = 3`, `d = j + 1` — closed unconditionally without Bertrand
+
+When `W = 3` and `d = j + 1` (so `d - j = 1`), the formula gives
+`R = min(3^j, φ(3) · 3^0 + 1) = min(3^j, 3) = 3` for every `j ≥ 1`.
+Like the `W = 2` orthogonal corner, the matrix has only `3^(d-j) = 3`
+columns, so we take all of them; rows `{0, 1, 2}` (available since
+`3^j ≥ 3` for `j ≥ 1`) give the `3 × 3` submatrix
+```
+   ⎡ chiP 1, chiP 2, chiP 3 ⎤   ⎡ 0, 1, 1 ⎤
+   ⎢ chiP 4, chiP 5, chiP 6 ⎥ = ⎢ 0, 1, 0 ⎥
+   ⎣ chiP 7, chiP 8, chiP 9 ⎦   ⎣ 1, 0, 0 ⎦
+```
+of determinant `−1`, hence `IsUnit` over `ℚ`. Only the explicit primes
+`2, 3, 5, 7` and the non-primality of `1, 4, 6, 8, 9` are required —
+no Bertrand, no Hoheisel-grade prime density.
+
+Together with the `W = 2` corners, this extends the unconditional
+formalisation to a second base wheel.
+-/
+
+/--
+`chiP 5 = 1` since `5` is prime.
+-/
+theorem chiP_five_eq_one : chiP 5 = 1 := by
+  have h_prime_5 : Nat.Prime 5 := by decide
+  simp [chiP, h_prime_5]
+
+/--
+`chiP 7 = 1` since `7` is prime.
+-/
+theorem chiP_seven_eq_one : chiP 7 = 1 := by
+  have h_prime_7 : Nat.Prime 7 := by decide
+  simp [chiP, h_prime_7]
+
+/--
+**Corner-case prime exhibit (W = 3, d = j + 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 3`, `d = j + 1`, where `R = min(3^j, 3) = 3` for every `j ≥ 1`.
+Closed unconditionally using only `Nat.prime_two`, `Nat.prime_three`,
+`chiP_five_eq_one`, `chiP_seven_eq_one`, and decidability of the
+non-primality of `1, 4, 6, 8, 9`.
+
+Construction:
+* `ρ = id` on `Fin 3` (rows `0, 1, 2`),
+* `σ = id` on `Fin 3` (columns `0, 1, 2`),
+
+giving the `3 × 3` submatrix
+```
+   ⎡ chiP 1, chiP 2, chiP 3 ⎤   ⎡ 0, 1, 1 ⎤
+   ⎢ chiP 4, chiP 5, chiP 6 ⎥ = ⎢ 0, 1, 0 ⎥
+   ⎣ chiP 7, chiP 8, chiP 9 ⎦   ⎣ 1, 0, 0 ⎦
+```
+of determinant `−1`, hence `IsUnit` over `ℚ`.
+-/
+theorem exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 3 → Fin (3 ^ j))
+      (σ : Fin 3 → Fin (3 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 3 (j + 1) j).submatrix ρ σ) := by
+  -- The exponent simplifies: `(j + 1) - j = 1`, hence `3 ^ ((j + 1) - j) = 3`.
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 3 ^ j := Nat.pow_pos (by norm_num)
+  have h_one_lt_pow_j : 1 < 3 ^ j := by
+    calc (1 : ℕ) < 3 := by norm_num
+      _ = 3 ^ 1 := by norm_num
+      _ ≤ 3 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_two_lt_pow_j : 2 < 3 ^ j := by
+    calc (2 : ℕ) < 3 := by norm_num
+      _ = 3 ^ 1 := by norm_num
+      _ ≤ 3 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 3 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_one_lt_pow_dj : (1 : ℕ) < 3 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_two_lt_pow_dj : (2 : ℕ) < 3 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- Build `ρ` and `σ` as identity-on-`Fin 3` mappings.
+  refine ⟨fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+                   else if i.val = 1 then ⟨1, h_one_lt_pow_j⟩
+                   else ⟨2, h_two_lt_pow_j⟩,
+          fun i => if i.val = 0 then ⟨0, h_zero_lt_pow_dj⟩
+                   else if i.val = 1 then ⟨1, h_one_lt_pow_dj⟩
+                   else ⟨2, h_two_lt_pow_dj⟩, ?_⟩
+  -- Reduce `IsUnit` of the `3 × 3` submatrix to `IsUnit` of its determinant.
+  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_three]
+  -- Non-primality lemmas for the zero entries.
+  have h_not_prime_4 : ¬ Nat.Prime 4 := by decide
+  have h_not_prime_6 : ¬ Nat.Prime 6 := by decide
+  have h_not_prime_8 : ¬ Nat.Prime 8 := by decide
+  have h_not_prime_9 : ¬ Nat.Prime 9 := by decide
+  -- Compute the nine entries of the submatrix.
+  -- Entry (0, 0): chiP(0 · 3^((j+1)-j) + 0 + 1) = chiP 1 = 0.
+  have hM00 : unfolding 3 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 3 ^ ((j + 1) - j) + 0 + 1) = 0
+    simp [chiP, Nat.not_prime_one]
+  -- Entry (0, 1): chiP(0 · 3^((j+1)-j) + 1 + 1) = chiP 2 = 1.
+  have hM01 : unfolding 3 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 3 ^ ((j + 1) - j) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  -- Entry (0, 2): chiP(0 · 3^((j+1)-j) + 2 + 1) = chiP 3 = 1.
+  have hM02 : unfolding 3 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 3 ^ ((j + 1) - j) + 2 + 1) = 1
+    have h_eq : (0 * 3 ^ ((j + 1) - j) + 2 + 1 : ℕ) = 3 := by simp
+    rw [h_eq]
+    exact chiP_three_eq_one
+  -- Entry (1, 0): chiP(1 · 3^((j+1)-j) + 0 + 1) = chiP 4 = 0.
+  have hM10 : unfolding 3 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 3 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 3 ^ 1 + 0 + 1 : ℕ) = 4 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_4]
+  -- Entry (1, 1): chiP(1 · 3^((j+1)-j) + 1 + 1) = chiP 5 = 1.
+  have hM11 : unfolding 3 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 3 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 3 ^ 1 + 1 + 1 : ℕ) = 5 := by norm_num
+    rw [h_eq]
+    exact chiP_five_eq_one
+  -- Entry (1, 2): chiP(1 · 3^((j+1)-j) + 2 + 1) = chiP 6 = 0.
+  have hM12 : unfolding 3 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 3 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 3 ^ 1 + 2 + 1 : ℕ) = 6 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_6]
+  -- Entry (2, 0): chiP(2 · 3^((j+1)-j) + 0 + 1) = chiP 7 = 1.
+  have hM20 : unfolding 3 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 3 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 3 ^ 1 + 0 + 1 : ℕ) = 7 := by norm_num
+    rw [h_eq]
+    exact chiP_seven_eq_one
+  -- Entry (2, 1): chiP(2 · 3^((j+1)-j) + 1 + 1) = chiP 8 = 0.
+  have hM21 : unfolding 3 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 3 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 3 ^ 1 + 1 + 1 : ℕ) = 8 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_8]
+  -- Entry (2, 2): chiP(2 · 3^((j+1)-j) + 2 + 1) = chiP 9 = 0.
+  have hM22 : unfolding 3 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 3 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 3 ^ 1 + 2 + 1 : ℕ) = 9 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_9]
+  -- Reduce the `if-then-else` ρ, σ at the nine cells via `Fin.val` of `0, 1, 2`.
+  have h0 : (0 : Fin 3).val = 0 := rfl
+  have h1 : (1 : Fin 3).val = 1 := rfl
+  have h2 : (2 : Fin 3).val = 2 := rfl
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  simp only [Matrix.submatrix_apply, h0, h1, h2, if_true, if_false,
+             Nat.one_ne_zero, hne_2_0, hne_2_1]
+  rw [hM00, hM01, hM02, hM10, hM11, hM12, hM20, hM21, hM22]
+  -- Goal: `IsUnit (0·1·0 - 0·0·0 - 1·0·0 + 1·0·1 + 1·0·0 - 1·1·1)` over `ℚ`.
+  --     = `IsUnit (-1 : ℚ)`.
+  ring_nf
+  exact isUnit_one.neg
+
+/--
+**Corner-case main theorem (W = 3, d = j + 1).** The unfolding rank is
+exactly `3` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_2_d_eq_j_plus_1`
+and is fully formalised in Lean (no `sorry`, no `axiom`).
+
+Together with the two `W = 2` corners, this is the third unconditional
+instance of `mps_bond_dim` and the first instance over the wheel `W = 3`.
+The general `mps_bond_dim` still requires `exists_invertible_submatrix`
+whose proof is the only remaining `sorry` in this file.
+-/
+theorem mps_bond_dim_W_eq_3_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 3 (j + 1) j).rank = 3 := by
+  apply Nat.le_antisymm
+  · -- `≤ 3`: `unfolding 3 (j+1) j` has only `3^((j+1)-j) = 3^1 = 3` columns.
+    have h := (unfolding 3 (j + 1) j).rank_le_width
+    have h_eq : 3 ^ ((j + 1 : ℕ) - j) = 3 := by
+      have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+      rw [h_sub]; norm_num
+    linarith
+  · -- `3 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 3 (j + 1) j).submatrix ρ σ).rank = 3 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 3 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (3 : ℕ) = ((unfolding 3 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 3 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### Corner case: `W = 4`, `d = j + 1` — closed unconditionally without Bertrand
+
+When `W = 4` and `d = j + 1` (so `d - j = 1`), the formula gives
+`R = min(4^j, φ(4) · 4^0 + 1) = min(4^j, 3) = 3` for every `j ≥ 1`. The
+matrix has `4^(d-j) = 4` columns; column `3` is `chiP` at multiples of
+`4` (all zeros), so we pick the three live columns `{0, 1, 2}` (those
+with `gcd(k+1, 4) = 1`, i.e. `k + 1 ∈ {1, 2, 3}`) and rows `{0, 1, 2}`
+(available since `4^j ≥ 4` for `j ≥ 1`) to get the `3 × 3` submatrix
+```
+   ⎡ chiP 1, chiP 2, chiP 3  ⎤   ⎡ 0, 1, 1 ⎤
+   ⎢ chiP 5, chiP 6, chiP 7  ⎥ = ⎢ 1, 0, 1 ⎥
+   ⎣ chiP 9, chiP 10, chiP 11⎦   ⎣ 0, 0, 1 ⎦
+```
+of determinant `−1`, hence `IsUnit` over `ℚ`. Only the explicit primes
+`2, 3, 5, 7, 11` and the non-primality of `1, 4, 6, 9, 10` are required
+— no Bertrand, no Hoheisel-grade prime density.
+
+**Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 4`, not the
+sharp `rank ≤ 3`. We therefore cite the general `upper_bound` lemma —
+which evaluates to `φ(4) · 4^0 + 1 = 2 + 1 = 3` for this corner — to
+close the `≤` direction. This is the first orthogonal-corner instance
+where `rank_le_width` is not tight; subsequent `W ∈ {6, 7, …}` corners
+will follow the same pattern.
+-/
+
+/--
+`chiP 11 = 1` since `11` is prime.
+-/
+theorem chiP_eleven_eq_one : chiP 11 = 1 := by
+  have h_prime_11 : Nat.Prime 11 := by decide
+  simp [chiP, h_prime_11]
+
+/--
+**Corner-case prime exhibit (W = 4, d = j + 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 4`, `d = j + 1`, where `R = min(4^j, 3) = 3` for every `j ≥ 1`.
+Closed unconditionally using only `Nat.prime_two`, `Nat.prime_three`,
+`chiP_five_eq_one`, `chiP_seven_eq_one`, `chiP_eleven_eq_one`, and
+decidability of the non-primality of `1, 4, 6, 9, 10`.
+
+Construction:
+* `ρ = id` on `Fin 3` (rows `0, 1, 2`),
+* `σ : Fin 3 → Fin (4^((j+1)-j))` picks the three live columns
+  `0, 1, 2`. The dropped column `3` corresponds to `chiP` at multiples
+  of `4` and is identically zero (hence not needed for the rank-3
+  exhibit).
+
+The `3 × 3` submatrix is
+```
+   ⎡ chiP 1, chiP 2, chiP 3  ⎤   ⎡ 0, 1, 1 ⎤
+   ⎢ chiP 5, chiP 6, chiP 7  ⎥ = ⎢ 1, 0, 1 ⎥
+   ⎣ chiP 9, chiP 10, chiP 11⎦   ⎣ 0, 0, 1 ⎦
+```
+with determinant `-1`, hence `IsUnit` over `ℚ`.
+-/
+theorem exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 3 → Fin (4 ^ j))
+      (σ : Fin 3 → Fin (4 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 4 (j + 1) j).submatrix ρ σ) := by
+  -- The exponent simplifies: `(j + 1) - j = 1`, hence `4 ^ ((j + 1) - j) = 4`.
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 4 ^ j := Nat.pow_pos (by norm_num)
+  have h_one_lt_pow_j : 1 < 4 ^ j := by
+    calc (1 : ℕ) < 4 := by norm_num
+      _ = 4 ^ 1 := by norm_num
+      _ ≤ 4 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_two_lt_pow_j : 2 < 4 ^ j := by
+    calc (2 : ℕ) < 4 := by norm_num
+      _ = 4 ^ 1 := by norm_num
+      _ ≤ 4 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 4 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_one_lt_pow_dj : (1 : ℕ) < 4 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_two_lt_pow_dj : (2 : ℕ) < 4 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- Build `ρ` and `σ` as identity-on-`Fin 3` mappings.
+  refine ⟨fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+                   else if i.val = 1 then ⟨1, h_one_lt_pow_j⟩
+                   else ⟨2, h_two_lt_pow_j⟩,
+          fun i => if i.val = 0 then ⟨0, h_zero_lt_pow_dj⟩
+                   else if i.val = 1 then ⟨1, h_one_lt_pow_dj⟩
+                   else ⟨2, h_two_lt_pow_dj⟩, ?_⟩
+  -- Reduce `IsUnit` of the `3 × 3` submatrix to `IsUnit` of its determinant.
+  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_three]
+  -- Non-primality lemmas for the zero entries.
+  have h_not_prime_4 : ¬ Nat.Prime 4 := by decide
+  have h_not_prime_6 : ¬ Nat.Prime 6 := by decide
+  have h_not_prime_9 : ¬ Nat.Prime 9 := by decide
+  have h_not_prime_10 : ¬ Nat.Prime 10 := by decide
+  -- Compute the nine entries of the submatrix.
+  -- Entry (0, 0): chiP(0 · 4^((j+1)-j) + 0 + 1) = chiP 1 = 0.
+  have hM00 : unfolding 4 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 4 ^ ((j + 1) - j) + 0 + 1) = 0
+    simp [chiP, Nat.not_prime_one]
+  -- Entry (0, 1): chiP(0 · 4^((j+1)-j) + 1 + 1) = chiP 2 = 1.
+  have hM01 : unfolding 4 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 4 ^ ((j + 1) - j) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  -- Entry (0, 2): chiP(0 · 4^((j+1)-j) + 2 + 1) = chiP 3 = 1.
+  have hM02 : unfolding 4 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 4 ^ ((j + 1) - j) + 2 + 1) = 1
+    have h_eq : (0 * 4 ^ ((j + 1) - j) + 2 + 1 : ℕ) = 3 := by simp
+    rw [h_eq]
+    exact chiP_three_eq_one
+  -- Entry (1, 0): chiP(1 · 4^((j+1)-j) + 0 + 1) = chiP 5 = 1.
+  have hM10 : unfolding 4 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 4 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 4 ^ 1 + 0 + 1 : ℕ) = 5 := by norm_num
+    rw [h_eq]
+    exact chiP_five_eq_one
+  -- Entry (1, 1): chiP(1 · 4^((j+1)-j) + 1 + 1) = chiP 6 = 0.
+  have hM11 : unfolding 4 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 4 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 4 ^ 1 + 1 + 1 : ℕ) = 6 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_6]
+  -- Entry (1, 2): chiP(1 · 4^((j+1)-j) + 2 + 1) = chiP 7 = 1.
+  have hM12 : unfolding 4 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 4 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 4 ^ 1 + 2 + 1 : ℕ) = 7 := by norm_num
+    rw [h_eq]
+    exact chiP_seven_eq_one
+  -- Entry (2, 0): chiP(2 · 4^((j+1)-j) + 0 + 1) = chiP 9 = 0.
+  have hM20 : unfolding 4 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 4 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 4 ^ 1 + 0 + 1 : ℕ) = 9 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_9]
+  -- Entry (2, 1): chiP(2 · 4^((j+1)-j) + 1 + 1) = chiP 10 = 0.
+  have hM21 : unfolding 4 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 4 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 4 ^ 1 + 1 + 1 : ℕ) = 10 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_10]
+  -- Entry (2, 2): chiP(2 · 4^((j+1)-j) + 2 + 1) = chiP 11 = 1.
+  have hM22 : unfolding 4 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 4 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 4 ^ 1 + 2 + 1 : ℕ) = 11 := by norm_num
+    rw [h_eq]
+    exact chiP_eleven_eq_one
+  -- Reduce the `if-then-else` ρ, σ at the nine cells via `Fin.val` of `0, 1, 2`.
+  have h0 : (0 : Fin 3).val = 0 := rfl
+  have h1 : (1 : Fin 3).val = 1 := rfl
+  have h2 : (2 : Fin 3).val = 2 := rfl
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  simp only [Matrix.submatrix_apply, h0, h1, h2, if_true, if_false,
+             Nat.one_ne_zero, hne_2_0, hne_2_1]
+  rw [hM00, hM01, hM02, hM10, hM11, hM12, hM20, hM21, hM22]
+  -- Goal: `IsUnit (0·0·1 - 0·1·0 - 1·1·1 + 1·1·0 + 1·1·0 - 1·0·0)` over `ℚ`.
+  --     = `IsUnit (-1 : ℚ)`.
+  ring_nf
+  exact isUnit_one.neg
+
+/--
+**Corner-case main theorem (W = 4, d = j + 1).** The unfolding rank is
+exactly `3` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_3_d_eq_j_plus_1`
+and is fully formalised in Lean (no `sorry`, no `axiom`).
+
+**Upper-bound subtlety:** the matrix has `4^((j+1)-j) = 4` columns, so
+`rank_le_width` only gives `rank ≤ 4`. We instead cite the general
+`upper_bound` lemma, which evaluates to `φ(4) · 4^0 + 1 = 2 · 1 + 1 = 3`
+in this corner — the first instance where the live-column count strictly
+beats the column count.
+
+Together with the `W ∈ {2, 3}` corners, this is the fourth unconditional
+instance of `mps_bond_dim` and the second instance over a wheel `W ≥ 3`.
+The general `mps_bond_dim` still requires `exists_invertible_submatrix`
+whose proof is the only remaining `sorry` in this file.
+-/
+theorem mps_bond_dim_W_eq_4_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 4 (j + 1) j).rank = 3 := by
+  apply Nat.le_antisymm
+  · -- `≤ 3`: from `upper_bound`. (`rank_le_width` only gives `≤ 4`.)
+    have hW : (2 : ℕ) ≤ 4 := by norm_num
+    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    have h := upper_bound 4 (j + 1) j hW hj hj_hi
+    have h_eq : Nat.totient 4 * 4 ^ ((j + 1 : ℕ) - j - 1) + 1 = 3 := by
+      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+      rw [h_sub]
+      decide
+    linarith
+  · -- `3 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 4 (j + 1) j).submatrix ρ σ).rank = 3 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 4 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (3 : ℕ) = ((unfolding 4 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 4 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
 
 end E2_1

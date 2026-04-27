@@ -3606,3 +3606,1281 @@ Every observed result is the predicted outcome of known mathematics
 S_3 ≈ 54.12 and the empirical match are project-internal new but
 straightforward consequences of HL machinery. B-grade ceiling is
 honest.
+
+## Session 88 — C4 frontier attack: Anderson localisation Lyapunov exponent of chi_P (CLOSED, B-grade)
+
+**Mode:** cross-domain attack. Target ATTACK_VECTORS §C4. Cross-domain
+ingredient imported: Anderson localisation theory (Aizenman-Warzel
+2015; Furstenberg-Kifer 1983; Pastur-Figotin 1992).
+
+**Outcome:** spectral analogue of S87/E2.13. The Anderson Lyapunov
+exponent gamma(E) of the discrete 1D Schrödinger operator with
+prime-indicator potential V = chi_P deviates from the matched-Bernoulli
+baseline by 88 sigma at N = 10^5 (peaks at parity resonance E = 0 and
+mod-3 resonance E ≈ +1). The deviation cascades down to ~ 4 sigma
+under the Green-Tao W-trick at W = 2310. Same structural reason as
+E2.13 (Gowers norms): chi_P deviation is the spectral signature of
+small-modulus residue-class structure of primes, no extra bit beyond
+Hardy-Littlewood equidistribution mod q.
+
+**New edge: E2.14** — Anderson Lyapunov gamma(E) of chi_P-Schrödinger
+deviates from random Bernoulli by amount captured by W-trick.
+
+**Cross-domain technique status:** Anderson localisation marked
+USED E (S88) in CROSS_DOMAIN_TECHNIQUES.md.
+
+**Files**
+* New: `experiments/dynamical/anderson_localisation_chi_p/anderson_localisation_chi_p.py`,
+  `parity_control.py`, `wtrick_control.py`, plus three companion
+  results.md files and 6 JSON output files.
+* Modified: `EDGES.md` (new edge E2.14 in §2 Algebraic).
+* Modified: `status/CLOSED_PATHS.md` (new row appended).
+* Modified: `CROSS_DOMAIN_TECHNIQUES.md` (Anderson localisation
+  PROPOSED → USED E).
+* Modified: `ATTACK_VECTORS.md` (§C4 → "Closed attacks" section,
+  with two follow-up successor proposals).
+* New: `archive/sessions/session88_c4_anderson_localisation_chi_p.md`.
+
+### Why B-grade not A-grade
+
+A-grade would have required a deviation that the W-trick CANNOT
+reach — i.e., gamma_prime - gamma_CW staying significant at
+W = primorial(k) for unbounded k, or a spectral edge anomaly with
+no Hardy-Littlewood explanation. Neither found; the cascade decays
+geometrically with W exactly as the Green-Tao machinery predicts.
+The cross-domain ingredient (Anderson localisation theory) was
+non-trivial and did real work, but the structural conclusion
+matches an existing closure family (E2.13). Honest B-grade.
+
+### Next-actions queued
+
+* `§C.C4(a)`: log-weighted potential V(n) = log p_n if n prime else 0,
+  amplifies gamma by (log N)^2 — could push the W-trick cascade to
+  W = 30030.
+* `§C.C4(b)`: Anderson Lyapunov of Lambda(n) (von Mangoldt) potential.
+  Green-Tao predicts Lambda is Gowers-uniform after centering,
+  spectral analogue: gamma_Lambda - gamma_random → 0 with NO
+  W-trick needed. Direct visual confirmation of the additive vs
+  spectral W-trick symmetry.
+
+### Triple-confirmation note for the project frontier
+
+S82 (Dirichlet character spike eigenvectors), S87/E2.13 (Gowers
+U^k → HL singular series), and S88/E2.14 (Anderson Lyapunov W-trick
+cascade) are now THREE INDEPENDENT spectral / additive / operator-
+theoretic measurements pointing to the same conclusion: chi_P
+structure = HL equidistribution mod q, no more. Future
+pseudorandomness work should target measurements that the W-trick
+CANNOT REACH — multiplicative regime (Mobius mu, Liouville lambda),
+or scales/structures beyond all tractable W (twin-prime, k-tuple
+Hardy-Littlewood densities, log-weighted ensembles).
+
+## Session 89 — C7 construction: calibrated 1-bit-bias control closes S84 PRIMES-vs-random depth-2 gap (B-grade)
+
+**Date:** 2026-04-26.
+**Mode:** Construction (NOVELTY_CHALLENGES.md §1 C7).
+**Self-grade:** B (substantive refinement; verified S84's mechanism
+conjecture under controlled experiment; closes the project's *only*
+outstanding pseudorandomness-deviation claim to "elementary parity,
+no residual structure").
+
+### What was tested
+
+Composition C7: build a class-conditional matched-density random
+control `f_cal` for PRIMES at N=6 — P(f_cal=1 | x odd) = 17/32, P(f_cal=1
+| x even) = 1/32, exactly matching PRIMES (17 odd primes, 1 even prime
+in {0..63}). Sample 20 stratified (exact 17+1, weight=18 always,
+bit_0_acc=0.75 always) + 20 bernoulli (independent draws) and run S84's
+`enum_d2_smart` ILP harness (K=1458 W=1 candidates, M ∈ {3..8},
+CBC 120s/cell). Falsifier table F1-F4 pre-stated before any run.
+
+### Headline result
+
+**F2 + F3 + F4 hold; F1 fails.**
+
+- Stratified n=20: histogram = {5: 4, 6: 16}, mean 5.80, max 6.
+  **0/20 above PRIMES (M=6); 4/20 strictly below PRIMES (M=5).**
+- Bernoulli n=20: histogram = {5: 7, 6: 11, 7: 2}, mean 5.75. Both
+  M=7 cases have bit_0_acc < 0.75 (PRIMES's value: 0.7344 and 0.7188).
+- PRIMES sits at +0.5σ of the calibrated distribution; under the
+  calibrated null `P(M ≤ 6 | calibrated) = 1.0` vs S84's unbiased
+  null `P(M ≤ 6 | unbiased) = 0/10 ≈ 0.001`.
+
+**The S84 PRIMES-vs-random depth-2 sign-threshold gap REDUCES TO
+elementary parity** ("π(x) ≈ 1 iff x odd, for x > 2"). No
+PRIMES-specific structure beyond oddness.
+
+### Sub-finding (Bernoulli mode bit_0_acc binning)
+
+| bit_0_acc range | n | min_M distribution     | mean |
+|-----------------|---|------------------------|------|
+| ≥ 0.78          | 6 | {5: 3, 6: 3}           | 5.50 |
+| [0.75, 0.78)    | 6 | {5: 2, 6: 4}           | 5.67 |
+| [0.72, 0.75)    | 5 | {6: 3, 7: 2}           | 6.40 |
+| < 0.72          | 3 | {5: 3}                 | 5.00 |
+
+At fixed weight ≈ 18, larger bit_0_acc → smaller min_M. The two M=7
+cases live in the [0.72, 0.75) bin (just below PRIMES's 0.75). This
+is the empirical confirmation of S84's qualitative mechanism: depth-2
+W=1 size is monotonically driven by 1-bit predictor strength.
+
+### Implications for the project
+
+- S84 was the **only** statistical deviation from pseudorandomness
+  across the project's 35+ measure battery (E1.10 / E3.13). C7 shows
+  this deviation is captured by an elementary fact (most primes are
+  odd) — no new structural property of π(x).
+- Pseudorandomness thesis (`novel/pseudorandomness_of_pi.md`) is
+  **refined, not weakened**: π(x) is pseudorandom *modulo* the
+  trivial mod-2 bias. After bias correction (W-trick at W=2), no
+  measure in the battery distinguishes π from random.
+- **Quadruple confirmation of the W-trick story for chi_P** now:
+  S82 (Dirichlet character spike eigenvectors), S87/E2.13 (Gowers
+  U^k cascade), S88/E2.14 (Anderson Lyapunov cascade), S89 (depth-2
+  W=1 size at W=2 calibration). Four independent witnesses of the
+  same closure principle.
+
+### Next-actions queued
+
+- **C7.a**: same calibration at N=8 (P(prime|odd) = 53/128, P(prime|even)
+  = 1/128). Predicted outcome same. If FALSIFIED at N=8, the bit_0
+  explanation breaks at higher N → A-grade material.
+- **C8**: depth-2 W-vs-M tradeoff at N=8 for W ∈ {2, 4, 8}. Under
+  bigger W, bit_0 advantage dilutes; quantifies how much of the W=1
+  gap survives at higher W.
+- Add footnote to `novel/pseudorandomness_of_pi.md`: 36th measure
+  (depth-2 sign-threshold) deviates from unbiased random but is
+  fully captured by 1-bit oddness; pseudorandomness stands "modulo
+  the obvious mod-2 bias."
+
+### Why B-grade not A-grade
+
+B because: substantive refinement of an existing edge with a precise
+new statement (the F1-F4 verdict) that extends its scope; constructed
+the matched-class-conditional sampler that didn't exist before;
+quantitative bernoulli sub-finding strengthens S84's mechanism from
+"qualitative" to "directly observed monotone driver."
+
+Not A because: the F2 outcome was the high-prior outcome per S84
+(~70%); no new structural object emerged from the calibration; the
+closure mode is C (circular) — calibration formally verifies an
+explanation already in the project's frame. No published-paper-grade
+NT could reach the F1-F4 verdict from S84 + the harness in less than
+a few hours; the C7 sampler is small but it is a real new piece of
+controlled experiment.
+
+### Files produced/modified
+
+* New: `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/calibrated_d2.py`,
+  `calibrated_d2_n6.json`, `calibrated_d2_n6.log`,
+  `calibrated_d2_results.md`, `definition.md`.
+* New: `archive/sessions/session89_c7_calibrated_d2_primes.md`.
+* Modified: `NOVELTY_CHALLENGES.md` (C7 → BUILT, C7.a successor added).
+* Modified: `RESEARCH_AGENDA.md` (Arc 4 milestone added).
+* Modified: `status/CLOSED_PATHS.md` (closure row added).
+
+## Session 92 (B-grade) — §B1 ATTACK_VECTORS: Algebraic immunity / polynomial method on chi_P
+
+### Wild swing target
+
+§B1 of ATTACK_VECTORS.md: apply the cap-set / Croot-Lev-Pach / slice rank
+polynomial method to chi_P. Goal: a low-degree F_p polynomial P with
+P(n) determining primality, with degree growing more slowly than naive.
+
+### Three invariants tested
+
+1. **AI_F_2(chi_P)** — algebraic immunity over F_2 (Courtois-Meier 2003).
+   Computed by Gauss elimination over F_2 on the 2^N x sum_i C(N,i)
+   monomial-evaluation matrix, N=4..13.
+2. **F_p multilinear ANF degree** of chi_P viewed on (F_p)^k for
+   (p, k) in {(3,2..5), (5,2..3), (7,2..3), (11,2)}.
+3. **Slice rank brackets** via Tao 2016 flattening LB + greedy UB.
+
+### Main finding
+
+**AI(chi_P, N) = 2 for ALL N in [4, 13]** (zero std at N >= 8), while
+random matched-density Bernoulli grows as Theta(log_2(1/rho)),
+reaching 4 at N=11. **THE annihilator is the SAME polynomial g(x) =
+(1+x_0)(1+x_1) for every N**, encoding "n ≡ 0 mod 4". This is the
+polynomial-method version of the trivial mod-4 sieve fact (no prime
+> 2 divisible by 4).
+
+### W-trick correction confirms
+
+`chi_P_{W,b}(n) := chi_P(W*n + b)` with gcd(b, W) = 1: AI(chi_P_{W,b})
+tracks AI(random matched-density) within ±1 step, often exact match
+with zero std at W >= 6, b in {1, 5, 7, 11}.
+
+### Triple of independent confirmations
+
+E2.13 (Gowers, S85) + E2.14 (Anderson, S88) + E2.15 (algebraic
+immunity, S92): chi_P deviates from random in three orthogonal
+mathematical categories — additive combinatorics, spectral /
+transfer-matrix Lyapunov, Boolean polynomial method — each via the
+same mod-q sieve mechanism.
+
+### Files produced/modified
+
+* New: `experiments/algebraic/algebraic_immunity_chi_p/algebraic_immunity_chi_p.py`,
+  `extract_annihilator.py`, `wtrick_AI.py`,
+  `algebraic_immunity_chi_p_results.md`, JSON data files.
+* New: `archive/sessions/session92_b1_algebraic_immunity_chi_p.md`.
+* Modified: `EDGES.md` (E2.15 added).
+* Modified: `ATTACK_VECTORS.md` (B1 marked closed; closure entry +
+  self-extension follow-ups added).
+* Modified: `status/CLOSED_PATHS.md` (S92 row).
+
+### Why B-grade not A-grade
+
+B because: ambitious frontier attack on §B1 with structural
+informative failure; new edge (E2.15); third-leg confirmation in a
+distinct mathematical category. Not A because: deviation fully
+captured by W-trick — no new arithmetic content beyond mod-q.
+Self-extension follow-ups proposed (a) AI of multiplicative-regime
+functions (Liouville, Mobius); (b) higher-degree structured
+annihilators of chi_P_{W,b}.
+
+## Session 93 — Λ vs χ_P U^k Comparison (D6.b, novelty mode)
+
+**Mode:** novelty (B-grade by construction).
+**Target:** NOVELTY_CHALLENGES.md §D6.b.
+**Self-grade:** B.
+
+### What was measured
+
+Side-by-side normalized Gowers norms `Q^k(f) := ||f||_{U^k}^{2^k} / E[f]^{2^k}`
+for f = χ_P (bare prime indicator) and f = Λ (von Mangoldt log-weighted)
+on Z/NZ at N up to 2^17 for U^2, N up to 2^12 for U^3 (full h sampling),
+plus W-tricked variants at W ∈ {6, 30, 210}.
+
+### Headline finding
+
+**S_k is universal across log-weighting.** Q^k(Λ) = Q^k(χ_P) to within
+0.4% at U^2, 2.5% at U^3, across N in [2^10, 2^17]. Both converge to
+S_k = 2.301 (k=2) from below at near-identical rates. After W-trick at
+W = 210: `Q^2(χ_W) = Q^2(Λ_W) = 1.0029` to four decimals.
+
+### Source of the small bare offset
+
+Q^k(Λ) > Q^k(χ_P) by ~0.3% (U^2) / ~2.5% (U^3) — identified with the
+prime-power weight in Λ (log p contribution from n = p^k for k ≥ 2),
+vanishing as π(√N)/π(N) → 0.
+
+### Refinement of E2.13
+
+E2.13 sharpened from "Q^k(χ_P) → S_k" to "S_k is the universal Gowers
+fingerprint of {0,1}^k-cube prime correlation, independent of weighting
+choice (χ_P or Λ)". Inline edit in EDGES.md.
+
+### Files
+
+* New: `experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk.py`,
+  `lambda_vs_chi_p_uk_results.md`, `main_run.json`.
+* New: `archive/sessions/session93_d6b_lambda_vs_chi_p_uk.md`.
+* Modified: `EDGES.md` (E2.13 refined inline).
+* Modified: `NOVELTY_CHALLENGES.md` (§D6.b CLOSED, §D6.c proposed).
+
+### Why B-grade not A-grade
+
+B because: clean refinement of E2.13 with weighting-universal scope
+plus four-decimal W-trick coincidence; all 5 pre-stated falsifiers
+resolved as predicted. Not A because: every result confirms an
+established prediction (HL singular series, GT W-trick); no deviation
+that would indicate new structure.
+
+---
+
+## Session 95 — DPP / PPP fit to integer primes (ATTACK_VECTORS §D7)
+
+**Mode:** frontier attack with B-grade fallback. **Self-grade: B.**
+**Channel:** Tao (additive combinatorics & point-process framework).
+**Cross-domain technique imported:** Determinantal Point Processes
+(DPPs) — first project use; was PROPOSED-only in CROSS_DOMAIN_TECHNIQUES.md
+§3 since S91 frontier_gen.
+
+### Key result
+
+Primes are quantitatively NOT a translation-invariant DPP / PPP /
+signed-real-K / complex-Hermitian-K point process. Five pre-stated
+falsifiers all HOLD at N = 10^7 + admissible all-even triples up to t_2 ≤ 26.
+
+### Mechanism (one paragraph)
+
+HL `S(0, t_1, ..., t_k)` factorises over PRIMES — each factor `α_p`
+depends on `ν_p({0, t_1, ..., t_k})` = #distinct residues mod p.
+DPP / PPP correlations factorise over PAIRS. Pairwise admissibility
+≠ triple admissibility (e.g., (0, 4, 14) is pair-admissible mod 3 but
+ν_3 = 3 saturates as a triple, killing R_3^HL while PPP predicts ~10^{-3}).
+The HL prime-factor structure cannot reduce to pair-level data; this
+is the structural obstruction to any kernel fit.
+
+### Quantitative breakdown
+
+Pair-level: `R_2(t) - ρ²` flips sign across odd/even (R_2 ≈ 0 odd,
+R_2 ≈ ρ² S(0,t) > ρ² even). 3-point: PPP overshoots HL by 7.5–79.2%;
+max gap on 3-AP triples (0, 6, 12), (0, 12, 18), (0, 18, 24).
+Real-signed-K: σ_req ∈ (-0.541, +0.769) — never ±1.
+Complex-Hermitian-K: best LS phase residual 0.0746 ≫ noise floor 0.01.
+
+### New edge: E2.16
+
+First 3-point structural statement ruling out a kernel-factorisation
+representation of χ_P. Complements the 2-point pair-level closures
+E2.13 (Gowers norm), E2.14 (Anderson Lyapunov), E2.15 (algebraic
+immunity) with the FIRST entry that genuinely uses 3-point data.
+
+### Files
+
+* New: `experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit.py`,
+  `primes_dpp_ppp_fit_results.md`, `main_run.json`.
+* New: `archive/sessions/session95_d7_dpp_ppp_fit.md`.
+* Modified: `EDGES.md` (E2.16 added),
+  `CROSS_DOMAIN_TECHNIQUES.md` (DPP marked USED I),
+  `ATTACK_VECTORS.md` (§D.D7 closed + Closed-attacks entry added),
+  `status/CLOSED_PATHS.md` (row appended),
+  `NOVELTY_CHALLENGES.md` (§D7 closure noted, §D7.b/§D7.c proposed).
+
+### Why B-grade not A-grade
+
+B because: ambitious frontier attack on DPP fit with 5 pre-stated
+falsifiers, all HOLD; new edge E2.16 quantifies a structural negative
+in a fresh cross-domain (point-process theory); FIRST 3-point closure
+in a project saturated with 2-point closures. Not A because: no
+positive kernel found, no new polylog representation; the result is
+structural negative consistent with the project's "χ_P = HL, no more"
+picture rather than breaking it.
+
+---
+
+## Session 96 — D2 (cross-domain, persistent homology / TDA), B-grade
+
+**Mode**: Frontier (ATTACK_VECTORS.md §D2). Cross-domain technique:
+persistent homology (Vietoris-Rips filtration on Takens delay
+embedding), via Carlsson 2009 BAMS 46 + ripser (Bauer 2021 J. Appl.
+Comput. Topol. 5).
+
+**Attack:** D2 (PROPOSED row in CROSS_DOMAIN_TECHNIQUES.md §4).
+
+**Result:** F3 falsifier holds. PRIMES > 3σ below BOTH IID Exp(1)
+AND gap-permuted controls on integrated H_0 / H_1 persistence
+(`T0`, `T1`).
+
+| run | M | d | T0 z(B1) | T0 z(B2) | T1 z(B1) | T1 z(B2) |
+|-----|---|---|----------|----------|----------|----------|
+| main, x=1e6 | 2000 | 3 | -10.31 | -8.70 | -4.20 | -11.99 |
+| robust, x=5e6 | 2000 | 3 | -8.35 | -7.58 | -3.67 | -8.69 |
+| robust, d=2 | 2000 | 2 | -10.56 | -6.68 | -2.68 | -7.78 |
+| robust, d=4 | 2000 | 4 | -7.55 | -5.05 | -5.83 | -3.57 |
+| scaling | 4000 | 3 | -17.80 | -15.45 | -10.49 | -16.76 |
+
+Z-scores grow super-linearly with M (signal at least linear in
+window size). Effect dimension-stable across d ∈ {2, 3, 4}.
+Sign: PRIMES T0, T1 are SMALLER than random — primes are MORE
+clustered and have FEWER persistent loops in delay-embedding space
+than Poisson or gap-permuted.
+
+**Mechanism:** HL k-tuple admissibility constrains consecutive gaps
+to repeat residue patterns more often than random, creating
+geometric self-similarity in the delay-embedding cloud (small T0)
+and suppressing random "out-and-back" loops in delay space (small
+T1). The B2 (gap-permuted) control isolates the *serial-correlation*
+component from the gap-marginal component.
+
+**Position in HL-detection family:**
+
+| Edge   | Method                  | Mathematical category   |
+|--------|-------------------------|-------------------------|
+| E2.13  | Gowers U^k norm         | Additive combinatorics  |
+| E2.14  | Anderson Lyapunov γ(E)  | Random Schrödinger      |
+| E2.15  | Algebraic immunity AI=2 | Boolean / algebra       |
+| E2.16  | DPP / PPP failure       | Random matrix theory    |
+| **E2.17** | **PH of Takens-embedded gaps** | **Algebraic topology / metric geometry** |
+
+E2.17 is the FIRST topological / metric-space-geometric detection
+of HL serial structure; the prior four are analytic (Fourier,
+spectral, polynomial, kernel-factorisation).
+
+**Files**
+
+* New: `experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p.py`,
+  `persistent_homology_chi_p_results.md`, multiple `*.json` raw runs.
+* New: `archive/sessions/session96_d2_persistent_homology_chi_p.md`.
+* Modified: `EDGES.md` (E2.17 added),
+  `CROSS_DOMAIN_TECHNIQUES.md` (PH marked USED I, edge E2.17),
+  `ATTACK_VECTORS.md` (§D.D2 closed + Closed-attacks entry added),
+  `status/CLOSED_PATHS.md` (row appended).
+
+**Why B-grade not A-grade**
+
+B because: ambitious frontier attack on D2 with pre-stated F1/F2/F3
+falsifiers, F3 holds quantitatively (≥ 5σ across all robustness
+checks); new edge E2.17 documents a fifth orthogonal HL-detection
+category; first project quantitative PH measurement (S10's TDA
+mention was qualitative). Not A because: no polylog opening (PH is
+O(M^3)), no new polynomial-time evaluator, the underlying signal is
+the same HL serial structure detected by E2.13/E2.14/E2.15/E2.16
+in different mathematical categories — adds a new instrument, not
+a new physics.
+
+**Honest-failure check:** session produced (i) new edge E2.17 in a
+new mathematical category (algebraic topology), (ii) first-in-project
+quantitative PH measurement on prime gaps, (iii) two robustness
+checks that confirm the signal is real and scaling, (iv) closure of
+ATTACK_VECTORS §D2 with concrete numerical signature, and (v) three
+self-extension successor challenges. Not a duplicate-only session.
+
+**Next-action:** D2.a (W-tricked PH) — predicted to link E2.17 to
+E2.13 if HL singular-series cancellation is the only mechanism;
+single session.
+
+---
+
+## Session 98 — L1 Lean: corner case `(W = 2, j = 1)` of E2.1 closed unconditionally (C-grade)
+
+**Mode:** arc continuation (Arc 2, Lean Formalisation Track), Route A'.
+
+**What changed.** Two new sorry-free Lean theorems added to
+`MPSBondDim/Basic.lean`:
+
+* `exists_invertible_submatrix_W_eq_2_j_eq_1 (d : ℕ) (hd : 2 ≤ d) :
+  ∃ ρ σ, IsUnit ((unfolding 2 d 1).submatrix ρ σ)` — corner-case
+  prime exhibit via Bertrand.
+* `mps_bond_dim_W_eq_2_j_eq_1 (d : ℕ) (hd : 2 ≤ d) :
+  (unfolding 2 d 1).rank = 2` — corner-case rank statement.
+
+`#print axioms` for both: `[propext, Classical.choice, Quot.sound]`
+only — no `sorryAx`. The general-case `exists_invertible_submatrix`
+`sorry` is unchanged (still the only outstanding obligation).
+
+**The construction (≈70 Lean lines).** For every `d ≥ 2`, Bertrand at
+`n = 2^(d-1)` gives a prime `p ∈ (2^(d-1), 2·2^(d-1)]`. Choose
+`ρ = id : Fin 2 → Fin 2`, `σ 0 = ⟨1, _⟩`, `σ 1 = ⟨p − 2^(d-1) − 1, _⟩`.
+The 2×2 submatrix is upper-triangular `[[1, ?], [0, 1]]` because:
+
+* `(0, 0)`: `chiP(0·2^(d-1) + 1 + 1) = chiP 2 = 1` (uses `Nat.prime_two`).
+* `(1, 1)`: `chiP(2^(d-1) + (p − 2^(d-1) − 1) + 1) = chiP p = 1`
+  (uses Bertrand's primality of `p`).
+* `(1, 0)`: `chiP(2^(d-1) + 2) = 0` because `2 ∣ (2^(d-1) + 2)` and
+  `2^(d-1) + 2 > 2`, contradicting prime via
+  `Nat.Prime.eq_one_or_self_of_dvd`.
+
+The `(0, 1)` entry depends on `p` and is irrelevant; `det = 1·1 −
+?·0 = 1`. `Matrix.isUnit_iff_isUnit_det` + `Matrix.det_fin_two`
+discharges the `IsUnit` goal. The unconditional rank statement
+follows by combining `rank_le_min_dim` (gives `rank ≤ 2`) with the
+exhibit (gives `2 ≤ rank` via `Matrix.rank_of_isUnit` +
+`Matrix.rank_submatrix_le`).
+
+**Why C-grade.** Lean translation of S90's pre-identified Route A'.
+The corner-case construction (explicit `σ` and the diagonal-dominance
+via `chiP(2^(d-1) + 2) = 0`) is mildly new to the codebase, but the
+overall mathematical content was outlined in S90's audit. This is
+the project's first **fully verified** instance of `mps_bond_dim` for
+any concrete `(W, j)`, but per CLAUDE.md's "self-grade down" rule,
+this lands at C.
+
+**Files touched.**
+* `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+  (+≈70 lines, no `sorry` introduced).
+* `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`
+  (declaration table, Route A' marked DONE, build status).
+* `RESEARCH_AGENDA.md` (Arc 2 milestone added, next-action updated).
+* `archive/sessions/session98_l1_lean_corner_case.md` (synthesis).
+
+**Next-action.** (i) Mirror corner `(W = 2, d = j + 1)` — same
+Bertrand pattern, ~50 Lean lines, would extend formalised regime to a
+second corner. (ii) Route C (PNT-driven low-density regime) — leaves
+saturating half-cut regime open but is more impactful than corner
+cases. (iii) General case `exists_invertible_submatrix` — Hoheisel-
+grade short-interval primes, multi-session, awaits mathlib
+infrastructure.
+
+## Session 99 — L1 Lean: orthogonal corner `(W = 2, d = j + 1)` of E2.1 closed unconditionally without Bertrand (C-grade)
+
+**Mode:** arc continuation (Arc 2, Lean Formalisation Track), Route A''.
+
+**What changed.** Three new sorry-free Lean declarations added to
+`MPSBondDim/Basic.lean`:
+
+* `chiP_three_eq_one : chiP 3 = 1` — small helper.
+* `exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1 (j : ℕ) (hj : 1 ≤ j) :
+  ∃ ρ σ, IsUnit ((unfolding 2 (j+1) j).submatrix ρ σ)` — orthogonal
+  corner-case prime exhibit, **no Bertrand**.
+* `mps_bond_dim_W_eq_2_d_eq_j_plus_1 (j : ℕ) (hj : 1 ≤ j) :
+  (unfolding 2 (j+1) j).rank = 2` — orthogonal corner-case rank
+  statement.
+
+`#print axioms` for all three: `[propext, Classical.choice, Quot.sound]`
+only — no `sorryAx`, no new `axiom`. The general-case `exists_invertible_submatrix`
+`sorry` is unchanged.
+
+**The construction (≈110 Lean lines).** For every `j ≥ 1` and
+`d = j + 1`, the matrix is `Fin(2^j) × Fin 2` — only **two columns**.
+We take both. Choose `ρ 0 = ⟨0, _⟩`, `ρ 1 = ⟨1, _⟩` (rows 0 and 1),
+`σ 0 = ⟨1, _⟩`, `σ 1 = ⟨0, _⟩` (column swap). The 2×2 submatrix is
+the identity:
+
+```
+   ⎡ unfolding(0, 1),  unfolding(0, 0) ⎤   ⎡ chiP 2,  chiP 1 ⎤   ⎡ 1, 0 ⎤
+   ⎣ unfolding(1, 1),  unfolding(1, 0) ⎦ = ⎣ chiP 4,  chiP 3 ⎦ = ⎣ 0, 1 ⎦
+```
+
+with `det = 1`. Uses only `Nat.prime_two`, `Nat.prime_three`,
+`Nat.not_prime_one`, decidability of `¬ Nat.Prime 4` — *no Bertrand*.
+The upper bound `rank ≤ 2` uses `Matrix.rank_le_width` (only 2
+columns); a small `linarith` step dodges a dependent-type rewrite
+issue with `2 ^ ((j+1) - j)` appearing both in the hypothesis and in
+the matrix's column-index type.
+
+**What this closes.** Together with S98, the file has **unconditional
+Lean proofs of `mps_bond_dim` on the entire `(j, d - j)` boundary of
+the parameter grid for `W = 2`** — i.e. the full `R = 2` regime. S98
+covers the column `j = 1, d ≥ 2`; S99 covers the row `d - j = 1,
+j ≥ 1`. The two corners overlap at `(j, d) = (1, 2)`; the genuinely
+new content of S99 is `j ≥ 2`.
+
+**Why C-grade.** Lean translation of S90's pre-identified Route A''.
+The mildly novel observation is that this corner is structurally
+*easier* than S98's (no Bertrand) — the agenda predicted "the same
+Bertrand argument applies, mirrored", but the matrix has only 2
+columns so we just take both. Per CLAUDE.md "self-grade down", this
+lands at C.
+
+**Implementation lesson.** `rw` and `▸` failed when the pattern being
+rewritten (`2 ^ ((j+1) - j)`) appeared inside a dependent type
+(`Matrix (Fin (2^j)) (Fin (2^((j+1)-j))) ℚ`). The fix: prove the
+arithmetic identity as a separate `have` and chain via `linarith`
+rather than rewriting in-place. Worth flagging for future Lean
+sessions hitting similar dependent-rewrite issues.
+
+**Files touched.**
+* `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+  (+≈110 lines, no `sorry` introduced).
+* `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`
+  (declaration table, Route A'' marked DONE, build status).
+* `RESEARCH_AGENDA.md` (Arc 2 milestone added, next-action updated to
+  list Routes A''' / C / B).
+* `NOVELTY_CHALLENGES.md` (L1 progress paragraph extended).
+* `EDGES.md` (E2.1 annotation extended).
+* `archive/sessions/session99_l1_lean_orthogonal_corner.md` (synthesis).
+
+**Next-action.** (i) Route A''' — extend corner closures to `W = 3`
+(multi-prime exhibits, ~150 lines, 1-2 sessions). (ii) Route C
+(PNT-driven low-density regime). (iii) General case awaits Hoheisel-
+grade short-interval primes.
+
+
+## Session 100 — G1 Liouville Anderson Lyapunov (B-grade)
+
+**Mode:** wild swing, ATTACK_VECTORS §G1.
+
+**What changed.** Repeated S88 chi_P Anderson Lyapunov experiment with
+the *centered multiplicative encoding* `V(n) = lambda(n) ∈ {-1, +1}`
+(mean → 0 by PNT, variance = 1 exactly), comparing the discrete 1D
+Schrödinger Lyapunov `gamma_lambda(E)` to an i.i.d. Rademacher ±1
+baseline at 51 energies in [-2.95, 2.95], at three sample sizes
+N ∈ {10^5 (50 seeds), 3·10^5 (50 seeds), 10^6 (100 seeds)}.
+
+**Result.** Lambda matches Rademacher within seed noise: max |z| flat
+at 1.78–2.16 across two orders of N magnitude, argmax energy wanders
+between runs ({-0.24, +0.12, -2.01}), χ²/K = 0.49–0.69 (sub-Rademacher),
+Pastur-Figotin agreement γ_λ/γ_PF = 0.9317 identical to γ_Rademacher/
+γ_PF = 0.9309 to 4 decimals. Independent Chowla two-point aggregate
+at N=10^6, h=1..16: Σz² = 4.77 vs Rademacher χ²_16 mean 16 (lambda is
+*more* Rademacher-like than Rademacher).
+
+**Stark contrast with E2.14 (chi_P, S88) at same N=10⁵ grid:**
+
+| | chi_P (E2.14) | λ (this session) |
+|--|---|---|
+| max \|z\| | 88.5σ at locked E=0.108 | 1.78σ at wandering E |
+| Scaling | √N (HL mod-q resonance) | flat (Sarnak/GT) |
+| W-trick | required, cascade to W=2310 → 4σ | none needed |
+
+The contrast IS the new content: chi_P's spectral deviation is
+exclusively HL singular-series mod-q resonance, lambda has no such
+resonance. First non-W-tricked spectral measure at noise floor in
+the project's 38-measure pseudorandomness battery.
+
+**Cross-domain ingredient (NEW):** Möbius/nilsequence orthogonality
+(Green-Tao 2012 *Annals* 175 = arXiv:0807.1736; Sarnak 2010 IAS
+lectures; Tao 2016 Forum Math Pi 4 = arXiv:1509.05422 logarithmic-
+Chowla). First project use; status PROPOSED → USED E.
+
+**Adds EDGE E2.18.** Closes ATTACK_VECTORS §G1 mode E.
+
+**Why B-grade not A-grade.** F1 falsifier (sustained |z| > 5 not
+W-trick-removable) FALSE; F2 (B-grade lower bound) HOLDS strongly.
+No new polylog opening. Inverse: the intended polylog opening
+("if lambda-Lyapunov has structure, partial-sum the explicit
+formula μ-side") is *closed*, not opened.
+
+**Files.**
+* New: `experiments/dynamical/liouville_anderson_lyapunov/`
+  with main script, analysis script, three result JSONs, and
+  `_results.md`.
+* Modified: `EDGES.md` (E2.18 added); `CROSS_DOMAIN_TECHNIQUES.md`
+  (Anderson row + new Möbius/nilsequence orthogonality row, both
+  USED E); `ATTACK_VECTORS.md` (§G1 → Closed attacks with G1.a/
+  G1.b/G1.c successors); `status/CLOSED_PATHS.md` (row appended).
+* New: `archive/sessions/session100_g1_liouville_anderson_lyapunov.md`.
+
+**Next-action.** G1.c — heavy-tail Schrödinger `V(n) = log p_n` on
+primes, 0 elsewhere; introduces Bourgain-Goldstein-Schlag 2002
+*Annals* 154 as a NEW cross-domain technique. Single-session.
+Alternative: G2 — Gowers U^k of lambda ∈ {-1, +1} centered encoding
+(D6.b only tested {0, 1} indicator at U^2). Single-session.
+
+## Session 101 — D6.c μ-weighted χ_P at U^2 — family-level refinement of E2.13 (B-grade)
+
+**Target.** NOVELTY_CHALLENGES.md §D6.c. Test whether `μ(n)·χ_P(n)`
+"kills the Hardy-Littlewood structure" of χ_P at U^2 even before
+W-tricking. Single-session, low difficulty.
+
+**Literal collapse.** μ(p) = −1 on every prime; χ_P(n) = 0 off the
+primes; therefore `μ·χ_P ≡ −χ_P` pointwise. ‖−f‖_{U²} = ‖f‖_{U²} so
+the literal D6.c question collapses to a sign issue. Verified:
+`max_n |(μ·χ_P)(n) + χ_P(n)| = 0` exactly at every N tested.
+
+**Pivot.** "Does Möbius cancellation propagate from signed μ to its
+indicator level sets?" Built a panel of 11 multiplicatively-defined
+arithmetic indicators (chi_P, sqfree, mu_plus/minus, lam_plus/minus,
+1[Ω=2], signed μ and λ, plus the trivial mu_chi_P / musq_chi_P) on
+Z/NZ. Computed Q²(f) = ‖f‖_{U²}^4 / mean(f)^4 for indicators and
+Q²_norm(f) = N·‖f‖_{U²}^4/(2·‖f‖_2^4) for sign-valued at
+N = 1024..131072. Re-ran under W-trick at W ∈ {6, 30, 210}.
+
+**Result — sharp dichotomy.**
+
+| Function | Bare Q²_∞ | W=210 | Gowers-uniform? |
+|----------|-----------|-------|-----------------|
+| chi_P (Ω=1, sqfree) | 2.301 (= S_2) | 1.004 | NO bare; YES W |
+| sqfree (μ²) | **1.0384** stable | 1.000 | NO bare; YES W |
+| 1[μ=+1] (sqfree, even ω) | 1.0384 | 1.001 | NO bare; YES W |
+| 1[μ=−1] (sqfree, odd ω) | 1.0384 | 1.001 | NO bare; YES W |
+| 1[Ω=2] (semi-primes) | 1.116+ slow growth | 1.001 | NO bare; YES W |
+| 1[λ=+1] (even Ω) | **1.0000** | 1.001 | YES (S87) |
+| 1[λ=−1] (odd Ω) | 1.0000 | 1.001 | YES |
+| μ (signed) | Q²_norm → 1 | (n/a) | YES |
+| λ (signed) | Q²_norm → 1 | (n/a) | YES |
+
+**Structural finding.** Möbius/Liouville cancellation propagates from
+signed function to indicator level sets *only when the level set has
+density 1/2*. The Liouville indicators 1[λ=±1] have density → 1/2
+(consequence of `Σλ(n) = o(N)` ⟺ PNT) and inherit Gowers-uniformity.
+The Möbius indicators 1[μ=±1] have density 3/π² ≈ 0.304 ≠ 1/2 and
+retain HL structure with the same `Q²_∞ ≈ 1.0384` shared by μ²
+(squarefree indicator), explained by the squarefree restriction
+dominating the HL contribution while the +1/−1 split is
+density-balanced *given* squarefree.
+
+**Family-level W-trick closure.** At W = 210, the entire panel
+collapses to Q² ∈ [1.0000, 1.0041]. E2.13's W-trick property is now
+a *family-level fact* across the prime / squarefree / k-almost-prime
+/ Möbius-level-set indicators — not specific to χ_P.
+
+**Refines E2.13 inline.** S_k governs only the bare-prime indicator;
+the squarefree class has its own constant `S_2^{sqfree} ≈ 1.0384`;
+Liouville indicators have S = 1; the W-trick at W = 210 unifies all of
+them. EDGES.md updated with the family-level table and density-1/2
+explanation.
+
+**Why B-grade.** Refinement of E2.13 with new empirical content
+(family-level table; new constant `S_2^{sqfree} ≈ 1.0384`; structural
+explanation of S87 as a density-1/2 phenomenon). No A-grade surprise:
+every result confirms a known arithmetic-randomness prediction
+(Sarnak Möbius randomness, Liouville orthogonality, GT W-trick); F3
+(Möbius indicators Gowers-uniform) was the structurally informative
+falsifier — FALSE because density 3/π² ≠ 1/2.
+
+**Files.**
+* New: `experiments/information_theory/mu_weighted_chi_p_uk/`
+  with `mu_weighted_chi_p_uk.py`, `wtrick_check.py`, two JSON
+  outputs, and `_results.md`.
+* Modified: `EDGES.md` (E2.13 family-level extension); `NOVELTY_CHALLENGES.md`
+  (D6.c CLOSED).
+* New: `archive/sessions/session101_d6c_mu_weighted_chi_p.md`.
+
+**Next-action.** Three follow-ups proposed in results.md:
+(i) Run U^3 of the same panel at N ≤ 2^14 (B-grade).
+(ii) Q²(1[Ω=k]) for k = 1..5 — k-almost-primes Gowers fingerprint
+     vs k (B-grade).
+(iii) Make the structural fact "Möbius randomness propagates only to
+      density-1/2 indicators" into a precise theorem — possibly
+      A-grade, multi-session arc, requires Sarnak-style dynamical
+      argument.
+
+
+## Session 104 — D13 (subword complexity / topological entropy of chi_P) — B-grade
+
+**Cross-domain technique imported.** Subword (factor) complexity
+`p_w(n) := #{distinct length-n factors of w}` and topological entropy
+`h_w := lim_n log_2 p_w(n) / n` for binary infinite words (Lind-
+Marcus 1995 *Symbolic Dynamics and Coding* CUP; Cassaigne-Nicolas
+2010 "Factor complexity" CANT vol. 135; Morse-Hedlund 1938
+*Amer. J. Math.* 60). Subword complexity of chi_P is **not in the
+published literature**; CLOSED_PATHS line 181 ("Symbolic dynamics —
+near-random block complexity, S4") was an informal placeholder.
+
+**Five chi_P-derived streams measured at N = 5 · 10^6, n_max = 22,
+K = 20.** RAW = chi_P(2..N); ODD = chi_P(2k+1); W{q} = Green-Tao
+W-trick at primorial q ∈ {6, 30, 210}, residue 1. Vectorised rolling
+encoding (numpy uint64; cost O(nL); memory O(L)) for each stream.
+Compared to K=20 random PERMUTATIONS of the stream (B2: density and
+1-marginal preserved exactly, all >1-gram structure killed) and K=20
+iid Bernoulli matched-density samples (B1).
+
+**Headline cascade** (max |z_perm| over n ∈ [1, 22]):
+
+  RAW 132.7 → ODD 277.1 → W6 120.5 → W30 24.8 → W210 8.4
+
+Clean monotone reduction by ~1.5 orders of magnitude across W ∈
+{1, 6, 30, 210}. Pre-registered F3 (PRIMES > 3σ from BOTH B1 AND B2
+at every n in [n_lo, n_hi] with n_hi ≥ 18, on at least one of {ODD,
+W6, W30}) HOLDS at z >> 3σ. W=210 partially erases (residual 8.4σ
+at n=12, sign-flips at n=17). Effective topological entropy h_eff(n)
+of W=210 stream agrees with Bernoulli matched-density to ≤ 0.001
+across n ∈ [1, 22].
+
+**Mechanism.** Subword complexity counts distinct prime-position
+configurations in sliding length-n windows; chi_P configurations
+are constrained by mod-p admissibility for primes p ≤ n; W =
+primorial(p_k) sieves out exactly those constraints, monotonically
+erasing the deficit. Same Hardy-Littlewood k-tuple-admissibility
+engine that drives E2.13/E2.14/E2.16/E2.17.
+
+**Adds EDGE E2.19** — subword complexity of chi_P deviates ≥ 100σ
+from Bernoulli on raw/W6 streams; W=210 reduces to ≤ 8.4σ at finite
+L = 2.4·10^4. **38th pseudorandomness measure**, **SIXTH orthogonal
+HL-detection family** (first in symbolic-dynamics / factor-complexity
+/ topological-entropy category).
+
+**Why B-grade.** Quantitative new edge in fresh cross-domain category;
+clean monotone W-trick cascade; pre-registered F3 falsifier holds;
+three concrete successor challenges proposed (D13.a W=2310 scale;
+D13.b Liouville-binarised; D13.c Lempel-Ziv complexity). Not A-grade
+because subword complexity at fixed window length is O(L log L) — no
+polylog opening; the underlying signal IS HL serial structure already
+detected in different categories by E2.13–E2.17.
+
+**Files.**
+* New: `experiments/dynamical/subword_complexity_chi_p/`
+  with `subword_complexity_chi_p.py`, `results.json`, `run.log`,
+  `subword_complexity_chi_p_results.md`.
+* Modified: `EDGES.md` (added E2.19); `status/CLOSED_PATHS.md`
+  (appended D13 closure row); `CROSS_DOMAIN_TECHNIQUES.md` (Symbolic
+  dynamics: PROPOSED → USED E, edge E2.19); `ATTACK_VECTORS.md`
+  (§D.D13 closed in line + Closed-attacks entry with three D13.a/b/c
+  successors); `NOVELTY_CHALLENGES.md` (no edit — D13 was an
+  ATTACK_VECTORS entry not a challenge).
+* New: `archive/sessions/session104_d13_subword_complexity.md`.
+
+**Next-action.** D13.a (scale to W=2310 with N ≥ 5·10^7) is the
+single-session natural follow-up; D13.c (Lempel-Ziv) introduces a
+new cross-domain technique to the registry.
+
+---
+
+## Session 105 — C3 BUILT (Brandt obstructions × per-bit difficulty)
+
+**Mode.** CONSTRUCTION on NOVELTY_CHALLENGES §1 C3, the only remaining
+§1 composition challenge with a construction-discipline form unbuilt
+before this session (C1, C2, C5, C6, C7 BUILT in prior sessions; C4
+belongs in `algorithms/`, not `experiments/constructions/`).
+
+**Goal.** Compose E5.8 (Brandt-class barrier) with E1.3 (per-bit
+difficulty profile) to test the C3 question: is there a "minimal
+weakening of E5.8's O1 obstruction that still admits Brandt's
+TRAVERSE technique" once we restrict to a per-bit version of π?
+
+**Object built.** Per-bit prime-counting function
+`π_J(x) := bit J of π(x)` (J=0 is LSB) and the per-bit family
+`F_N := {s_J^(N) := (π_J(0), ..., π_J(2^N - 1)) : J = 0..N-1}`.
+Reused brandt_mktp.py's 3-bit-per-op stack VM (L_MAX = 12, T_MAX =
+4096) to compute Kt_b(s_J^(N)) for N ∈ {3..7}, J ∈ [0, N-1]. Code:
+`experiments/constructions/brandt_per_bit/brandt_per_bit.py`. Runs
+end-to-end in 0.44 s.
+
+**Result.** F2 (J-stratified) holds in the saturation regime N ≥ 4,
+but the cut location is **NOT** at E1.3's 0.5N. It is at
+`J*(N) := ⌈log₂( π(2^N - 1) + 1 )⌉ ≈ N − log₂ N`. For J ≥ J*(N),
+π_J ≡ 0 and Kt_b ∈ {5..8}; for J < J*(N) — including E1.3's
+"easy zone" J ∈ [⌈0.5N⌉, J*) — Kt_b saturates at INF = 61.
+Numerical cuts: N=4 J*=3 (vs 0.5N=2); N=5 J*=4 (vs 2.5);
+N=6 J*=5 (vs 3); N=7 J*=5 (vs 3.5). **Bounded-VM is blind to
+E1.3's smooth/oscillatory transition.**
+
+**Structural conclusion.** All four Brandt obstructions O1-O4 still
+apply to every fixed π_J: (O1) each π_J is a fixed total Boolean
+function — parameter-control of J does not deliver the oracle-
+dependence TRAVERSE needs; (O2) π_J answers "bit J set?", not "is z
+complicated?" — no self-referential Kt; (O3) per-bit family has only
+J*(N) ≈ N − log₂ N non-trivial members per N, all fixed, none
+generated traversal-path-dependently; (O4) uniform DTIME, unaffected.
+The "minimal weakening of O1" the C3 spec asked about does NOT exist
+on the per-bit family — closure mode E (DUPLICATE-PLUS of E5.8) at
+structural level.
+
+**Why B-grade.** Built a runnable composition that did not exist
+before; pre-registered F2 holds in the meaningful regime with a
+quantitative sharpening of the cut location to `J*(N) ≈ N − log₂ N`
+(strictly higher than E1.3's 0.5N Fourier cut); structural argument
+re-validated for the per-bit family. Not A-grade because the
+structural conclusion is DUPLICATE of E5.8 by construction (no
+polylog opening); the sharpening is a refinement of E1.3 at bounded-Kt
+resolution, not a new edge family.
+
+**Successor proposed (C3.a).** Arithmetic-primitive bounded-Kt VM:
+extend the 8-op stack VM with `LOG2`, `LI_APPROX`, `DIV_LOG`,
+`GEO_SUM` (the R^{-1} kernel), then re-measure Kt_b'(s_J^(N)).
+Question: does the bounded-Kt cut shift from J*(N) ≈ N − log₂ N
+toward E1.3's 0.5N? A YES would establish that R^{-1}-kernel-equipped
+VM resolves the smooth/oscillatory transition; a NO would establish
+a Kt-cut hierarchy indexed by VM richness. Cost: 1 session. Save under
+`experiments/constructions/brandt_per_bit_arith_vm/`.
+
+**Files.**
+* New: `experiments/constructions/brandt_per_bit/` with
+  `brandt_per_bit.py`, `definition.md`, `brandt_per_bit_results.md`.
+* Modified: `EDGES.md` (E1.3 bounded-Kt refinement annotation; E5.8
+  per-bit extension confirmed); `status/CLOSED_PATHS.md` (C3 closure
+  row, S105); `RESEARCH_AGENDA.md` (Arc 4 C3 milestone marked done +
+  next-action updated); `NOVELTY_CHALLENGES.md` (§1 C3 marked BUILT
+  with outcome and C3.a successor).
+* New: `archive/sessions/session105_c3_brandt_per_bit.md`.
+
+**Next-action.** C3.a (arithmetic-primitive bounded-Kt VM) is the
+proposed single-session follow-up; orthogonally, the §1 menu now has
+only C4 (Aggarwal × Dusart × BPSW unified library — engineering
+integration in `algorithms/`) as an unbuilt construction-discipline
+target — arc-extension work should pivot to N1 follow-ons or §0
+ATTACK_VECTORS-successor entries (D6.a, D2.a-c, D7.b-c).
+
+**Self-evaluation (CLAUDE.md §"Session-end self-evaluation").**
+1. *What did I produce that was not in the project before this session?*
+   The per-bit family `{π_J(x) : J = 0..N-1}` and its bounded-Kt
+   profile under brandt_mktp's 3-bit stack VM, with the new empirical
+   cut location `J*(N) := ⌈log₂( π(2^N - 1) + 1 )⌉ ≈ N − log₂ N`.
+   The structural confirmation that all four O1-O4 obstructions
+   apply wholesale to per-bit decomposition.
+2. *What edges did my work compose or cite?* E5.8 (composition) +
+   E1.3 (composition) + E1.9 (consistency check) + E5.3 (open
+   problem the work lives near).
+3. *If my session produced only duplicate closures, why?* The
+   structural conclusion is DUPLICATE of E5.8; the empirical cut is a
+   refinement of E1.3. Mixed outcome — the structural side was
+   pre-figured by RESEARCH_AGENDA.md's annotation that "C3 likely
+   closes as a structural duplicate of E5.8 within ~30 minutes",
+   which the work formalised. The empirical side (J*(N) ≈ N − log₂ N
+   cut) is the new content.
+4. *Next-action for the next agent?* Pick C3.a (arithmetic-primitive
+   bounded-Kt VM) if interested in continuing the bounded-Kt cut-
+   hierarchy line; otherwise pick from the §0 ATTACK_VECTORS
+   successors (D6.a, D2.a-c, D7.b, D7.c).
+
+
+## Session 106 — L1 Lean: orthogonal corner `(W = 3, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+
+**Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+**Target:** Route A''' from `mps_bond_dim_notes.md`. Extend the
+orthogonal-corner argument (S99 Route A'') from `W = 2` to `W = 3`.
+**Outcome.** Four new sorry-free Lean declarations:
+`chiP_five_eq_one`, `chiP_seven_eq_one`,
+`exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1`, and
+`mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3`
+for every `j ≥ 1`. `#print axioms` confirms only
+`[propext, Classical.choice, Quot.sound]` (no `sorry`, no introduced
+`axiom`). The construction takes the `3 × 3` submatrix
+`[[chiP 1, chiP 2, chiP 3], [chiP 4, chiP 5, chiP 6], [chiP 7, chiP 8,
+chiP 9]] = [[0, 1, 1], [0, 1, 0], [1, 0, 0]]` of determinant `−1`,
+computed via `Matrix.det_fin_three`; the unit witness is
+`isUnit_one.neg : IsUnit (-(1 : ℚ))` after `ring_nf`. Uses only the
+explicit primes `2, 3, 5, 7` (each `decide`-checkable) and the non-
+primality of `1, 4, 6, 8, 9`. No Bertrand, no Hoheisel.
+**Significance.** First formally verified `mps_bond_dim` instance
+over a wheel `W ≥ 3`; three corners now formally verified. The
+single remaining `sorry` (general `exists_invertible_submatrix`) is
+unchanged. The proof pattern is reusable for the W ∈ {4, 5, 6} sweep.
+**Files.** Modified: `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+(~150 lines), `mps_bond_dim_notes.md`, `RESEARCH_AGENDA.md`,
+`EDGES.md`. New: `archive/sessions/session106_l1_lean_w3_corner.md`.
+**Next-action.** Either Route A'''' (W ∈ {4, 5, 6} orthogonal corners
+— `W = 4` and `W = 6` mirror the S106 `3 × 3` det pattern; `W = 5` is
+a `5 × 5` det) or Route C (mathlib's PNT for the low-density regime).
+
+## Session 107 — L1 Lean: orthogonal corner `(W = 4, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+
+**Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+**Target:** Route A'''' from `mps_bond_dim_notes.md`. Extend the
+orthogonal-corner argument (S99 / S106) from `W ∈ {2, 3}` to `W = 4`.
+**Outcome.** Three new sorry-free Lean declarations:
+`chiP_eleven_eq_one`,
+`exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1`, and
+`mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3`
+for every `j ≥ 1`. `#print axioms` confirms only
+`[propext, Classical.choice, Quot.sound]` (no `sorry`, no introduced
+`axiom`). The construction picks the three live columns `{0, 1, 2}` of
+the `4^j × 4` slab (column `3` is `chiP` at multiples of 4, all zeros)
+and rows `{0, 1, 2}` to give the `3 × 3` submatrix
+`[[chiP 1, chiP 2, chiP 3], [chiP 5, chiP 6, chiP 7], [chiP 9, chiP 10,
+chiP 11]] = [[0, 1, 1], [1, 0, 1], [0, 0, 1]]` of determinant `−1`,
+computed via `Matrix.det_fin_three`. Uses only primes `2, 3, 5, 7, 11`
+(`prime_eleven` new at S107) and non-primality of `1, 4, 6, 9, 10`. No
+Bertrand, no Hoheisel.
+**The new wrinkle.** This is the **first orthogonal-corner instance
+where `rank_le_width` is not tight** — the matrix has 4 columns but
+`R = 3 = φ(4) · 4^0 + 1 < 4`. So the upper bound `rank ≤ 3` cannot use
+`rank_le_width` (which gives `≤ 4`); we cite the general `upper_bound`
+lemma directly, with `Nat.totient 4 * 4^0 + 1 = 3` evaluated by
+`decide`. This pattern carries to subsequent `W ∈ {6, 7, 8, ...}`
+corners.
+**Significance.** Second formally verified `mps_bond_dim` instance
+over a wheel `W ≥ 3`; four corners now formally verified. The single
+remaining `sorry` (general `exists_invertible_submatrix`) is unchanged.
+**Files.** Modified: `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+(~190 lines), `mps_bond_dim_notes.md`, `RESEARCH_AGENDA.md`,
+`NOVELTY_CHALLENGES.md`, `EDGES.md`. New:
+`archive/sessions/session107_l1_lean_w4_corner.md`.
+**Next-action.** Either Route A''''' for `W = 6` (`3 × 3` det following
+S107 template directly, with row choice `{0, 1, 5}` to dodge the row
+1 = row 2 degeneracy of the `6 × 6` slab) or Route A''''' for `W = 5`
+(`5 × 5` det, qualitatively more verbose) or Route C (mathlib's PNT
+for the low-density regime).
+
+## Session 108 — §C5 wild swing: Stein's-method finite-x Wasserstein plateau (A-grade provisional)
+
+**Mode.** wild_swing (full-session, ATTACK_VECTORS.md §C5).
+**Result.** A new EDGES.md entry **E1.7** ("Quantitative finite-x
+Wasserstein plateau for D(x)=(π(x)-Li(x))log(x)/√x"), the first
+quantitative finite-x Wasserstein-shape bound for π(x)-Li(x) in the
+project. New `novel/finite_x_wasserstein_plateau.md` documenting a
+positive plateau `c(X = 10^6) ≈ 0.0083` at K = 10000, established at
+**z-score = 15.08** against sample-fitted Gaussian-CLT control.
+Plateau is structurally explained by the explicit formula's low-zero
+contribution: across 10 sub-windows of `[10^6, 10^7]` of width 0.5
+in log10, empirical `W_1(D̂_emp window)` correlates `r = 0.906` with
+the theoretical `W_1(D_th(50 zeros) window)`. Empirical D̂ is
+indistinguishable (z = -1.06) from a random-phase variant of the
+explicit-formula low-zero sum. Excess kurtosis = -0.41 (95% CI
+[-0.46, -0.36]) — sub-Gaussian, sourced from arcsine modes
+`cos(γ_k log x − arctan(2γ_k))`.
+**Closure.** §C5 → "Closed attacks" (mode E — explicit-formula
+reduction). Cross-domain: Stein's method (Chen-Goldstein-Shao 2011;
+Ross 2011) — first application to π(x)-Li(x) in this project.
+**Significance.** Breaks the **0-A-grades-in-20-sessions** warning
+cascade (S82–S107 production sessions had no A-grade). The plateau
+result satisfies §C5's verbatim A-grade success criterion. Subject
+to verify-mode adversarial review per CLAUDE.md autonomy invariants.
+**Files.** New:
+`experiments/analytic/stein_wasserstein_pi/{stein_wasserstein_pi.py,
+wasserstein_scaling.py, structural_explanation.py,
+test_low_zero_robustness.py, *.md, *.json}`,
+`novel/finite_x_wasserstein_plateau.md`,
+`archive/sessions/session108_c5_stein_wasserstein_pi.md`.
+Modified: `EDGES.md` (added E1.7), `ATTACK_VECTORS.md` (§C5 →
+closed), `status/CLOSED_PATHS.md` (added Stein-Wasserstein row).
+**Next-action.** Verify-mode session must attempt to falsify either
+(a) the plateau's K-scaling persistence at K = 50000, (b) the 0.906
+sub-window structural correlation, or (c) the asymptotic prediction
+`c(X) → 0` as `X → ∞`. If verify confirms, candidate successors
+**§C5b** (range scaling) and **§C5c** (discretised D(x) variants)
+are queued in ATTACK_VECTORS.md.
+
+## Session 109 — Verify S108 (CONFIRM, A-grade upheld)
+
+**Mode.** verify (auto-fired after S108 self-graded A-provisional).
+**Result.** **CONFIRM** — every falsification attempt failed. Plateau
+extended to K=20000 (W_1=0.008289) and K=50000 (W_1=0.008355) — flat
+within 1% over 5x K-range; z-score climbed 15→23→39σ as Gaussian-
+control noise dropped as 1/√K. Sub-window correlation r=0.898 at
+K=20000 (predicted ≥0.85). Excess kurtosis stable at -0.408 to -0.411
+across K=20000-50000 (predicted [-0.5, -0.3]). Random-phase null
+z=-1.16 (orig -1.06). Independent W_1 implementation cross-validated
+against scipy.stats.wasserstein_distance and high-precision quad
+(agree within 3%). All three predictions (a)(b)(c) in
+`novel/finite_x_wasserstein_plateau.md` hold with margin.
+**Borderline caveat upheld.** Self-grade B (verify-mode confirmation
+through non-trivial 5x K-extension and independent re-implementation).
+Original A-grade upheld; closure of §C5 (mode E) stands; E1.7 stands.
+**Files.** New: `archive/sessions/session109_verify_c5_stein.md`.
+Modified: `.verify_result` ← CONFIRM.
+**Next-action.** Pursue §C5b (range scaling, c(X) decay law as X→∞)
+or §C5c (discretised D(x) variants). The plateau-vs-K question is
+settled in CONFIRM at K=50000; the plateau-vs-X scaling is the right
+next target.
+
+## Session 110 — Verify (re-verify) S108 (CONFIRM, A-grade upheld)
+
+**Mode.** verify (re-fired by run.sh: latest non-meta session is still
+S108 A-grade). Three NEW attack angles unrun by S108 or S109.
+**Result.** **CONFIRM**. (i) Truncation sensitivity: `corr(D_emp, D_th(n))`
+rises monotonically 0.43 → 0.98 across n ∈ {1,2,3,5,10,25,50,100,250,500,1000};
+no peak at n=50; W_1(D_th(n))/W_1(D_emp) → 0.98 at n=1000 — empirical
+signal is essentially completely explained by first 1000 zeros of
+explicit formula. (ii) Disjoint width-0.2 sub-windows: r=0.9154 (vs
+S108's 0.906 with overlapping windows) — stricter test, holds. (iii)
+K=10⁵ ceiling test (matches `novel/` prediction (a) ceiling exactly):
+W_1=0.008494 at K=10⁵, z=33.62σ. The plateau is flat to 0.2% across
+K ∈ {10⁴, 10⁵}.
+**Borderline caveat sharpened.** Angle 1 makes the borderline more
+explicit: at n=1000 zeros, the empirical signal is essentially
+completely explained by the explicit formula. The structural origin
+trivialises once the explicit formula is written. Self-grade B.
+**Files.** New: `archive/sessions/session110_verify_c5_stein.md`.
+**Next-action.** §C5b (X-scaling) and §C5c (discretised-D analogues)
+remain the natural successors.
+
+## Session 111 — Verify-2 S108 (CONFIRM, A-grade upheld; quantitative refinement)
+
+**Mode.** verify (third time on S108 — S109 and S110 are meta, latest
+non-meta A-grade is still S108). Two NEW attack angles unrun by S108,
+S109, or S110.
+**Result.** **CONFIRM**. (i) X-scaling at K=5000 across X ∈ {10⁵,
+10⁶, 10⁷}: plateau detected at all three with z = 8.28, 9.71, 5.06
+respectively. The S108 noisy claim "c(10⁷) < c(10⁶)" (z=-0.65 at
+K=1000 — *not detected*) is now verified at z=5.06. c(X) decays
+roughly 1.5× per decade in X — slower than 1/log(X), faster than
+constant. Consistent with asymptotic Hejhal CLT. (ii) Window-width
+sensitivity at X=10⁶, K=5000, log-widths {0.5, 1.0, 2.0, 2.303}:
+c/σ = {0.049, 0.037, 0.058, 0.041} — non-monotone in width.
+Kurtosis FLIPS SIGN at narrow window (logw=0.5 → kurt=+0.086,
+LEPTOKURTIC, opposite to wide-window sub-Gaussianity). c(X) is
+therefore a function of (X, logw), not just X. (iii) Triple-redundant
+W_1 with scipy 500K-ref (S109/S110 used 200K) — strictest reference
+yet, plateau survives.
+**Quantitative refinements.** (a) Prediction `W_1 ≥ 0.005` is
+marginal at X=10⁷ (W_1=0.0059); (b) prediction kurtosis ∈ [-0.5, -0.3]
+is just outside at X=10⁷ (-0.297, but within 1σ K=5000 sampling
+error). Both consistent with asymptotic CLT — kurtosis tends to 0,
+plateau decays. Self-grade B.
+**Files.** New: `archive/sessions/session111_verify_c5_stein.md`,
+`/tmp/verify_S111_*` (ephemeral). Modified: `.verify_result` (CONFIRM).
+Refinement note appended to `novel/finite_x_wasserstein_plateau.md`.
+**Next-action.** Run X=10⁸ at K=5000 to extend the X-scaling table;
+investigate the leptokurtic→sub-Gaussian crossover near logw=1 as a
+potential new diagnostic. §C5b is now de facto closed via this verify
+session; §C5c (discretised-D analogues) remains untested.
+
+## Session 112 — Verify-3 S108 (PARTIAL; A → B demoted)
+
+**Mode.** verify (fourth attempt on S108; S109/S110/S111 each CONFIRMED
+but each used the SAME Riemann γ_k as the random-phase null, missing
+the structural-uniqueness test).
+**Result.** **PARTIAL refutation.** Plateau itself reproduces (W_1=
+0.00863 at K=5000, z=11 vs i.i.d. Gaussian). But the §C5 verbatim
+criterion clause "ties to a specific zeta-zero contribution" fails:
+at K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1 is
+indistinguishable from random-phase Riemann (z=-0.93), random-phase
+non-Riemann uniform [10,145] (z=-1.26), AND random-phase non-Riemann
+equispaced (z=-1.55). The "indistinguishable from random-phase
+variant" finding S108 cited as evidence for Riemann origin is a
+generic oscillatory-sum property, not a Riemann signature. KS-2-sample
+on Riemann-ensemble vs Non-Riemann-ensemble gives p<10⁻⁴ — the
+*ensembles* differ, but a single observation lacks resolving power.
+**Demotion.** A → B per S108's own anticipated demotion path. EDGES.md
+E1.7 EVS L (was M). Cross-domain Stein technique import survives;
+the W_1 magnitude is a generic-oscillatory-sum value, not a Riemann-
+specific quantitative statistic.
+**Methodological lesson.** Three prior verifies all confirmed A-grade
+because none asked the right question. The right question for any
+"X is structurally explained by Y" claim is "would non-Y also produce
+X?". S108/S109/S110/S111 only tested "would *random-phase* Y produce
+the same X?", which is a much weaker test.
+**Files.** New: `archive/sessions/session112_verify_c5_stein.md`,
+`/tmp/verify_S112_*` (ephemeral). Modified: `.verify_result` (PARTIAL),
+`EDGES.md` (E1.7 demoted, EVS M→L), `novel/finite_x_wasserstein_plateau.md`
+(scope refined), S108 synthesis (PARTIAL header), `status/CLOSED_PATHS.md`
+(S108 row updated with S112 refinement note).
+**Self-grade.** B (non-trivial refutation of a key clause; partial,
+not full, refutation; identified missing control across four prior
+sessions).
+
+## Session 113 — Verify-4 S108 (further PARTIAL; B held)
+
+**Mode.** verify (fifth attempt on S108; .verify_target still pointed
+to S108 because no later non-verify session has self-graded A).
+**Result.** **PARTIAL.** Plateau reproduces (was already known to). But
+the surviving-after-S112 claim "first quantitative finite-x Wasserstein
+bound for π(x)−Li(x)" is shown to be a generic kurtosis-driven W_1
+measurement, not even oscillatory-sum-specific. 9-distribution
+universality test (uniform, single arcsine, two sum-of-50-arcsine
+variants, two-Gaussian mixture, t df=10, Laplace, analytic low-zero
+sum, Gaussian control) at K∈{200,..,10000}, n_trials=30, σ=1.6 to
+match D's std at X=10⁶: every distribution with non-zero kurtosis
+plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction √50≈7.07);
+pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50, confirming the
+control). The plateau magnitude W_1/σ tracks |kurtosis(D)|
+monotonically across the families. Linear interpolation at kurt
+= -0.41 (D_emp's measured kurtosis) predicts W_1/σ ≈ 0.042; observed
+W_1/σ = 0.038 — within 10%.
+**Implication.** The W_1 plateau is a generic W_1(P, N(μ_P, σ_P²))
+phenomenon — well-defined positive whenever P is non-Gaussian — and
+its magnitude is fully predicted by D's kurtosis under log-uniform
+x. The cross-domain Stein technique import survives but is not
+load-bearing for the conclusion (direct W_1 calculation suffices).
+The kurtosis-determines-magnitude relationship is itself a new
+quantitative refinement of E7.5; that is the residual non-trivial
+content of the original A-grade claim. Grade stays B (no further
+demotion to C — the universality table itself is informative).
+**Methodological lesson.** When a "novel quantitative bound" reduces
+to a generic measurement-theoretic phenomenon, the right test is
+"do non-target distributions also satisfy the bound, with the same
+magnitude?". S108 framed the result as a Riemann-specific finite-x
+bound; S112 widened it to oscillatory-sum-generic; S113 widens it
+further to non-Gaussian-distribution-generic. The lesson for future
+A-grade claims: *before submitting a quantitative bound as novel,
+test whether it is recoverable from generic non-target distributions
+matched on basic moments*.
+**Files.** New: `archive/sessions/session113_verify_c5_stein.md`,
+`experiments/analytic/stein_wasserstein_pi/test_plateau_universality.py`,
+`experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`,
+`experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.json`,
+`experiments/analytic/stein_wasserstein_pi/test_plateau_universality.log`.
+Modified: `.verify_result` (PARTIAL), `EDGES.md` (E1.7 S113 note added,
+EVS unchanged at L), `novel/finite_x_wasserstein_plateau.md` (S113
+scope-refinement appended), S108 synthesis (S113 PARTIAL note),
+`status/CLOSED_PATHS.md` (S108 row updated with S113 universality
+result).
+**Self-grade.** B (non-trivial test that S108/S109/S110/S111/S112 did
+not run; produced a clean universal-vs-Gaussian comparison across 9
+distribution families; further constrained the scope of the original
+A claim; did not fully refute because the plateau itself remains as
+a measurement, just a generic one).
+
+## S114 (verify-6 of S108 §C5 Stein-Wasserstein) — **PARTIAL** (B)
+**Date:** 2026-04-27. **Mode:** verify (auto-fired; sixth verify on S108).
+**Headline.** S108's W_1 = 0.00829 at K=10000 reproduces to within 0.3%
+under three independent W_1 implementations (mid-rank quantile, scipy
+MC Gaussian reference, CDF-integral). The S108 numeric is solid.
+SEPARATELY: S113's "kurtosis-only fully predicts W_1/σ within ~10%"
+claim is REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give
+kurt=-0.41 (matching D_emp's kurtosis): Beta gives W_1/σ = 0.0328 vs
+D_emp's 0.0376 (-13%) and S113's predicted 0.0426 (-23%). S113
+universality is qualitative (any non-Gaussian distribution plateaus)
+but NOT quantitatively kurtosis-only. A higher-moment-aware fit would
+be needed for tight prediction.
+**S108 grade stays B** (already demoted A→B by S112; S113 PARTIAL;
+S114 PARTIAL). The verification chain has saturated — six verify
+sessions, nothing new to attack on the original claim. Future verify
+sessions should be triggered by NEW A-grade claims, not by re-running
+the same target.
+**Methodological lesson.** Universality claims like S113's
+"kurtosis-only predicts W_1/σ" should be tested on a clean
+single-parameter unimodal distribution family (e.g. Beta(α,α)) before
+publishing — multi-distribution fits across families with different
+higher-moment shapes produce optimistic prediction bands.
+**Files.** New: `archive/sessions/session114_verify_c5_stein.md`,
+`experiments/analytic/stein_wasserstein_pi/verify_S114_independent_recheck.py`,
+`experiments/analytic/stein_wasserstein_pi/verify_S114_independent_recheck.log`,
+`experiments/analytic/stein_wasserstein_pi/verify_S114_independent_recheck_results.md`.
+Modified: `.verify_result` (PARTIAL), `EDGES.md` (E1.7 S114 note),
+`novel/finite_x_wasserstein_plateau.md` (S114 section appended), S108
+synthesis (S114 header note), `status/CLOSED_PATHS.md` (S108 row updated).
+**Self-grade.** B (non-trivial: three-method numeric reproduction +
+Beta(α,α) targeted falsification of S113 — neither was done by prior
+verifies; produced a clean single-distribution test that breaks the
+kurtosis-only fit).
+
+---
+
+## S115 (verify-7 of S108 §C5 Stein-Wasserstein): CONFIRM, B held; sub-window correlation IS Riemann-φ-specific; parser-fix breaks verify loop
+
+**Mode.** verify (auto-fired by run.sh; .verify_target still S108 since
+no later non-verify session has self-graded A — actually S108's self-
+grade line still triggers parse_grade=A despite S112's demotion. Fixed
+this session.)
+
+**Verdict.** CONFIRM. The sub-window correlation r=0.906 between V_emp
+and V_th(50 actual Riemann zeros) is Riemann-phase-specific. 200-trial
+random-phase null preserving the SAME Riemann γ_k gives mean r =
+-0.044 ± 0.389 (matches n=10 noise floor 1/√10 ≈ 0.316), with 0/200
+trials reaching r ≥ 0.906. z(actual r vs null) = +2.44, p < 0.005.
+Random-phase + non-Riemann γ ∈ [10, 145] (mean -0.032 ± 0.381) and
+pure-noise standard normal samples (mean -0.030 ± 0.387) give
+statistically identical null distributions. Actual zero phases are
+necessary AND sufficient to recover V_emp pointwise — exactly E1.5.
+
+**The angle prior verifies missed.** S110 confirmed sub-window
+correlation r=0.9154 on disjoint windows using ACTUAL zeros. S112 ran
+random-phase null on FULL-window W_1 magnitude. **No prior verify ran
+random-phase null on the SUB-WINDOW correlation.** So whether r=0.906
+is Riemann-specific or generic was an open hole.
+
+**Why CONFIRM doesn't un-demote.** S108 is at B (since S112) because
+the W_1 *magnitude* is generic across non-Gaussian distributions
+(S113). My test addresses sub-window correlation, not magnitude.
+Confirming sub-window correlation is Riemann-phase-specific just
+re-confirms E1.5 (D_emp ≈ low-zero explicit-formula sum pointwise) —
+which the project already has. So no grade change.
+
+**Methodological note.** Random-phase null is the right null for
+testing pointwise structural matching: keep frequencies, scramble
+phases, see if correlation survives. S110/S111 used disjoint windows
+with the same actual γ phases on both sides — that's a self-
+consistency test, not a structural-vs-generic test. S115 closes this
+loop.
+
+**Parser fix.** run.sh's parse_grade returns "A" for S108 because the
+first `**X-grade**` pattern in the file is `**A-grade (provisional
+pending verify)**` (line 52, even though wrapped in strikethrough).
+Fix: prepend a top-level "Self-grade (post-verification S109–S115):
+**B-grade**" line so parse_grade returns B in step 1. Verify loop
+broken; run.sh can now rotate to production mode.
+
+**Files.** New: `archive/sessions/session115_verify_c5_stein.md`,
+`experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases.py`,
+`experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases.log`,
+`experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.json`,
+`experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`.
+Modified: `.verify_result` (CONFIRM), `EDGES.md` (E1.7 S115 note),
+S108 synthesis (S115 header note + parser-fix self-grade line),
+`status/CLOSED_PATHS.md` (S108 row updated).
+
+**Self-grade.** B (non-trivial: random-phase null on sub-window
+correlation is a test not run by S109–S114, addresses a previously
+open angle, and uses a fast mid-rank W_1 routine validated against
+the closed-form to 0.5%; the parser fix removes a 7-session-long
+infinite verify loop).
+
+## S116 — A5 Maynard sieve weight as TC⁰ primality witness (wild_swing → B-grade structural negative)
+
+**One-line summary.** Built the Maynard 2015 multidim sieve weight
+evaluator and tested whether `w(n) > τ*` is a pointwise primality
+witness AND whether it's polylog-evaluable. Both fail with two
+independent obstructions: (1) AUC restricted to odd n stays in
+[0.66, 0.69] across all θ ∈ [0.10, 0.40] and four F choices —
+Maynard's `Σ w·χ_P > c·Σ w` is *aggregate* positivity, not pointwise;
+(2) mean coprime tuple count per single-n eval scales as N^{0.10–0.12},
+not polylog. Adds edge E7.14, closes §A5.
+
+**Cross-domain delta.** First project quantitative use of
+multidimensional GPY-Maynard sieve. CROSS_DOMAIN_TECHNIQUES.md
+upgraded PROPOSED → USED E.
+
+**Project-level observation: four-family closure on PRIMES ∈ TC⁰.**
+The construction-side attack space on the only open problem is now
+exhausted across four orthogonal technique families:
+{AKS modulus-twist E7.10, Brandt MKtP E5.8, convergence-acceleration
+E7.11, **Maynard sieve E7.14**}. Future A-grade attempts must move
+to spectral / automorphic / multiplicative-regime techniques (§B2,
+§G3, A5.a successor).
+
+**Next-action.** §G3 (Möbius Voronin universality, wild_swing-worthy)
+or §B2 (Automorphic L-function basis, multi-session arc) are the
+remaining high-novelty frontiers. RESEARCH_AGENDA Arc 1 should
+be updated: "Three Barriers" → "Four Barriers" with E7.14 added.
+
+**Files.** New: `experiments/sieve/maynard_weight_pointwise/` (4 .py
+files + 99 result .json files + .md);
+`archive/sessions/session116_a5_maynard_sieve_pointwise.md`.
+Modified: `EDGES.md` (E7.14 added before E7.13 entry),
+`status/CLOSED_PATHS.md` (S116 row appended),
+`ATTACK_VECTORS.md` (A5 marked CLOSED with B-grade detail; A5.a
+successor proposal added),
+`CROSS_DOMAIN_TECHNIQUES.md` (Maynard sieve upgraded PROPOSED → USED E).
+
+**Self-grade.** B (ambitious-failure class — wild swing missed the
+A-grade target but produced a structural negative with two distinct
+quantitative obstructions, a new edge E7.14, and a four-family
+closure observation that compresses the project's PRIMES ∈ TC⁰
+attack space).

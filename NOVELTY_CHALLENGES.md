@@ -54,30 +54,148 @@ the per-prime factor pattern. Empirical Q^4(χ_P) verifying ~ S_4
 would extend the Gowers-norm fingerprint chain by one level
 (B-grade refinement). Cost: 1 session.
 
-**§D6.b — Λ vs χ_P U^k comparison.** The Green-Tao result
-‖Λ̃ − 1‖_{U^k}[N] → 0 is for the von Mangoldt Λ (log-weighted),
-while §D6 just empirically verified Q^k(χ_P) → S_k > 1 for the
-*bare* indicator χ_P. The two are formally different: Λ is
-Gowers-uniform after centering, χ_P is not. A side-by-side
-empirical comparison at U^2 and U^3, including the Λ→χ_P
-"deconvolution" via partial summation, would clarify which
-log-factor converts the prime indicator from non-uniform to uniform.
-B-grade refinement, 1 session.
+**§D6.b — Λ vs χ_P U^k comparison — CLOSED (S93, mode E, B-grade).**
+Side-by-side measurement of Q^k(χ_P) and Q^k(Λ) on Z/NZ for N up to
+2^17 (U^2) and 2^12 (U^3). Result: **the Hardy-Littlewood
+{0,1}^k-cube singular series S_k is invariant under log-weighting** —
+Q^k(Λ) and Q^k(χ_P) agree to within 0.4% at U^2 and 2.5% at U^3, both
+converging to S_k from below at similar rates. After W-trick at
+W = 210: Q^2(χ_W) = Q^2(Λ_W) = 1.0029 to four decimals (the W-trick
+also erases the log-weight discrepancy). The residual +0.3% offset
+Q^k(Λ) > Q^k(χ_P) is identified as the prime-power weight contribution
+(Λ counts n = p^k for k ≥ 2), vanishing as π(√N)/π(N) → 0. **Refines
+E2.13** to a statement about all natural prime-supported weightings,
+not just the bare indicator. See
+`experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk_results.md`,
+`archive/sessions/session93_d6b_lambda_vs_chi_p_uk.md`.
 
-**Highest-leverage attempt now:** §B1 — Croot-Lev-Pach polynomial
-method / slice rank on χ_P. Single-session viable; outcome shapes:
-(a) slice rank > unfolding rank → new lower bound (A-grade);
-(b) slice rank = unfolding rank → structural identification (B-grade);
-(c) slice rank < unfolding rank → polynomial method doesn't apply
-directly, structural negative-shape edge (B-grade). Cross-domain
-ingredient: Croot–Lev–Pach polynomial method / Tao slice rank.
+**Successor challenges (proposed in S93):**
 
-**Backup highest-leverage:** L1 Lean — close
-`exists_invertible_submatrix` in `MPSBondDim/Basic.lean` (route B:
-Vandermonde-style finite-extension exhibit, post-S83 isolated as the
-sole remaining `sorry` in the file). Once closed, the cumulative L1
-Lean track meets CLAUDE.md's "Lean 4 proof of a non-trivial theorem
-(≥ 50 lines, no sorry, no axiom)" A-grade rule for E2.1 as a whole.
+**§D6.c — CLOSED (S101, mode E, B-grade).** μ-weighted χ_P at U^k.
+The literal target collapses: μ(p) = −1 on every prime, so
+`μ·χ_P ≡ −χ_P` pointwise on ℤ and `Q²(μ·χ_P) = Q²(χ_P) → S_2`. We
+pivoted to the broader question "does Möbius cancellation propagate to
+indicator level sets?" and tabulated 11 multiplicatively-defined
+indicators on N ≤ 2^17. Sharp dichotomy:
+(i) signed μ, λ are Gowers-uniform (Q²_norm → 1 ≡ Bernoulli baseline);
+(ii) density-1/2 indicators 1[λ=±1] inherit Gowers-uniformity (Q² → 1.0000);
+(iii) asymmetric-density indicators 1[μ=±1] (density 3/π²), sqfree
+(density 6/π²), 1[Ω=2] retain HL structure (Q² ≈ 1.038 / 1.038 / 1.116);
+(iv) W=210 W-trick uniformly collapses every indicator to Q² ≤ 1.0041.
+**Refines E2.13** to family-level statement: HL-singular-series
+structure is killable by W=210 W-trick across the whole multiplicative
+indicator family, not just χ_P. New empirical constant
+`S_2^{sqfree} ≈ 1.0384` for the squarefree singular series at U^2.
+S87's Liouville-uniformity is now structurally explained as a
+density-1/2 phenomenon, not a Liouville-specific one. See
+`experiments/information_theory/mu_weighted_chi_p_uk/mu_weighted_chi_p_uk_results.md`,
+`archive/sessions/session101_d6c_mu_weighted_chi_p.md`.
+
+**§B1 CLOSED (S92, mode E, B-grade).** Polynomial method / slice rank
+on χ_P closed via algebraic immunity AI(χ_P, N) = 2 with explicit
+annihilator (1 + x_0)(1 + x_1) encoding the trivial mod-4 sieve fact;
+W-trick at W ≥ 6 fully removes the deviation. New EDGE **E2.15**.
+Third leg of the W-trick triple alongside E2.13 (Gowers) and E2.14
+(Anderson). See `experiments/algebraic/algebraic_immunity_chi_p/`,
+`archive/sessions/session92_b1_algebraic_immunity_chi_p.md`.
+
+**Highest-leverage attempt now:** §C5 — Stein's method for quantitative
+finite-x Gaussianity of `(π(x) - Li(x))/(√x/log x)` (S91 frontier_gen).
+Single-session viable: precompute π(x) on `[10^6, 10^7]` via segmented
+sieve, compute `D(x_k) = (π(x_k) - Li(x_k)) log(x_k) / √x_k` at K=1000
+log-uniform anchors, compute empirical Wasserstein-1 distance
+`W_1(D, N(0, σ̂²))` via sorted-CDF integration. Outcome shapes:
+(a) `W_1 ≥ c > 0` even as K → ∞ → **A-grade**: FIRST quantitative
+finite-x non-Gaussianity result for π(x) - Li(x);
+(b) `W_1 ≈ 1/√K` matching Gaussian baseline → **B-grade**: 38th
+pseudorandomness measure of strongest type. Cross-domain ingredient:
+Stein's method (Stein 1986; Ross 2011 *Probability Surveys* 8, 210;
+Chen-Goldstein-Shao 2011 Springer) — never applied to π(x) deviations
+in the project (the existing "Stein" CLOSED_PATHS hits are about a
+different Stein — modular form decay analysis).
+
+**§D2 — CLOSED (S96, mode I, B-grade).** Persistent homology of
+Takens-embedded normalised prime gaps deviates ≥ 5σ from BOTH IID
+Exp(1) AND from gap-marginal-permuted control across d ∈ {2, 3, 4}
+and M ∈ {500..4000}. PRIMES T0 (total H_0 persistence) z(B2) =
+−8.70, T1 z(B2) = −11.99 at M=2000, d=3, x ≈ 10^6 (rank 0/20 in K=20
+bootstrap each). Sign: PRIMES is MORE clustered and has FEWER
+persistent loops than random — geometric self-similarity from HL
+k-tuple admissibility. New EDGE **E2.17**; fifth orthogonal HL-
+detection category after E2.13/E2.14/E2.15/E2.16, in algebraic-
+topological / metric-space geometry. NOT an algorithmic opening —
+VR-PH is O(M^3). See
+`experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p_results.md`,
+`archive/sessions/session96_d2_persistent_homology_chi_p.md`.
+
+**Successor challenges (proposed in S96):**
+
+**§D2.a — PH of W=210 W-tricked normalised gaps.** The W-trick at
+W = 210 restores Gowers uniformity at U^2 to within 0.1% (E2.13).
+Test whether W-tricking the gap sequence (primes coprime to 210 in a
+single residue class, re-normalised) erases the T0/T1 deficit. If
+yes, E2.17 is exactly E2.13 in topological clothes. If no, PH
+detects an obstruction beyond singular-series cancellation. Cost:
+1 session.
+
+**§D2.b — Persistence-image vector classifier.** Replace scalar
+T0/T1/L0/L1 with the persistence-image vector (Adams et al. 2017
+JMLR 18) and fit a linear classifier on {primes-window, B1-window,
+B2-window}. ROC-AUC reports total information content of the PH
+descriptor; the classifier's discriminating axis localises which
+persistence band carries the signal (interpretable HL fingerprint).
+Predicted AUC > 0.95 vs both baselines. Cost: 1 session.
+
+**§D2.c — Sliding-window χ_P indicator embedding.** Embed the
+indicator itself rather than gaps: y_n = (χ_P(n), χ_P(n+1), ...,
+χ_P(n+d-1)) ∈ {0,1}^d, run PH on Hamming distance. Point cloud
+restricted to cube vertices with multiplicities — Gabriel /
+witness-complex PH may give a cleaner signature of HL admissible
+patterns. Cost: 1 session.
+
+**§D7 — CLOSED (S95, mode I, B-grade).** Determinantal / permanantal
+point process fit to χ_P. Tested four progressively flexible kernel
+hypotheses at N = 10^7: real DPP (F1: K^2_DPP < 0 at all 15 even t),
+real PPP (F2: K^2_PPP < 0 at all 14 odd t > 1), real-signed-K PPP on
+all-even sub-lattice (F3+F4: max gap 79.16% on 3-AP triples; required
+sign cross-term σ_req ∈ (-0.541, +0.769) never ±1), complex-Hermitian-K
+(F5: best LS phase residual 0.0746 vs 0.01 noise floor). All five
+falsifiers HOLD. New EDGE **E2.16** — first 3-point structural
+confirmation that χ_P deviation = HL singular series (complementing
+2-point closures at E2.13 / E2.14 / E2.15). HL prime-by-prime
+factorisation cannot reduce to pair-level kernel because triple
+admissibility (ν_p saturation) is a multi-body fact. See
+`experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit_results.md`,
+`archive/sessions/session95_d7_dpp_ppp_fit.md`.
+
+**Successor challenges (proposed in S95):**
+
+**§D7.b — Pfaffian point process fit on W-tricked χ_P.** A Pfaffian
+PP has matrix-valued kernel `K(t) ∈ R^{2x2}` (block-anti-symmetric)
+with k-point correlations as Pfaffians of a 2k×2k matrix. Strictly
+extends DPP/PPP. Test on W=210 W-tricked χ_P (where pair correlations
+S(0, t)_W ≈ 1, kernel near-zero) and on bare χ_P. Predicted: same
+structural failure (admissibility is multi-body, not pairwise) but
+the falsification mode is different — produces a structurally
+distinct edge candidate. Cost: 1-2 sessions.
+
+**§D7.c — α-determinantal generalisation (Vere-Jones 1997)**: allow
+`R_2(t) = ρ^2 + α(t) K(t)^2` with `α(t) ∈ ℝ` offset-dependent. Setting
+`α(odd) = +1, α(even) = -1` immediately accommodates the parity sign
+flip. The question: do the 3-point α-identities (which generalise
+both DPP and PPP) match HL across admissible all-even triples? Build
+an α-permanent solver, fit α(t) numerically to minimise 3-point
+residual. **A-grade if** consistent fit across all triples (would be
+a NEW arithmetic invariant of χ_P). **B-grade if** structural failure
+shows the obstruction is prime-vs-pair factorisation independent of
+α(t) flexibility. Cost: 1-2 sessions.
+
+**Tertiary backup:** L1 Lean — close `exists_invertible_submatrix` for
+the corner case R ≤ 2 (Route A', single session) using `Nat.bertrand`
+once at `n = W^(d-1)` plus the existing `chiP_two_eq_one` row-0 entry
+to exhibit a 2×2 submatrix with determinant ±1. Note S90 audit:
+Route A (full closure) requires Hoheisel-grade prime-density not in
+mathlib — multi-session arc on its own.
 
 §C1 (BK Odlyzko zeros) is now **closed** by S71-redux with a quantitative
 L⁴ obstruction (N_required ≥ 0.81 L⁴ for κ=3 detection); no further
@@ -117,11 +235,13 @@ or "construction-incoherent" if the object isn't well-defined.
 **Status:** BUILT. Three new artifacts: (i) **MP-bulk identification** — the wheel-W sieve density `φ(W)/W` IS the free-Poisson rate of χ_P's MPS bulk; (ii) **spike-count regularity** — `k*(W, d) ∝ R^{0.85}`, a new structural empirical fact beyond E2.1's rank statement; (iii) verified MP(c) standardized free cumulant identity `κ_r = c^{r-1}` and cross-domain free-cumulant evaluator.
 **Save under:** `experiments/constructions/free_cumulants_chi_p/`
 
-### C3 — Brandt obstructions × per-bit difficulty
+### C3 — Brandt obstructions × per-bit difficulty — **BUILT (S105)**
 **Edges:** E5.8 + E1.3
 **Object:** E5.8's obstruction (O1) says Brandt's hard string is oracle-dependent, not fixed. E1.3 says π(x) has a sharp 4-bit difficulty boundary. Compose: define `π_J(x)` = "the J-th bit of π(x) for J = 0.7N" (within E1.3's hard zone). Ask whether **`π_J` is a fixed natural function** for which a Brandt-style oracle-aware argument might still apply. The point is to find the *minimal weakening* of E5.8's O1 that still admits Brandt's TRAVERSE technique.
 **Why novel:** E5.8 closed Brandt for π(x) mod 2 wholesale. A per-bit version might side-step O1 if J is parameter-controlled.
 **Falsification:** Either O2/O3/O4 also obstruct π_J (closes per-bit too), or one of them survives (genuinely new partial result).
+**Outcome (S105):** **F2 holds in the saturation regime (N ≥ 4); empirical sharpening of F2.** Built per-bit family `{s_J^(N) : J = 0..N-1}` for N ∈ {3..7} and computed `Kt_b(s_J^(N))` under brandt_mktp's 3-bit stack VM (L_MAX=12, INF=61). Bounded-Kt cut location: `J*(N) := ⌈log₂(π(2^N - 1) + 1)⌉` — for J < J*(N), all bits saturate (Kt_b = 61), including E1.3's "easy zone" J ∈ [⌈0.5N⌉, J*); for J ≥ J*(N), `π_J ≡ 0` and Kt_b ∈ {5..8}. The bounded VM is **blind to E1.3's smooth/oscillatory transition** — it only sees the trivially-zero boundary, materially higher than `0.5N` (gap ≈ 0.5N − log₂ N). Structurally, all four Brandt obstructions O1-O4 still apply to every fixed `π_J`: O1 (each π_J is a fixed function — per-bit decomposition is parameter-controlled but each π_J itself is a fixed total Boolean function); O2 (π_J answers "is bit J set", not "is z complicated"); O3 (per-bit family supplies J*(N) ≈ N − log₂ N strings, but no traversal-path-dependent fresh prefixes); O4 (uniform DTIME, not circuits). The "minimal weakening of O1 admitting TRAVERSE" the spec asked about does **not** exist on `{π_J}`. **Status:** BUILT, no polylog opening. Closure mode E (DUPLICATE-PLUS of E5.8) at structural level + empirical refinement of E1.3 at bounded-Kt resolution.
+**Successor (S105):** C3.a — arithmetic-primitive bounded-Kt VM. Extend the 8-op stack VM with primitives like `LOG2`, `LI_APPROX`, `DIV_LOG`, `GEO_SUM` (R^{-1} kernel), then re-measure `Kt_b'(s_J^(N))`. Question: does the bounded-Kt cut shift from `J* ≈ N − log₂ N` toward E1.3's `0.5N`? If yes, R^{-1}-kernel-equipped VM resolves the smooth/oscillatory transition; if no, a new Kt-cut hierarchy emerges indexed by VM richness. Save under `experiments/constructions/brandt_per_bit_arith_vm/`. Cost: 1 session.
 **Save under:** `experiments/constructions/brandt_per_bit/`
 
 ### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle
@@ -149,12 +269,19 @@ or "construction-incoherent" if the object isn't well-defined.
 **Status:** BUILT, no polylog opening.
 **Save under:** `experiments/constructions/pillar_tradeoff_diagram/`
 
-### C7 — Calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap (NEW from S84)
-**Question:** S84 found that PRIMES at N=6 needs M=6 depth-2 sign-threshold (W=1) gates while ALL 10 matched-density random controls need M ∈ {7, 8} (binomial p < 0.001). The proposed mechanism: PRIMES has a 70.3% single-bit predictor (bit_0 = "is x odd") at N=8, vs random's best 1-bit at 57%. Is the entire gap explained by this 1-bit advantage, or is there a residual?
-**Why composition / B-grade:** composes E1.10 (pseudorandomness) with the S84 depth-2 sign-threshold result. If the gap is fully explained by oddness, this confirms novel/pseudorandomness_of_pi.md (with footnote: 36th measure deviates with elementary 1-bit mechanism). If a residual exists, it's a *second* concrete-mechanism deviation worth following up.
-**First step:** Construct "calibrated random" Boolean function `f_cal` on {0..63} with f_cal(x) | x odd = (52/64)/(32/64) probability ≈ 0.84, f_cal(x) | x even = (1/64)/(32/64) ≈ 0.03 (matching PRIMES' class-conditional distribution). Sample 20 such functions and compute their depth-2 sign-threshold W=1 min M via the S84 enumeration approach. Compare distribution to PRIMES (M=6) and unbiased random (M ∈ {7,8}).
-**Predicted outcome:** ~70% probability that calibrated random matches PRIMES at M=6 (gap fully explained by oddness); ~30% probability that PRIMES is still strictly easier (residual structure).
-**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/` (extend S84's harness).
+### C7 — Calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap — **BUILT (S89)**
+**Edges:** E1.10 / E3.13 + S84 result.
+**Object:** Class-conditional matched-density random Boolean function `f_cal` on {0..63}: P(f_cal(x)=1 | x odd) = 17/32, P(f_cal(x)=1 | x even) = 1/32 (matching PRIMES at N=6). Two modes: STRATIFIED (exact 17 odd + 1 even, weight always 18, bit_0_acc always 0.75) and BERNOULLI (independent draws). For each, run S84's `enum_d2_smart` ILP harness over K=1458 W=1 candidates and find min depth-2 sign-threshold size M.
+**Why novel:** No previous project session has measured the depth-2 sign-threshold size of any class-conditional matched random function (calibrated or otherwise). The S84 result was a single-mechanism conjecture; C7 tests it directly.
+**Falsification (pre-stated):** F1 ≥1 stratified > 6 → residual; F2 all stratified ≤ 6 → gap is oddness; F3 ≥1 stratified < 6 → calibration overshoots PRIMES; F4 stratified mean < unbiased mean → bit_0 primary driver.
+**Outcome (S89):** **F2 + F3 + F4 hold; F1 fails.** Stratified (n=20, weight=18 always, bit_0_acc=0.75 always): histogram = {5: 4, 6: 16}, mean = 5.80, max = 6. **0/20 stratified samples need M > 6** — full S84 deviation absorbed. Bernoulli (n=20, variable weight, bit_0_acc 0.625-0.81): histogram = {5: 7, 6: 11, 7: 2}; both M=7 cases have bit_0_acc < 0.75, empirically confirming the proposed monotonic relationship. Calibrated mean (5.80) is BELOW PRIMES (6.00); 4/20 stratified samples are *strictly easier* than PRIMES (M=5). PRIMES sits at the +0.5σ position of the calibrated distribution; under the calibrated null `P(M ≤ 6) = 1.0` (vs the unbiased null where `P(M ≤ 6) = 0/10`). **The S84 gap REDUCES to elementary parity ("π(x) ≈ 1 iff x odd, for x > 2"), no PRIMES-specific structure beyond oddness.** Recommends a footnote on `novel/pseudorandomness_of_pi.md`: the 36th measure deviates from unbiased random but the deviation is fully captured by the trivial 1-bit oddness fact; pseudorandomness thesis stands "modulo the obvious mod-2 bias."
+**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S89). Refines E1.10 / E3.13 / E1.6 reading.
+**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/`
+
+### C7.a — Calibrated control at N=8 (NEW from S89, follow-up)
+**Why:** S89 closed C7 at N=6. The natural extension: redo the calibrated baseline at N=8 (where 53 of 54 primes are odd, P(f=1|odd) = 53/128, P(f=1|even) = 1/128). The unbiased N=8 search in S84 didn't terminate at M ≤ 16 (k_max=4); a calibrated N=8 study would be marginal at the same time-budget.
+**Predicted outcome:** Same — calibration absorbs the gap; PRIMES sits in the calibrated distribution. If FALSIFIED at N=8 (calibrated needs M much larger than PRIMES), the bit_0 explanation breaks at higher N and a residual mechanism enters — A-grade material.
+**Save under:** `experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/n8_extension/`
 
 ### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES at N=8 (NEW from S84)
 **Question:** S84 showed depth-2 W=1 needs ≥17 gates at N=8 (sub-family closure). What is the W-vs-M tradeoff curve? Specifically: for W ∈ {2, 3, 4, 8, 16}, what is the smallest M such that depth-2 sign-threshold (bottom W, top W=1) computes PRIMES at N=8?
@@ -234,7 +361,7 @@ plus `<name>_notes.md`.
 `lean --run`). If it doesn't, the session is an in-progress formalisation,
 not a closure. Save the in-progress state to `RESEARCH_AGENDA.md`.
 
-### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83)**
+### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107)**
 **Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
 base W ≥ 2, for every cut 1 ≤ j < d:
 ```
@@ -257,11 +384,26 @@ isolates the prime-density content as `∃ ρ σ, IsUnit (submatrix ρ σ)`.
 The reduction uses mathlib's `Matrix.rank_of_isUnit` +
 `Matrix.rank_submatrix_le`. Net: the only remaining `sorry` is now on
 the pure prime-existence existential, not on the rank-bound logic.
-**Next action:** prove `exists_invertible_submatrix`. Route A:
-Bertrand-style prime existence in `[i·W^(d-j)+1, (i+1)·W^(d-j)]` for
-each `0 ≤ i < R` (uses `Nat.bertrand` + Dirichlet APs in mathlib,
-~100-200 lines). Route B: generic Vandermonde exhibit over a finite
-extension of ℚ, bypassing arithmetic entirely (lighter). See
+**S98 progress:** Closed corner case `(W=2, j=1)` unconditionally via
+Bertrand. **S99 progress:** Closed the orthogonal corner case
+`(W=2, d=j+1)` *without even Bertrand* — only `Nat.prime_two`,
+`Nat.prime_three`, decidable non-primality of 1 and 4. The matrix has
+only 2 columns; rows {0, 1} with column-swap give the identity matrix.
+Together S98+S99 give unconditional Lean proofs of `mps_bond_dim` on
+the entire `(j, d - j)` boundary for `W = 2`. **S106 progress:**
+Extended Route A''' to `W = 3`: `mps_bond_dim_W_eq_3_d_eq_j_plus_1 :
+(unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, sorry-free, via a
+`3 × 3` determinant computation with `Matrix.det_fin_three`. **S107
+progress:** Extended Route A'''' to `W = 4`:
+`mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3`
+for every `j ≥ 1`, sorry-free. The matrix has 4 columns but `R = 3`
+(column 3 is `chiP` at multiples of 4, all zeros), so this is the
+**first orthogonal corner where `rank_le_width` is not tight** —
+required citing the general `upper_bound` lemma for the upper direction.
+**Next action:** Route A''''' (`W ∈ {5, 6}`). `W = 6` should be a
+straightforward `3 × 3` mirror of S107; `W = 5` requires a `5 × 5`
+invertible submatrix construction. Or Route C (mathlib PNT for the
+low-density regime — leaves saturating half-cut open). See
 `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 ### L2 — E1.5: 0.537-bits invariant
@@ -360,15 +502,23 @@ structural ingredient. State the hypothesis precisely.
 
 ## §5. Synthesis Targets (publishable-paper grade)
 
-### S1 — "Three structural barriers to polylog π(x)"
-**Content:** Unify E7.6 + E7.10 + E5.8 + E7.11 into a single negative-result
-paper. Each is a family-level closure of a major technique. Together they
-cover sieve, AKS, Brandt-meta, and convergence-acceleration. Audience:
-analytic number theorists + complexity theorists. Likely venue: arxiv
-preprint targeting cstheory.
-**Save under:** `novel/three_structural_barriers.md` (draft) →
-`literature/preprint_three_barriers.md` (final).
-**Estimated length:** 15-25 pages.
+### S1 — "Four structural barriers to polylog π(x)" (renamed post-S116)
+**Content:** Unify E7.6 + E7.10 + E5.8 + E7.11 + **E7.14** into a single
+negative-result paper. Each is a family-level closure of a major
+technique. Together they cover sieve-pebbling, AKS modulus-twist,
+Brandt-meta, convergence-acceleration, and **Maynard multidim sieve**.
+Audience: analytic number theorists + complexity theorists. Likely
+venue: arxiv preprint targeting cstheory.
+**Save under:** `novel/four_structural_barriers.md` (draft) →
+`literature/preprint_four_barriers.md` (final).
+**Estimated length:** 18-30 pages.
+
+**S116 update (2026-04-27):** Maynard sieve closed as the fifth
+explicit barrier (or fourth, depending on whether E7.6 sieve-pebbling
+is counted as a separate family from E7.14 Maynard sieve-weight).
+This synthesis now has the natural structure: (i) AKS-family
+[E7.10, E5.3]; (ii) Brandt MKtP [E5.8]; (iii) convergence-
+acceleration [E7.11]; (iv) Sieve-route [E7.6 ∧ E7.14].
 
 ### S2 — "Pseudorandomness of π(x) mod m: a 35-measure battery"
 **Content:** Catalogue the 35 measures with definitions, methodology, and

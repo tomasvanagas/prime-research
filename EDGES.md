@@ -102,6 +102,19 @@ N-bit p(n), the hard region is bits 0.6·N .. N (asymptotic).
 > is enough — you don't have to break the whole barrier, only the first
 > bit past the cliff.
 
+**Bounded-Kt refinement (S105, C3):** Under the 3-bit-per-op stack VM
+of `experiments/constructions/brandt_mktp/` (L_MAX = 12, T_MAX = 4096),
+the per-bit family `{s_J^(N) : J = 0..N-1}` for N ∈ {4..7} exhibits
+its bounded-Kt cut at `J*(N) := ⌈log₂( π(2^N - 1) + 1 )⌉ ≈ N - log₂ N`,
+**not** at the 0.5N boundary above. For J ≥ J*(N), `π_J ≡ 0` and
+Kt_b ∈ {5..8}; for J < J*(N) — including E1.3's "easy zone"
+J ∈ [⌈0.5N⌉, J*) — Kt_b saturates at INF = 61. Stack-VM-class programs
+resolve only the *trivially-zero* boundary; the smooth/oscillatory
+transition E1.3 detects via Fourier weight is invisible to bounded-Kt
+at this resolution. Detecting it would require arithmetic primitives
+in the VM (LOG2, LI_APPROX, the R^{-1} kernel) — proposed C3.a. See
+`experiments/constructions/brandt_per_bit/`.
+
 ### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
 
 `proven/complexity.md` §"Circuit Complexity"; S12;
@@ -378,7 +391,7 @@ barrier is the same object as the E1.5 / T6 saturation barrier viewed
 from the spectral side — a textbook **C-circular** collapse.
 See `experiments/constructions/spike_eigenvectors_chi_p/`.
 
-**S83 Lean formalisation status (L1):** in
+**S83 / S98 / S99 / S106 / S107 Lean formalisation status (L1):** in
 `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`,
 `mps_bond_dim` (the main theorem), `upper_bound`, `rank_le_min_dim`,
 `row_support_coprime`, `live_columns_count`, and `lower_bound` are all
@@ -386,8 +399,34 @@ closed `sorry`-free over Lean 4 + mathlib `v4.30.0-rc2`. The single
 remaining obligation is the existential `exists_invertible_submatrix`
 isolating the prime-density content. Net: the *rank-bound* logic of
 E2.1 is fully formalised; only the prime-existence exhibit remains.
-See `mps_bond_dim_notes.md` for the two open routes (Bertrand /
-Vandermonde).
+**S98 closed the corner case `(W = 2, j = 1)` unconditionally** via
+two new sorry-free theorems
+(`exists_invertible_submatrix_W_eq_2_j_eq_1` and
+`mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2`) using
+Bertrand's postulate alone — the first formally verified instance of
+`mps_bond_dim` for any concrete `(W, j)`. **S99 closed the orthogonal
+corner case `(W = 2, d = j + 1)` without even Bertrand** via
+`exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1` and
+`mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2`,
+using only `Nat.prime_two` and `Nat.prime_three`. The two corners
+together cover the **entire `(j, d - j)` boundary** (i.e. the full
+`R = 2` regime) of the parameter grid for `W = 2`. **S106 extended
+the orthogonal-corner argument to `W = 3`** —
+`exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1` and
+`mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3`
+for every `j ≥ 1`, sorry-free, using `Matrix.det_fin_three` and
+the explicit primes `2, 3, 5, 7`. **First unconditional `mps_bond_dim`
+instance over a wheel `W ≥ 3`** — three corners are now formally
+verified. **S107 extended the orthogonal-corner argument to `W = 4`** —
+`exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1` and
+`mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3`
+for every `j ≥ 1`, sorry-free, using `Matrix.det_fin_three` and the
+explicit primes `2, 3, 5, 7, 11`. **The first orthogonal-corner instance
+where `rank_le_width` is not tight** — column `3` is `chiP` at multiples
+of `4` (all zeros), so `R = 3 = φ(4)·4^0 + 1 < 4` and the upper bound
+must cite the general `upper_bound` lemma rather than the trivial column
+count. Four corners are now formally verified. See `mps_bond_dim_notes.md`
+for the routes still open on the general case.
 
 **S77 family-level scope refinement (N1):** the unfolding-rank lower
 bound `≥ φ(W)·W^(d-j-1)+1` is the *universal* half-cut bond dim across
@@ -667,12 +706,16 @@ from "primes are odd"), the remaining Fourier weight at degree d ≥ 2 is
 degree weight). Combined with E2.7, the algebraic story is:
 "trivially-explained on the surface, anti-structured underneath."
 
-### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series  [EVS M]
+### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series; universal across multiplicative-indicator family  [EVS M]
 
-S85; ATTACK_VECTORS §D6;
+S85, refined S93, S101; ATTACK_VECTORS §D6, NOVELTY_CHALLENGES §D6.b/§D6.c;
 `experiments/information_theory/gowers_uk_chi_p.py`,
 `experiments/information_theory/hardy_littlewood_box.py`,
-`experiments/information_theory/gowers_uk_chi_p_results.md`;
+`experiments/information_theory/gowers_uk_chi_p_results.md`,
+`experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk.py`,
+`experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk_results.md`,
+`experiments/information_theory/mu_weighted_chi_p_uk/mu_weighted_chi_p_uk.py`,
+`experiments/information_theory/mu_weighted_chi_p_uk/mu_weighted_chi_p_uk_results.md`;
 CLOSED_PATHS row at session 85.
 
 Define the normalized Gowers uniformity norm `Q^k(f) := ||f||_{U^k}^{2^k} / E[f]^{2^k}`
@@ -704,6 +747,63 @@ The W-trick `chi_{W,b}(n) = chi_P(W*n + b)` for `(b, W) = 1`:
   at N=2^12 — match within 0.1%, confirming W-tricked chi_P is
   Gowers-uniform at U^2.
 
+**Universality across log-weighting (S93, D6.b):** the same statement
+`Q^k(f) → S_k` holds for **f = Λ (von Mangoldt log-weighted)** as well
+as for f = chi_P. Side-by-side measurement at N up to 2^17:
+
+  `Q^2(chi_P)`: 2.103 (N=2^10) → 2.149 (N=2^16) → 2.151 (N=2^17). Diff
+  `Q^2(Λ)`:    2.107 (N=2^10) → 2.155 (N=2^16) → 2.155 (N=2^17). Diff
+  `|Q^2(Λ) − Q^2(chi_P)| / Q^2(chi_P)` ≤ 0.4 % across all N tested.
+
+After W-trick at W = 210, b = 1, N = 2^12: Q^2(chi_W) = Q^2(Λ_W) =
+1.0029 to four decimals. The W-trick erases not just the bulk HL
+structure but ALSO the residual log-weight-vs-bare discrepancy. The
+small persistent positive offset Q^k(Λ) > Q^k(chi_P) (≤ 0.4 % at U^2,
+≤ 2.5 % at U^3) is identifiable with the prime-power weight in Λ
+(Λ counts n = p^k for k ≥ 2), a contribution that decays as
+π(√N) / π(N) → 0.
+
+Refined statement: **S_k is the universal Gowers fingerprint of the
+{0,1}^k-cube prime correlation, independent of the weighting scheme
+applied to detect it (bare indicator chi_P or log-weighted Λ).**
+
+**Family-level extension (S101, D6.c):** the same U^2 / W-trick
+instrument applied to a panel of 11 multiplicatively-defined
+arithmetic indicators on Z/NZ produces a sharp dichotomy between
+"HL-structured" and "Gowers-uniform" indicators, governed by support
+density:
+
+  | indicator class                                      | density   | Q^2_inf at large N |
+  |------------------------------------------------------|-----------|--------------------|
+  | chi_P (primes, Omega = 1, sqfree)                    | -> 0      | 2.301 = S_2        |
+  | mu^2 (squarefree)                                    | 6/pi^2    | **1.0384** stable  |
+  | 1[mu = +1] (sqfree, even omega)                      | 3/pi^2    | 1.0384             |
+  | 1[mu = -1] (sqfree, odd omega)                       | 3/pi^2    | 1.0384             |
+  | 1[Omega = 2] (semi-primes)                           | -> 0      | 1.05 -> 1.12 slow  |
+  | 1[lambda = +1] (Liouville-positive)                  | -> 1/2    | **1.0000** stable  |
+  | 1[lambda = -1] (Liouville-negative)                  | -> 1/2    | 1.0000             |
+  | mu (signed Mobius)                                   | mean -> 0 | Q^2_norm -> 1.0    |
+  | lambda (signed Liouville)                            | mean -> 0 | Q^2_norm -> 1.0    |
+
+Two structural facts:
+
+  1. **Mobius cancellation** propagates from signed mu, lambda to
+     **density-1/2 indicators** 1[lambda = +/-1] (which inherit
+     Gowers-uniformity Q^2 -> 1.0000), but NOT to **asymmetric-density
+     indicators** 1[mu = +/-1] / mu^2 (which retain Q^2 ~ 1.0384).
+     New empirical constant `S_2^{sqfree} ≈ 1.0384` (the
+     squarefree-mod-p^2 Hardy-Littlewood product).
+
+  2. **W-trick at W = 210 collapses the entire family** to
+     Q^2 ≈ 1 ± 0.005: chi_P → 1.004, sqfree → 1.000, 1[mu = ±1] →
+     1.001, 1[Omega = 2] → 1.001. The W-trick is therefore not a
+     prime-indicator-specific tool but a family-level HL-killing
+     operation on multiplicatively-defined arithmetic indicators.
+
+The S87 "Liouville-positive is Gowers-uniform" result is now
+structurally explained as a *density-1/2 phenomenon*, not a
+Liouville-specific one.
+
 > Why this is an edge: **first project measure where chi_P
 > deviates from random by a CLOSED-FORM, predicted, constant
 > multiplicative factor (the Hardy-Littlewood singular series)**, in
@@ -725,6 +825,424 @@ The W-trick `chi_{W,b}(n) = chi_P(W*n + b)` for `(b, W) = 1`:
 > arXiv:math/0606088 (linear equations in primes), Green-Tao
 > arXiv:0807.1736 (Mobius / nilsequences), Green-Tao-Ziegler
 > arXiv:1009.3998 (U^{s+1} inverse theorem), Hardy-Littlewood 1923.
+
+### E2.14 — Anderson Lyapunov gamma(E) of chi_P-driven Schrödinger operator: deviation cascade matches W-trick  [EVS M]
+
+S88; ATTACK_VECTORS §C4;
+`experiments/dynamical/anderson_localisation_chi_p/anderson_localisation_chi_p.py`,
+`experiments/dynamical/anderson_localisation_chi_p/parity_control.py`,
+`experiments/dynamical/anderson_localisation_chi_p/wtrick_control.py`,
+`experiments/dynamical/anderson_localisation_chi_p/anderson_localisation_chi_p_results.md`;
+CLOSED_PATHS row at session 88.
+
+Define the discrete 1D Schrödinger operator
+`H psi(n) = -psi(n+1) - psi(n-1) + V(n) psi(n)`, transfer matrix
+`T_n(E) = [[V(n) - E, -1], [1, 0]] in SL(2, R)`, and Lyapunov exponent
+`gamma(E) = lim_N (1/N) log ||T_N ... T_1||`. For sparse `V in {0, 1}`
+at density `rho` Pastur-Figotin gives `gamma(E) ~ rho(1-rho)/(8 sin^2(k))`
+inside the band `E = -2 cos(k) in (-2, 2)`.
+
+Empirically (`N = 10^5`, 50 random seeds, 51 energies):
+
+   Baseline (Bernoulli at matched density rho = pi(N)/N):
+       max |z|(gamma_prime - gamma_bern) = 88.5 sigma at E = 0.108
+
+The deviation reduces monotonically when the random control sieves
+out small-modulus residue classes (W-trick):
+
+   W = 2  (parity matched)         max |z| = 32.7   at E = 1.088
+   W = 6  (mod 2, 3 matched)       max |z| = 11.9   at E = 0.010 (N=2*10^5)
+   W = 30                           max |z| = 6.3
+   W = 210                          max |z| = 6.1
+   W = 2310                         max |z| = 4.0
+
+The peak at `E = 1.088 ~ -2 cos(2 pi / 3) = +1` is the **mod-3
+resonance**: the free transfer matrix rotates by `2 pi / 3` per step,
+maximally coupling to mod-3-periodic potentials. The peak at
+`E ~ 0` (`k = pi / 2`) is the parity resonance.
+
+> Why this is an edge: chi_P deviates from random on a *spectral
+> global* statistic (Lyapunov exponent of the associated Schrödinger
+> operator), in a category orthogonal to all 36 prior pseudorandomness
+> measures (which are local correlation / entropy / Fourier / tensor
+> rank, plus E2.13 Gowers norms). Its deviation is captured by the
+> W-trick to within ~ 4 sigma at W = 2310, giving a SECOND
+> independent confirmation of the "chi_P structure = Hardy-Littlewood
+> equidistribution mod q" picture (E2.13 was the first). This rules
+> out hypothetical "spectral-only" structure of chi_P that would not
+> show up in additive-combinatorics measures.
+
+> Why this is **not** an algorithmic opening: gamma(E) extraction
+> requires N transfer-matrix multiplications => Theta(N) cost per
+> energy, no polylog gain. The cascade pattern matches HL exactly,
+> producing no new bit beyond what equidistribution already gives.
+
+> Composes with: E2.13 (Gowers norms -> HL singular series); E1.10
+> (chi_P locally indistinguishable from random); E7.x family
+> (negative-shape bound on chi_P-as-deviation-from-random).
+
+> Cross-domain references: Aizenman-Warzel 2015 *Random Operators*
+> (AMS GSM 168), chs 6-7; Furstenberg-Kifer 1983 Israel J. Math. 46
+> (Lyapunov exponents of SL(2,R) products); Pastur-Figotin 1992
+> *Spectra of Random and Almost-Periodic Operators*; Green-Tao
+> arXiv:math/0606088 (W-trick).
+
+### E2.15 — Algebraic immunity AI_F_2(chi_P) = 2, encoded by (1+x_0)(1+x_1)        [EVS M]
+
+S92; ATTACK_VECTORS §B1;
+`experiments/algebraic/algebraic_immunity_chi_p/algebraic_immunity_chi_p.py`,
+`experiments/algebraic/algebraic_immunity_chi_p/extract_annihilator.py`,
+`experiments/algebraic/algebraic_immunity_chi_p/wtrick_AI.py`,
+`experiments/algebraic/algebraic_immunity_chi_p/algebraic_immunity_chi_p_results.md`;
+CLOSED_PATHS row at session 92.
+
+The algebraic immunity (Courtois-Meier 2003) of `chi_P : F_2^N -> F_2`
+is the smallest degree `d` such that some non-zero polynomial
+`g in F_2[x_0, ..., x_{N-1}]` of total degree `<= d` annihilates
+chi_P or `1 + chi_P`:
+
+    AI(f) = min{ deg(g) : g != 0 and (g*f == 0 OR g*(1+f) == 0) }.
+
+**Empirical:** `AI(chi_P, N) = 2` for ALL `N in [4, 13]`. The unique
+smallest-degree annihilator is the SAME polynomial for every N >= 5:
+
+    g(x) = 1 + x_0 + x_1 + x_{0,1} = (1 + x_0)(1 + x_1).
+
+`g(n) = 1` iff `n ≡ 0 mod 4`. The annihilation is structural:
+- composite n ≡ 0 mod 4: g(n) = 1, chi_P(n) = 0, product = 0;
+- odd n or n ≡ 1, 2, 3 mod 4: g(n) = 0, product = 0;
+- the only prime with bit_0 = 0 is n = 2, and bit_1(2) = 1, so g(2) = 0.
+
+In contrast, AI(matched-density Bernoulli) grows as
+`Theta(log_2(1/rho))` (Faugere-Ars 2003 heuristic), reaching 4 at
+N = 11 with zero std (every random seed strictly higher than chi_P).
+
+**Liouville+** (1[lambda(n) = +1]) does NOT have this annihilator
+(lambda(4) = +1, so 4 is in support); AI(Liouville+) grows linearly,
+matching random.
+
+**Mobius!=0** (squarefree indicator) DOES inherit the same annihilator
+because no n divisible by 4 is squarefree.
+
+**W-trick correction**: `chi_P_{W,b}(n) := chi_P(W*n + b)` with
+gcd(b, W) = 1 removes the small-modulus residue structure.
+Empirically:
+
+    W = 1 (no sieve):                   AI(chi_P, N=11) = 2
+    W = 2 (parity):                     AI(chi_P, N=11) = 4
+    W = 6 (b in {1, 5}):                AI(chi_P, N=11) = 5
+    W = 30 (b in {1, 7, 11}):           AI(chi_P, N=11) = 5
+
+vs AI(random matched-density, N=11) = 4 to 5 with zero std at the
+W-tricked densities. **The deviation is fully removed by W >= 6.**
+
+> Why this is an edge: chi_P deviates from random on the
+> polynomial-method invariant central to the Croot-Lev-Pach / cap-set
+> machinery (Tao 2016). The deviation is sharp (zero std at most N >= 8)
+> and persistent (constant 2 across all N tested). It is the
+> POLYNOMIAL-METHOD encoding of the trivial mod-4 sieve fact, in a
+> mathematical category (Boolean polynomial method / algebraic
+> cryptanalysis) ORTHOGONAL to E2.13 (additive combinatorics) and
+> E2.14 (spectral / Anderson localisation). Three independent
+> confirmations of the "chi_P structure = Hardy-Littlewood
+> equidistribution mod q" picture in three orthogonal categories.
+
+> Why this is **not** an algorithmic opening: AI extraction is
+> exponential time in N (LP over a `2^N x sum_i C(N,i)` F_2 matrix).
+> The annihilator is the trivial mod-4 fact, fully captured by the
+> W-trick at W >= 6. F_p multilinear ANF degree of chi_P is
+> near-saturated for all tested (p, k); slice rank brackets are
+> non-informative at p = 2 and match random at p = 3, k >= 3.
+
+> Composes with: E2.13 (Gowers U^k -> HL singular series, S85);
+> E2.14 (Anderson Lyapunov, S88); together with E2.15 these form a
+> triple of independent confirmations of mod-q sieve structure.
+
+> Cross-domain references: Croot-Lev-Pach arXiv:1605.01506
+> "Progression-free sets in Z_4^n are exponentially small";
+> Ellenberg-Gijswijt 2017 *Annals* 185, 339; Tao 2016 blog
+> (slice rank); Courtois-Meier 2003 Eurocrypt LNCS 2656 (algebraic
+> immunity); Faugere-Ars 2003 (heuristic AI scaling); Green-Tao
+> arXiv:math/0606088 (W-trick).
+
+### E2.16 — Primes are NOT a translation-invariant DPP / PPP / signed-K / complex-Hermitian-K point process  [EVS M]
+
+S95; ATTACK_VECTORS §D7;
+`experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit.py`,
+`experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit_results.md`;
+CLOSED_PATHS row at session 95.
+
+A translation-invariant simple point process on `Z` with intensity
+`rho` and real-symmetric kernel `K(t) = K(-t)` has 2-point inclusion
+probability `R_2(t) = rho^2 - K(t)^2` (DPP) or `rho^2 + K(t)^2` (PPP).
+For prime `chi_P`:
+
+  - **Pair level (F1):** `K^2_DPP(t) = rho^2 - R_2(t) < 0` for all 15
+    admissible even t in [2, 30] at N = 10^7 (Hardy-Littlewood
+    `S(0, t) > 1` ⇒ `R_2 > rho^2`). DPP infeasible.
+  - **Pair level (F2):** `K^2_PPP(t) = R_2(t) - rho^2 < 0` for all 14
+    odd t > 1 (`R_2 ≈ 0` ⇒ `R_2 < rho^2`). PPP infeasible.
+  - **3-point (F3):** restricting to all-even sub-lattice where
+    `K^2_PPP > 0`, the permanent prediction
+    `R_3^PPP = perm[K]` overshoots the HL singular series prediction
+    `R_3^HL = rho^3 S(0, t_1, t_2)` by 7.5–79.2% across 19 admissible
+    triples. Maximum gap on 3-AP triples (0, 6, 12), (0, 12, 18),
+    (0, 18, 24).
+  - **3-point (F4):** real-signed K with magnitudes
+    `|K(t)| = rho sqrt(S(0, t) - 1)` and arbitrary signs `s : t → ±1`
+    fails at every triple — required cross-term ratio
+    `sigma_req ∈ (-0.541, +0.769)` is never `±1`.
+  - **3-point (F5):** complex Hermitian K of the same magnitudes with
+    free phases `phi : t → [0, 2π)` admits no globally consistent
+    assignment; least-squares fit over 200 random starts produces
+    best max residual 0.0746 ≫ 0.01 sample-noise floor.
+
+**Mechanism:** the HL singular series `S(0, t_1, …, t_k)` factorises
+over PRIMES (`prod_p alpha_p`), with `alpha_p` depending on
+`nu_p({0, t_1, …, t_k})` = number of distinct residues mod p.
+DPP/PPP correlations factorise over PAIRS. Pairwise admissibility
+does NOT imply triple admissibility: e.g., `(0, 4, 14)` is admissible
+in every pair mod 3 but inadmissible as a triple (covers all of
+`Z/3Z`), giving `R_3^HL = 0` while PPP predicts a non-zero value.
+
+> Why this is an edge: this is the FIRST 3-point structural statement
+> ruling out a kernel-factorisation representation of chi_P,
+> complementing the 2-point closures E2.13 (Gowers norm), E2.14
+> (Anderson Lyapunov), E2.15 (algebraic immunity). The DPP/PPP
+> framework is canonical in random-matrix theory and the GUE eigenvalue
+> ensemble IS a sine-kernel DPP — the contrast highlights that the
+> "GUE pair correlation" of zeta zeros (E3.1, E3.13) does NOT transfer
+> to a kernel structure on chi_P itself. Adds a fourth-leg confirmation
+> in a new mathematical category (point-process theory).
+
+> Why this is **not** an algorithmic opening: even if a kernel existed,
+> `K(0) = rho = 1/log N` gives only `pi(N) ≈ N/log N` (PNT). DPP/PPP
+> 2-point evaluation requires `K(t)` for t up to log² N anyway —
+> already the singular-series cost.
+
+> Composes with: E2.13 (Gowers U^k); E2.14 (Anderson Lyapunov);
+> E2.15 (algebraic immunity); E1.10 / E3.13 (GUE pair correlation
+> on zeros, NOT on chi_P).
+
+> Cross-domain references: Hough-Krishnapur-Peres-Virag 2009 *Zeros
+> of Gaussian Analytic Functions and Determinantal Point Processes*
+> (AMS ULect 51); Soshnikov 2000 "Determinantal random point fields"
+> Russ. Math. Surv. 55, 923 (arXiv:math/0002099); Vere-Jones 1997
+> (alpha-determinantal generalisation); Hardy-Littlewood 1923
+> (singular series).
+
+### E2.17 — Persistent homology of Takens-embedded normalised prime gaps deviates ≥ 5σ from IID Exp(1) AND from gap-marginal-permuted control  [EVS M]
+
+S96; ATTACK_VECTORS §D2;
+`experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p.py`,
+`experiments/topological/persistent_homology_chi_p/persistent_homology_chi_p_results.md`;
+CLOSED_PATHS row at session 96.
+
+For a window of M = 2000 consecutive normalised gaps
+`x_n = (p_{n+1} - p_n) / log(p_n)` starting near `p ≈ 10^6`, Takens-
+embedded at delay 1 in dimension d ∈ {2, 3, 4}, the Vietoris-Rips
+persistence diagram (computed via ripser, `thresh = 4`) has total
+H_0 persistence `T0` and total H_1 persistence `T1` BOTH lower than
+random baselines:
+
+  - **vs B1 (IID Exp(1)):** `T0` z-score = -10.31, `T1` z-score = -4.20
+    at d=3, M=2000 (rank 0/20 in K=20 baseline replicates, both
+    summaries).
+  - **vs B2 (gap-permuted, marginal preserved):** `T0` z = -8.70,
+    `T1` z = -11.99 (rank 0/20 both).
+  - **Robust:** signature persists at d ∈ {2, 3, 4} (T0 z(B2) ∈
+    [-8.7, -5.1]) and at a different window x ≈ 5·10^6 (T0 z(B2) =
+    -7.58).
+  - **Scaling:** z-scores grow super-linearly with M
+    (M=500 ⇒ T0 z(B1) = -4.2; M=4000 ⇒ T0 z(B1) = -17.8). Signal is
+    at least linear in window size, not a finite-N artifact.
+
+**Mechanism:** Hardy-Littlewood k-tuple admissibility constrains
+consecutive gaps to repeat residue patterns more often than random,
+creating geometric self-similarity in the delay-embedding cloud
+(small `T0` = clusters merge faster) and suppressing random
+"out-and-back" loops in delay space (small `T1`). The B2 control
+preserves the gap MARGINAL but destroys serial correlation; the
+T0/T1 deficit relative to B2 isolates the *serial-structure*
+component.
+
+> Why this is an edge: it is the first quantitative persistent-
+> homology measurement on a prime sequence in this project, and the
+> signed deviation (T0, T1 *below* random) is genuinely informative —
+> primes are *more clustered and less loop-rich* than Poisson on a
+> sliding gap window. Joins E2.13 (Gowers U^k), E2.14 (Anderson
+> Lyapunov), E2.15 (algebraic immunity), E2.16 (DPP failure) as a
+> fifth-leg confirmation of HL serial structure, in a new
+> mathematical category (algebraic-topological / metric-space
+> geometry).
+
+> Why this is **not** an algorithmic opening: persistence on a
+> Vietoris-Rips filtration of an M-point cloud costs O(M^2) distance
+> computations and O(M^3) worst-case PH. No closed-form polylog
+> evaluator is suggested; PH is a measurement instrument here, not
+> an algorithm.
+
+> Composes with: E2.13 (Gowers); E2.14 (Anderson); E2.15 (alg.
+> immunity); E2.16 (DPP failure). Detects the same singular-series
+> structure but via a metric-topological observable rather than
+> Fourier or kernel.
+
+> Cross-domain references: Carlsson 2009 "Topology and data" Bull.
+> AMS 46(2); Edelsbrunner-Harer 2010 *Computational Topology: An
+> Introduction*; Bauer 2021 "Ripser" J. Appl. Comput. Topol. 5
+> (arXiv:1908.02518); Cohen-Steiner-Edelsbrunner-Harer 2007 (PH
+> stability).
+
+### E2.18 — Anderson Lyapunov gamma(E) of Liouville-driven Schrödinger operator (V = lambda in {-1, +1}) is INDISTINGUISHABLE from i.i.d. Rademacher across [-3, 3] **without W-trick**  [EVS M (multiplicative regime, paired with E2.14)]
+
+S100; ATTACK_VECTORS §G1;
+`experiments/dynamical/liouville_anderson_lyapunov/liouville_anderson_lyapunov.py`,
+`experiments/dynamical/liouville_anderson_lyapunov/analyze_g1.py`,
+`experiments/dynamical/liouville_anderson_lyapunov/liouville_anderson_lyapunov_results.md`;
+CLOSED_PATHS row at session 100.
+
+The discrete 1D Schrödinger operator
+`H psi(n) = -psi(n+1) - psi(n-1) + V(n) psi(n)` with the **centered
+multiplicative potential** `V(n) = lambda(n) in {-1, +1}` (Liouville
+function) gives a Lyapunov exponent `gamma_lambda(E)` matching an
+i.i.d. Rademacher baseline **within seed noise** at all 51 energies
+in `E ∈ [-2.95, 2.95]`, across three orders of N magnitude:
+
+```
+N         seeds  max |z|   argmax E    chi^2 / K   L^2 rank of lambda
+10^5      50     1.78      -0.236      0.63        21 / 50
+3*10^5    50     2.16      +0.118      0.49         7 / 50
+10^6      100    2.04      -2.006      0.69        41 / 100
+```
+
+`max |z|` is **flat in N** (1.8-2.2, well below the 51-energy
+Bonferroni threshold z = 3.16) and the argmax energy **wanders**
+between runs — statistical, not arithmetic. **No W-trick is needed.**
+Pastur-Figotin agreement: `gamma_lambda / gamma_PF = 0.9317 ± 0.32`
+inside the band, identical to `gamma_Rademacher / gamma_PF = 0.9309`
+to 4 decimals.
+
+Independent two-point Chowla aggregate at N = 10^6:
+`Σ_{h=1..16} z_h^2 = 4.77` (vs Rademacher chi^2_16 mean 16, std
+sqrt(32) ≈ 5.7). Lambda is *more Rademacher-like than Rademacher*
+on this independent off-spectral test.
+
+**Stark contrast with E2.14 (chi_P, S88):** at the same N=10^5 grid,
+chi_P had max |z| = 88.5 sigma at E ≈ 0.108 (parity resonance) and
+required W = 2310 sieve (Green-Tao W-trick) to reduce to ~ 4 sigma.
+Liouville needs no W-trick at all.
+
+> Why this is an edge: it is the **first non-W-tricked spectral
+> measurement** of a prime-related sequence in this project's 38-
+> measure pseudorandomness battery to land at noise floor without
+> any sieving. It pairs with E2.14 to **isolate** the source of
+> chi_P's Anderson-Lyapunov deviation as exclusively HL singular-
+> series mod-q resonance: the multiplicative-regime companion of
+> chi_P (Liouville, density 1/2, centered) carries no such
+> resonance and therefore no spectral signal at the scales
+> measured. Spectral analogue of Green-Tao's Möbius/nilsequence
+> orthogonality theorem (arXiv:0807.1736) and Tao's logarithmic-
+> Chowla theorem (arXiv:1509.05422). First project use of Mobius
+> orthogonality as a CROSS_DOMAIN_TECHNIQUES entry.
+
+> Why this is **not** an algorithmic opening: the absence of
+> spectral structure for lambda **closes** the intended polylog
+> opening "if Liouville-side Lyapunov has detectable structure, the
+> explicit formula μ-side `Σ Li(x^ρ) μ_ρ` could be partial-summed in
+> polylog time." Lambda is featureless, so the explicit-formula
+> Möbius side is irreducible at this measurement scale.
+
+> Composes with: E2.14 (chi_P Anderson Lyapunov, direct paired
+> contrast); E2.13 (Gowers U^k of chi_P, additive analogue closes
+> via W-trick); E1.10, E3.13 (chi_P pseudorandomness battery).
+
+> Cross-domain references: Aizenman-Warzel 2015 *Random Operators*
+> AMS GSM 168 chs 6-7; Furstenberg-Kifer 1983 Israel J. Math. 46;
+> Pastur-Figotin 1992; **Green-Tao 2012 Annals 175 = arXiv:0807.1736
+> (Möbius nilsequence orthogonality);** Sarnak 2010 IAS lectures
+> (Möbius randomness conjecture); **Tao 2016 Forum Math Pi 4 e8 =
+> arXiv:1509.05422 (logarithmically averaged Chowla);** Tao-
+> Teräväinen 2017 arXiv:1708.02610.
+
+### E2.19 — Subword complexity p_w(n) of chi_P deviates from matched-density Bernoulli on a clean monotone W-trick cascade {RAW > ODD > W6 > W30 > W210}; W=210 erases the deviation to ≤ 8.4 sigma at L = 2.4·10^4  [EVS M]
+
+S104; ATTACK_VECTORS §D13;
+`experiments/dynamical/subword_complexity_chi_p/subword_complexity_chi_p.py`,
+`experiments/dynamical/subword_complexity_chi_p/subword_complexity_chi_p_results.md`,
+`experiments/dynamical/subword_complexity_chi_p/results.json`;
+CLOSED_PATHS row at session 104.
+
+For a binary infinite word `w` (Wikipedia "Complexity function"; Lind-
+Marcus 1995 *An Introduction to Symbolic Dynamics and Coding* CUP;
+Cassaigne-Nicolas 2010 "Factor complexity" in CANT vol. 135), the
+**subword complexity**
+
+  `p_w(n) := #{distinct length-n factors of w}`
+
+with topological entropy `h_w := lim_n log_2 p_w(n) / n` is the
+canonical combinatorial-on-words invariant. Morse-Hedlund 1938
+*Amer. J. Math.* 60: `p_w(n) ≤ n` for some `n` iff `w` is ultimately
+periodic.
+
+For five chi_P-derived streams at N = 5 · 10^6, n_max = 22, K = 20
+permutation and Bernoulli matched-density baselines:
+
+| Stream | density rho | L         | max\|z_perm\| | at n |
+|--------|------------:|----------:|--------------:|-----:|
+| RAW    | 0.0697 | 4 999 999 | 132.7 | 22 |
+| ODD    | 0.1394 | 2 499 999 | 277.1 |  7 |
+| W6     | 0.2090 |   833 334 | 120.5 |  8 |
+| W30    | 0.2611 |   166 667 |  24.8 | 17 |
+| W210   | 0.3053 |    23 810 |   8.4 | 12 |
+
+`RAW` is the bare chi_P(2..N) stream; `ODD` keeps only chi_P(2k+1);
+`W{q}` = Green-Tao W-trick at primorial q with residue r = 1.
+`p_chi(22) / p_perm_mean(22)` for the same five streams: 0.018, 0.216,
+0.806, 0.994, 1.011.
+
+**Sign:** chi_P has FEWER distinct n-grams than matched-density random
+on RAW/ODD/W6/W30 (restricted alphabet from divisibility constraints
+mod small primes). On W=210 the sign flips at n ∈ [17, 22]: chi_P
+slightly above the permutation mean, consistent with finite-L
+saturation noise (`h_eff = log_2 L / n = 0.661` at n=22).
+
+**Effective topological entropy match (W=210):** at n=22, h_chi =
+0.6581 vs h_perm = 0.6574 — agreement to ≤ 0.001, indistinguishable
+from Bernoulli matched-density across n ∈ [1, 22].
+
+The cascade `|z_perm|: 132 → 277 → 120 → 25 → 8` is monotone in the
+HL framework: each W-trick step removes the corresponding mod-q
+admissibility constraints (primes ≤ p_k coprime to W = primorial(p_k));
+the remaining residual at W=210 is `O(1/log N)` consistent with the
+HL singular-series tail.
+
+> Why this is an edge: **first quantitative subword-complexity
+> measurement of chi_P** in the project (CLOSED_PATHS line 181 was an
+> informal placeholder with no scale, no baseline, no W-trick). The
+> 38th pseudorandomness measure in the project's battery, and the
+> SIXTH orthogonal HL-detection family — first in symbolic-dynamics /
+> factor-complexity / topological-entropy category. Joins E2.13
+> (Gowers U^k), E2.14 (Anderson Lyapunov), E2.15 (algebraic
+> immunity), E2.16 (DPP failure), E2.17 (persistent homology) under
+> the same W-trick-erases-everything fingerprint — a sixth-leg
+> confirmation that chi_P deviation from random is exactly Hardy-
+> Littlewood mod q.
+
+> Why this is **not** an algorithmic opening: computing `p_w(n)` for
+> a given window is `O(L log L)` (rolling encode + sort), no polylog
+> gain. The W-trick fingerprint just instruments the same HL physics
+> in a new mathematical category — new probe, same signal.
+
+> Composes with: E2.13 (Gowers norms — additive-combinatorics
+> analogue at the same W-trick limit); E2.14 (Anderson Lyapunov —
+> spectral analogue with same W-trick cascade); E2.15 (algebraic
+> immunity); E2.16 (DPP failure); E2.17 (PH); E7.7 (three-pillars).
+
+> Cross-domain references: Cassaigne-Nicolas 2010 "Factor complexity"
+> in *Combinatorics, Automata and Number Theory* CANT vol. 135
+> (Cambridge); Lind-Marcus 1995 *An Introduction to Symbolic Dynamics
+> and Coding* (Cambridge); Morse-Hedlund 1938-40 "Symbolic Dynamics"
+> *Amer. J. Math.* 60.
 
 ---
 
@@ -1297,6 +1815,22 @@ families: AKS-style and diagonalisation-via-meta-complexity.  The
 remaining unconstrained levers on E5.3 are non-AKS TC⁰ primality
 tests or entirely-new lower-bound techniques.
 
+**Per-bit extension confirmed (S105, C3).** The per-bit family
+`{π_J(x) : J = 0..N-1}` (where `π_J(x) := bit J of π(x)`) inherits
+all four obstructions O1-O4 wholesale. (O1) Each `π_J` is itself a
+fixed total Boolean function — parameter-control of J is not the
+oracle-dependence Brandt's TRAVERSE requires; the hard string of the
+proof is generated by the run, not by the function-family index. (O2)
+The π_J-decider answers "is bit J of π(x) set", not "is z complicated"
+— no self-referential Kt inequality. (O3) The per-bit family has at
+most `J*(N) ≈ N − log₂ N` non-trivial members per N (others are
+identically zero), but they are pre-determined fixed strings, not
+fresh Kt-random prefixes generated by traversal-path-dependent oracle
+queries — Lemma 2 still fails. (O4) Uniform DTIME bound is unaffected
+by bit-decomposition. The "minimal weakening of O1 admitting Brandt's
+TRAVERSE" the C3 spec asked about does not exist on `{π_J}`. See
+`experiments/constructions/brandt_per_bit/`.
+
 ---
 
 ## 6. Computational / oracle-style edges
@@ -1684,6 +2218,46 @@ sweep over 14 primes N ∈ {31, …, 1009} fits classical mixing
 quadratic speedup confirmed but not polylog. The structural barrier
 (spectrum probes ω(n)) is unchanged by quantisation.
 
+### E7.14 — Maynard 2015 multidimensional sieve weight is not a TC⁰ primality witness [EVS shape]
+
+S116; ATTACK_VECTORS §A5;
+`experiments/sieve/maynard_weight_pointwise/`;
+CLOSED_PATHS row at session 116.
+
+Two compositional obstructions show that Maynard's optimal k-dim
+weighted Selberg sieve weight `w(n) = (Σ_{d_i|n+h_i, gcd=1, ∏d_i≤R}
+μ(d_1)…μ(d_k) F(log d_i/log R))^2` is **not** a polylog primality test:
+
+- **(1) Aggregate-not-pointwise.** Maynard's main theorem says
+  `Σ_{N≤n<2N} w(n) χ_P(n+h_i) ≥ c(k) Σ w(n)` for some `i`. Empirically
+  at single n: AUC restricted to odd n stays in `[0.66, 0.69]` across
+  θ ∈ {0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40} and across four F
+  choices. Best F1 = 0.62 with F = `(1-Σx_i)^2`. The "high AUC at
+  low θ" signal (≤ 0.90) is parity detection (for H = {0, 2, 6} the
+  three coordinates share parity), NOT sieve content; restricted to
+  odd n it disappears.
+- **(2) Divisor-enumeration cost.** Mean coprime tuple count scales as
+  N^{0.10–0.12} for θ ∈ [0.20, 0.40]; worst-case tuple count grows
+  proportionally. Listing squarefree divisors `d ≤ R = N^θ` of `n+h_i`
+  requires Ω(R/log R) work without precomputation. The sub-routine
+  reduces to growing-dim modular powering / divisor enumeration —
+  exactly E5.3.
+
+> Why this is shape-revealing: this closes the **most refined
+> explicit prime-detection sieve in modern analytic number theory**
+> (Maynard 2015, Polymath8b 2014, Pascadi 2025) as a candidate for
+> polylog π(x) at single-n resolution. Combined with E6.7 (HKM time-
+> space), E5.3 (MPOW), and E7.10 (AKS modulus-twist), Maynard
+> sieve is now the FOURTH family closed in the explicit
+> "construction-side" attack space: its information content is
+> aggregate, not pointwise; its evaluation cost is sub-poly, not
+> polylog. The pre-stated A-grade target (PRIMES ∈ TC⁰ via Maynard)
+> is empirically falsified at single-n resolution and theoretically
+> closed by reduction to E5.3.
+
+Cross-domain reference: Maynard 2015 "Small gaps between primes"
+arXiv:1311.4600; Polymath8b 2014 arXiv:1407.4897.
+
 ### E7.13 — Szegedy walks on arithmetic graphs do not yield polylog π(x) [EVS shape]
 
 S80; ATTACK_VECTORS §D.D4;
@@ -1726,6 +2300,105 @@ Verified at full sweep: 14 Cayley primes, 8 coprime sizes (x ≤ 1000),
 
 Cross-domain reference: Szegedy, M. *Quantum Speed-Up of Markov Chain
 Based Algorithms*, FOCS 2004, arxiv quant-ph/0401053.
+
+### E1.7 — Quantitative finite-x Wasserstein plateau for D(x)=(π(x)-Li(x))log(x)/√x  [EVS L]
+
+S108; refined by S109/S110/S111 (CONFIRM); refined by S112 (PARTIAL);
+refined by S113 (PARTIAL — plateau is universal across non-Gaussian
+distributions, magnitude predicted by kurtosis alone);
+refined by S114 (PARTIAL — S108 numeric reproduces to 0.3% via
+three independent W_1 routines; S113 kurtosis-only fit refuted on
+Beta(α,α) at matched kurt = -0.41, which gives W_1/σ = 0.0328 vs
+S113-predicted 0.0426 vs D_emp 0.0376; universality is qualitative,
+not tightly quantitative under kurtosis alone);
+refined by S115 (CONFIRM — sub-window r=0.906 IS Riemann-φ-specific:
+random-phase null on same Riemann γ_k gives r = -0.04 ± 0.39, 0/200
+reach r ≥ 0.906; structural matching survives but content = E1.5).
+`experiments/analytic/stein_wasserstein_pi/`;
+`novel/finite_x_wasserstein_plateau.md`.
+
+For K log-uniform anchors `x_k ∈ [X, eX]` with `X = 10^6, K ≤ 10⁴`, the
+empirical Wasserstein-1 distance `W_1(D̂_K, N(μ̂(K), σ̂(K)²))` to the
+sample-fitted Gaussian *plateaus* at a positive value
+`c(X) ≈ 0.0083 (= 0.038 σ̂)`, while the i.i.d.-Gaussian-fluctuation
+control follows the Stein-CLT rate `~ c_G(σ̂)/√K → 0`. Inflation
+factor at K=10000: 4.5×, z-score = 15.34.
+
+**Pointwise structural matching (CONFIRMED, S110):** at n=1000 zeros,
+`corr(D_emp, D_th(n)) = 0.98` and `W_1(D_th)/W_1(D_emp) = 0.98`.
+Sub-window correlation `r=0.906` (S108), `r=0.9154` (S110 disjoint
+windows). These confirm D_emp ≈ low-zero explicit-formula sum
+pointwise — i.e., re-confirm E1.5.
+
+**W_1 magnitude is NOT Riemann-specific (S112 PARTIAL).** The
+"indistinguishable from random-phase variant" test originally cited
+as evidence for Riemann structural origin is a generic oscillatory-
+sum property: at K=5000, n_modes=50, n_trials=60 per family,
+D_emp's W_1 = 0.00863 is indistinguishable from
+- random-phase Riemann (z=-0.93, mean=0.0120, std=0.0036);
+- random-phase non-Riemann uniform [10,145] (z=-1.26, mean=0.0204,
+  std=0.0094);
+- random-phase non-Riemann equispaced (z=-1.55, mean=0.0175, std=0.0057).
+
+Riemann ensemble vs non-Riemann ensemble IS distinguishable
+(KS p<10⁻⁴ at n=60 trials), but a single empirical observation lacks
+resolving power. So the W_1 *magnitude* is consistent with any low-
+frequency oscillatory sum; the §C5 verbatim criterion clause
+"the gap…ties to a specific zeta-zero contribution" fails.
+
+**Excess kurtosis** = -0.41 (95% CI [-0.46, -0.36] at K=10000) —
+sub-Gaussian, sourced from arcsine-distributed individual cosine
+modes `cos(γ_k log x − arctan(2 γ_k))`. The sub-Gaussian signature
+is window-width dependent (S111: kurt flips sign at narrow logw=0.5).
+
+Why an edge: this is the FIRST quantitative finite-x Wasserstein-shape
+bound for `π(x) - Li(x)`. The bound itself is a generic-oscillatory-
+sum quantity that happens to be realised by D(x) via E1.5; it is not
+a Riemann-specific quantitative statistic. EVS L (was M; demoted by
+S112 because the quantitative magnitude is not arithmetic-specific).
+
+**S113 universality strengthening:** the plateau is NOT EVEN
+oscillatory-sum-specific. Across 9 distribution families (uniform,
+single arcsine, sums of arcsines with various weights, two-Gaussian
+mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control),
+*every* distribution with non-zero kurtosis plateaus at K=10000,
+while pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50, matching the
+Stein-CLT rate). The plateau magnitude W_1/σ tracks |kurtosis(D)|
+monotonically; linear interpolation at kurt=-0.41 (D_emp's kurtosis)
+predicts W_1/σ ≈ 0.042, vs the observed 0.038 (within 10%). So the
+W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²))
+quantity — well-defined positive whenever P is not Gaussian — and
+its magnitude is fully derivable from D's kurtosis under log-uniform
+x. The cross-domain Stein technique import survives but is not
+load-bearing for the conclusion.
+
+Why **not** an attack route: the plateau reduces *quantitatively* to
+the explicit-formula low-zero contribution (E1.5) — pointwise. It
+joins the GUE-sieve-circuit closure family (E7.1, E7.6, E7.11). The
+W_1 magnitude carries no information beyond "oscillatory sum on a
+log-uniform grid"; the cross-domain Stein machinery did not surface
+arithmetic structure orthogonal to E1.5.
+
+Sub-window range dependence: at `x ∈ [10^7, 10^8]` (K=1000),
+`c(10^7) ≈ 0.0067 < c(10^6) ≈ 0.0087` — consistent with asymptotic
+Hejhal CLT prediction `c(X) → 0` as `X → ∞`.
+
+Cross-domain reference: Chen-Goldstein-Shao 2011 *Normal Approximation
+by Stein's Method* (Springer); Ross 2011 *Probability Surveys* 8, 210.
+First application of Stein's method to π(x) - Li(x) in this project.
+
+**S115 sub-window correlation IS Riemann-φ-specific (CONFIRM).** S110
+reported `r=0.9154` on disjoint windows using ACTUAL zero phases.
+S115 ran a 200-trial random-phase null preserving the same 50 Riemann
+γ_k: mean r = -0.04 ± 0.39 (matches the n=10 noise-floor 1/√10), with
+0/200 trials reaching r ≥ 0.906. Random-phase + non-Riemann γ ∈
+[10, 145] and pure-noise controls give statistically identical
+distributions (means within 0.02; stds within 0.01). The actual zero
+phases ARE necessary and sufficient to reproduce V_emp pointwise
+across sub-windows — exactly as E1.5 predicts. No grade change: the
+B demotion was about W_1 *magnitude* generic-ness, not the pointwise
+match. The structural-matching claim survives but its mathematical
+content is exactly E1.5.
 
 ### E7.11 — Convergence-acceleration / variance-reduction family is exhausted [EVS shape]
 
