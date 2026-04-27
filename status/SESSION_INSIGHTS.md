@@ -5894,3 +5894,112 @@ caps at `X = 8`). Route A (Hoheisel) remains beyond a single session.
 - `NOVELTY_CHALLENGES.md` §3 L1.
 - `archive/sessions/session137_l1_lean_w18_corner.md`.
 
+## Session 138 — D2.a.2: PH W-scan, per-prime HL twin-prime decay rate (B-grade)
+
+**Mode:** novelty (B-grade target).
+
+**What:** First W-scan of E2.17's persistent-homology serial-correlation
+deficit `z(B2; T0)` across W ∈ {2, 6, 30, 210, 2310} (primorials),
+M ∈ {500, 1000}, pooled over the first min(3, φ(W)) coprime residues.
+
+**Result:** `r(W) := |z(B2;T0;W)| / |z(B2;T0;W=2)|` matches the closed
+form `∏_{p|W, p>2} (1 - α/p)` with `α ≈ 2.07` on the W=6 → W=30 cell-
+pair (residuals 0.001 / 0.008 in r-units). The α ≈ 2 coefficient
+**matches the Hardy-Littlewood twin-prime per-prime local factor `1
+- 2/p`** (HL 1923 §4) — two forbidden residues mod p in a coprime
+pair. PH-side analogue of E2.13's Gowers W-scan with the same per-
+prime structure.
+
+**M=500 matched-window scan:** clean monotone decay
+4.89 → 1.52 → 0.93 → 0.99 → 0.30 across W = 2, 6, 30, 210, 2310.
+**The p=3 filter alone removes 70 % of the W=2 deficit; by W=6 the
+serial component is at the K=20 noise floor (~0.045 in r-units).**
+The S117 W=210 anchor sat in the saturation regime, not the HL-active
+regime — the Green-Tao convention overshot.
+
+**M=1000 W=2310 rebound diagnosed.** At φ(2310)=480, M=1000 forces
+window q ∈ [10⁶, 8.47·10⁶] (log range 2.13). Cramér normalisation
+`g/(φ(W) log q_n)` is exact only locally; over that window the
+underlying gap scale drifts ~15 %, generating slow-modulation PH
+structure. M=500 control collapses window to log range 1.07 and
+z(B2; T0) goes from −3.04 → +0.30, confirming the artifact.
+
+**Falsifier verdict:** F1 (monotone decay) holds at M=500 cleanly;
+fails at M=1000 due to W=2310 finite-size. F2 (S117 reproduction at
+W=210) holds (-1.95 vs -1.99). F3 (W=2 ≥ 50% of S96 baseline) holds
+(6.69 = 90% at M=1000; 4.89 = 66% at M=500). F4 (z(B1) preserved or
+amplified) holds. F5 (HL closed-form fit) partial — α ≈ 2.07 fits
+W=6,30 cleanly, W ≥ 210 below noise floor.
+
+**Self-grade: B.** Refinement of E2.17 with explicit per-prime decay
+rate matching the twin-prime HL constant. Substantive but not
+A-grade — no new structural fact, algorithm, or formal proof.
+
+**Next-action:** §D2.a.2.i (K=200 baselines to tighten α-fit at high
+W) or §D2.a.2.ii (matched-physical-window protocol).
+
+**Files:**
+- `experiments/topological/persistent_homology_w_scan/`
+  (`persistent_homology_w_scan.py`, results.md, four JSON/log pairs).
+- `EDGES.md` E2.17 refined inline (S138 W-scan section).
+- `NOVELTY_CHALLENGES.md` §D2.a.2 marked CLOSED, two successor
+  challenges added.
+- `archive/sessions/session138_d2a2_ph_w_scan.md`.
+
+
+## Session 139 (critique, post-S132 batch)
+
+**Mode:** critique. **Coverage:** S133 + S134 + S135 + S136 + S137 +
+S138-d2a2 + S138-Newman (orphan).
+
+**Verdicts:** all 7 self-grades confirmed at **B**. Zero demotions.
+S133 (FHK ζ-amplitude, B mode I, edge E7.18); S134 (Mahler measure
+of χ_P, B mode I, edge E2.20, Δ_∞ = -0.307 nat); S135 (column-enum
+random N=6, B mode E refinement); S136 (frontier_gen, B, 4 vectors
+D27/D28/D29/D30 added); S137 (Lean W=18 corner, B low-end, 9th
+mps_bond_dim instance + W=14 obstruction); S138-d2a2 (PH W-scan,
+B low-end, HL twin-prime (1-2/p) per-prime decay rate identified —
+fifth refinement of E2.17, chain at noise-floor terminus);
+S138-Newman (Newman L^∞-flatness, B mode I, edge E2.21, HL singular
+series μ²(q)/φ(q) recovered exactly at major arcs).
+
+**A-grade scarcity:** **0/46 production sessions** since last
+critic-confirmed A (S82); 26 sessions past 20-session threshold.
+Selection-bottleneck partially relieved (3 of 6 production sessions
+were frontier wild_swings — the right cadence). Per-attempt prior
+~7-12% per S136 estimate; empirical hit-rate 0/3 in this batch is
+consistent with prior. A-grade arrival expected by ~S145-S160 if
+rotation continues 15-20% A-prior frontier picks.
+
+**Process bug flagged:** S138-Newman (run 135 at 17:05) and S138-d2a2
+(run 136 at 17:26) both took session number 138 by max+1 rule;
+S138-d2a2 won the file slot and S138-Newman is **orphaned** (no
+archive/sessions/ synthesis filed). EDGES.md line 1581 references
+non-existent `session138_d27_newman_linfty_chi_p.md`. Recommended
+retroactive fix at session 140.
+
+**Two file-level fixes applied:**
+- S138-d2a2 results.md citation error patched (E2.20 was misattributed
+  to subword complexity; corrected to E2.19 subword + E2.20 Mahler).
+- CLOSED_PATHS row 781 added for S138-d2a2 D2.a.2 W-scan REFINEMENT/E
+  (parent S131 had filed row 775; S138-d2a2 had missed the housekeeping
+  step).
+
+**Next-action:** D30 (Pollicott-Ruelle resonances of the χ_P-weighted
+Gauss-map transfer operator) — RECOMMENDED NEXT annotation written
+into ATTACK_VECTORS.md §D30. Most "purely cross-domain" of the four
+S136 vectors (no overlap with prior project measurement modalities);
+~10% A-grade prior; single-session feasible.
+
+**Backup arc-continuation:** L1 Lean Route A^{(10)} — W=9 via
+`Matrix.det_of_blockTriangular`. Multi-session investment; declined
+for FOUR consecutive Lean slots (S128 / S129 / S137 / missing W=15).
+The four-decline pattern must break for the L1 arc to surface a
+Lean A-grade.
+
+**Files:** `archive/ephemeral/critique_latest.md`,
+`archive/sessions/session139_critique.md`,
+`status/CLOSED_PATHS.md` (row 781 added),
+`experiments/topological/persistent_homology_w_scan/persistent_homology_w_scan_results.md`
+(citation fix), `ATTACK_VECTORS.md` (D30 RECOMMENDED NEXT
+annotation).

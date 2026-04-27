@@ -635,6 +635,18 @@ identified as the dominant singular-series carrier in the PH
 observable. Successors: D2.a.1.i (pure-discrete IID B4) and D2.a.1.ii
 (sliding-bandwidth KDE B5(σ)) proposed for direct discreteness
 isolation.
+**D2.a.2 CLOSED S138** — first W-scan of the serial-correlation
+deficit `z(B2; T0)` across W ∈ {2, 6, 30, 210, 2310}. The HL closed-
+form fit `r(W) = ∏_{p|W, p>2} (1 - α/p)` gives α ≈ 2.07 matching the
+**Hardy-Littlewood twin-prime per-prime local factor `1 - 2/p`**. The
+p=3 filter alone removes 70 % of the W=2 deficit; by W=6 the serial
+component is at the K=20 noise floor. S117's W=210 anchor was in the
+saturation regime, not the HL-active regime. PH-side analogue of
+E2.13's Gowers W-scan with the *same* per-prime structure. M=1000
+W=2310 rebound diagnosed as finite-size window non-stationarity
+(Cramér normalisation drift at log range > 2). Successors:
+D2.a.2.i (K=200 to tighten α-fit) and D2.a.2.ii (matched-physical-
+window protocol).
 **C3 CLOSED S105**
 with the per-bit Brandt argument confirmed orthogonal to O1-O4 (DUP-PLUS
 of E5.8) and a sharper bounded-Kt cut at `J*(N) ≈ N − log₂ N`. **C2

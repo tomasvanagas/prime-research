@@ -3911,7 +3911,7 @@ Session 2 (if signal): scale to `K = 100`, `T_max = 10^4`,
 coefficients to Eisenstein series `E_4, E_6, E_8` and Jacobi theta
 `θ` evaluated at suitable cusps).
 
-### D30 — Pollicott-Ruelle resonances of an arithmetic transfer operator
+### D30 — Pollicott-Ruelle resonances of an arithmetic transfer operator  [RECOMMENDED NEXT — S139 critique]
 
 **Question:** for a hyperbolic dynamical system `(M, T)` and a
 Hölder-continuous weight `w: M → R`, the **transfer operator**

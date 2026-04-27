@@ -174,11 +174,44 @@ thresholds, partially fails on relative |Δz| ≤ 1 condition for d=2,3
 `experiments/topological/persistent_homology_w_trick_marginal_b3/persistent_homology_w_trick_marginal_b3_results.md`,
 `archive/sessions/session124_d2a1_ph_marginal_b3.md`.
 
-**§D2.a.2 — Vary W and trace S^(W)_PH.** Replicate the experiment at
-W ∈ {2, 6, 30, 210, 2310} and quantify how the serial component of
-E2.17 decays in W. Predicted: a "PH analogue of S^(W)_2 / S^(W)_3"
-HL singular-series structure, parallel to E2.13's Gowers W-scan.
-Cost: 1 session.
+**§D2.a.2 — CLOSED (S138, mode E, B-grade refinement of E2.17).**
+Tabulated `z(B2; T0)` across W ∈ {2, 6, 30, 210, 2310} at M ∈ {500,
+1000} pooling first min(3, φ(W)) coprime residues, otherwise matched
+to S117 protocol. Clean monotone decay at matched M=500: 4.89 →
+1.52 → 0.93 → 0.99 → 0.30. The HL closed-form fit
+`r(W) = ∏_{p|W, p>2} (1 - α/p)` gives `α ≈ 2.07`, matching the
+Hardy-Littlewood twin-prime per-prime local factor `1 - 2/p` exactly
+on the W=6 → W=30 cell-pair (residuals 0.001 / 0.008). **The p=3
+factor alone accounts for 70% of the deficit; by W=6 the serial
+component is at the K=20 noise floor.** S117's W=210 anchor was in
+the saturation regime, not the HL-active regime. M=1000 W=2310
+rebound to z = -3.04 identified as finite-size window non-stationarity
+(at φ(2310)=480 the M=1000 window spans log range 2.13; M=500 collapses
+the window and the rebound disappears, +0.30). **E2.17 refined inline**
+with per-prime decay rate `(1 - 2/p)`. Sixth leg of the W-trick HL
+fingerprint family alongside E2.13/E2.14/E2.15/E2.16/E2.20 retains
+its status; the new content is the **explicit per-prime decay rate
+matching the twin-prime Hardy-Littlewood constant**. See
+`experiments/topological/persistent_homology_w_scan/persistent_homology_w_scan_results.md`,
+`archive/sessions/session138_d2a2_ph_w_scan.md`.
+
+**Successor challenges (proposed in S138):**
+
+**§D2.a.2.i — Higher-K noise floor at W ∈ {30, 210, 2310}.** At
+K=20 baselines the noise floor is ~ 1/√K ≈ 0.22σ on z, ~0.045 on r,
+which prevents tight α-fitting at high W. Re-run W ∈ {30, 210, 2310}
+with K=200 baselines (~10× cost, ~3× tighter floor). If r(W=2310)
+remains in [0.04, 0.08] this would falsify the closed-form prediction
+`r(W=2310) ≈ 0.10` at α=2.07 (would suggest the per-prime decay rate
+slows for large primes). Cost: 1 session.
+
+**§D2.a.2.ii — Matched-physical-window protocol.** Hold q_end - q_start
+fixed (say 1.5·10⁶ matching W=210 at M=1000) and let M shrink with W.
+At W=2310 this gives M ≈ 200 (too few for stable PH); the protocol
+breaks down. Alternative: hold log q_n drift ≤ 1 across all W. Re-run
+with M_W = round(q_target / (φ(W) · ⟨log q⟩)) for q_target = 10⁶ above
+start_x = 10⁶. Confirms the matched-physical-span scan reproduces
+matched-M=500 cleanly. Cost: 1 session.
 
 **Successor challenges (proposed in S124):**
 

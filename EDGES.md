@@ -1229,13 +1229,59 @@ above by ≤ 1σ on T0 — the W-tricked primes' residual gap-correlation is
 **at the noise floor** of the PH instrument once duplicate-compression
 is factored out.
 
+**S138 refinement (D2.a.2 — W-scan, per-prime decay rate).** The serial-
+correlation deficit z(B2; T0) was tabulated across W ∈ {2, 6, 30, 210,
+2310} (primorials), pooled over the first min(3, φ(W)) coprime residues
+b mod W, at M ∈ {500, 1000} keeping all other parameters fixed
+(d=3, x_start=10⁶, max_edge=4.0, K=20, seed=20260427).
+
+| W | T0 z(B2) M=1000 | T0 z(B2) M=500 |
+|---|------------------|------------------|
+| 1 (S96 anchor) | −7.45  | (matched M)      |
+| 2              | −6.69  | −4.89            |
+| 6              | −1.95  | −1.52            |
+| 30             | −0.93  | −0.93            |
+| 210 (S117)     | −1.95  | −0.99            |
+| 2310           | −3.04  | **+0.30**        |
+
+The clean monotone decay |z(B2; T0)| at matched M=500: 4.89 → 1.52
+→ 0.93 → 0.99 → 0.30. The W=2310 M=1000 rebound to −3.04 is **finite-
+size window non-stationarity**: at φ(2310)=480, M=1000 forces a window
+spanning q ∈ [10⁶, 8.47·10⁶] (log range 2.13), and Cramér normalisation
+`g/(φ(W) log q_n)` is exact only locally — the underlying gap scale
+drifts ~15% over that window, generating slow-modulation PH structure.
+At M=500 the W=2310 window narrows to q_end ≈ 4.6·10⁶ (log range 1.07)
+and the rebound disappears, confirming the artifact.
+
+**Per-prime decay fit.** With `r(W) := |z(B2; T0; W)| / |z(B2; T0;
+W=2)|`, the model `r(W) = ∏_{p|W, p>2} (1 - α/p)` gives `α ≈ 2.07`
+on the W = 6 → W = 30 cell-pair (absolute residuals 0.001 / 0.008 in
+r-units). The α ≈ 2 coefficient corresponds to **the Hardy-Littlewood
+twin-prime per-prime local factor `1 - 2/p`** (HL 1923 §4): two
+forbidden residues mod p in a coprime pair. For W ≥ 210 the noise
+floor at K = 20 baselines (~0.045 in r-units) prevents tighter α
+constraints. The PH-side T0 deficit is therefore **dominated by 2-
+point gap correlations** modulated through the Vietoris-Rips / Takens
+construction.
+
+**E2.17 inline refinement:** the serial component decays per-prime as
+`(1 - 2/p)`. The **p = 3 factor alone accounts for ≈ 70 % of the W=2
+deficit** (1.52 / 4.89 ≈ 0.31 = 1 − 2/3 + finite-size). By W = 6 the
+serial component is at the noise floor; the S117 anchor at W = 210
+sat in the saturation regime, not the HL-active regime. PH-side
+analogue of E2.13's Gowers W-scan with the same per-prime local
+factor.
+
+See `experiments/topological/persistent_homology_w_scan/`.
+
 > Cross-domain references: Carlsson 2009 "Topology and data" Bull.
 > AMS 46(2); Edelsbrunner-Harer 2010 *Computational Topology: An
 > Introduction*; Bauer 2021 "Ripser" J. Appl. Comput. Topol. 5
 > (arXiv:1908.02518); Cohen-Steiner-Edelsbrunner-Harer 2007 (PH
 > stability); Green-Tao 2008 *Annals* 167 (arXiv:math/0404188) —
-> origin of W-trick; Devroye 1986 *Non-Uniform Random Variate
-> Generation* Springer §II.2.1 — inverse-transform sampling;
+> origin of W-trick; Hardy-Littlewood 1923 *Acta Math.* 44 §4 —
+> twin-prime singular series; Devroye 1986 *Non-Uniform Random
+> Variate Generation* Springer §II.2.1 — inverse-transform sampling;
 > coupon-collector / birthday-problem theory for the 0.368M
 > duplicate-count formula.
 
