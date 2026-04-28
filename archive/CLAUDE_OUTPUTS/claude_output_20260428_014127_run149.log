@@ -1,0 +1,2119 @@
+=== Run #149 — Mode: lean — Tue Apr 28 01:41:28 UTC 2026 ===
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/
+    E2_1_mps_bond_dim
+    README.md
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/README.md
+    1	# Formalisations — Lean 4 proofs of edges and novel results
+    2	
+    3	This directory holds **machine-checked proofs** of the project's main
+    4	mathematical claims. Each formalisation produces a permanent verifiable
+    5	artifact that survives across sessions, models, and any informal-argument
+    6	drift.
+    7	
+    8	Created S68+ as part of the project's shift from disciplined-closure
+    9	mode to novelty-production mode. See `CLAUDE.md` § "The Novelty Bar"
+    10	and `NOVELTY_CHALLENGES.md` §3.
+    11	
+    12	## Layout
+    13	
+    14	Each formalisation lives in its own subdirectory:
+    15	
+    16	```
+    17	experiments/formalisations/<edge_id_or_result>/
+    18	    <name>.lean            # the Lean 4 source — must type-check
+    19	    <name>_notes.md        # informal proof sketch + which edge/result
+    20	                           # this formalises + status (statement-only,
+    21	                           # skeleton-with-sorries, complete, etc.)
+    22	    lakefile.lean          # if needed for the subdirectory
+    23	    lean-toolchain         # if pinned
+    24	```
+    25	
+    26	## Why Lean
+    27	
+    28	- **Forces precision.** Vague claims fail to type-check.
+    29	- **Surfaces hidden structure.** Proving an edge formally often reveals
+    30	  ingredients that informal arguments hand-wave over.
+    ... (43 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MPSBondDim
+    leading_row_search.py
+    leading_row_search_results.txt
+    mps_bond_dim_notes.md
+    w9_blocktriangular_search.py
+    w9_blocktriangular_search_results.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/
+    CheckAxioms.lean
+    MPSBondDim
+    MPSBondDim.lean
+    README.md
+    lake-manifest.json
+    lakefile.lean
+    lean-toolchain
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    File content (28265 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim.lean
+    1	import MPSBondDim.Basic
+    2	
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    File content (110045 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+      3820 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+        22 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean
+       824 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+      4666 total
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    1	# L1 — E2.1 MPS bond-dim identity (Lean 4 formalisation, in progress)
+    2	
+    3	**Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
+    4	**Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
+    5	**Build status (S144):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
+    6	**No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
+    7	
+    8	## What this file formalises
+    9	
+    10	The identity from `novel/mps_bond_dimension.md`:
+    11	
+    12	> For `chiP : [1, W^d] → {0,1}` the prime indicator and `M^(j)` the
+    13	> `(W^j × W^(d-j))` unfolding via base-`W` reshape, for every `W ≥ 2`
+    14	> and every cut `1 ≤ j < d`:
+    15	>
+    16	>     rank M^(j)  =  min ( W^j ,  φ(W) · W^(d-j-1) + 1 ).
+    17	
+    18	EDGES.md edge: **E2.1**. Empirically saturated in `novel/mps_bond_dimension.md`
+    19	for `W ∈ {2, 6, 30, 210}` and `d` up to 20.
+    20	
+    21	## Lean layout
+    22	
+    23	The proof is decomposed into 8 declarations:
+    24	
+    25	| name                            | role                                           | status   |
+    26	|---------------------------------|------------------------------------------------|----------|
+    27	| `chiP`                          | prime indicator `ℕ → ℚ`                        | def      |
+    28	| `unfolding`                     | the `(W^j × W^(d-j))` matrix over `ℚ`          | def      |
+    29	| `rank_le_min_dim`               | trivial ceiling `rank ≤ W^j`                   | **done** |
+    30	| `row_support_coprime`           | nonzero entries imply `gcd(k+1, W) = 1`        | **done** |
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    300	
+    301	  Uses `Nat.prime_two, prime_three, prime_five, prime_seven, prime_eleven,
+    302	  prime_nineteen, prime_twenty_three` (via the `chiP` helpers) and
+    303	  decidability of non-primality for `1, 4, 6, 9, 10, 14, 15, 20, 21, 22,
+    304	  24, 25`. ~250 Lean lines. **Third unconditional `mps_bond_dim` instance
+    305	  over a wheel `W ≥ 3`; the first instance with `R = W`** (so all `W`
+    306	  columns must be retained); **the first instance using
+    307	  `det_of_upperTriangular`** rather than a `det_fin_n` formula. The
+    308	  technique scales to every wheel `W` for which we can exhibit a
+    309	  permutation of `Fin W` that triangularises the slab `chiP 1 .. chiP W^2`
+    310	  — the existence of such a permutation is a finite check at each `W`,
+    311	  not a number-theoretic fact.
+    312	
+    313	  **Why no `upper_bound` here.** Unlike W=4 (where `rank_le_width`
+    314	  gives only `rank ≤ 4`, not the sharp `≤ 3`), at W=5 the column count
+    315	  `5^((j+1)-j) = 5` exactly equals `R = min(5^j, 5) = 5`, so
+    316	  `rank_le_width` directly yields the sharp upper bound.
+    317	
+    318	* **Route A'''''' (orthogonal corner, `W = 6`). DONE S122.**
+    319	  Closed `exists_invertible_submatrix` for `(W = 6, d = j + 1)` via three
+    320	  new declarations: `chiP_thirty_one_eq_one`,
+    321	  `exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1`, and
+    322	  `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3`
+    323	  for every `j ≥ 1`. All sorry-free; `#print axioms` confirms only
+    324	  `propext, Classical.choice, Quot.sound`. The matrix has `6^(d-j) =
+    325	  6` columns; live columns are `{0, 4}` (residues `1, 5 (mod 6)`), so
+    326	  `R = φ(6) + 1 = 3`. We pick the two live columns plus dead column
+    327	  `1` (which contributes `chiP 2 = 1` at row `0`).
+    328	
+    329	  **Row choice subtlety (the key novelty over W ∈ {2, 3, 4, 5}).** The
+    ... (270 more lines)
+  [ToolSearch] 
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    600	  similar treatment.
+    601	
+    602	  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 20`,
+    603	  not the sharp `rank ≤ 9 = φ(20) + 1`. We cite the general
+    604	  `upper_bound`, which evaluates to `φ(20) · 20^0 + 1 = 8 · 1 + 1 = 9`.
+    605	
+    606	  Uses `Nat.prime_two`, `chiP_twenty_three_eq_one` (existing from S117),
+    607	  `chiP_two_hundred_eleven_eq_one` (existing from S137),
+    608	  `chiP_two_hundred_ninety_three_eq_one` (existing from S137), and five
+    609	  new helpers for `{47, 149, 199, 241, 337}` (all `norm_num`-checkable).
+    610	  ~570 Lean lines (the largest single-corner block in the file, beating
+    611	  W=18's 520). **Tenth unconditional `mps_bond_dim` instance; eighth
+    612	  instance over a wheel `W ≥ 3`; fifth instance using
+    613	  `det_of_upperTriangular`.** **First instance with `R = 9`** and
+    614	  **first heartbeat-bumped declaration in the file**.
+    615	
+    616	  **Why W ∈ {15, 16, 24, 30} are structurally obstructed (S143
+    617	  pre-search).** All four of these prime-power-free wheels with
+    618	  `R = φ(W) + 1 = 9` admit zero leading-row+dead-col upper-
+    619	  triangulations within rows `[0, W)`. They join `W ∈ {7, 9, 10, 11,
+    620	  14}` in the "`det_of_blockTriangular`-required" set. Concretely:
+    621	  - W=15: live = `{0, 1, 3, 6, 7, 10, 12, 13}`, dead candidates =
+    622	    `{2, 4}`; both column sets fail.
+    623	  - W=16: live = `{0, 2, 4, 6, 8, 10, 12, 14}`, dead = `{1}`; fails.
+    624	  - W=24: live = `{0, 4, 6, 10, 12, 16, 18, 22}`, dead = `{1, 2}`; both fail.
+    625	  - W=30: live = `{0, 6, 10, 12, 16, 18, 22, 28}`, dead = `{1, 2, 4}`; all three fail.
+    626	
+    627	  The closed-W set is now `{2, 3, 4, 5, 6, 8, 12, 18, 20}`; the
+    628	  block-triangular-required set is `{7, 9, 10, 11, 14, 15, 16, 24, 30}`.
+    629	  The next single-session leading-row candidates are W ∈ {21, 22, 25,
+    ... (196 more lines)
+Let me understand the session context by checking recent session files.
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -20
+    149
+    ---
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | sort | tail -40
+    session64_frobenius_transplant.md
+    session65_tg_kernel_audit.md
+    session66_bernstein_smaller_r.md
+    session67_focus2_e211_pretest.md
+    session68_task3_bessel_basis.md
+    session69_focus4_pi_mod_2k_saturation.md
+    session70_c1_g_q_bisection.md
+    session71_c1_odlyzko_bk_probe.md
+    session71_c5_universality_class.md
+    session72_l1_lean_e2_1_skeleton.md
+    session73_critique.md
+    session74_c2_free_cumulants.md
+    session75_l1_lean_live_columns_count.md
+    session76_l1_lean_upper_bound.md
+    session77_n1_tensor_compression_family.md
+    session78_critique.md
+    session79_a3_cayley_spectral_primality.md
+    session80_d4_szegedy_walk.md
+    session81_c6_pillar_tradeoff_diagram.md
+    session82_c2_spike_eigenvectors.md
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    ... (10 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "^session1[0-9]" | sort
+    session100_g1_liouville_anderson_lyapunov.md
+    session101_d6c_mu_weighted_chi_p.md
+    session102_critique.md
+    session103_frontier_gen.md
+    session104_d13_subword_complexity.md
+    session105_c3_brandt_per_bit.md
+    session106_l1_lean_w3_corner.md
+    session107_l1_lean_w4_corner.md
+    session108_c5_stein_wasserstein_pi.md
+    session109_verify_c5_stein.md
+    session110_verify_c5_stein.md
+    session111_verify_c5_stein.md
+    session112_verify_c5_stein.md
+    session113_verify_c5_stein.md
+    session114_verify_c5_stein.md
+    session115_verify_c5_stein.md
+    session116_a5_maynard_sieve_pointwise.md
+    session117_d2a_ph_w_trick.md
+    session118_b2_automorphic_l_function.md
+    session118_critique.md
+    session119_frontier_gen.md
+    session11_summary.md
+    session120_c4_aggarwal_dusart_bpsw.md
+    session121_frontier_gen.md
+    session121_l1_lean_w5_corner.md
+    session122_l1_lean_w6_corner.md
+    session123_c2_higher_order_zero_correlations.md
+    session124_d2a1_ph_marginal_b3.md
+    session125_d20_friedman_ramanujan_prime_cayley.md
+    session126_d22_hodge_coprimality_flag.md
+    ... (32 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session151_l1_lean_w9_blocktriangular_presearch.md
+    1	# Session 151 — L1 Lean: W=9 BlockTriangular pre-search (Route A^{(12)} setup)
+    2	
+    3	**Mode:** arc continuation (Arc 2 — Lean Formalisation Track).
+    4	**Run #:** 149.
+    5	**Self-grade:** **B-grade** (ambitious failure with structural lessons).
+    6	**Cross-domain channeling:** Lean 4 / mathlib4 dependent-type tactics.
+    7	
+    8	## What I produced (that did not exist before)
+    9	
+    10	1. **`experiments/formalisations/E2_1_mps_bond_dim/w9_blocktriangular_search.py`** —
+    11	   a 130-line Python pre-search that enumerates `(1 + 3 + 3)` block-DIAGONAL
+    12	   decompositions of the `(W=9, d=j+1)` orthogonal-corner `7 × 7` submatrix.
+    13	2. **`w9_blocktriangular_search_results.md`** — companion writeup with
+    14	   structural details, falsifiers, Lean implementation plan.
+    15	3. **Concrete permutation closing the W=9 corner:**
+    16	   `ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)`. Both
+    17	   `3 × 3` diagonal blocks have `det = ±1`, total `7 × 7` det = `1`.
+    18	4. **Required new chiP helpers identified:** `{13, 41, 53, 61}` — only
+    19	   4 new prime witnesses needed beyond the existing 25 in the file.
+    20	5. **Documented Lean tactic obstruction (S151 LESSON):** the `Mexp +
+    21	   Matrix.ext + fin_cases <;> show chiP _ = _; rw [h_sub]` shortcut
+    22	   fails in Lean 4 / mathlib4 v4.30.0-rc2 with "motive is not type-
+    23	   correct" because the σ Fin values carry dependent-type proof terms.
+    24	   The W=20 entry-by-entry `change ...; rw [h_sub]; ...` pattern is the
+    25	   correct path.
+    26	6. **Updated `mps_bond_dim_notes.md`** — added Route A^{(12)} section
+    27	   with the complete Lean assembly plan, S151 lesson, and feasibility
+    28	   estimate (~600 Lean lines, 1 session of focused work).
+    29	7. **Updated `RESEARCH_AGENDA.md` Arc 2** — clear next-action for the
+    30	   follow-up session.
+    ... (116 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w9_blocktriangular_search_results.md
+    1	# W=9 BlockTriangular pre-search (S151)
+    2	
+    3	## Summary
+    4	
+    5	The S144 leading-row enumeration confirmed that the `(W=9, d=j+1)`
+    6	orthogonal-corner case admits **no leading-row + dead-col upper-
+    7	triangulation** with rows in `[0, 9)` (the binding constraint at `j=1`).
+    8	
+    9	This script confirms a **different** structural shape closes W=9: the
+    10	matrix is **block-DIAGONAL as 1 + 3 + 3** under a specific row/col
+    11	permutation. Each `3 × 3` diagonal block has `det = ±1`, computable in
+    12	Lean via `Matrix.det_fin_three`.
+    13	
+    14	This unlocks **Route A^{(12)}** (a new technique in the file): nest two
+    15	applications of `Matrix.det_fromBlocks_zero_21` (1+6 then 3+3) and
+    16	compute the two `3 × 3` block dets via `det_fin_three`. The total is
+    17	`1 · (-1) · (-1) = 1`.
+    18	
+    19	## Numerical artefacts
+    20	
+    21	```
+    22	Found 32 valid (1+3+3) BlockTriangular decompositions for W=9 corner.
+    23	Minimum new chiP helpers needed: 4
+    24	Block-diagonal-only candidates: 32 (every viable decomposition has
+    25	   the upper-right 3x3 block also zero — so every decomposition is
+    26	   actually block-DIAGONAL, not just block-upper-triangular)
+    27	
+    28	Top candidate (minimum new chiP helpers):
+    29	  rho = (0, 1, 3, 5, 2, 4, 6)
+    30	  sigma = (2, 1, 3, 7, 0, 4, 6)
+    ... (109 more lines)
+  [Bash] which lake; which lean; lake --version 2>/dev/null; lean --version 2>/dev/null
+    Exit code 127
+  [Bash] ls ~/.elan/bin/ 2>/dev/null; ls /root/.elan/bin/ 2>/dev/null; find / -name "lake" -type f 2>/dev/null | head -5; find / -name "lean" -type f 2>/dev/null | head -5
+    elan
+    lake
+    lean
+    leanc
+    leanchecker
+    leanmake
+    leanpkg
+    /apps/aplikacijos/.elan/toolchains/leanprover--lean4---v4.30.0-rc2/bin/lake
+    /apps/aplikacijos/.elan/bin/lake
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean
+    /apps/aplikacijos/.elan/toolchains/leanprover--lean4---v4.30.0-rc2/bin/lean
+    /apps/aplikacijos/.elan/bin/lean
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && lake build 2>&1 | tail -30
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2415:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2416:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2417:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2418:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2419:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2420:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3464:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3465:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3470:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    Build completed successfully (8315 jobs).
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Grep] W_eq_20|W_eq_10|W_eq_18|W_eq_12|W_eq_8|prod_univ_nine|exists_invertible_submatrix_W_eq_10|chiP_ninety_seven_eq_one
+    1791:theorem exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1
+    2019:theorem mps_bond_dim_W_eq_8_d_eq_j_plus_1
+    2033:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1 j hj
+    2142:theorem exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1
+    2359:exactly `5` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_8_d_eq_j_plus_1`
+    2374:theorem mps_bond_dim_W_eq_12_d_eq_j_plus_1
+    2388:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1 j hj
+    2505:theorem exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1
+    2861:exactly `7` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_12_d_eq_j_plus_1`
+    2876:theorem mps_bond_dim_W_eq_18_d_eq_j_plus_1
+    2890:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1 j hj
+    2928:Local `prod_univ_nine` lemma. Mathlib provides `Fin.prod_univ_eight` but
+    2929:not `Fin.prod_univ_nine`. We follow mathlib's pattern verbatim.
+    2931:private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    2964:theorem exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1
+    3467:  rw [prod_univ_nine']
+    3476:exactly `9` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_18_d_eq_j_plus_1`
+    3491:theorem mps_bond_dim_W_eq_20_d_eq_j_plus_1
+    3505:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 j hj
+    3556:theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+    3567:and `chiP_ninety_seven_eq_one` (new at S144).
+    3574:theorem exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1
+    3658:    exact chiP_ninety_seven_eq_one
+    3798:theorem mps_bond_dim_W_eq_10_d_eq_j_plus_1
+    3812:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1 j hj
+Let me look at the W=10 proof pattern (the most recent and similar in scale to what W=9 will need).
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3556	theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+    3557	  have h_prime_97 : Nat.Prime 97 := by decide
+    3558	  simp [chiP, h_prime_97]
+    3559	
+    3560	/--
+    3561	**Corner-case prime exhibit (W = 10, d = j + 1).**
+    3562	
+    3563	Specialisation of `exists_invertible_submatrix` to the corner case
+    3564	`W = 10`, `d = j + 1`, where `R = min(10^j, 5) = 5` for every `j ≥ 1`.
+    3565	Closed unconditionally using `chiP_two_eq_one`, `chiP_nineteen_eq_one`
+    3566	(S117), `chiP_thirty_one_eq_one` (S122), `chiP_forty_three_eq_one` (S137),
+    3567	and `chiP_ninety_seven_eq_one` (new at S144).
+    3568	
+    3569	The construction uses `ρ : Fin 5 → Fin (10^j)` mapping
+    3570	`(0, 1, 2, 3, 4) ↦ (1, 0, 4, 3, 9)` and `σ : Fin 5 → Fin (10^((j+1)-j))`
+    3571	mapping `(0, 1, 2, 3, 4) ↦ (8, 1, 2, 0, 6)`. The `5 × 5` submatrix is
+    3572	upper triangular with `1` on the diagonal, hence `IsUnit` over `ℚ`.
+    3573	-/
+    3574	theorem exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1
+    3575	    (j : ℕ) (hj : 1 ≤ j) :
+    3576	    ∃ (ρ : Fin 5 → Fin (10 ^ j))
+    3577	      (σ : Fin 5 → Fin (10 ^ ((j + 1) - j))),
+    3578	      IsUnit ((unfolding 10 (j + 1) j).submatrix ρ σ) := by
+    3579	  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+    3580	  have h_pow_j_pos : 0 < 10 ^ j := Nat.pow_pos (by norm_num)
+    3581	  have h_one_lt_pow_j : 1 < 10 ^ j := by
+    3582	    calc (1 : ℕ) < 10 := by norm_num
+    3583	      _ = 10 ^ 1 := by norm_num
+    3584	      _ ≤ 10 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3585	  have h_three_lt_pow_j : 3 < 10 ^ j := by
+    ... (236 more lines)
+  [Bash] find /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake -name "Block.lean" 2>/dev/null | head -5
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Block.lean
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/Mathlib/Data/Matrix/Block.lean
+  [Grep] det_of_blockTriangular|det_blockTriangular|BlockTriangular.det|toSquareBlock
+    26:* `Matrix.det_of_blockTriangular`: the determinant of a block triangular matrix
+    202:    (e : ∀ x, q x ↔ p x) : (toSquareBlockProp M p).det = (toSquareBlockProp M q).det := by
+    203:  convert Matrix.det_reindex_self (Equiv.subtypeEquivRight e) (toSquareBlockProp M q)
+    206:-- as the LHS simplifies already to `M.toSquareBlock id i ⟨i, ⋯⟩ ⟨i, ⋯⟩`
+    207:theorem det_toSquareBlock_id (M : Matrix m m R) (i : m) : (M.toSquareBlock id i).det = M i i :=
+    224:theorem twoBlockTriangular_det (M : Matrix m m R) (p : m → Prop) [DecidablePred p]
+    226:    M.det = (toSquareBlockProp M p).det * (toSquareBlockProp M fun i => ¬p i).det := by
+    233:theorem twoBlockTriangular_det' (M : Matrix m m R) (p : m → Prop) [DecidablePred p]
+    235:    M.det = (toSquareBlockProp M p).det * (toSquareBlockProp M fun i => ¬p i).det := by
+    236:  rw [M.twoBlockTriangular_det fun i => ¬p i, mul_comm]
+    241:protected theorem BlockTriangular.det [DecidableEq α] [LinearOrder α] (hM : BlockTriangular M b) :
+    242:    M.det = ∏ a ∈ univ.image b, (M.toSquareBlock b a).det := by
+    243:  suffices ∀ hs : Finset α, univ.image b = hs → M.det = ∏ a ∈ hs, (M.toSquareBlock b a).det by
+    251:  rw [twoBlockTriangular_det' M fun i => b i = k]
+    258:    have h' : BlockTriangular (M.toSquareBlockProp fun i => b i ≠ k) b' := hM.submatrix
+    266:    simp only [toSquareBlock_def]
+    275:theorem BlockTriangular.det_fintype [DecidableEq α] [Fintype α] [LinearOrder α]
+    276:    (h : BlockTriangular M b) : M.det = ∏ k : α, (M.toSquareBlock b k).det := by
+    284:  simp_rw [h.det, image_id, det_toSquareBlock_id]
+Let me check how chiP helpers and notation are defined.
+  [Grep] ^theorem chiP|^def chiP|^def unfolding|namespace E2_1|^private theorem prod_univ
+    22:namespace E2_1
+    384:theorem chiP_two_eq_one : chiP 2 = 1 := by
+    683:theorem chiP_three_eq_one : chiP 3 = 1 := by
+    813:theorem chiP_five_eq_one : chiP 5 = 1 := by
+    820:theorem chiP_seven_eq_one : chiP 7 = 1 := by
+    1006:theorem chiP_eleven_eq_one : chiP 11 = 1 := by
+    1220:theorem chiP_nineteen_eq_one : chiP 19 = 1 := by
+    1227:theorem chiP_twenty_three_eq_one : chiP 23 = 1 := by
+    1548:theorem chiP_thirty_one_eq_one : chiP 31 = 1 := by
+    1766:theorem chiP_seventeen_eq_one : chiP 17 = 1 := by
+    1773:theorem chiP_thirty_seven_eq_one : chiP 37 = 1 := by
+    2102:theorem chiP_fifty_nine_eq_one : chiP 59 = 1 := by
+    2109:theorem chiP_eighty_nine_eq_one : chiP 89 = 1 := by
+    2116:theorem chiP_one_hundred_nine_eq_one : chiP 109 = 1 := by
+    2123:theorem chiP_one_hundred_twenty_seven_eq_one : chiP 127 = 1 := by
+    2456:theorem chiP_twenty_nine_eq_one : chiP 29 = 1 := by
+    2463:theorem chiP_forty_three_eq_one : chiP 43 = 1 := by
+    2470:theorem chiP_one_hundred_seventy_nine_eq_one : chiP 179 = 1 := by
+    2477:theorem chiP_two_hundred_eleven_eq_one : chiP 211 = 1 := by
+    2484:theorem chiP_two_hundred_ninety_three_eq_one : chiP 293 = 1 := by
+    2903:theorem chiP_forty_seven_eq_one : chiP 47 = 1 := by
+    2908:theorem chiP_one_hundred_forty_nine_eq_one : chiP 149 = 1 := by
+    2913:theorem chiP_one_hundred_ninety_nine_eq_one : chiP 199 = 1 := by
+    2918:theorem chiP_two_hundred_forty_one_eq_one : chiP 241 = 1 := by
+    2923:theorem chiP_three_hundred_thirty_seven_eq_one : chiP 337 = 1 := by
+    2931:private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    3556:theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3556	theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+    3557	  have h_prime_97 : Nat.Prime 97 := by decide
+    3558	  simp [chiP, h_prime_97]
+    3559	
+    3560	/--
+    3561	**Corner-case prime exhibit (W = 10, d = j + 1).**
+    3562	
+    3563	Specialisation of `exists_invertible_submatrix` to the corner case
+    3564	`W = 10`, `d = j + 1`, where `R = min(10^j, 5) = 5` for every `j ≥ 1`.
+    3565	Closed unconditionally using `chiP_two_eq_one`, `chiP_nineteen_eq_one`
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    1	/-
+    2	# E2.1: MPS bond dimension of the prime indicator (statement-only)
+    3	
+    4	Formalisation of the theorem in `novel/mps_bond_dimension.md`:
+    5	
+    6	  For chi_P : [1, W^d] -> {0,1} the prime indicator, viewed as a tensor of
+    7	  shape (W, W, ..., W) (d copies) by base-W reshape, for every cut
+    8	  1 <= j < d and every integer W >= 2:
+    9	
+    10	      rank M^(j) = min ( W^j ,  phi(W) * W^(d-j-1) + 1 )
+    11	
+    12	  where phi is Euler's totient and M^(j) is the (W^j x W^(d-j)) unfolding.
+    13	
+    14	Stage 1: theorem statement only. The proof is a `sorry`. The next stage
+    15	splits the proof into upper and lower bounds, each via separate lemmas.
+    16	-/
+    17	
+    18	import Mathlib
+    19	
+    20	open Matrix Nat
+    21	
+    22	namespace E2_1
+    23	
+    24	/--
+    25	The prime indicator, embedded in `ℚ`. We use `ℚ` (a field) because matrix
+    26	`rank` is most informative over a field.
+    27	-/
+    28	noncomputable def chiP (n : ℕ) : ℚ := if Nat.Prime n then 1 else 0
+    29	
+    30	/--
+    ... (90 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3815	      simpa using h
+    3816	    calc (5 : ℕ) = ((unfolding 10 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    3817	      _ ≤ (unfolding 10 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    3818	
+    3819	
+    3820	end E2_1
+    3821	
+  [Grep] BlockTriangular|det_fromBlocks|finSumFinEquiv|toSquareBlock
+    1438:  have h_blocktri : M.BlockTriangular id := by
+    1721:**Triangulation strategy (BlockTriangular route, à la W=5).** The full
+    1749:(each `= 0`), establish `BlockTriangular id` by `fin_cases i <;> fin_cases k`,
+    1976:  have h_blocktri : M.BlockTriangular id := by
+    2073:diagonal entries (each `= 0`), establish `BlockTriangular id` by
+    2331:  have h_blocktri : M.BlockTriangular id := by
+    2827:  have h_blocktri : M.BlockTriangular id := by
+    2938:-- BlockTriangular check (vs 49 at W=18, R=7). The simp blow-up scales as R² and
+    2960:`fin_cases` × `fin_cases` subgoals in the BlockTriangular check and
+    3456:  have h_blocktri : M.BlockTriangular id := by
+    3760:  have h_blocktri : M.BlockTriangular id := by
+  [Grep] BlockTriangular.det_fintype|BlockTriangular.det |toSquareBlock|det_toSquareBlock
+    202:    (e : ∀ x, q x ↔ p x) : (toSquareBlockProp M p).det = (toSquareBlockProp M q).det := by
+    203:  convert Matrix.det_reindex_self (Equiv.subtypeEquivRight e) (toSquareBlockProp M q)
+    206:-- as the LHS simplifies already to `M.toSquareBlock id i ⟨i, ⋯⟩ ⟨i, ⋯⟩`
+    207:theorem det_toSquareBlock_id (M : Matrix m m R) (i : m) : (M.toSquareBlock id i).det = M i i :=
+    224:theorem twoBlockTriangular_det (M : Matrix m m R) (p : m → Prop) [DecidablePred p]
+    226:    M.det = (toSquareBlockProp M p).det * (toSquareBlockProp M fun i => ¬p i).det := by
+    235:    M.det = (toSquareBlockProp M p).det * (toSquareBlockProp M fun i => ¬p i).det := by
+    236:  rw [M.twoBlockTriangular_det fun i => ¬p i, mul_comm]
+    241:protected theorem BlockTriangular.det [DecidableEq α] [LinearOrder α] (hM : BlockTriangular M b) :
+    242:    M.det = ∏ a ∈ univ.image b, (M.toSquareBlock b a).det := by
+    243:  suffices ∀ hs : Finset α, univ.image b = hs → M.det = ∏ a ∈ hs, (M.toSquareBlock b a).det by
+    258:    have h' : BlockTriangular (M.toSquareBlockProp fun i => b i ≠ k) b' := hM.submatrix
+    266:    simp only [toSquareBlock_def]
+    275:theorem BlockTriangular.det_fintype [DecidableEq α] [Fintype α] [LinearOrder α]
+    276:    (h : BlockTriangular M b) : M.det = ∏ k : α, (M.toSquareBlock b k).det := by
+    284:  simp_rw [h.det, image_id, det_toSquareBlock_id]
+Now let me start the actual work. I'll add the 4 chiP helpers first.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3550	`upper_bound`, which evaluates to `φ(10) · 10^0 + 1 = 4 · 1 + 1 = 5`.
+    3551	-/
+    3552	
+    3553	/--
+    3554	`chiP 97 = 1` since `97` is prime.
+    3555	-/
+    3556	theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+    3557	  have h_prime_97 : Nat.Prime 97 := by decide
+    3558	  simp [chiP, h_prime_97]
+    3559	
+    3560	/--
+    3561	**Corner-case prime exhibit (W = 10, d = j + 1).**
+    3562	
+    3563	Specialisation of `exists_invertible_submatrix` to the corner case
+    3564	`W = 10`, `d = j + 1`, where `R = min(10^j, 5) = 5` for every `j ≥ 1`.
+    3565	Closed unconditionally using `chiP_two_eq_one`, `chiP_nineteen_eq_one`
+    3566	(S117), `chiP_thirty_one_eq_one` (S122), `chiP_forty_three_eq_one` (S137),
+    3567	and `chiP_ninety_seven_eq_one` (new at S144).
+    3568	
+    3569	The construction uses `ρ : Fin 5 → Fin (10^j)` mapping
+Let me write a small Lean test to verify mathlib's `BlockTriangular` API works. I'll prototype in a separate file first to avoid breaking the main file.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/
+    Basic.lean
+I'll attempt the W=9 proof. Given the complexity, let me first generate the entries computationally to ensure correctness.
+  [Bash] cd /tmp && python3 -c "
+# Generate the 49 entry computations for W=9 corner
+rho = [0, 1, 3, 5, 2, 4, 6]
+sigma = [2, 1, 3, 7, 0, 4, 6]
+W = 9
+
+primes_in_set = set()
+composites_in_set = set()
+
+def is_prime(n):
+    if n < 2: return False
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0: return False
+    return True
+
+# Compute all 49 entries
+print('# 49 entry table for W=9 corner')
+print('# i j  -> ρ(i)*9 + σ(j) + 1 = N (chiP value)')
+for i in range(7):
+    for j in range(7):
+        n = rho[i] * 9 + sigma[j] + 1
+        v = 1 if is_prime(n) else 0
+        if v: primes_in_set.add(n)
+        else: composites_in_set.add(n)
+        print(f'  ({i},{j}): rho={rho[i]} sig={sigma[j]} -> chiP({n}) = {v}')
+
+print()
+print(f'Primes used: {sorted(primes_in_set)}')
+print(f'Composites used: {sorted(composites_in_set)}')
+print(f'Composites count: {len(composites_in_set)}')
+"
+
+    # 49 entry table for W=9 corner
+    # i j  -> ρ(i)*9 + σ(j) + 1 = N (chiP value)
+      (0,0): rho=0 sig=2 -> chiP(3) = 1
+      (0,1): rho=0 sig=1 -> chiP(2) = 1
+      (0,2): rho=0 sig=3 -> chiP(4) = 0
+      (0,3): rho=0 sig=7 -> chiP(8) = 0
+      (0,4): rho=0 sig=0 -> chiP(1) = 0
+      (0,5): rho=0 sig=4 -> chiP(5) = 1
+      (0,6): rho=0 sig=6 -> chiP(7) = 1
+      (1,0): rho=1 sig=2 -> chiP(12) = 0
+      (1,1): rho=1 sig=1 -> chiP(11) = 1
+      (1,2): rho=1 sig=3 -> chiP(13) = 1
+      (1,3): rho=1 sig=7 -> chiP(17) = 1
+      (1,4): rho=1 sig=0 -> chiP(10) = 0
+      (1,5): rho=1 sig=4 -> chiP(14) = 0
+      (1,6): rho=1 sig=6 -> chiP(16) = 0
+      (2,0): rho=3 sig=2 -> chiP(30) = 0
+      (2,1): rho=3 sig=1 -> chiP(29) = 1
+      (2,2): rho=3 sig=3 -> chiP(31) = 1
+      (2,3): rho=3 sig=7 -> chiP(35) = 0
+      (2,4): rho=3 sig=0 -> chiP(28) = 0
+      (2,5): rho=3 sig=4 -> chiP(32) = 0
+      (2,6): rho=3 sig=6 -> chiP(34) = 0
+      (3,0): rho=5 sig=2 -> chiP(48) = 0
+      (3,1): rho=5 sig=1 -> chiP(47) = 1
+      (3,2): rho=5 sig=3 -> chiP(49) = 0
+      (3,3): rho=5 sig=7 -> chiP(53) = 1
+      (3,4): rho=5 sig=0 -> chiP(46) = 0
+      (3,5): rho=5 sig=4 -> chiP(50) = 0
+      (3,6): rho=5 sig=6 -> chiP(52) = 0
+    ... (26 more lines)
+Now let me generate the Lean code for the 49 entry-lemmas using Python.
+  [Bash] cd /tmp && python3 << 'EOF' > /tmp/w9_entries.txt
+rho = [0, 1, 3, 5, 2, 4, 6]
+sigma = [2, 1, 3, 7, 0, 4, 6]
+W = 9
+
+def is_prime(n):
+    if n < 2: return False
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0: return False
+    return True
+
+# Map prime -> chiP_X_eq_one helper name
+prime_names = {
+    2: 'chiP_two_eq_one',
+    3: 'chiP_three_eq_one',
+    5: 'chiP_five_eq_one',
+    7: 'chiP_seven_eq_one',
+    11: 'chiP_eleven_eq_one',
+    13: 'chiP_thirteen_eq_one',
+    17: 'chiP_seventeen_eq_one',
+    19: 'chiP_nineteen_eq_one',
+    23: 'chiP_twenty_three_eq_one',
+    29: 'chiP_twenty_nine_eq_one',
+    31: 'chiP_thirty_one_eq_one',
+    37: 'chiP_thirty_seven_eq_one',
+    41: 'chiP_forty_one_eq_one',
+    43: 'chiP_forty_three_eq_one',
+    47: 'chiP_forty_seven_eq_one',
+    53: 'chiP_fifty_three_eq_one',
+    59: 'chiP_fifty_nine_eq_one',
+    61: 'chiP_sixty_one_eq_one',
+}
+
+# Map composite -> not-prime hypothesis name
+not_prime_names = {
+    1: 'h_not_prime_1',
+    4: 'h_not_prime_4',
+    8: 'h_not_prime_8',
+    10: 'h_not_prime_10',
+    12: 'h_not_prime_12',
+    14: 'h_not_prime_14',
+    16: 'h_not_prime_16',
+    20: 'h_not_prime_20',
+    21: 'h_not_prime_21',
+    22: 'h_not_prime_22',
+    25: 'h_not_prime_25',
+    26: 'h_not_prime_26',
+    28: 'h_not_prime_28',
+    30: 'h_not_prime_30',
+    32: 'h_not_prime_32',
+    34: 'h_not_prime_34',
+    35: 'h_not_prime_35',
+    38: 'h_not_prime_38',
+    39: 'h_not_prime_39',
+    40: 'h_not_prime_40',
+    44: 'h_not_prime_44',
+    46: 'h_not_prime_46',
+    48: 'h_not_prime_48',
+    49: 'h_not_prime_49',
+    50: 'h_not_prime_50',
+    52: 'h_not_prime_52',
+    55: 'h_not_prime_55',
+    56: 'h_not_prime_56',
+    57: 'h_not_prime_57',
+    58: 'h_not_prime_58',
+    62: 'h_not_prime_62',
+}
+
+print("-- Compute the 49 entries of the 7x7 submatrix.")
+print()
+
+for i in range(7):
+    for j in range(7):
+        r = rho[i]
+        s = sigma[j]
+        n = r * 9 + s + 1
+        is_p = is_prime(n)
+        const = '1' if is_p else '0'
+        # Use ρ_X / σ_X bound names
+        pj = f'h_{r}_lt_pow_j' if r > 0 else 'h_pow_j_pos'
+        pdj = f'h_{s}_lt_pow_dj' if s > 0 else 'h_zero_lt_pow_dj'
+        # Variable name
+        var_name = f'hE{i}{j}'
+        print(f"  -- ({i},{j}): unfolding({r}, {s}) = chiP {n} = {const}")
+        print(f"  have {var_name} : unfolding 9 (j + 1) j ⟨{r}, {pj}⟩ ⟨{s}, {pdj}⟩ = {const} := by")
+        print(f"    change chiP ({r} * 9 ^ ((j + 1) - j) + {s} + 1) = {const}")
+        print(f"    rw [h_sub]")
+        print(f"    have h_eq : ({r} * 9 ^ 1 + {s} + 1 : ℕ) = {n} := by norm_num")
+        print(f"    rw [h_eq]")
+        if is_p:
+            print(f"    exact {prime_names[n]}")
+        else:
+            print(f"    simp [chiP, {not_prime_names[n]}]")
+
+# Also generate the not-prime declarations
+print()
+print("-- Not-prime hypotheses")
+for n in sorted(not_prime_names.keys()):
+    name = not_prime_names[n]
+    if n == 1:
+        print(f"  have {name} : ¬ Nat.Prime 1 := Nat.not_prime_one")
+    else:
+        print(f"  have {name} : ¬ Nat.Prime {n} := by decide")
+
+EOF
+wc -l /tmp/w9_entries.txt
+head -50 /tmp/w9_entries.txt
+    378 /tmp/w9_entries.txt
+    -- Compute the 49 entries of the 7x7 submatrix.
+    
+      -- (0,0): unfolding(0, 2) = chiP 3 = 1
+      have hE00 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+        change chiP (0 * 9 ^ ((j + 1) - j) + 2 + 1) = 1
+        rw [h_sub]
+        have h_eq : (0 * 9 ^ 1 + 2 + 1 : ℕ) = 3 := by norm_num
+        rw [h_eq]
+        exact chiP_three_eq_one
+      -- (0,1): unfolding(0, 1) = chiP 2 = 1
+      have hE01 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+        change chiP (0 * 9 ^ ((j + 1) - j) + 1 + 1) = 1
+        rw [h_sub]
+        have h_eq : (0 * 9 ^ 1 + 1 + 1 : ℕ) = 2 := by norm_num
+        rw [h_eq]
+        exact chiP_two_eq_one
+      -- (0,2): unfolding(0, 3) = chiP 4 = 0
+      have hE02 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+        change chiP (0 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+        rw [h_sub]
+        have h_eq : (0 * 9 ^ 1 + 3 + 1 : ℕ) = 4 := by norm_num
+        rw [h_eq]
+        simp [chiP, h_not_prime_4]
+      -- (0,3): unfolding(0, 7) = chiP 8 = 0
+      have hE03 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+        change chiP (0 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+        rw [h_sub]
+        have h_eq : (0 * 9 ^ 1 + 7 + 1 : ℕ) = 8 := by norm_num
+        rw [h_eq]
+    ... (22 more lines)
+Let me start by adding the 4 chiP helpers first to verify they build.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3814	      have h := Matrix.rank_of_isUnit ((unfolding 10 (j + 1) j).submatrix ρ σ) hUnit
+    3815	      simpa using h
+    3816	    calc (5 : ℕ) = ((unfolding 10 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    3817	      _ ≤ (unfolding 10 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    3818	
+    3819	
+    3820	end E2_1
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && lake build 2>&1 | tail -10
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3465:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3470:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    ✔ [8314/8315] Built MPSBondDim (6.3s)
+    Build completed successfully (8315 jobs).
+Now let me write the full W=9 proof. Given the complexity, I'll use Python to generate the bulk of the proof code consistently.
+  [Bash] cd /tmp && python3 << 'PYEOF' > /tmp/w9_proof.lean
+rho_vals = [0, 1, 3, 5, 2, 4, 6]
+sigma_vals = [2, 1, 3, 7, 0, 4, 6]
+W = 9
+
+def is_prime(n):
+    if n < 2: return False
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0: return False
+    return True
+
+# Map prime -> chiP_X_eq_one helper name
+prime_names = {
+    2: 'chiP_two_eq_one',
+    3: 'chiP_three_eq_one',
+    5: 'chiP_five_eq_one',
+    7: 'chiP_seven_eq_one',
+    11: 'chiP_eleven_eq_one',
+    13: 'chiP_thirteen_eq_one',
+    17: 'chiP_seventeen_eq_one',
+    19: 'chiP_nineteen_eq_one',
+    23: 'chiP_twenty_three_eq_one',
+    29: 'chiP_twenty_nine_eq_one',
+    31: 'chiP_thirty_one_eq_one',
+    37: 'chiP_thirty_seven_eq_one',
+    41: 'chiP_forty_one_eq_one',
+    43: 'chiP_forty_three_eq_one',
+    47: 'chiP_forty_seven_eq_one',
+    53: 'chiP_fifty_three_eq_one',
+    59: 'chiP_fifty_nine_eq_one',
+    61: 'chiP_sixty_one_eq_one',
+}
+
+# All composites used (from earlier analysis)
+composites = sorted({1, 4, 8, 10, 12, 14, 16, 20, 21, 22, 25, 26, 28, 30, 32, 34, 35, 38, 39, 40, 44, 46, 48, 49, 50, 52, 55, 56, 57, 58, 62})
+
+def number_word(n):
+    return {1:'one',4:'four',8:'eight',10:'ten',12:'twelve',14:'fourteen',16:'sixteen',
+            20:'twenty',21:'twenty_one',22:'twenty_two',25:'twenty_five',26:'twenty_six',
+            28:'twenty_eight',30:'thirty',32:'thirty_two',34:'thirty_four',35:'thirty_five',
+            38:'thirty_eight',39:'thirty_nine',40:'forty',44:'forty_four',46:'forty_six',
+            48:'forty_eight',49:'forty_nine',50:'fifty',52:'fifty_two',55:'fifty_five',
+            56:'fifty_six',57:'fifty_seven',58:'fifty_eight',62:'sixty_two'}[n]
+
+# rho-domain bound names (for h_X_lt_pow_j)
+rho_set = sorted(set(rho_vals))  # {0, 1, 2, 3, 4, 5, 6}
+sigma_set = sorted(set(sigma_vals))  # {0, 1, 2, 3, 4, 6, 7}
+
+def pj_name(r):
+    if r == 0: return 'h_pow_j_pos'
+    return f'h_{r}_lt_pow_j'
+
+def pdj_name(s):
+    if s == 0: return 'h_zero_lt_pow_dj'
+    return f'h_{s}_lt_pow_dj'
+
+print("/-")
+print("**Corner-case prime exhibit (W = 9, d = j + 1).**")
+print()
+print("Closed at S152 via the BlockTriangular `(1 + 3 + 3)` decomposition")
+print("identified in S151's pre-search. The construction uses")
+print("`ρ : Fin 7 → Fin (9^j)` mapping `(0..6) ↦ (0, 1, 3, 5, 2, 4, 6)` and")
+print("`σ : Fin 7 → Fin (9^((j+1)-j))` mapping `(0..6) ↦ (2, 1, 3, 7, 0, 4, 6)`.")
+print("The `7 × 7` submatrix decomposes (via `finSumFinEquiv : Fin 4 ⊕ Fin 3 ≃ Fin 7`)")
+print("into `Matrix.fromBlocks A B 0 D` with `A : Matrix (Fin 4) (Fin 4) ℚ` (det -1)")
+print("and `D : Matrix (Fin 3) (Fin 3) ℚ` (det -1), giving total det = `(-1) · (-1) = 1`,")
+print("hence `IsUnit` over `ℚ`. Uses `chiP_thirteen_eq_one`, `chiP_forty_one_eq_one`,")
+print("`chiP_fifty_three_eq_one`, `chiP_sixty_one_eq_one` (new at S152) plus existing")
+print("helpers for primes `{2, 3, 5, 7, 11, 17, 19, 23, 29, 31, 37, 43, 47, 59}`.")
+print("First instance using `Matrix.det_fromBlocks_zero_21` (a determinant technique")
+print("orthogonal to the previous nine corner closures).")
+print("-/")
+print("set_option maxHeartbeats 800000 in")
+print("theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1")
+print("    (j : ℕ) (hj : 1 ≤ j) :")
+print("    ∃ (ρ : Fin 7 → Fin (9 ^ j))")
+print("      (σ : Fin 7 → Fin (9 ^ ((j + 1) - j))),")
+print("      IsUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) := by")
+print("  have h_sub : (j + 1 : ℕ) - j = 1 := by omega")
+print("  have h_pow_j_pos : 0 < 9 ^ j := Nat.pow_pos (by norm_num)")
+
+# rho bounds: 1, 2, 3, 4, 5, 6 < 9^j
+for r in [1, 2, 3, 4, 5, 6]:
+    print(f"  have h_{r}_lt_pow_j : {r} < 9 ^ j := by")
+    print(f"    calc ({r} : ℕ) < 9 := by norm_num")
+    print(f"      _ = 9 ^ 1 := by norm_num")
+    print(f"      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj")
+
+# sigma bounds: 1, 2, 3, 4, 6, 7 < 9^((j+1)-j)
+print("  have h_zero_lt_pow_dj : (0 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num")
+for s in [1, 2, 3, 4, 6, 7]:
+    print(f"  have h_{s}_lt_pow_dj : ({s} : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num")
+
+# Define rho, sigma via refine + if-then-else
+print("  -- ρ ↦ (0, 1, 3, 5, 2, 4, 6)")
+print("  -- σ ↦ (2, 1, 3, 7, 0, 4, 6)")
+print("  refine ⟨fun i =>")
+for k, r in enumerate(rho_vals):
+    if k == 0:
+        bound = pj_name(r)
+        print(f"           if i.val = 0 then ⟨{r}, {bound}⟩")
+    elif k < 6:
+        bound = pj_name(r)
+        print(f"           else if i.val = {k} then ⟨{r}, {bound}⟩")
+    else:
+        bound = pj_name(r)
+        print(f"           else ⟨{r}, {bound}⟩,")
+print("         fun i =>")
+for k, s in enumerate(sigma_vals):
+    if k == 0:
+        bound = pdj_name(s)
+        print(f"           if i.val = 0 then ⟨{s}, {bound}⟩")
+    elif k < 6:
+        bound = pdj_name(s)
+        print(f"           else if i.val = {k} then ⟨{s}, {bound}⟩")
+    else:
+        bound = pdj_name(s)
+        print(f"           else ⟨{s}, {bound}⟩, ?_⟩")
+print("  rw [Matrix.isUnit_iff_isUnit_det]")
+
+# Not-prime decidability
+print("  -- Non-primality for the composites used in the entries.")
+for n in composites:
+    if n == 1:
+        print(f"  have h_not_prime_{n} : ¬ Nat.Prime {n} := Nat.not_prime_one")
+    else:
+        print(f"  have h_not_prime_{n} : ¬ Nat.Prime {n} := by decide")
+
+# 49 entry lemmas
+print("  -- Compute the 49 entries of the 7×7 submatrix.")
+for i in range(7):
+    for j in range(7):
+        r = rho_vals[i]
+        s = sigma_vals[j]
+        n = r * 9 + s + 1
+        is_p = is_prime(n)
+        const = '1' if is_p else '0'
+        pj = pj_name(r)
+        pdj = pdj_name(s)
+        var_name = f'hE{i}{j}'
+        print(f"  have {var_name} : unfolding 9 (j + 1) j ⟨{r}, {pj}⟩ ⟨{s}, {pdj}⟩ = {const} := by")
+        print(f"    change chiP ({r} * 9 ^ ((j + 1) - j) + {s} + 1) = {const}")
+        print(f"    rw [h_sub]")
+        print(f"    have h_eq : ({r} * 9 ^ 1 + {s} + 1 : ℕ) = {n} := by norm_num")
+        print(f"    rw [h_eq]")
+        if is_p:
+            print(f"    exact {prime_names[n]}")
+        else:
+            print(f"    simp [chiP, h_not_prime_{n}]")
+
+# Fin val helpers and ne helpers
+print("  -- Fin 7 .val and ≠ helpers for the if-then-else ρ, σ.")
+for k in range(7):
+    print(f"  have hv{k} : ({k} : Fin 7).val = {k} := rfl")
+print("  have hne_1_0 : (1 : ℕ) ≠ 0 := by decide")
+for a, b in [(2,0),(2,1),(3,0),(3,1),(3,2),(4,0),(4,1),(4,2),(4,3),(5,0),(5,1),(5,2),(5,3),(5,4),(6,0),(6,1),(6,2),(6,3),(6,4),(6,5)]:
+    print(f"  have hne_{a}_{b} : ({a} : ℕ) ≠ {b} := by decide")
+
+# Define M via set
+print("  -- Set up the named ρ, σ, M for the rest of the proof.")
+print("  set Mρ : Fin 7 → Fin (9 ^ j) :=")
+for k, r in enumerate(rho_vals):
+    bound = pj_name(r)
+    if k == 0:
+        print(f"    fun i => if i.val = 0 then ⟨{r}, {bound}⟩")
+    elif k < 6:
+        print(f"             else if i.val = {k} then ⟨{r}, {bound}⟩")
+    else:
+        print(f"             else ⟨{r}, {bound}⟩ with hMρ_def")
+print("  set Mσ : Fin 7 → Fin (9 ^ ((j + 1) - j)) :=")
+for k, s in enumerate(sigma_vals):
+    bound = pdj_name(s)
+    if k == 0:
+        print(f"    fun i => if i.val = 0 then ⟨{s}, {bound}⟩")
+    elif k < 6:
+        print(f"             else if i.val = {k} then ⟨{s}, {bound}⟩")
+    else:
+        print(f"             else ⟨{s}, {bound}⟩ with hMσ_def")
+print("  set M : Matrix (Fin 7) (Fin 7) ℚ :=")
+print("    (unfolding 9 (j + 1) j).submatrix Mρ Mσ with hM_def")
+
+# Define explicit Mexp  
+print("  -- Explicit 7x7 matrix matching the entries.")
+print("  let Mexp : Matrix (Fin 7) (Fin 7) ℚ :=")
+print("    !![1, 1, 0, 0, 0, 1, 1;")
+print("       0, 1, 1, 1, 0, 0, 0;")
+print("       0, 1, 1, 0, 0, 0, 0;")
+print("       0, 1, 0, 1, 0, 0, 0;")
+print("       0, 0, 0, 0, 1, 1, 0;")
+print("       0, 0, 0, 0, 1, 1, 1;")
+print("       0, 0, 0, 0, 0, 1, 1]")
+
+# Prove M = Mexp via Matrix.ext + 49 cases
+print("  -- Prove M = Mexp.")
+print("  have hMeq : M = Mexp := by")
+print("    ext i k")
+print("    simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def]")
+print("    fin_cases i <;> fin_cases k <;>")
+print("      simp only [hv0, hv1, hv2, hv3, hv4, hv5, hv6,")
+print("                 if_true, if_false, Nat.one_ne_zero,")
+print("                 hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2,")
+print("                 hne_4_0, hne_4_1, hne_4_2, hne_4_3,")
+print("                 hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4,")
+print("                 hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]")
+# Generate the entry application list
+entry_chain = []
+for i in range(7):
+    for j in range(7):
+        entry_chain.append(f'hE{i}{j}')
+print("    all_goals first")
+for var in entry_chain:
+    print(f"      | exact {var}")
+# Mexp evaluations to deal with — Mexp i j evaluates via simp for !![...]
+print("      | (simp [Mexp, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_fin_one])")
+
+# Compute Mexp.det = 1 using fromBlocks decomposition
+print("  rw [hMeq]")
+print("  -- Now show Mexp.det = 1.")
+# Define the blocks
+print("  -- Block A : Fin 4 × Fin 4 (top-left 4×4)")
+print("  let A : Matrix (Fin 4) (Fin 4) ℚ :=")
+print("    !![1, 1, 0, 0;")
+print("       0, 1, 1, 1;")
+print("       0, 1, 1, 0;")
+print("       0, 1, 0, 1]")
+print("  -- Block B : Fin 4 × Fin 3 (top-right 4×3)")
+print("  let B : Matrix (Fin 4) (Fin 3) ℚ :=")
+print("    !![0, 1, 1;")
+print("       0, 0, 0;")
+print("       0, 0, 0;")
+print("       0, 0, 0]")
+print("  -- Block D : Fin 3 × Fin 3 (bottom-right 3×3)")
+print("  let D : Matrix (Fin 3) (Fin 3) ℚ :=")
+print("    !![1, 1, 0;")
+print("       1, 1, 1;")
+print("       0, 1, 1]")
+print("  -- Show that under finSumFinEquiv : Fin 4 ⊕ Fin 3 ≃ Fin 7,")
+print("  -- Mexp.submatrix finSumFinEquiv finSumFinEquiv = fromBlocks A B 0 D.")
+print("  have h_fromBlocks :")
+print("      Mexp.submatrix finSumFinEquiv finSumFinEquiv = Matrix.fromBlocks A B 0 D := by")
+print("    ext i j")
+print("    rcases i with i | i <;> rcases j with j | j")
+print("    all_goals fin_cases i <;> fin_cases j <;> rfl")
+# Now use det_submatrix_equiv_self and det_fromBlocks_zero_21
+print("  have h_Mexp_det :")
+print("      Mexp.det = (Matrix.fromBlocks A B (0 : Matrix (Fin 3) (Fin 4) ℚ) D).det := by")
+print("    rw [← h_fromBlocks]")
+print("    exact (Matrix.det_submatrix_equiv_self finSumFinEquiv Mexp).symm")
+print("  rw [h_Mexp_det, Matrix.det_fromBlocks_zero_21]")
+# Compute A.det = -1 via det_succ_column_zero + det_fin_three on the 3x3 minor
+print("  -- Compute A.det = -1 via expansion on column 0 (only A[0][0] = 1 nonzero).")
+print("  have hA_det : A.det = -1 := by")
+print("    rw [Matrix.det_succ_column_zero]")
+print("    simp [A, Fin.sum_univ_succ, Fin.sum_univ_zero,")
+print("          Matrix.det_fin_three, Matrix.cons_val_zero, Matrix.cons_val_one,")
+print("          Matrix.head_cons, Matrix.head_fin_const, Matrix.submatrix_apply,")
+print("          Fin.succAbove, Fin.lt_def]")
+print("    ring")
+print("  -- Compute D.det = -1 via det_fin_three.")
+print("  have hD_det : D.det = -1 := by")
+print("    simp [D, Matrix.det_fin_three, Matrix.cons_val_zero, Matrix.cons_val_one,")
+print("          Matrix.head_cons]")
+print("    ring")
+print("  rw [hA_det, hD_det]")
+print("  -- (-1) * (-1) = 1, IsUnit (1 : ℚ).")
+print("  norm_num")
+PYEOF
+wc -l /tmp/w9_proof.lean
+    567 /tmp/w9_proof.lean
+    Shell cwd was reset to /apps/aplikacijos/prime-research
+  [Bash] head -120 /tmp/w9_proof.lean
+    /-
+    **Corner-case prime exhibit (W = 9, d = j + 1).**
+    
+    Closed at S152 via the BlockTriangular `(1 + 3 + 3)` decomposition
+    identified in S151's pre-search. The construction uses
+    `ρ : Fin 7 → Fin (9^j)` mapping `(0..6) ↦ (0, 1, 3, 5, 2, 4, 6)` and
+    `σ : Fin 7 → Fin (9^((j+1)-j))` mapping `(0..6) ↦ (2, 1, 3, 7, 0, 4, 6)`.
+    The `7 × 7` submatrix decomposes (via `finSumFinEquiv : Fin 4 ⊕ Fin 3 ≃ Fin 7`)
+    into `Matrix.fromBlocks A B 0 D` with `A : Matrix (Fin 4) (Fin 4) ℚ` (det -1)
+    and `D : Matrix (Fin 3) (Fin 3) ℚ` (det -1), giving total det = `(-1) · (-1) = 1`,
+    hence `IsUnit` over `ℚ`. Uses `chiP_thirteen_eq_one`, `chiP_forty_one_eq_one`,
+    `chiP_fifty_three_eq_one`, `chiP_sixty_one_eq_one` (new at S152) plus existing
+    helpers for primes `{2, 3, 5, 7, 11, 17, 19, 23, 29, 31, 37, 43, 47, 59}`.
+    First instance using `Matrix.det_fromBlocks_zero_21` (a determinant technique
+    orthogonal to the previous nine corner closures).
+    -/
+    set_option maxHeartbeats 800000 in
+    theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1
+        (j : ℕ) (hj : 1 ≤ j) :
+        ∃ (ρ : Fin 7 → Fin (9 ^ j))
+          (σ : Fin 7 → Fin (9 ^ ((j + 1) - j))),
+          IsUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) := by
+      have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+      have h_pow_j_pos : 0 < 9 ^ j := Nat.pow_pos (by norm_num)
+      have h_1_lt_pow_j : 1 < 9 ^ j := by
+        calc (1 : ℕ) < 9 := by norm_num
+          _ = 9 ^ 1 := by norm_num
+          _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+      have h_2_lt_pow_j : 2 < 9 ^ j := by
+        calc (2 : ℕ) < 9 := by norm_num
+    ... (90 more lines)
+  [Bash] tail -120 /tmp/w9_proof.lean
+      set M : Matrix (Fin 7) (Fin 7) ℚ :=
+        (unfolding 9 (j + 1) j).submatrix Mρ Mσ with hM_def
+      -- Explicit 7x7 matrix matching the entries.
+      let Mexp : Matrix (Fin 7) (Fin 7) ℚ :=
+        !![1, 1, 0, 0, 0, 1, 1;
+           0, 1, 1, 1, 0, 0, 0;
+           0, 1, 1, 0, 0, 0, 0;
+           0, 1, 0, 1, 0, 0, 0;
+           0, 0, 0, 0, 1, 1, 0;
+           0, 0, 0, 0, 1, 1, 1;
+           0, 0, 0, 0, 0, 1, 1]
+      -- Prove M = Mexp.
+      have hMeq : M = Mexp := by
+        ext i k
+        simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def]
+        fin_cases i <;> fin_cases k <;>
+          simp only [hv0, hv1, hv2, hv3, hv4, hv5, hv6,
+                     if_true, if_false, Nat.one_ne_zero,
+                     hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2,
+                     hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+                     hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4,
+                     hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+        all_goals first
+          | exact hE00
+          | exact hE01
+          | exact hE02
+          | exact hE03
+          | exact hE04
+          | exact hE05
+          | exact hE06
+    ... (90 more lines)
+Now let me append this proof to the Lean file, before `end E2_1`:
+  [Bash] grep -n "^end E2_1" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3852:end E2_1
+  [Bash] sed -n '3845,3852p' /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    /-- `chiP 61 = 1` since `61` is prime. -/
+    theorem chiP_sixty_one_eq_one : chiP 61 = 1 := by
+      have h : Nat.Prime 61 := by decide
+      simp [chiP, h]
+    
+    
+    end E2_1
+  [Bash] cat /tmp/w9_proof.lean | sed 's/$/\n/' > /tmp/w9_proof_with_newlines.lean 2>&1; head -1 /tmp/w9_proof.lean
+    /-
+  [Bash] echo "" > /tmp/w9_block.txt
+cat /tmp/w9_proof.lean >> /tmp/w9_block.txt
+echo "" >> /tmp/w9_block.txt
+wc -l /tmp/w9_block.txt
+    569 /tmp/w9_block.txt
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] grep -n "end E2_1" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3852:end E2_1
+  [Bash] head -3851 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean > /tmp/Basic_part1.lean
+tail -1 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean > /tmp/Basic_part2.lean
+wc -l /tmp/Basic_part1.lean /tmp/Basic_part2.lean
+      3851 /tmp/Basic_part1.lean
+         1 /tmp/Basic_part2.lean
+      3852 total
+  [Bash] cat /tmp/Basic_part1.lean /tmp/w9_block.txt /tmp/Basic_part2.lean > /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    4421 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && lake build 2>&1 | grep -v "linter.style.longLine" | grep -v "Note:" | tail -80
+        0, 1, 1, 0, 0, 0, 0;
+        0, 1, 0, 1, 0, 0, 0;
+        0, 0, 0, 0, 1, 1, 0;
+        0, 0, 0, 0, 1, 1, 1;
+        0, 0, 0, 0, 0, 1, 1]
+    hMeq : M = Mexp
+    A : Matrix (Fin 4) (Fin 4) ℚ := !![1, 1, 0, 0; 0, 1, 1, 1; 0, 1, 1, 0; 0, 1, 0, 1]
+    B : Matrix (Fin 4) (Fin 3) ℚ := !![0, 1, 1; 0, 0, 0; 0, 0, 0; 0, 0, 0]
+    D : Matrix (Fin 3) (Fin 3) ℚ := !![1, 1, 0; 1, 1, 1; 0, 1, 1]
+    h_fromBlocks : Mexp.submatrix ⇑finSumFinEquiv ⇑finSumFinEquiv = fromBlocks A B 0 D
+    h_Mexp_det : Mexp.det = (fromBlocks A B 0 D).det
+    ⊢ IsUnit (fromBlocks A B 0 D).det
+    warning: MPSBondDim/Basic.lean:4316:17: This simp argument is unused:
+      hv0
+    
+    Hint: Omit it from the simp argument list.
+      simp only [̵h̵v̵0̵,̵ ̵h̵v̵1̵,̵[̲h̲v̲1̲,̲ hv2, hv3, hv4, hv5, hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    warning: MPSBondDim/Basic.lean:4316:22: This simp argument is unused:
+      hv1
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, h̵v̵1̵,̵ ̵hv2, hv3, hv4, hv5, hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    warning: MPSBondDim/Basic.lean:4316:27: This simp argument is unused:
+      hv2
+    ... (50 more lines)
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 | grep -E "error|sorry" | head -40
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+    error: MPSBondDim/Basic.lean:4402:58: Application type mismatch: The argument
+    error: MPSBondDim/Basic.lean:4403:18: Unknown constant `Matrix.det_fromBlocks_zero_21`
+    error: MPSBondDim/Basic.lean:3874:56: unsolved goals
+    error: Lean exited with code 1
+    error: build failed
+  [Bash] lake build 2>&1 | grep -B 2 -A 10 "error" | head -80
+    (Bash completed with no output)
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 > /tmp/build.log; grep -E "^.*error.*$" /tmp/build.log | head -20
+    error: build failed
+    error: MPSBondDim/Basic.lean:4402:58: Application type mismatch: The argument
+    error: MPSBondDim/Basic.lean:4403:18: Unknown constant `Matrix.det_fromBlocks_zero_21`
+    error: MPSBondDim/Basic.lean:3874:56: unsolved goals
+    error: Lean exited with code 1
+  [Bash] grep -n -B 1 -A 25 "error: MPSBondDim/Basic.lean:3874" /tmp/build.log
+    48-error: MPSBondDim/Basic.lean:4403:18: Unknown constant `Matrix.det_fromBlocks_zero_21`
+    49:error: MPSBondDim/Basic.lean:3874:56: unsolved goals
+    50-j : ℕ
+    51-hj : 1 ≤ j
+    52-h_sub : j + 1 - j = 1
+    53-h_pow_j_pos : 0 < 9 ^ j
+    54-h_1_lt_pow_j : 1 < 9 ^ j
+    55-h_2_lt_pow_j : 2 < 9 ^ j
+    56-h_3_lt_pow_j : 3 < 9 ^ j
+    57-h_4_lt_pow_j : 4 < 9 ^ j
+    58-h_5_lt_pow_j : 5 < 9 ^ j
+    59-h_6_lt_pow_j : 6 < 9 ^ j
+    60-h_zero_lt_pow_dj : 0 < 9 ^ (j + 1 - j)
+    61-h_1_lt_pow_dj : 1 < 9 ^ (j + 1 - j)
+    62-h_2_lt_pow_dj : 2 < 9 ^ (j + 1 - j)
+    63-h_3_lt_pow_dj : 3 < 9 ^ (j + 1 - j)
+    64-h_4_lt_pow_dj : 4 < 9 ^ (j + 1 - j)
+    65-h_6_lt_pow_dj : 6 < 9 ^ (j + 1 - j)
+    66-h_7_lt_pow_dj : 7 < 9 ^ (j + 1 - j)
+    67-h_not_prime_1 : ¬Nat.Prime 1
+    68-h_not_prime_4 : ¬Nat.Prime 4
+    69-h_not_prime_8 : ¬Nat.Prime 8
+    70-h_not_prime_10 : ¬Nat.Prime 10
+    71-h_not_prime_12 : ¬Nat.Prime 12
+    72-h_not_prime_14 : ¬Nat.Prime 14
+    73-h_not_prime_16 : ¬Nat.Prime 16
+    74-h_not_prime_20 : ¬Nat.Prime 20
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3870	theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1
+    3871	    (j : ℕ) (hj : 1 ≤ j) :
+    3872	    ∃ (ρ : Fin 7 → Fin (9 ^ j))
+    3873	      (σ : Fin 7 → Fin (9 ^ ((j + 1) - j))),
+    3874	      IsUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) := by
+    3875	  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+    3876	  have h_pow_j_pos : 0 < 9 ^ j := Nat.pow_pos (by norm_num)
+    3877	  have h_1_lt_pow_j : 1 < 9 ^ j := by
+    3878	    calc (1 : ℕ) < 9 := by norm_num
+    3879	      _ = 9 ^ 1 := by norm_num
+  [Grep] det_fromBlocks|fromBlocks.*det |^theorem.*fromBlocks
+    No matches found
+  [Grep] det_fromBlocks
+    Found 8 files
+    .lake/packages/mathlib/Mathlib/RingTheory/Extension/Presentation/Submersive.lean
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Block.lean
+    .lake/packages/mathlib/Mathlib/Analysis/InnerProductSpace/Projection/FiniteDimensional.lean
+    .lake/packages/mathlib/Mathlib/NumberTheory/NumberField/CanonicalEmbedding/Basic.lean
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Charpoly/Basic.lean
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Determinant.lean
+  [Grep] det_fromBlocks
+    228:  convert det_fromBlocks_zero₂₁ (toBlock M p p) (toBlock M p fun j => ¬p j)
+  [Grep] det_fromBlocks_zero|theorem det_fromBlocks
+    368:theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)
+    371:  rw [fromBlocks_eq_of_invertible₁₁ (A := A), det_mul, det_mul, det_fromBlocks_zero₂₁,
+    372:    det_fromBlocks_zero₂₁, det_fromBlocks_zero₁₂, det_one, det_one, one_mul, one_mul, mul_one]
+    375:theorem det_fromBlocks_one₁₁ (B : Matrix m n α) (C : Matrix n m α) (D : Matrix n n α) :
+    382:theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)
+    392:theorem det_fromBlocks_one₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α) :
+  [Grep] det_fromBlocks_zero
+    673:theorem det_fromBlocks_zero₂₁ (A : Matrix m m R) (B : Matrix m n R) (D : Matrix n n R) :
+    723:theorem det_fromBlocks_zero₁₂ (A : Matrix m m R) (C : Matrix n m R) (D : Matrix n n R) :
+    725:  rw [← det_transpose, fromBlocks_transpose, transpose_zero, det_fromBlocks_zero₂₁, det_transpose,
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean
+    670	the determinants of the diagonal blocks. For the generalization to any number of blocks, see
+    671	`Matrix.det_of_upperTriangular`. -/
+    672	@[simp]
+    673	theorem det_fromBlocks_zero₂₁ (A : Matrix m m R) (B : Matrix m n R) (D : Matrix n n R) :
+    674	    (Matrix.fromBlocks A B 0 D).det = A.det * D.det := by
+    675	  classical
+    676	    simp_rw [det_apply']
+    677	    convert Eq.symm <|
+    678	      sum_subset (M := R) (subset_univ ((sumCongrHom m n).range : Set (Perm (m ⊕ n))).toFinset) ?_
+    679	    · simp_rw [sum_mul_sum, ← sum_product', univ_product_univ]
+    680	      refine sum_nbij (fun σ ↦ σ.fst.sumCongr σ.snd) ?_ ?_ ?_ ?_
+    681	      · intro σ₁₂ _
+    682	        simp
+    683	      · intro σ₁ _ σ₂ _
+    684	        dsimp only
+    685	        intro h
+    686	        have h2 : ∀ x, Perm.sumCongr σ₁.fst σ₁.snd x = Perm.sumCongr σ₂.fst σ₂.snd x :=
+    687	          DFunLike.congr_fun h
+    688	        simp only [Sum.map_inr, Sum.map_inl, Perm.sumCongr_apply, Sum.forall, Sum.inl.injEq,
+    689	          Sum.inr.injEq] at h2
+    690	        ext x
+    691	        · exact h2.left x
+    692	        · exact h2.right x
+    693	      · intro σ hσ
+    694	        rw [mem_coe, Set.mem_toFinset] at hσ
+    695	        obtain ⟨σ₁₂, hσ₁₂⟩ := hσ
+    696	        use σ₁₂
+    697	        rw [← hσ₁₂]
+    698	        simp
+    699	      · simp only [forall_prop_of_true, Prod.forall, mem_univ]
+  [Grep] det_submatrix_equiv_self
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Determinant.lean:94:  rw [← det_submatrix_equiv_self e, ← submatrix_mul_equiv _ _ _ (Equiv.refl n) _, det_comm,
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:223:theorem det_submatrix_equiv_self (e : n ≃ m) (A : Matrix m m R) :
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:244:  rw [Matrix.det_submatrix_equiv_self, Matrix.det_permute', abs_mul, abs_unit_intCast, one_mul]
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:248:For the `simp` version of this lemma, see `det_submatrix_equiv_self`; this one is unsuitable because
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:252:  det_submatrix_equiv_self e.symm A
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/TotallyUnimodular.lean:68:    rwa [← submatrix_submatrix, det_submatrix_equiv_self] at hA
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/TotallyUnimodular.lean:71:    rwa [← submatrix_submatrix, det_submatrix_equiv_self] at hA
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Reindex.lean:142:For the `simp` version of this lemma, see `det_submatrix_equiv_self`.
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Reindex.lean:150:For the `simp` version of this lemma, see `det_submatrix_equiv_self`.
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:389:  rw [this, det_submatrix_equiv_self, det_fromBlocks₁₁]
+    
+    [Showing results with pagination = limit: 10]
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean
+    220	
+    221	/-- Permuting rows and columns with the same equivalence does not change the determinant. -/
+    222	@[simp]
+    223	theorem det_submatrix_equiv_self (e : n ≃ m) (A : Matrix m m R) :
+    224	    det (A.submatrix e e) = det A := by
+    225	  rw [det_apply', det_apply']
+    226	  apply Fintype.sum_equiv (Equiv.permCongr e)
+    227	  intro σ
+    228	  rw [Equiv.Perm.sign_permCongr e σ]
+    229	  congr 1
+    230	  apply Fintype.prod_equiv e
+    231	  intro i
+    232	  rw [Equiv.permCongr_apply, Equiv.symm_apply_apply, submatrix_apply]
+    233	
+    234	/-- Permuting rows and columns with two equivalences does not change the absolute value of the
+    235	determinant. -/
+    236	@[simp]
+    237	theorem abs_det_submatrix_equiv_equiv {R : Type*}
+    238	    [CommRing R] [LinearOrder R] [IsStrictOrderedRing R]
+    239	    (e₁ e₂ : n ≃ m) (A : Matrix m m R) :
+    240	    |(A.submatrix e₁ e₂).det| = |A.det| := by
+    241	  have hee : e₂ = e₁.trans (e₁.symm.trans e₂) := by ext; simp
+    242	  rw [hee]
+    243	  change |((A.submatrix id (e₁.symm.trans e₂)).submatrix e₁ e₁).det| = |A.det|
+    244	  rw [Matrix.det_submatrix_equiv_self, Matrix.det_permute', abs_mul, abs_unit_intCast, one_mul]
+    245	
+    246	/-- Reindexing both indices along the same equivalence preserves the determinant.
+    247	
+    248	For the `simp` version of this lemma, see `det_submatrix_equiv_self`; this one is unsuitable because
+    249	`Matrix.reindex_apply` unfolds `reindex` first.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    4395	      Mexp.submatrix finSumFinEquiv finSumFinEquiv = Matrix.fromBlocks A B 0 D := by
+    4396	    ext i j
+    4397	    rcases i with i | i <;> rcases j with j | j
+    4398	    all_goals fin_cases i <;> fin_cases j <;> rfl
+    4399	  have h_Mexp_det :
+    4400	      Mexp.det = (Matrix.fromBlocks A B (0 : Matrix (Fin 3) (Fin 4) ℚ) D).det := by
+    4401	    rw [← h_fromBlocks]
+    4402	    exact (Matrix.det_submatrix_equiv_self finSumFinEquiv Mexp).symm
+    4403	  rw [h_Mexp_det, Matrix.det_fromBlocks_zero_21]
+    4404	  -- Compute A.det = -1 via expansion on column 0 (only A[0][0] = 1 nonzero).
+    4405	  have hA_det : A.det = -1 := by
+    4406	    rw [Matrix.det_succ_column_zero]
+    4407	    simp [A, Fin.sum_univ_succ, Fin.sum_univ_zero,
+    4408	          Matrix.det_fin_three, Matrix.cons_val_zero, Matrix.cons_val_one,
+    4409	          Matrix.head_cons, Matrix.head_fin_const, Matrix.submatrix_apply,
+    4410	          Fin.succAbove, Fin.lt_def]
+    4411	    ring
+    4412	  -- Compute D.det = -1 via det_fin_three.
+    4413	  have hD_det : D.det = -1 := by
+    4414	    simp [D, Matrix.det_fin_three, Matrix.cons_val_zero, Matrix.cons_val_one,
+    4415	          Matrix.head_cons]
+    4416	    ring
+    4417	  rw [hA_det, hD_det]
+    4418	  -- (-1) * (-1) = 1, IsUnit (1 : ℚ).
+    4419	  norm_num
+    4420	
+    4421	end E2_1
+    4422	
+  [Grep] def finSumFinEquiv|theorem finSumFinEquiv|finSumFinEquiv :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:223:def finSumFinEquiv : Fin m ⊕ Fin n ≃ Fin (m + n) where
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:230:theorem finSumFinEquiv_apply_left (i : Fin m) :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:235:theorem finSumFinEquiv_apply_right (i : Fin n) :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:240:theorem finSumFinEquiv_symm_apply_castAdd (x : Fin m) :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:245:theorem finSumFinEquiv_symm_apply_castSucc (x : Fin m) :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:250:theorem finSumFinEquiv_symm_apply_natAdd (x : Fin n) :
+    .lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean:255:theorem finSumFinEquiv_symm_last : finSumFinEquiv.symm (Fin.last n) = Sum.inr 0 :=
+    .lake/packages/mathlib/Mathlib/Data/Fin/Tuple/Basic.lean:417:  let finSumFinEquiv : Fin m ⊕ Fin n ≃ Fin (m + n) :=
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/Mathlib/Logic/Equiv/Fin/Basic.lean
+    220	  exact Fin.cases rfl (fun j ↦ rfl) i
+    221	
+    222	/-- Equivalence between `Fin m ⊕ Fin n` and `Fin (m + n)` -/
+    223	def finSumFinEquiv : Fin m ⊕ Fin n ≃ Fin (m + n) where
+    224	  toFun := Sum.elim (Fin.castAdd n) (Fin.natAdd m)
+    225	  invFun i := @Fin.addCases m n (fun _ => Fin m ⊕ Fin n) Sum.inl Sum.inr i
+    226	  left_inv x := by rcases x with y | y <;> simp
+    227	  right_inv x := by refine Fin.addCases (fun i => ?_) (fun i => ?_) x <;> simp
+    228	
+    229	@[simp]
+    230	theorem finSumFinEquiv_apply_left (i : Fin m) :
+    231	    (finSumFinEquiv (Sum.inl i) : Fin (m + n)) = Fin.castAdd n i :=
+    232	  rfl
+    233	
+    234	@[simp]
+    235	theorem finSumFinEquiv_apply_right (i : Fin n) :
+    236	    (finSumFinEquiv (Sum.inr i) : Fin (m + n)) = Fin.natAdd m i :=
+    237	  rfl
+    238	
+    239	@[simp]
+    240	theorem finSumFinEquiv_symm_apply_castAdd (x : Fin m) :
+    241	    finSumFinEquiv.symm (Fin.castAdd n x) = Sum.inl x :=
+    242	  finSumFinEquiv.symm_apply_apply (Sum.inl x)
+    243	
+    244	@[simp]
+    245	theorem finSumFinEquiv_symm_apply_castSucc (x : Fin m) :
+    246	    finSumFinEquiv.symm (Fin.castSucc x) = Sum.inl x :=
+    247	  finSumFinEquiv_symm_apply_castAdd x
+    248	
+    249	@[simp]
+    ... (5 more lines)
+  [Bash] grep -A 25 "Application type mismatch" /tmp/build.log | head -50
+    error: MPSBondDim/Basic.lean:4402:58: Application type mismatch: The argument
+      Mexp
+    has type
+      Matrix (Fin 7) (Fin 7) ℚ
+    but is expected to have type
+      Matrix (Fin (?m.20535 + ?m.20536)) (Fin (?m.20535 + ?m.20536)) ?m.20538
+    in the application
+      det_submatrix_equiv_self finSumFinEquiv Mexp
+    error: MPSBondDim/Basic.lean:4403:18: Unknown constant `Matrix.det_fromBlocks_zero_21`
+    error: MPSBondDim/Basic.lean:3874:56: unsolved goals
+    j : ℕ
+    hj : 1 ≤ j
+    h_sub : j + 1 - j = 1
+    h_pow_j_pos : 0 < 9 ^ j
+    h_1_lt_pow_j : 1 < 9 ^ j
+    h_2_lt_pow_j : 2 < 9 ^ j
+    h_3_lt_pow_j : 3 < 9 ^ j
+    h_4_lt_pow_j : 4 < 9 ^ j
+    h_5_lt_pow_j : 5 < 9 ^ j
+    h_6_lt_pow_j : 6 < 9 ^ j
+    h_zero_lt_pow_dj : 0 < 9 ^ (j + 1 - j)
+    h_1_lt_pow_dj : 1 < 9 ^ (j + 1 - j)
+    h_2_lt_pow_dj : 2 < 9 ^ (j + 1 - j)
+    h_3_lt_pow_dj : 3 < 9 ^ (j + 1 - j)
+    h_4_lt_pow_dj : 4 < 9 ^ (j + 1 - j)
+    h_6_lt_pow_dj : 6 < 9 ^ (j + 1 - j)
+Let me fix the lemma name and simplify the type-mismatch issue:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 | grep -E "error|sorry" | head -10
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+    error: MPSBondDim/Basic.lean:4407:4: Tactic `simp` failed with a nested error:
+    error: MPSBondDim/Basic.lean:4416:4: No goals to be solved
+    error: Lean exited with code 1
+    error: build failed
+  [Bash] grep -A 30 "MPSBondDim/Basic.lean:4407" /tmp/build.log | head -50
+    (Bash completed with no output)
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 > /tmp/build.log
+grep -A 25 "Basic.lean:4407" /tmp/build.log | head -30
+    error: build failed
+    error: MPSBondDim/Basic.lean:4407:4: Tactic `simp` failed with a nested error:
+    maximum recursion depth has been reached
+    use `set_option maxRecDepth <num>` to increase limit
+    use `set_option diagnostics true` to get diagnostic information
+    error: MPSBondDim/Basic.lean:4416:4: No goals to be solved
+    warning: MPSBondDim/Basic.lean:4316:17: This simp argument is unused:
+      hv0
+    
+    Hint: Omit it from the simp argument list.
+      simp only [̵h̵v̵0̵,̵ ̵h̵v̵1̵,̵[̲h̲v̲1̲,̲ hv2, hv3, hv4, hv5, hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:4316:22: This simp argument is unused:
+      hv1
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, h̵v̵1̵,̵ ̵hv2, hv3, hv4, hv5, hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:4316:27: This simp argument is unused:
+      hv2
+Let me check for det_fin_four and try a different approach for A.det:
+  [Grep] det_fin_four|theorem det_fin
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:793:theorem det_fin_zero {A : Matrix (Fin 0) (Fin 0) R} : det A = 1 :=
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:797:theorem det_fin_one (A : Matrix (Fin 1) (Fin 1) R) : det A = A 0 0 :=
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:800:theorem det_fin_one_of (a : R) : det !![a] = a :=
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:804:theorem det_fin_two (A : Matrix (Fin 2) (Fin 2) R) : det A = A 0 0 * A 1 1 - A 0 1 * A 1 0 := by
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:811:theorem det_fin_two_of (a b c d : R) : Matrix.det !![a, b; c, d] = a * d - b * c :=
+    .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:815:theorem det_fin_three (A : Matrix (Fin 3) (Fin 3) R) :
+Let me restructure the proof to use a 1+6 then 3+3 nested fromBlocks decomposition (avoiding the 4x4 det):
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    4377	    !![1, 1, 0, 0;
+    4378	       0, 1, 1, 1;
+    4379	       0, 1, 1, 0;
+    4380	       0, 1, 0, 1]
+    4381	  -- Block B : Fin 4 × Fin 3 (top-right 4×3)
+    4382	  let B : Matrix (Fin 4) (Fin 3) ℚ :=
+    4383	    !![0, 1, 1;
+    4384	       0, 0, 0;
+    4385	       0, 0, 0;
+    4386	       0, 0, 0]
+    4387	  -- Block D : Fin 3 × Fin 3 (bottom-right 3×3)
+    4388	  let D : Matrix (Fin 3) (Fin 3) ℚ :=
+    4389	    !![1, 1, 0;
+    4390	       1, 1, 1;
+    4391	       0, 1, 1]
+    4392	  -- Show that under finSumFinEquiv : Fin 4 ⊕ Fin 3 ≃ Fin 7,
+    4393	  -- Mexp.submatrix finSumFinEquiv finSumFinEquiv = fromBlocks A B 0 D.
+    4394	  have h_fromBlocks :
+    4395	      Mexp.submatrix finSumFinEquiv finSumFinEquiv = Matrix.fromBlocks A B 0 D := by
+    4396	    ext i j
+    4397	    rcases i with i | i <;> rcases j with j | j
+    4398	    all_goals fin_cases i <;> fin_cases j <;> rfl
+    4399	  have h_Mexp_det :
+    4400	      Mexp.det = (Matrix.fromBlocks A B (0 : Matrix (Fin 3) (Fin 4) ℚ) D).det := by
+    4401	    rw [← h_fromBlocks]
+    4402	    simp [Matrix.det_submatrix_equiv_self]
+    4403	  rw [h_Mexp_det, Matrix.det_fromBlocks_zero₂₁]
+    4404	  -- Compute A.det = -1 via expansion on column 0 (only A[0][0] = 1 nonzero).
+    4405	  have hA_det : A.det = -1 := by
+    4406	    rw [Matrix.det_succ_column_zero]
+    ... (15 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 > /tmp/build.log
+grep -E "error" /tmp/build.log | head -10
+    (Bash completed with no output)
+  [Bash] tail -10 /tmp/build.log
+    warning: MPSBondDim/Basic.lean:4423:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:4427:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    ✔ [8314/8315] Built MPSBondDim (6.6s)
+    Build completed successfully (8315 jobs).
+Excellent! The W=9 corner proof builds successfully. Let me verify the sorry count:
+  [Bash] grep -c "sorry" /tmp/build.log; echo "---"; grep "sorry" /tmp/build.log | head -5
+    1
+    ---
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+The W=9 corner is fully proven without sorry. Now let me add the main theorem and clean up the warnings:
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 > /tmp/build.log
+grep -E "error" /tmp/build.log | head -10
+echo "---tail---"
+tail -5 /tmp/build.log
+    ---tail---
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    ✔ [8314/8315] Built MPSBondDim (6.3s)
+    Build completed successfully (8315 jobs).
+Let me check axioms with the CheckAxioms.lean file:
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean
+    1	import MPSBondDim.Basic
+    2	
+    3	#print axioms E2_1.chiP_seventeen_eq_one
+    4	#print axioms E2_1.chiP_thirty_seven_eq_one
+    5	#print axioms E2_1.exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1
+    6	#print axioms E2_1.mps_bond_dim_W_eq_8_d_eq_j_plus_1
+    7	#print axioms E2_1.chiP_fifty_nine_eq_one
+    8	#print axioms E2_1.chiP_eighty_nine_eq_one
+    9	#print axioms E2_1.chiP_one_hundred_nine_eq_one
+    10	#print axioms E2_1.chiP_one_hundred_twenty_seven_eq_one
+    11	#print axioms E2_1.exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1
+    12	#print axioms E2_1.mps_bond_dim_W_eq_12_d_eq_j_plus_1
+    13	#print axioms E2_1.chiP_forty_seven_eq_one
+    14	#print axioms E2_1.chiP_one_hundred_forty_nine_eq_one
+    15	#print axioms E2_1.chiP_one_hundred_ninety_nine_eq_one
+    16	#print axioms E2_1.chiP_two_hundred_forty_one_eq_one
+    17	#print axioms E2_1.chiP_three_hundred_thirty_seven_eq_one
+    18	#print axioms E2_1.exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1
+    19	#print axioms E2_1.mps_bond_dim_W_eq_20_d_eq_j_plus_1
+    20	#print axioms E2_1.chiP_ninety_seven_eq_one
+    21	#print axioms E2_1.exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1
+    22	#print axioms E2_1.mps_bond_dim_W_eq_10_d_eq_j_plus_1
+    23	
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean has been updated successfully.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake env lean MPSBondDim/CheckAxioms.lean 2>&1 | grep -E "axioms|sorry|axiom" | tail -30
+    (Bash completed with no output)
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake env lean MPSBondDim/CheckAxioms.lean 2>&1 | tail -50
+    no such file or directory (error code: 4294967294)
+      file: MPSBondDim/CheckAxioms.lean
+  [Bash] pwd
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake env lean CheckAxioms.lean 2>&1 | tail -40
+    'E2_1.chiP_seventeen_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_thirty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_8_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_fifty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_eighty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_twenty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_12_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_forty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_forty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_ninety_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_two_hundred_forty_one_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_three_hundred_thirty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_ninety_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_thirteen_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_forty_one_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_fifty_three_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_sixty_one_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_9_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+All new declarations use only standard axioms. Let me update the documentation:
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    4481 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    82	| `mps_bond_dim_W_eq_20_d_eq_j_plus_1` *(S143)* | W=20 corner case `rank = 9` (sorry-free) | **done** |
+    83	| `chiP_ninety_seven_eq_one` *(S144)*                  | `chiP 97 = 1`                            | **done** |
+    84	| `exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1` *(S144)* | W=10 corner exhibit (R=5, BlockTriangular route, ρ ↦ (1, 0, 4, 3, 9)) | **done** |
+    85	| `mps_bond_dim_W_eq_10_d_eq_j_plus_1` *(S144)* | W=10 corner case `rank = 5` (sorry-free; refutes S128/S129 obstruction claim) | **done** |
+    86	
+    87	(Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
+    88	`Nat.le_antisymm` of the auxiliary lemmas. As of S83, `lower_bound` is
+    89	also `sorry`-free: its proof is a 6-line structural reduction citing
+    90	`exists_invertible_submatrix`. The single remaining `sorry` lives
+    91	entirely inside `exists_invertible_submatrix` and captures the
+    92	prime-density content of the informal proof. Once that exhibit is in
+    93	hand, `lower_bound` and `mps_bond_dim` close automatically.)
+    94	
+    95	The five completed proofs (plus the term-mode main theorem):
+    96	
+    97	1. `rank_le_min_dim` is one line: a direct citation of mathlib's
+    98	   `Matrix.rank_le_height`.
+    99	2. `row_support_coprime` is a 30-line number-theoretic argument: nonzero
+    100	   entry ⇒ `n = i·W^(d-j) + k + 1` is prime; `i ≥ 1` and `j < d` give
+    101	   `n > W`; hence no prime factor of `W` divides `n`, so `gcd(n, W) = 1`;
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now update the top-level summary in the notes:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now add a new "Route A^{(11)}_W=9" section to the routes block. First let me find where routes are listed:
+  [Grep] Route A\^\{\(12\)\}|Route A\^\{\(11\)\}|S151|deferred
+    90:| `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner exhibit (R=7, **first `det_fromBlocks_zero₂₁` route** — `(1+6)→(3+3)` nested block-DIAGONAL decomposition; permutation from S151 pre-search) | **done** |
+    644:* **Route A^{(11)} (orthogonal corner, `W = 10`). DONE S144.**
+    711:* **Route A^{(12)} (orthogonal corner, `W = 9`, `det_fromBlocks_zero_21` route).**
+    712:  Pre-search COMPLETED at S151 (Python script
+    714:  Lean implementation **deferred** to a follow-up session.
+    716:  The S151 script enumerates `(1 + 3 + 3)` block-DIAGONAL decompositions
+    744:  **S151 LESSON:** the `Mexp + Matrix.ext + fin_cases <;> rw [h_sub]`
+    755:  **Once W=9 is closed:** Route A^{(12)} becomes the template for
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    711	* **Route A^{(12)} (orthogonal corner, `W = 9`, `det_fromBlocks_zero_21` route).**
+    712	  Pre-search COMPLETED at S151 (Python script
+    713	  `experiments/formalisations/E2_1_mps_bond_dim/w9_blocktriangular_search.py`);
+    714	  Lean implementation **deferred** to a follow-up session.
+    715	
+    716	  The S151 script enumerates `(1 + 3 + 3)` block-DIAGONAL decompositions
+    717	  of the `7 × 7` corner submatrix and confirms 32 valid candidates exist
+    718	  (every viable decomposition is BLOCK-DIAGONAL, not just block-upper-
+    719	  triangular). The minimum-new-helpers candidate uses
+    720	  `ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)` and adds
+    721	  4 chiP helpers `{13, 41, 53, 61}`. Both `3 × 3` blocks have `det = -1`
+    722	  (verified by SymPy and confirmed by hand via Matrix.det_fin_three),
+    723	  giving total `det = 1 · (-1) · (-1) = 1` for the `7 × 7`.
+    724	
+    725	  **Lean assembly plan (next session):**
+    726	  1. 4 new chiP helpers: `chiP_thirteen_eq_one, chiP_forty_one_eq_one,
+    727	     chiP_fifty_three_eq_one, chiP_sixty_one_eq_one` (each one-line via
+    728	     `Nat.Prime` + `decide`).
+    729	  2. 31 `¬ Nat.Prime n` lemmas for the composites.
+    730	  3. **49 entry-lemmas** in W=20 style: each of form
+    731	     `unfolding 9 (j+1) j ⟨r, _⟩ ⟨s, _⟩ = const` with the
+    732	     `change chiP (...); rw [h_sub]; have h_eq : ...; rw [h_eq];
+    733	     exact chiP_X_eq_one OR simp [chiP, h_not_prime_X]` chain.
+    734	  4. Apply `Matrix.det_succ_column_zero` to peel off col 0 (cleanly:
+    735	     col 0 has only one nonzero entry, M[0,0] = 1).
+    736	  5. Use `Finset.sum_eq_single` to argue only `i = 0` term survives.
+    737	  6. The surviving `(M.submatrix (0:Fin 7).succAbove Fin.succ).det` is
+    738	     a `6 × 6` det, expressible as `fromBlocks B1 0 0 B2` after
+    739	     reindexing via `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6`.
+    740	  7. Apply `Matrix.det_fromBlocks_zero_21` and use `det_fin_three` for
+    ... (25 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    5	**Build status (S152):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
+    6	**No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
+    7	
+    8	## What this file formalises
+    9	
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Grep] Arc 2|L1|MPS bond|formalisation|W=10|W=20|S144|S151
+    67:### Arc 2 — Lean Formalisation Track
+    68:[Omitted long matching line]
+    74:- [x] Set up `experiments/formalisations/` with a Lean 4 toolchain
+    77:  `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/`.
+    79:- [x] Pick L1 (E2.1 MPS bond-dim) as first formalisation.
+    381:- [x] **Orthogonal corner case `(W = 10, d = j + 1)` closed unconditionally (S144).**
+    402:  obstructed" list** — W=10 was claimed obstructed via "multiplicity-2
+    403:  residue pattern" but the S144 DP-based search found the triangulation
+    407:  **Comprehensive leading-row map (S144).** A DP-based enumeration over
+    409:  `experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+    433:**Estimated total effort:** L1 alone is 1-2 sessions; full queue is
+    434:12-20 sessions. **Revised:** if Route A is required, L1 alone is now
+    435:several sessions plus possibly a separate Hoheisel-formalisation arc.
+    436:**Next action (post-S151):** Routes A', A'', A''', A'''', A''''', A'''''',
+    439:**S151 pre-search:** `experiments/formalisations/E2_1_mps_bond_dim/
+    445:next session's target**: write 49 individual entry-lemmas in the W=20
+    453:S144 DP-search confirms this is the COMPLETE set of W ≤ 72 with R ≤ 22 that
+    455:**S144 enumeration update.** A DP-based search (see
+    456:`experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+    462:48, 50, 54, 60, 66}` — note S144 also CORRECTED W=10's status (originally
+    463:listed obstructed in S128/S129; S144 found triangulation `ρ ↦ (1, 0, 4,
+    477:  developed, the same template should close W=7, W=10, W=11, W=15,
+    502:The "honest" path forward (Route A, Hoheisel-formalisation) remains
+    504:`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`
+    511:`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/`. Future
+    564:- [x] **C2 (free cumulants × MPS bond-dim) — BUILT S74.** Three-part
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    375	  general `upper_bound` lemma which evaluates to `φ(4) · 4^0 + 1 = 3`.
+    376	  This is the **first orthogonal-corner instance where the live-column
+    377	  count strictly beats the column count**. Uses `Nat.prime_two,
+    378	  prime_three, prime_five, prime_seven, prime_eleven` (last new at S107)
+    379	  and the non-primality of `1, 4, 6, 9, 10`. ~190 Lean lines. **Second
+    380	  unconditional `mps_bond_dim` instance over a wheel `W ≥ 3`.**
+    381	- [x] **Orthogonal corner case `(W = 10, d = j + 1)` closed unconditionally (S144).**
+    382	  Three new declarations: `chiP_ninety_seven_eq_one`,
+    383	  `exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    384	  and `mps_bond_dim_W_eq_10_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 10 (j+1) j).rank = 5`,
+    385	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    386	  Quot.sound`). Route A^{(11)} from `mps_bond_dim_notes.md`. The matrix is
+    387	  `10^j × 10`; live columns `{0, 2, 6, 8}` (residues `1, 3, 7, 9 (mod 10)`)
+    388	  plus dead column `1` (`chiP 2 = 1`) give `R = φ(10) + 1 = 5`.
+    389	  Permutation `ρ ↦ (1, 0, 4, 3, 9)` and `σ ↦ (8, 1, 2, 0, 6)` triangularises
+    390	  the `5 × 5` submatrix to upper triangular with diagonal primes
+    391	  `{19, 2, 43, 31, 97}` and below-diagonal composites
+    392	  `{9, 32, 33, 39, 42, 49, 91, 92, 93, 99}`. Determinant via
+    393	  `Matrix.det_of_upperTriangular`, expansion via `Fin.prod_univ_five`.
+    394	  Upper-bound subtlety: `rank_le_width` gives only `rank ≤ 10`; we cite
+    395	  the general `upper_bound`, which evaluates to `φ(10) · 10^0 + 1 = 5`.
+    396	  Uses `Nat.prime_two`, `chiP_nineteen_eq_one` (S117),
+    397	  `chiP_thirty_one_eq_one` (S122), `chiP_forty_three_eq_one` (S137), and
+    398	  one new helper for `97`. ~310 Lean lines.
+    399	  **Eleventh unconditional `mps_bond_dim` instance; ninth instance
+    400	  over a wheel `W ≥ 3`; sixth instance using `det_of_upperTriangular`.**
+    401	  **First instance refuting an entry on the S128/S129 "structurally
+    402	  obstructed" list** — W=10 was claimed obstructed via "multiplicity-2
+    403	  residue pattern" but the S144 DP-based search found the triangulation
+    404	  by extending the row pool past the first 5 rows: row `9`'s window
+    ... (65 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    490	the leading-row + dead-col upper-triangulation route can close.
+    491	**S144 enumeration update.** A DP-based search (see
+    492	`experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+    493	confirms that the leading-row + dead-col triangulation route is
+    494	**structurally exhausted** for every `W ∈ [2, 72]` with `R ≤ 22` outside
+    495	the closed set `{2, 3, 4, 5, 6, 8, 10, 12, 18, 20}`. The structurally
+    496	obstructed set in this parameter range is `{7, 9, 11, 13, 14, 15, 16,
+    497	17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 36, 38, 40, 42, 44,
+    498	48, 50, 54, 60, 66}` — note S144 also CORRECTED W=10's status (originally
+    499	listed obstructed in S128/S129; S144 found triangulation `ρ ↦ (1, 0, 4,
+    500	3, 9)`). The "`det_of_blockTriangular`-required" set becomes
+    501	`{7, 9, 11, 13, ..., 66}` (excluding the now-closed 10).
+    502	The remaining **single-session** paths into the general
+    503	`exists_invertible_submatrix` `sorry` are:
+    504	
+    505	* **Route A^{(9)} (W = 9 corner via `Matrix.det_of_blockTriangular`).**
+    506	  The 7×7 sub-matrix has a clean 1+3+3 BlockTriangular structure
+    507	  (with `b : Fin 7 → ℕ` valued `{0, 1, 2}`) where each block has nonzero
+    508	  determinant computable by `Matrix.det_fin_three`. **First non-upper-
+    509	  triangular determinant in the file** — introduces a new technique
+    510	  (block-diagonal det via `det_of_blockTriangular`) that extends the
+    511	  closure beyond the leading-row family. Multi-session: 1 session to
+    512	  develop the block-triangular API + ~1 session to apply at W=9. Once
+    513	  developed, the same template should close W=7, W=10, W=11, W=15,
+    514	  W=18 etc.
+    515	* **Route A^{(10)} (higher-W corner via leading-row triangulation).**
+    516	  Continue the S129 pattern at higher W. Pre-search candidates by
+    517	  Python: for `W ∈ {14, 15, 16, 18, 20, 21, 24, 30}`, check if a
+    518	  leading-row + dead-col triangulation exists. `W = 14` has `R = φ(14)
+    519	  + 1 = 7`; `W = 15` has `R = 9`; `W = 16` has `R = 9`; `W = 18` has
+    ... (10 more lines)
+Now let me update NOVELTY_CHALLENGES.md to mark L1 progress:
+  [Grep] L1|MPS bond|E2\.1|formalisation queue
+    46:`novel/cramer_parity_envelope.md` covering E2.18 / E2.20 / E2.21 /
+    58:**E2.13**. See `experiments/information_theory/gowers_uk_chi_p_results.md`,
+    80:E2.13** to a statement about all natural prime-supported weightings,
+    98:**Refines E2.13** to family-level statement: HL-singular-series
+    110:W-trick at W ≥ 6 fully removes the deviation. New EDGE **E2.15**.
+    111:Third leg of the W-trick triple alongside E2.13 (Gowers) and E2.14
+    137:k-tuple admissibility. New EDGE **E2.17**; fifth orthogonal HL-
+    138:detection category after E2.13/E2.14/E2.15/E2.16, in algebraic-
+    146:**§D2.a — CLOSED (S117, mode E, B-grade refinement of E2.17).**
+    156:(gaps are multiples of W, giving a discrete spectrum). **E2.17
+    159:and structurally amplifies the second. **E2.17 refined inline** —
+    160:sixth leg of the W-trick HL-fingerprint family alongside E2.13 /
+    161:E2.14 / E2.15 / E2.16 / E2.20. See
+    167:**§D2.a.1 — CLOSED (S124, mode E, B-grade refinement of E2.17).**
+    174:on every cell. **Refines E2.17** to a three-component decomposition:
+    190:**§D2.a.2 — CLOSED (S138, mode E, B-grade refinement of E2.17).**
+    203:the window and the rebound disappears, +0.30). **E2.17 refined inline**
+    205:fingerprint family alongside E2.13/E2.14/E2.15/E2.16/E2.20 retains
+    231:**§D2.a.1.i — CLOSED (S131, mode E, B-grade refinement of E2.17).**
+    245:bounded by ≤ 1σ on T0 (S124's "1-2σ" tightened). E2.17 refined
+    273:T0/T1/L0/L1 with the persistence-image vector (Adams et al. 2017
+    294:falsifiers HOLD. New EDGE **E2.16** — first 3-point structural
+    296:2-point closures at E2.13 / E2.14 / E2.15). HL prime-by-prime
+    324:**Tertiary backup:** L1 Lean — close `exists_invertible_submatrix` for
+    360:### C2 — MPS bond-dim × free-probability moments — **BUILT (S74)**
+    361:**Edges:** E2.1 + (free probability framework, partially explored S58)
+    362:**Object:** Treat χ_P as a non-commutative random variable in the algebra generated by base-W shift operators. Compute its first 4 free cumulants via the MPS reshape. The MPS bond-dim formula `min(W^j, φ(W)·W^{d-j-1}+1)` should constrain which free moment patterns are achievable. Build the cumulant evaluator and check whether the resulting sequence `(κ_1, κ_2, κ_3, κ_4)` matches a known free distribution (semicircle, free Poisson, Marchenko-Pastur).
+    366:**Status:** BUILT. Three new artifacts: (i) **MP-bulk identification** — the wheel-W sieve density `φ(W)/W` IS the free-Poisson rate of χ_P's MPS bulk; (ii) **spike-count regularity** — `k*(W, d) ∝ R^{0.85}`, a new structural empirical fact beyond E2.1's rank statement; (iii) verified MP(c) standardized free cumulant identity `κ_r = c^{r-1}` and cross-domain free-cumulant evaluator.
+    578:### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107, S117, S122, S128, S129, S137)**
+    725:structure). E2.1 is the W=primorial special case; E1.9 is the φ(x,a) 2D case;
+    ... (3 more lines)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    578	### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107, S117, S122, S128, S129, S137)**
+    579	**Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
+    580	base W ≥ 2, for every cut 1 ≤ j < d:
+    581	```
+    582	   rank M^{(j)} = min( W^j , φ(W)·W^{d-j-1} + 1 )
+    583	```
+    584	where M^{(j)} is the (W^j × W^{d-j}) unfolding.
+    585	**Why this first:** clean clean statement, proof in `novel/mps_bond_dimension.md`
+    586	is short, no deep number theory needed (just CRT + φ definition).
+    587	**Estimated effort:** 1-2 sessions.
+    588	**Save under:** `experiments/formalisations/E2_1_mps_bond_dim/`
+    589	**S76 progress:** Lake project + mathlib `v4.30.0-rc2` installed; theorem
+    590	statement + 5-lemma skeleton typechecks (`lake build` succeeds);
+    591	`rank_le_min_dim`, `row_support_coprime`, `live_columns_count`,
+    592	`upper_bound` fully proved (no `sorry`, no `axiom`); main theorem
+    593	`mps_bond_dim` reduced to `Nat.le_antisymm` of the lemmas (3-line
+    594	term-mode proof, no `sorry`).
+    595	**S83 progress:** Closed `lower_bound` itself (sorry-free 6-line proof)
+    596	by introducing a new declaration `exists_invertible_submatrix` that
+    597	isolates the prime-density content as `∃ ρ σ, IsUnit (submatrix ρ σ)`.
+    598	The reduction uses mathlib's `Matrix.rank_of_isUnit` +
+    599	`Matrix.rank_submatrix_le`. Net: the only remaining `sorry` is now on
+    600	the pure prime-existence existential, not on the rank-bound logic.
+    601	**S98 progress:** Closed corner case `(W=2, j=1)` unconditionally via
+    602	Bertrand. **S99 progress:** Closed the orthogonal corner case
+    603	`(W=2, d=j+1)` *without even Bertrand* — only `Nat.prime_two`,
+    604	`Nat.prime_three`, decidable non-primality of 1 and 4. The matrix has
+    605	only 2 columns; rows {0, 1} with column-swap give the identity matrix.
+    606	Together S98+S99 give unconditional Lean proofs of `mps_bond_dim` on
+    607	the entire `(j, d - j)` boundary for `W = 2`. **S106 progress:**
+    ... (60 more lines)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    668	**Next action (post-S137):** Either (a) Route A^{(10)} `W = 9` corner via
+    669	`Matrix.det_of_blockTriangular` (multi-session — the first non-
+    670	upper-triangular determinant in the file; same technique closes W=7,
+    671	W=10, W=11, W=14, W=15), or (b) Route A^{(11)} for even higher `R`:
+    672	W=16 gives R=9, W=20 has clean leading-row triangulation per S137's
+    673	Python pre-search (`ρ ↦ (0, 2, 9, 14, 12, 1, 7, 16, 10)`,
+    674	`σ ↦ (1, 6, 18, 12, 0, 2, 8, 16, 10)`), uses `Fin.prod_univ_nine` if
+    675	mathlib has it (else manual chain via `Fin.prod_univ_succ`). Or (c)
+    676	Route C (mathlib PNT for the low-density regime — leaves saturating
+    677	half-cut open). See
+    678	`experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
+    679	
+    680	### L2 — E1.5: 0.537-bits invariant
+    681	**Statement:** For every modulus m ≥ 2, H(π(x) mod m | π(x-1) mod m) → c
+    682	where c = 0.537... bits as x → ∞ (or precisely: the constant is `1 - H_2(1/log 2)` or whatever the exact form is).
+    683	**Why this is interesting:** the constant has a closed form related to the prime density 1/log x; making the constant exact in Lean would force precision about its derivation.
+    684	**Estimated effort:** 2-3 sessions.
+    685	**Save under:** `experiments/formalisations/E1_5_invariant_information_rate/`
+    686	
+    687	### L3 — E2.7: Communication rank exactly 2^{N/2-1}+2
+    688	**Statement:** For the prime indicator on N bits with balanced 2-party split,
+    689	the communication matrix has rank exactly 2^{N/2-1} + 2.
+    690	**Why this:** verified empirically to N=20; the proof exists informally in
+    691	`novel/determinantal_complexity.md`. Formalising it is the next step.
+    692	**Estimated effort:** 2-3 sessions.
+    693	**Save under:** `experiments/formalisations/E2_7_comm_rank_plus_2/`
+    694	
+    695	### L4 — E5.1: BPSW correctness ⇒ PRIMES in TC⁰
+    696	**Statement:** A formal Lean construction of the TC⁰ circuit family.
+    697	**Why this:** ties together Hesse-Allender-Barrington (scalar powering in TC⁰),
+    ... (30 more lines)
+  [Edit] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    The file /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    The file /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md has been updated successfully.
+Now let me run a final lake build to confirm everything still works, then write the session synthesis.
+  [Bash] export PATH=/apps/aplikacijos/.elan/bin:$PATH && lake build 2>&1 | tail -5
+    warning: MPSBondDim/Basic.lean:4427:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    Build completed successfully (8315 jobs).
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session152_l1_lean_w9_corner.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session152_l1_lean_w9_corner.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (20 more lines)
+  [Bash] grep -n "## Session 1[34][0-9]\|## Session 15[0-2]" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    5897:## Session 138 — D2.a.2: PH W-scan, per-prime HL twin-prime decay rate (B-grade)
+    5950:## Session 139 (critique, post-S132 batch)
+    6008:## Session 140 (D30 — Pollicott-Ruelle resonances of χ_P-weighted Gauss-map transfer operator)
+    6144:## Session 141 — D5: CTQW amplitude on primes from seed |1⟩ of divisor / coprime graph
+    6246:## Session 143 — Arc 2 (L1 Lean): orthogonal corner `(W = 20, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+    6315:## Session 144 — Arc 2: W=10 corner + leading-row exhaustion map
+    6370:## Session 145
+    6410:## Session 146 — F1 refinement: bit_J(p(n)) per-bit difficulty map (B-grade)
+    6469:## Session 147 (critique, post-S139 batch)
+    6502:## Session 149 — D31: AHK matroid Hodge of the arithmetic prime-divisibility transversal matroid
+  [Bash] grep -n "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    5897:## Session 138 — D2.a.2: PH W-scan, per-prime HL twin-prime decay rate (B-grade)
+    5950:## Session 139 (critique, post-S132 batch)
+    6008:## Session 140 (D30 — Pollicott-Ruelle resonances of χ_P-weighted Gauss-map transfer operator)
+    6144:## Session 141 — D5: CTQW amplitude on primes from seed |1⟩ of divisor / coprime graph
+    6246:## Session 143 — Arc 2 (L1 Lean): orthogonal corner `(W = 20, d = j + 1)` of E2.1 closed unconditionally (B-grade)
+    6315:## Session 144 — Arc 2: W=10 corner + leading-row exhaustion map
+    6370:## Session 145
+    6410:## Session 146 — F1 refinement: bit_J(p(n)) per-bit difficulty map (B-grade)
+    6469:## Session 147 (critique, post-S139 batch)
+    6502:## Session 149 — D31: AHK matroid Hodge of the arithmetic prime-divisibility transversal matroid
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    (encoding π's slow growth via double-log structure).
+    
+    **Methodological caveat**: at L_max > target_len, hard bits
+    artefactually "compress" by combinatorial saturation. Meaningful
+    regime is L_max ≤ target_len.
+    
+    **Refines E1.3** with VM-richness × N hierarchy (annotated EDGES.md).
+    **E5.8 unchanged** (structural Brandt obstructions independent of
+    VM choice). Pseudorandomness of `π(x) mod 2 = s_0^(N)` preserved
+    (LSB saturates in every regime tested).
+    
+    Successors C3.a.{i, ii, iii, iv} proposed; C3.a.iii (linking
+    bounded-Kt L_max(J) to S146's RH-shadow valley at `J*=⌊log₂ p(N)/2⌋`)
+    is the highest-leverage.
+    
+    **Edge: E1.3 inline refinement (no new edge ID).**
+    
+    **Cross-domain promotion**: "Levin Kt complexity with custom
+    primitive set (R⁻¹-kernel-aware bounded universal simulator)" first
+    quantitative use this session.
+    
+    Methodology note: **Python orchestration + C inner-loop + structural
+    pre-skip** achieved 2700× speedup over pure Python, enabling 268M-
+    program enumeration in 2 minutes. Reusable for future bounded-Kt
+    or bounded-circuit-search experiments.
+    
+    Files: `experiments/constructions/brandt_per_bit_arith_vm/{definition,
+    brandt_per_bit_arith_vm_results}.md`, `brandt_per_bit_arith_vm.py`,
+    `sim.c`, `sim.so`, `run_L24.txt`, `run_L28.txt`,
+    `archive/sessions/session150_c3a_arith_vm.md`.
+  [Bash] grep -n "^## Session 15" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    38:## Session 15
+  [Bash] tail -3 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    brandt_per_bit_arith_vm_results}.md`, `brandt_per_bit_arith_vm.py`,
+    `sim.c`, `sim.so`, `run_L24.txt`, `run_L28.txt`,
+    `archive/sessions/session150_c3a_arith_vm.md`.
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'EOF'
+
+## Session 152 — Arc 2 (L1 Lean): W=9 orthogonal corner closed via nested `det_fromBlocks_zero₂₁` (B-grade)
+
+**Mode:** Lean formalisation. **Run #150.**
+
+**What was produced:** A fully formalised, sorry-free Lean 4 proof of
+`mps_bond_dim_W_eq_9_d_eq_j_plus_1 : (unfolding 9 (j+1) j).rank = 7` for
+every `j ≥ 1`. Plus four new chiP helpers (`13, 41, 53, 61`) and the
+prime-exhibit `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1`.
+
+**Why this matters:** This is the **eleventh** unconditional instance of
+`mps_bond_dim` in the file and the **first** closure of an S128/S129/S144
+"block-triangular-required" wheel. Closed-W set is now
+`{2, 3, 4, 5, 6, 8, 9, 10, 12, 18, 20}` (eleven wheels).
+
+**Technique novelty: NESTED `det_fromBlocks_zero₂₁`.** Previous nine corner
+closures all used `Matrix.det_of_upperTriangular`. W=9 cannot be upper-
+triangularized (S144 DP-search confirmed exhaustively). The S151 pre-search
+identified the `(1 + 3 + 3)` block-DIAGONAL structure under permutation
+`ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)`. S152's Lean proof:
+
+1. **Outer split** via `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7`:
+   `Mexp = fromBlocks A B 0 D` with `A = !![1]` (1×1) and `D` the 6×6
+   block-diagonal core. `det_fromBlocks_zero₂₁` gives `Mexp.det = A.det * D.det`.
+2. **`A.det = 1`** via `det_fin_one`.
+3. **Inner split** via `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6`:
+   `D = fromBlocks D1 0 0 D2`. `det_fromBlocks_zero₂₁` gives `D.det = D1.det * D2.det`.
+4. **`D1.det = -1` and `D2.det = -1`** each via `det_fin_three`.
+5. Combine: `Mexp.det = 1 · (-1) · (-1) = 1`, hence `IsUnit`.
+
+**Crucial design choice: 1+6 outer split (not 4+3).** A first attempt used
+the S151-suggested 4+3 split, which made the 4×4 block A have det = -1.
+Mathlib has no `det_fin_four`, and `det_succ_column_zero` + simp expansion
+hits `maxRecursionDepth` errors on the 4-fold cofactor sum. The 1+6 split
+avoids any 4×4 det entirely — every block determinant uses only
+`det_fin_one` (1×1) or `det_fin_three` (3×3).
+
+**~610 Lean lines added.** 49 entry-lemmas in W=20 style + 49+36=85
+fromBlocks reindex case checks via `rcases ... <;> fin_cases <;> rfl` +
+structural assembly. **No `sorry`, no new `axiom`.** `#print axioms`
+confirms only `[propext, Classical.choice, Quot.sound]`.
+
+**Lessons:**
+- The S151 documented "rw [h_sub] motive not type-correct" issue is real;
+  the workaround (entry-by-entry `change chiP (...); rw [h_sub]; have
+  h_eq; rw [h_eq]; exact chiP_X_eq_one`) works.
+- `Matrix.det_fromBlocks_zero₂₁` uses Unicode subscripts (`₂₁`), not ASCII (`_21`).
+- `Matrix.det_submatrix_equiv_self` direct application has type-unification
+  issues; `simp [Matrix.det_submatrix_equiv_self]` works around this.
+
+**Reusability for remaining "block-triangular-required" wheels.** The S152
+nested-fromBlocks template (1+(n) outer + per-block `det_fin_*` reductions)
+is reusable for W ∈ {7, 11, 14, 15, 16, 24, 30, ...}. Each needs its own
+Python pre-search to find a row/col permutation with one or more zero
+off-diagonal blocks. Higher-R wheels may need deeper nesting (e.g.,
+1+(3+3+3) for W=15/16/24).
+
+**Files:** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+(+610 lines, 3852→4481), `MPSBondDim/CheckAxioms.lean` (+6 axiom checks),
+`mps_bond_dim_notes.md` (Route A^{(12)} done section), `RESEARCH_AGENDA.md`
+(Arc 2 W=9 closure entry), `NOVELTY_CHALLENGES.md` (§3 L1 progress entry).
+
+**Next action:** W=7 or W=11 corner via the S152 nested-fromBlocks template
+(needs Python pre-search analogous to S151's `w9_blocktriangular_search.py`).
+EOF
+echo "Appended"
+    Appended
+Now let me do a final cleanup — check for missing results files and confirm everything is tidy:
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" 2>/dev/null | while read f; do
+  r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"
+done | head -10
+echo "---"
+find /apps/aplikacijos/prime-research/experiments/ -name "__pycache__" -type d 2>/dev/null | head -5
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md
+    ---
+    /apps/aplikacijos/prime-research/experiments/sieve/maynard_weight_pointwise/__pycache__
+    /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/__pycache__
+  [Bash] echo 150 > /apps/aplikacijos/prime-research/.run_state
+cat /apps/aplikacijos/prime-research/.run_state
+    150
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session 152 complete.
+
+**Summary**: Closed the W=9 orthogonal corner of E2.1's MPS bond-dim identity in Lean 4 — `mps_bond_dim_W_eq_9_d_eq_j_plus_1 : (unfolding 9 (j+1) j).rank = 7` for every `j ≥ 1`, fully `sorry`-free with only standard mathlib axioms (`propext, Classical.choice, Quot.sound`). 
+
+**Self-grade: B-grade** — substantive refinement extending the orthogonal-corner family from 10 to 11 closed wheels. **First closure of an S128/S129/S144 "block-triangular-required" wheel** and **first use of `Matrix.det_fromBlocks_zero₂₁`** in the file. The proof technique introduced — **NESTED `det_fromBlocks_zero₂₁`** with a 1+6 outer split (avoiding the 4×4 det that would have been required by the S151-suggested 4+3 split) followed by a 3+3 inner split — is the canonical template for the remaining obstructed wheels W ∈ {7, 11, 14, 15, 16, 24, 30, ...}.
+
+**Files modified**: Basic.lean (+~610 lines, 3852→4481), CheckAxioms.lean (+6 axiom checks), mps_bond_dim_notes.md, RESEARCH_AGENDA.md (Arc 2), NOVELTY_CHALLENGES.md (§3 L1), SESSION_INSIGHTS.md, plus archive/sessions/session152_l1_lean_w9_corner.md.
+
+**Build status**: `lake build` succeeds; `sorry` count unchanged at 1 (the general `exists_invertible_submatrix`).
+
+**Next-action for follow-up session**: Pick W=7 or W=11 corner via the S152 template — Python pre-search to find a row/col permutation with block structure, then Lean assembly using nested `det_fromBlocks_zero₂₁`.
+--- Session ended ---
+Sleeping 60 seconds before next run...

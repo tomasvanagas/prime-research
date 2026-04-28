@@ -65,7 +65,7 @@ Barriers Paper" → "Structural-Barrier Census" or similar to
 accommodate the spectral leg.
 
 ### Arc 2 — Lean Formalisation Track
-**Status:** IN PROGRESS — Run #133 / Session 137 (Route A^{(9)} W=18 corner CLOSED). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
+**Status:** IN PROGRESS — Run #157 / Session 159 (W=7 corner closed unconditionally via 1+(3+3) BlockTriangular with ZERO new prime helpers; closed-W set grows to 12). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
 **Owner:** any agent who picks it up
 **Goal:** Permanent verifiable artifacts for the project's main results.
 See `NOVELTY_CHALLENGES.md` §3.
@@ -285,6 +285,46 @@ See `NOVELTY_CHALLENGES.md` §3.
   `det_of_upperTriangular`.** **First instance with `R = 7`.** Pre-search
   excluded W=14 (structurally obstructed by row-2/row-5 support pattern
   identity, like W ∈ {7, 9, 10, 11}).
+- [x] **Orthogonal corner case `(W = 20, d = j + 1)` closed unconditionally (S143).**
+  Six new declarations: `chiP_forty_seven_eq_one`,
+  `chiP_one_hundred_forty_nine_eq_one`,
+  `chiP_one_hundred_ninety_nine_eq_one`,
+  `chiP_two_hundred_forty_one_eq_one`,
+  `chiP_three_hundred_thirty_seven_eq_one`,
+  `exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_20_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 20 (j+1) j).rank = 9` for every `j ≥ 1`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A^{(10)} from `mps_bond_dim_notes.md`. The matrix is
+  `20^j × 20`; live columns `{0, 2, 6, 8, 10, 12, 16, 18}` (residues `1, 3, 7,
+  9, 11, 13, 17, 19 (mod 20)`) plus dead column `1` (`chiP 2 = 1` at row 0)
+  give `R = φ(20) + 1 = 9`. Triangulation via mixed leading/non-leading
+  rows: `ρ ↦ (0, 2, 9, 14, 1, 7, 12, 16, 10)` and `σ ↦ (1, 6, 18, 12, 2, 8,
+  0, 16, 10)` triangularises the `9 × 9` submatrix to upper triangular with
+  diagonal primes `{2, 47, 199, 293, 23, 149, 241, 337, 211}` and 36
+  below-diagonal composites `{22, 27, 33, 39, 42, 142, 143, 147, 153, 159,
+  182, 187, 201, 202, 203, 207, 209, 213, 217, 219, 242, 243, 247, 249,
+  253, 259, 282, 287, 299, 321, 322, 323, 327, 329, 333, 339}`. Determinant
+  via `Matrix.det_of_upperTriangular`, expansion via a **local
+  `prod_univ_nine'` lemma** (mathlib provides `Fin.prod_univ_eight` but not
+  `prod_univ_nine`). Upper-bound subtlety: `rank_le_width` gives only
+  `rank ≤ 20`; we cite the general `upper_bound`, which evaluates to
+  `φ(20) · 20^0 + 1 = 9`. Uses `Nat.prime_two`, the existing
+  `chiP_twenty_three_eq_one` (S117), `chiP_two_hundred_eleven_eq_one`
+  (S137), `chiP_two_hundred_ninety_three_eq_one` (S137), and five new
+  helpers. ~570 Lean lines (largest single-corner block).
+  **Tenth unconditional `mps_bond_dim` instance; eighth instance over a
+  wheel `W ≥ 3`; fifth instance using `det_of_upperTriangular`.** **First
+  instance with `R = 9`** and **first instance requiring a local
+  `prod_univ_nine'` lemma** (mathlib's chain stops at `prod_univ_eight`).
+  Uses `set_option maxHeartbeats 2000000` because the `R = 9` corner
+  produces 81 `fin_cases × fin_cases` subgoals in the BlockTriangular check
+  vs 49 at `R = 7` — simp blow-up scales as `R^2` and the default 200000
+  heartbeats is insufficient. **Skipped W ∈ {15, 16, 24, 30}** (Python pre-
+  search at S143: each has zero leading-row+dead-col upper-triangulations
+  with rows in `[0, W)`, joining `W ∈ {7, 9, 10, 11, 14}` in the
+  "`det_of_blockTriangular`-required" set). The set of W's closed by Route
+  A^{(N)} is now `{2, 3, 4, 5, 6, 8, 12, 18, 20}`; the structurally
+  obstructed set is `{7, 9, 10, 11, 14, 15, 16, 24, 30}`.
 - [x] **Orthogonal corner case `(W = 12, d = j + 1)` closed unconditionally (S129).**
   Six new declarations: `chiP_fifty_nine_eq_one`,
   `chiP_eighty_nine_eq_one`, `chiP_one_hundred_nine_eq_one`,
@@ -338,6 +378,93 @@ See `NOVELTY_CHALLENGES.md` §3.
   prime_three, prime_five, prime_seven, prime_eleven` (last new at S107)
   and the non-primality of `1, 4, 6, 9, 10`. ~190 Lean lines. **Second
   unconditional `mps_bond_dim` instance over a wheel `W ≥ 3`.**
+- [x] **Orthogonal corner case `(W = 10, d = j + 1)` closed unconditionally (S144).**
+  Three new declarations: `chiP_ninety_seven_eq_one`,
+  `exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_10_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 10 (j+1) j).rank = 5`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A^{(11)} from `mps_bond_dim_notes.md`. The matrix is
+  `10^j × 10`; live columns `{0, 2, 6, 8}` (residues `1, 3, 7, 9 (mod 10)`)
+  plus dead column `1` (`chiP 2 = 1`) give `R = φ(10) + 1 = 5`.
+  Permutation `ρ ↦ (1, 0, 4, 3, 9)` and `σ ↦ (8, 1, 2, 0, 6)` triangularises
+  the `5 × 5` submatrix to upper triangular with diagonal primes
+  `{19, 2, 43, 31, 97}` and below-diagonal composites
+  `{9, 32, 33, 39, 42, 49, 91, 92, 93, 99}`. Determinant via
+  `Matrix.det_of_upperTriangular`, expansion via `Fin.prod_univ_five`.
+  Upper-bound subtlety: `rank_le_width` gives only `rank ≤ 10`; we cite
+  the general `upper_bound`, which evaluates to `φ(10) · 10^0 + 1 = 5`.
+  Uses `Nat.prime_two`, `chiP_nineteen_eq_one` (S117),
+  `chiP_thirty_one_eq_one` (S122), `chiP_forty_three_eq_one` (S137), and
+  one new helper for `97`. ~310 Lean lines.
+  **Eleventh unconditional `mps_bond_dim` instance; ninth instance
+  over a wheel `W ≥ 3`; sixth instance using `det_of_upperTriangular`.**
+  **First instance refuting an entry on the S128/S129 "structurally
+  obstructed" list** — W=10 was claimed obstructed via "multiplicity-2
+  residue pattern" but the S144 DP-based search found the triangulation
+  by extending the row pool past the first 5 rows: row `9`'s window
+  `chiP 91..100` provides the leading prime `chiP 97` at the previously-
+  unmatched diagonal position.
+  **Comprehensive leading-row map (S144).** A DP-based enumeration over
+  `W ∈ [2, 72]` with `R ≤ 22` (script:
+  `experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+  shows the leading-row + dead-col upper-triangulation route closes
+  **exactly** `W ∈ {2, 3, 4, 5, 6, 8, 10, 12, 18, 20}` and is structurally
+  obstructed for every other W in that range. The next single-session
+  Lean closures must use either (a) `Matrix.det_of_blockTriangular` for
+  non-triangulizable sub-matrices (multi-session sub-arc), or (b)
+  cofactor-expansion-based determinant proofs (e.g., W=9's 7×7 sub-
+  matrix has det = 1 but no row+col upper-triangulation).
+- [x] **Orthogonal corner case `(W = 7, d = j + 1)` closed unconditionally (S159).**
+  Two new declarations:
+  `exists_invertible_submatrix_W_eq_7_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_7_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 7 (j+1) j).rank = 7`,
+  both sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A^{(13)} from `mps_bond_dim_notes.md`. **First closure
+  with ZERO new prime helpers** — every prime in the 7×7 submatrix
+  (`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}`) was already
+  declared from prior corner closures (S98, S99, S106, S117, S122, S128,
+  S152). Permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6)` and `σ ↦ (6, 1, 3, 5, 0, 2, 4)`
+  (from S159 pre-search; 2 candidates, both BD with no new helpers) gives
+  the `(1 + 3 + 3)` block-DIAGONAL structure with `D₁.det = -1`,
+  `D₂.det = -2`, total `det = 2`. **First instance with total `det ≠ ±1`** —
+  closing step uses `Ne.isUnit` from `(2 : ℚ) ≠ 0`, demonstrating the
+  BlockTriangular template is robust to nontrivial determinant magnitudes.
+  Lean assembly identical to S152 W=9 (nested `det_fromBlocks_zero₂₁` with
+  1+(3+3) outer/inner split via `finSumFinEquiv`). Ten new `h_not_prime_X`
+  proof-internal lemmas (composites `{6, 9, 15, 18, 24, 27, 33, 36, 42, 45}`
+  not seen in the W=9 closure). **Twelfth unconditional `mps_bond_dim`
+  instance; eleventh instance over a wheel `W ≥ 3`; second instance using
+  `det_fromBlocks_zero₂₁` (after S152 W=9).** Refutes the S128 prediction
+  that W=7 needed a "multi-session new technique"; the S152 nested-fromBlocks
+  template was sufficient with only a fresh pre-search step.
+  See `experiments/formalisations/E2_1_mps_bond_dim/w7_blocktriangular_search_results.md`.
+- [x] **Orthogonal corner case `(W = 9, d = j + 1)` closed unconditionally (S152).**
+  Six new declarations: `chiP_thirteen_eq_one`, `chiP_forty_one_eq_one`,
+  `chiP_fifty_three_eq_one`, `chiP_sixty_one_eq_one`,
+  `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+  and `mps_bond_dim_W_eq_9_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 9 (j+1) j).rank = 7`,
+  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+  Quot.sound`). Route A^{(12)} from `mps_bond_dim_notes.md`. **First
+  closure of an S128/S129/S144 "block-triangular-required" wheel; FIRST
+  use of `Matrix.det_fromBlocks_zero₂₁`** (orthogonal to the previous nine
+  corner closures, all using `det_of_upperTriangular`).
+  Permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6)` and `σ ↦ (2, 1, 3, 7, 0, 4, 6)`
+  (from S151 pre-search) gives the `(1 + 3 + 3)` block-DIAGONAL structure.
+  The Lean proof uses NESTED `det_fromBlocks_zero₂₁`: outer split via
+  `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7` (1×1 block A with `det = 1` via
+  `det_fin_one`, plus 6×6 block D), and inner split of D via
+  `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6` (two 3×3 blocks D1, D2 each
+  with `det = -1` via `det_fin_three`). Total `det = 1 · (-1) · (-1) = 1`,
+  hence `IsUnit`. **Crucial design choice:** the 1+6 outer split (not 4+3)
+  avoids any 4×4 det computation, which would have required
+  `det_succ_column_zero` + simp expansion (mathlib has no `det_fin_four`)
+  and hits `maxRecursionDepth` errors. ~610 Lean lines (49 entry-lemmas
+  + 49+36 = 85 fromBlocks reindex case checks via
+  `rcases ... <;> fin_cases <;> rfl` + structural assembly). Uses
+  primes `{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61}`
+  (4 new at S152) and 31 `decide`-checkable composites in `[1, 62]`.
+  **Eleventh unconditional `mps_bond_dim` instance; tenth instance over
+  a wheel `W ≥ 3`.**
 - [ ] Lemma `exists_invertible_submatrix` (general case) — the new
   home of the prime-density content. **THIS IS THE LAST REMAINING `sorry`.**
   Requires Hoheisel-type primes-in-short-intervals beyond mathlib.
@@ -357,15 +484,51 @@ density question**, not in mathlib. Audit confirmed only
 **Estimated total effort:** L1 alone is 1-2 sessions; full queue is
 12-20 sessions. **Revised:** if Route A is required, L1 alone is now
 several sessions plus possibly a separate Hoheisel-formalisation arc.
-**Next action (post-S137):** Routes A', A'', A''', A'''', A''''', A'''''',
-A''''''', A^{(8)} and A^{(9)} (the orthogonal-corner family `d = j + 1`) are
-closed for `W ∈ {2, 3, 4, 5, 6, 8, 12, 18}`. **The leading-row + mixed-row
-triangulation pattern now spans every prime-power-free W ≤ 18 except those
-hitting the row-pattern-identity obstruction.** S137 confirmed by Python
-pre-search that **W = 14 also hits the structural obstruction** (rows
-2 and 5 of the 14×14 j=1 slab have identical support pattern at the
-seven chosen cols), joining `W ∈ {7, 9, 10, 11}` in the
-"`det_of_blockTriangular`-required" set.
+**Next action (post-S159):** Routes A', A'', A''', A'''', A''''', A'''''',
+A''''''', A^{(8)}, A^{(9)}, A^{(10)}, A^{(11)}, A^{(12)}, **and now A^{(13)}**
+(the orthogonal-corner family `d = j + 1`) are closed for `W ∈ {2, 3, 4, 5,
+6, 7, 8, 9, 10, 12, 18, 20}`. The closed-W set has grown to **twelve**
+wheels.
+**S159 added W=7** — the SECOND closure of an S128/S129/S144 "block-
+triangular-required" wheel and the FIRST corner closure with ZERO new
+prime helpers (every prime in the W=7 7×7 submatrix was already declared
+from prior W=2..6, 8, 9 closures). Permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6)`
+and `σ ↦ (6, 1, 3, 5, 0, 2, 4)` from S159's pre-search; total det = 2
+(D₁.det = -1, D₂.det = -2), making this the FIRST corner instance with
+`det ≠ ±1` — closes via `Ne.isUnit` from `(2 : ℚ) ≠ 0` rather than the
+`IsUnit 1` shortcut. The Lean assembly is the S152 nested-fromBlocks
+template applied verbatim, refuting the S128 prediction that W=7 would
+need "a multi-session new technique." See
+`experiments/formalisations/E2_1_mps_bond_dim/w7_blocktriangular_search_results.md`.
+
+**Next-action queue (S160+):**
+- **W = 11** (small prime, R = 11): natural next target. The 11×11 sub-
+  matrix likely admits a `1 + 5 + 5` or `1 + 3 + 3 + 4` (nested) split.
+  Lean assembly: outer `Fin 1 ⊕ Fin 10`, inner `Fin 5 ⊕ Fin 5`, requires a
+  local `Fin.prod_univ_five`-like lemma if det_fin_five not in mathlib.
+  Pre-search needed (re-use `w7_blocktriangular_search.py` template with
+  `W=11`, partition pattern adjusted). Single-session if pre-search yields
+  a candidate with ≤ 6 new prime helpers.
+- W ∈ {14, 15, 16}: block-triangular-required, each needs Python
+  pre-search at the appropriate R (W=14: R=7; W=15: R=9; W=16: R=9).
+- W ∈ {24, 30}: larger R values; may need 4+4+... or (1+3+3+3) splits.
+- The pattern beyond W=20 (W ∈ {21, 22, 25, 27, 28, 33, 35, 36, ...}):
+  exhaustive leading-row search likely fails (S144 confirmed), so
+  block-triangular routes are the only single-session option.
+
+S144 DP-search confirms this is the COMPLETE set of W ≤ 72 with R ≤ 22 that
+the leading-row + dead-col upper-triangulation route can close.
+**S144 enumeration update.** A DP-based search (see
+`experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+confirms that the leading-row + dead-col triangulation route is
+**structurally exhausted** for every `W ∈ [2, 72]` with `R ≤ 22` outside
+the closed set `{2, 3, 4, 5, 6, 8, 10, 12, 18, 20}`. The structurally
+obstructed set in this parameter range is `{7, 9, 11, 13, 14, 15, 16,
+17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 36, 38, 40, 42, 44,
+48, 50, 54, 60, 66}` — note S144 also CORRECTED W=10's status (originally
+listed obstructed in S128/S129; S144 found triangulation `ρ ↦ (1, 0, 4,
+3, 9)`). The "`det_of_blockTriangular`-required" set becomes
+`{7, 9, 11, 13, ..., 66}` (excluding the now-closed 10).
 The remaining **single-session** paths into the general
 `exists_invertible_submatrix` `sorry` are:
 
@@ -500,6 +663,41 @@ See `NOVELTY_CHALLENGES.md` §1.
   refinement of E1.3 at bounded-Kt resolution. Successor C3.a
   proposed: arithmetic-primitive bounded-Kt VM. See
   `experiments/constructions/brandt_per_bit/`.
+- [x] **C3.a (Arithmetic-primitive bounded-Kt VM) — BUILT S150.**
+  4-bit-per-op extended VM with 16 ops (8 base stack + R⁻¹-kernel
+  primitives {LOG2, LI_APPROX, DIV_LOG, GEO_SUM}); C inner-loop
+  simulator. Verdict: F3 (intermediate hierarchy). At L_max=24
+  matched to target_lens, the cut shifts fully to E1.3's `⌈N/2⌉`
+  for N ∈ {4, 5} (compressing programs found for `bit_2(π)` at N=4
+  and `bit_3(π)` at N=5); reverts to `J*(N)` at N=6. At L_max=28,
+  N=6 partially shifts (J=4 compresses via triple-LI program;
+  J=3 still saturates). Within-easy-zone J-monotone hierarchy:
+  bits closer to `J*(N)` compress at smaller L_max. **Refines
+  E1.3** with VM-richness × N-dependent cut hierarchy (annotated
+  EDGES.md). E5.8 unchanged (structural Brandt obstructions
+  independent of VM choice). Iterated LI applications are the
+  dominant compression mechanism. Successors C3.a.{i, ii, iii, iv}
+  proposed. CLOSED_PATHS row added (S150). See
+  `experiments/constructions/brandt_per_bit_arith_vm/`.
+- [x] **C3.a.iv (Arithmetic-primitive ablation) — BUILT S158.**
+  Six-condition ablation of {LOG2, LI, DIV_LOG, GEO_SUM} at L_max=28,
+  N ∈ {3, 4, 5, 6} (1.6B programs, 463 s wall-time). **Verdict: F4
+  for the easy zone — no single primitive is strictly necessary.**
+  Every easy-zone cell {(3,2), (4,2), (5,3), (6,4)} that compresses
+  in baseline also compresses under every single-drop AND under
+  only_LI. drop_LI matches baseline at L≤24 cells with alternative
+  programs (e.g. (N=5,J=3) `EMIT_S, INC, LOG2, DUP, PUSH_N, PUSH0`
+  using LOG2 alone) and is +1 bit at the L=28 (N=6,J=4) cell.
+  **Refutes S150's "iterated LI dominant" reading** as overly
+  specific: LI is the cleanest realization but is one of four
+  substitutable mechanisms. Hard-zone meaningful cell (N=5,J=2)
+  separately requires LI ∧ DIV_LOG (orthogonal observation).
+  **Refines E1.3 inline** with primitive-class-robustness:
+  the cut shift is driven by the FAMILY of slow-growing-integer-
+  function primitives. Successors C3.a.iv.{α, β} proposed:
+  large-N gap scaling and alternative primitive-set robustness.
+  CLOSED_PATHS row added (S158). See
+  `experiments/constructions/brandt_per_bit_arith_vm_ablation/`.
 - [x] **C4 (Aggarwal × Dusart × BPSW unified library) — BUILT S120.** Three
   modes (`agg`, `bpsw`, `hybrid`); composition agrees with `sympy.prime`
   at n ∈ {10⁴..10⁷}. F3 (hybrid ≥ 10× bpsw) HOLDS uniformly (21×/34×/53×).

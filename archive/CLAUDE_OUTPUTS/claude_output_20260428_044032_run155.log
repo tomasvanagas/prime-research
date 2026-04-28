@@ -1,0 +1,932 @@
+=== Run #155 — Mode: construction — Tue Apr 28 04:40:33 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    File content (33795 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    1	# Novelty Challenges — Active Research Targets
+    2	
+    3	This file holds the active research questions for sessions targeting
+    4	**B-grade work** (substantive refinement or ambitious failure of a
+    5	single-session attack — see CLAUDE.md "Novelty Bar").
+    6	
+    7	**For A-grade work, read `ATTACK_VECTORS.md` first.** That file holds
+    8	the frontier targets — the only way to produce genuinely novel
+    9	mathematics. The challenges below are ranked B-grade because they are
+    10	single-session-tractable; the trade-off is that even when they succeed,
+    11	they produce refinements rather than discoveries.
+    12	
+    13	**Pick one challenge per session.** Time-budget the work. If you can't
+    14	finish, write the partial state into RESEARCH_AGENDA.md and halt.
+    15	
+    16	The framework's grading discipline (CLAUDE.md): a session that
+    17	completes a NOVELTY_CHALLENGES.md target with a clean refinement is
+    18	B-grade. A session that *attempts* an ATTACK_VECTORS.md target and
+    19	fails informatively is also B-grade. A session that completes 5
+    20	NOVELTY_CHALLENGES targets in one sitting is *not* A-grade — it's 5×B,
+    21	and a single A-grade attempt would have been more valuable.
+    22	
+    23	---
+    24	
+    25	## §0. Pointer to Frontier Attacks (A-grade work)
+    26	
+    27	**`ATTACK_VECTORS.md` §A through §F** holds the project's frontier
+    28	targets. If your session has 1+ hour available and you are not in
+    29	the middle of an arc, pick from there instead. The frontier sections:
+    30	
+    ... (270 more lines)
+  [Grep] ^## §1|^## §2|^## §3|^## §4|^## §5|^## §6|^## §7|^### C\d|^### §C\d|^## C\d|^## §C\d|Composition Challenges
+    374:## §1. Composition Challenges
+    388:### C1 — A⊕C₃ bisection × 0.537-bits invariant — **BUILT (S70)**
+    397:### C2 — MPS bond-dim × free-probability moments — **BUILT (S74)**
+    406:### C3 — Brandt obstructions × per-bit difficulty — **BUILT (S105)**
+    426:### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle — **BUILT (S120)**
+    435:### C4.a — Replace `pi_lucy` with HKM/primecount and re-locate K* (NEW, follow-up to S120)
+    439:### C5 — N/2 universality × non-Boolean function — **BUILT (S71)**
+    448:### C6 — Three-pillars × HKM time-space curve — **BUILT (S81)**
+    457:### C7 — Calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap — **BUILT (S89)**
+    466:### C7.a — Calibrated control at N=8 (NEW from S89, follow-up)
+    471:### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES — **BUILT (S127)**
+    485:### C8.a — N=8 partial scan (NEW from S127, follow-up)
+    490:### C8.b — Random-control F4 resolution at N=6 — **BUILT (S135)**
+    509:## §2. Frame-Shift Questions
+    601:## §3. Lean 4 Formalisation Queue
+    793:## §4. Negative-Shape Edges — Family-Level Closures
+    852:## §5. Synthesis Targets (publishable-paper grade)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    374	## §1. Composition Challenges
+    375	
+    376	A composition challenge says: build a single mathematical object whose
+    377	*definition* uses two or more existing edges from EDGES.md, and whose
+    378	*evaluator* produces a number you can compare to a baseline. Why this
+    379	matters: edges are catalogued individually; their *interactions* are
+    380	mostly unexplored. Composition is the cheapest source of genuinely new
+    381	mathematical objects.
+    382	
+    383	**Discipline:** every composition target must produce code that runs.
+    384	File under `experiments/constructions/<name>/`. Cite the edges by ID
+    385	in `definition.md`. Failure mode is "duplicate of [composed-edge-X]"
+    386	or "construction-incoherent" if the object isn't well-defined.
+    387	
+    388	### C1 — A⊕C₃ bisection × 0.537-bits invariant — **BUILT (S70)**
+    389	**Edges:** E1.6 + E1.5
+    390	**Object:** A function `g_q : ℕ → 𝔽_q × 𝔽_q` with `g_q(x) = (A(x) mod q, C_3(x) mod q)` (the paired bisection; q=2 recovers E1.6's two parities). Test whether the per-step entropy closed form (S69-sharpened E1.5) holds for `g_q` for q ∈ {3, 5, 7, 11, 13}. If yes, a *family* of E1.5-style invariants where the original was a single statement.
+    391	**Why novel:** E1.5/S69 was for π(x) only. Testing on A and C_3 (and their joint state) is new.
+    392	**Falsification:** PR1 = |H_emp(F mod q | prev) − h_2(F(X)/X)| < 5e-3 for F ∈ {π, A, C_3}; PR2 = joint H(g_q(x) | prev) − H_3(1−ρ_A, ρ_π, ρ_C3) < 5e-3; PR3 = I(A mod q ; C_3 mod q) < 0.01 bits at X = 2·10⁶.
+    393	**Outcome (S70):** All three PASS at full N = 2·10⁶. Worst PR1 |diff| 1.6e-3 (at small X), 5e-6 at X = 2·10⁶; worst PR2 |diff| 8e-4 in strict regime q²·100 ≤ π(X); worst PR3 I = 1.17e-4 bits at q = 13. Three new artifacts: (i) per-component closed form extended from π to A, C_3 (mechanism applies to all monotone Ω-stratified summatories); (ii) **new joint closed form** `H(g_q | prev) = H_3(1−ρ_A, ρ_π, ρ_C3)`; (iii) q-stable strengthening of E1.6 marginal independence to q ≤ 13. Composition reveals destructive-interference picture: A, C_3 each carry 1 bit/step asymptotically, π carries 0 bits/step, marginally q-stably independent.
+    394	**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S70). E1.5 and E1.6 annotated in EDGES.md.
+    395	**Save under:** `experiments/constructions/g_q_bisection_invariant/`
+    396	
+    397	### C2 — MPS bond-dim × free-probability moments — **BUILT (S74)**
+    398	**Edges:** E2.1 + (free probability framework, partially explored S58)
+    399	**Object:** Treat χ_P as a non-commutative random variable in the algebra generated by base-W shift operators. Compute its first 4 free cumulants via the MPS reshape. The MPS bond-dim formula `min(W^j, φ(W)·W^{d-j-1}+1)` should constrain which free moment patterns are achievable. Build the cumulant evaluator and check whether the resulting sequence `(κ_1, κ_2, κ_3, κ_4)` matches a known free distribution (semicircle, free Poisson, Marchenko-Pastur).
+    400	**Why novel:** No one has computed free cumulants of χ_P in this framework. If they hit a known distribution, you've found a *non-commutative analogue* of the wheel-W theorem. If they don't, you've added a 36th pseudorandomness measure.
+    401	**Falsification:** Free cumulants land within or outside known distributions.
+    402	**Outcome (S74):** χ_P's MPS unfolding spectrum has a **three-part structure**: (a) a finite "structural" peak (rank-1 mean + φ(W)−1 residue indicators) reproduced by the matched-active-Bernoulli baseline; (b) a **spike band of O(N^{0.42}) outlier eigenvalues** present in χ_P but absent from the baseline; (c) an MP bulk that **matches Marchenko-Pastur with rate `c = φ(W)/W = ∏_{p≤W}(1 − 1/p)` (the Mertens product)** within 5–10% relative on κ_2, κ_3, κ_4. Cross-domain import: free probability (Mingo-Speicher 2017). New empirical regularity: outlier count `k*(W, d) ≈ R^{0.85}` where `R` is the rank — fitting `α ≈ 0.85` over W=2 d=14..22. **Algorithmic implication:** any spectral compression of χ_P faithful at the second-moment level needs rank Ω(N^{0.42}) — recovers a polynomial-in-N barrier from a free-probabilistic angle, parallel to (not stronger than) Lagarias-Odlyzko. No polylog opening.
+    403	**Status:** BUILT. Three new artifacts: (i) **MP-bulk identification** — the wheel-W sieve density `φ(W)/W` IS the free-Poisson rate of χ_P's MPS bulk; (ii) **spike-count regularity** — `k*(W, d) ∝ R^{0.85}`, a new structural empirical fact beyond E2.1's rank statement; (iii) verified MP(c) standardized free cumulant identity `κ_r = c^{r-1}` and cross-domain free-cumulant evaluator.
+    ... (210 more lines)
+All C1-C8 are marked BUILT. Let me check successor challenges and look for unfinished targets.
+  [Grep] ### C\d|### §C|### F\d|^C\d|UNBUILT|TODO|pending|Cost: \d session
+    68:(B-grade refinement). Cost: 1 session.
+    219:slows for large primes). Cost: 1 session.
+    227:matched-M=500 cleanly. Cost: 1 session.
+    257:the duplicate-compression term. Cost: 1 session.
+    270:component switches off. Cost: 1 session.
+    278:Predicted AUC > 0.95 vs both baselines. Cost: 1 session.
+    285:patterns. Cost: 1 session.
+    353:informative. Cost: 1 session at logX=28; 2 sessions if also testing
+    388:### C1 — A⊕C₃ bisection × 0.537-bits invariant — **BUILT (S70)**
+    397:### C2 — MPS bond-dim × free-probability moments — **BUILT (S74)**
+    406:### C3 — Brandt obstructions × per-bit difficulty — **BUILT (S105)**
+    416:**C3.a.i — L_max = 32 sweep.** At L_max=32 (4.3B programs, ~5h with current C simulator; doable with multi-core), test whether `(N=6, J=3)` finally compresses. If yes, the F1 cut would extend to N=6 and the hypothesis "L_max needs only ~ target_len bits to reach E1.3's `⌈N/2⌉` boundary" gets one more confirmation. Cost: 1 session with parallelism.
+    418:**C3.a.ii — Random-program sampling at larger N.** Run N=7 (target_len=128) with random sampling of K=10⁹ random 128-bit programs (full enumeration intractable). Test whether the within-easy-zone J-monotone hierarchy persists at larger N. Cost: 1 session.
+    422:**C3.a.iv — Drop / swap arithmetic primitives.** Re-run with single primitives ablated to identify which are NECESSARY for the cut shift. Hypothesis: LI is the only strictly-necessary one; LOG2 and DIV_LOG are convenience; GEO_SUM is incidental. Cost: 1 session.
+    426:### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle — **BUILT (S120)**
+    435:### C4.a — Replace `pi_lucy` with HKM/primecount and re-locate K* (NEW, follow-up to S120)
+    439:### C5 — N/2 universality × non-Boolean function — **BUILT (S71)**
+    448:### C6 — Three-pillars × HKM time-space curve — **BUILT (S81)**
+    457:### C7 — Calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap — **BUILT (S89)**
+    466:### C7.a — Calibrated control at N=8 (NEW from S89, follow-up)
+    471:### C8 — Depth-2 sign-threshold weight-vs-size tradeoff for PRIMES — **BUILT (S127)**
+    485:### C8.a — N=8 partial scan (NEW from S127, follow-up)
+    490:### C8.b — Random-control F4 resolution at N=6 — **BUILT (S135)**
+    501:**C8.b.i — Random M=4 W=2 SAT search via greedy/LNS.** CBC ILP UNSAT proof on (random, W=2, M=4) is intractable; a greedy triple-enum or local search may find a SAT witness if one exists. If no SAT in ~1 h CPU, empirical evidence for `M*(rand; W=2) ≥ 5` (Δ ≥ 1 strict). Cost: 1 session. Save under `random_n6_resolution/m4_search/`.
+    505:**C8.b.iii — Seed-distribution of random M\*.** Run N=6 W=2 M=3 across 100+ seeds in parallel. Empirical histogram of M\*(rand) tests "random is always ≥ 4" vs "random is sometimes 3 on a non-trivial seed fraction". With 32-core parallelism + ~150 s/cell, ≈ 10 min wall-clock. Cost: 1 session.
+    516:### F1 — Per-bit polylog extraction — **PARTIALLY CLOSED (S146, mode E, B-grade refinement of E1.3)**
+    547:class predictor at the half-modulus-scale. Cost: 1 session.
+    556:larger L is direct and tractable. Cost: 1 session.
+    558:### F2 — π_+(x) := π(x) mod p^k for fixed prime p, growing k — **PARTIALLY CLOSED (S69)**
+    576:### F3 — Algorithms for π(x) given an oracle
+    ... (5 more lines)
+All C1-C8 are BUILT. The session needs a successor or new composition. Let me explore the existing C3.a infrastructure to scope a feasible target.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/ 2>/dev/null
+    brandt_per_bit_arith_vm.py
+    brandt_per_bit_arith_vm_results.md
+    definition.md
+    run_L24.txt
+    run_L28.txt
+    sim.c
+    sim.so
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/ | head -40
+    README.md
+    brandt_mktp
+    brandt_per_bit
+    brandt_per_bit_arith_vm
+    d2_sign_threshold_w_m_tradeoff
+    free_cumulants_chi_p
+    g_q_bisection_invariant
+    n_over_2_universality_class
+    pillar_tradeoff_diagram
+    primes_dpp_ppp_fit
+    spike_eigenvectors_chi_p
+    tensor_compression_family_closure
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/README.md
+    1	# Constructions
+    2	
+    3	This directory holds **purpose-built mathematical objects**: custom
+    4	circuits, algebraic structures (rings, modules, groups), transforms,
+    5	representations, and algorithms invented in-project rather than imported
+    6	from literature.
+    7	
+    8	Created S60 to rebalance the project away from measurement-only work.
+    9	Promoted to the project's primary mode in the post-S67 mature-state
+    10	rebalance. See `CLAUDE.md` § "The Novelty Bar" for the core criterion
+    11	and `NOVELTY_CHALLENGES.md` for active construction targets.
+    12	
+    13	## Layout
+    14	
+    15	Each construction lives in its own subdirectory:
+    16	
+    17	```
+    18	experiments/constructions/<descriptive_name>/
+    19	    <name>.py              # runnable code that builds + evaluates the object
+    20	    <name>_results.md      # what it does, what it doesn't, verdict
+    21	                           # (C/E/I or "construction-incoherent")
+    22	    definition.md          # signature + intended relationship to π(x);
+    23	                           # required for algebraic objects, optional for circuits
+    24	```
+    25	
+    26	## Bar for entry
+    27	
+    28	- **MUST run.** A theoretical-only essay is not a construction; turn it
+    29	  into code or save it under `archive/ephemeral/`.
+    30	- **MUST cite EDGES IDs** that the construction composes, uses, or
+    ... (29 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/brandt_per_bit_arith_vm.py
+    1	#!/usr/bin/env python3
+    2	"""
+    3	C3.a -- Arithmetic-primitive bounded-Kt VM (S105 successor).
+    4	
+    5	Composes E5.8 (Brandt-class barrier, structural) with E1.3 (per-bit
+    6	difficulty cut), via an EXTENDED bounded-Kt simulator that adds the
+    7	four arithmetic primitives proposed in S105's successor block:
+    8	
+    9	    LOG2     -- TOS <- floor(log2 TOS)
+    10	    LI_APPROX -- TOS <- floor(TOS / log TOS)        (R^{-1} kernel)
+    11	    DIV_LOG  -- pop a, b; push floor(b / log max(a, 2))
+    12	    GEO_SUM  -- pop a; push 1 + a + a^2 + ... while sum <= T_MAX
+    13	
+    14	Question: does the bounded-Kt cut on the per-bit family
+    15	
+    16	    s_J^(N) := ( bit_J(pi(0)), ..., bit_J(pi(2^N - 1)) ) in {0,1}^{2^N}
+    17	
+    18	shift from S105's J*(N) = ceil(log2(pi(2^N) + 1)) toward E1.3's
+    19	0.5*N once the VM can compute Li-style approximations?
+    20	
+    21	The simulator's hot loop is implemented in C (sim.c -> sim.so) and
+    22	called via ctypes for ~50x speedup over pure Python.  Pre-check skips
+    23	programs whose pc cycle contains no EMIT op (would emit nothing in
+    24	T_MAX steps).
+    25	
+    26	Pre-stated falsifiers (definition.md):
+    27	  F1 -- full shift to ceil(N/2)
+    28	  F2 -- no shift; easy zone saturates
+    29	  F3 -- intermediate hierarchy (some easy J compress, others saturate)
+    30	"""
+    ... (393 more lines)
+Let me check the C simulator to understand how to ablate primitives.
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/sim.c
+    1	/* Extended bounded-Kt VM simulator (C implementation for ctypes).
+    2	 *
+    3	 * Op codes (4-bit):
+    4	 *   0  PUSH0       push 0 onto integer stack
+    5	 *   1  PUSH1       push 1
+    6	 *   2  PUSH_N      push current emit-count (out_count)
+    7	 *   3  INC         TOS += 1 (saturating at INT_CAP)
+    8	 *   4  ADD         pop a, b; push min(a+b, INT_CAP)
+    9	 *   5  SUB         pop a, b; push max(b-a, 0)
+    10	 *   6  MUL         pop a, b; push min(a*b, INT_CAP)
+    11	 *   7  SHR1        TOS >>= 1
+    12	 *   8  LOG2        TOS <- floor(log2(TOS))   (log2(0) := 0)
+    13	 *   9  LI          pop a; push floor(a / log a) for a >= 2 else 0
+    14	 *   a  DIV_LOG     pop a, b; push floor(b / log max(a, 2))
+    15	 *   b  GEO_SUM     pop a; push 1 + a + a^2 + ... while sum <= T_MAX
+    16	 *   c  DUP         duplicate TOS
+    17	 *   d  EMIT_S      pop a; emit (a & 1) bit
+    18	 *   e  EMIT0       emit 0 bit
+    19	 *   f  HALT        stop
+    20	 *
+    21	 * Programs of length L (in nibbles) loop: pc wraps to 0 when reaching L.
+    22	 *
+    23	 * Returns the count of bits emitted (<= target_len).  Sets *out_bits to
+    24	 * the LSB-first packed bit pattern, *steps_out to the number of executed
+    25	 * instructions when termination occurred.
+    26	 */
+    27	
+    28	#include <stdint.h>
+    29	#include <math.h>
+    30	#include <stdbool.h>
+    ... (236 more lines)
+  [Bash] head -50 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/run_L24.txt
+    ==============================================================================
+    C3.a -- Arithmetic-primitive bounded-Kt VM (S105 successor)
+    ==============================================================================
+    
+    Extended VM: 16 ops, 4-bit encoding, L_MAX_EXT = 24
+                 T_MAX = 4096, INT_CAP = 1000000000
+                 INF_EXT = 37
+    
+    Op set: 0=PUSH0, 1=PUSH1, 2=PUSH_N, 3=INC, 4=ADD, 5=SUB, 6=MUL, 7=SHR1, 8=LOG2, 9=LI, a=DIV_LOG, b=GEO_SUM, c=DUP, d=EMIT_S, e=EMIT0, f=HALT
+    
+    Targets: 5 calibration + 18 per-bit cells = 23
+    
+    Enumerating extended-VM programs up to L = 24 bits (C inner loop, batch evaluator):
+      L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+      L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+      L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+      L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+      L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+      L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   6.75 s)
+      Total simulations: 8,444,436
+      Done in 7.1 s.
+    
+    CALIBRATION -- Kt_b' on canonical targets:
+      0^16          Kt_b' =  10  L=4b, steps=   64  prog: EMIT_S
+      1^16          Kt_b' =  15  L=8b, steps=  128  prog: PUSH1, EMIT_S
+      (01)^8        Kt_b' =  15  L=8b, steps=  127  prog: EMIT_S, PUSH_N
+      step8         Kt_b' =  29  L=20b, steps=  318  prog: GEO_SUM, DIV_LOG, EMIT_S, PUSH_N, PUSH_N
+      step7_9       Kt_b' =  33  L=24b, steps=  382  prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    
+    PER-BIT SCAN  (computing original Kt_b column for reference)...
+    ... (20 more lines)
+  [Bash] tail -60 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/run_L24.txt
+      0^16          Kt_b' =  10  L=4b, steps=   64  prog: EMIT_S
+      1^16          Kt_b' =  15  L=8b, steps=  128  prog: PUSH1, EMIT_S
+      (01)^8        Kt_b' =  15  L=8b, steps=  127  prog: EMIT_S, PUSH_N
+      step8         Kt_b' =  29  L=20b, steps=  318  prog: GEO_SUM, DIV_LOG, EMIT_S, PUSH_N, PUSH_N
+      step7_9       Kt_b' =  33  L=24b, steps=  382  prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    
+    PER-BIT SCAN  (computing original Kt_b column for reference)...
+      original column done in 0.2 s
+    
+      N   J  | len |  ones zeros | zone_E13 | J* | id-0 | Kt_b(orig) | Kt_b'(ext)
+      ---------------------------------------------------------------------------
+       3   0  |   8 |     3     5 | hard     |  3 |      |   15      |   24  
+       3   1  |   8 |     4     4 | hard     |  3 |      |   12      |   29  
+       3   2  |   8 |     1     7 | easy     |  3 |      |   11      |   23  
+    
+       4   0  |  16 |     5    11 | hard     |  3 |      |   61 *    |   37 *
+       4   1  |  16 |     7     9 | hard     |  3 |      |   61 *    |   37 *
+       4   2  |  16 |     9     7 | easy     |  3 |      |   15      |   33  
+       4   3  |  16 |     0    16 | easy     |  3 |  Y   |    5      |   10  
+    
+       5   0  |  32 |    14    18 | hard     |  4 |      |   61 *    |   37 *
+       5   1  |  32 |    13    19 | hard     |  4 |      |   61 *    |   37 *
+       5   2  |  32 |    12    20 | hard     |  4 |      |   61 *    |   37 *
+       5   3  |  32 |    13    19 | easy     |  4 |      |   61 *    |   33  
+       5   4  |  32 |     0    32 | easy     |  4 |  Y   |    6      |   10  
+    
+       6   0  |  64 |    29    35 | hard     |  5 |      |   61 *    |   37 *
+       6   1  |  64 |    31    33 | hard     |  5 |      |   61 *    |   37 *
+       6   2  |  64 |    28    36 | hard     |  5 |      |   61 *    |   37 *
+       6   3  |  64 |    34    30 | easy     |  5 |      |   61 *    |   37 *
+    ... (30 more lines)
+The S150 baseline shows each compressed cell uses a different primitive (LI: N=4,5; DIV_LOG: N=3 J=1; GEO_SUM: N=3 J=0). Picking **C3.a.iv** ablation as my target — it's well-scoped, tractable, and tests a clean hypothesis about which primitives carry the cut shift.
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/definition.md
+    1	# C3.a — Arithmetic-primitive bounded-Kt VM — definition
+    2	
+    3	## Composition
+    4	
+    5	This construction is the explicit successor of C3 (S105) proposed in
+    6	`brandt_per_bit_results.md`. It composes the same two edges:
+    7	
+    8	- **E5.8** — Brandt 2024 is structurally welded to MKtP. The structural
+    9	  obstructions O1 / O2 / O3 / O4 to extending Brandt's TRAVERSE
+    10	  diagonalisation to fixed natural Boolean functions.
+    11	- **E1.3** — Per-bit difficulty of `p(n)` (and analogously of `π(x)`)
+    12	  has a sharp ~4-bit sigmoid boundary. For `π(x)` over `x ∈ [0, 2^N)`,
+    13	  the bits of `π(x)` partition into:
+    14	    * **hard** (LSB side, `J < ⌈N/2⌉`) — pseudorandom parities;
+    15	    * **easy** (MSB side, `J ≥ ⌈N/2⌉`) — match `Li(x)` smoothly;
+    16	    * **trivial** (`J ≥ J*(N)` where `J*(N) := ⌈log₂(π(2^N) + 1)⌉`) —
+    17	      identically zero because `π(2^N) < 2^J`.
+    18	
+    19	S105 found that the original 3-bit-per-op stack VM resolves only the
+    20	trivial cut at `J*(N) ≈ N − log₂ N`, **not** E1.3's smooth/oscillatory
+    21	cut at `0.5N`. The bounded-Kt simulator was structurally blind to the
+    22	arithmetic content distinguishing easy bits from hard bits.
+    23	
+    24	C3.a tests whether **augmenting the VM with arithmetic primitives**
+    25	(LOG2, LI_APPROX, DIV_LOG, GEO_SUM — the spec items proposed in S105's
+    26	successor block) shifts the bounded-Kt cut from `J*(N)` toward
+    27	`⌈N/2⌉`. The hypothesis is: if the VM can compute `Li(x)`, it should
+    28	compress the easy-zone bits `J ∈ [⌈N/2⌉, J*(N))` because those are
+    29	exactly the bits where `bit_J(π(x)) ≈ bit_J(Li(x))` to within
+    30	finite-x noise.
+    ... (105 more lines)
+Let me set up the construction directory and write the new sim with ablation support.
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation && ls /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/sim_ablation.c
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/sim_ablation.c
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation && gcc -O2 -shared -fPIC -o sim_ablation.so sim_ablation.c -lm && ls -la sim_ablation.so
+    -rwxr-xr-x 1 root root 15728 Apr 28 04:45 sim_ablation.so
+Compiled. Now write the Python runner.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation.py
+Now let me write definition.md before running.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/definition.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/definition.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+First a quick L_max=24 sanity run to verify reproduction of S150.
+  [Bash] python3 brandt_per_bit_arith_vm_ablation.py --L_max 24 --ablations baseline 2>&1 | head -60
+    ==============================================================================
+    C3.a.iv -- Arithmetic-primitive ABLATION of bounded-Kt VM
+    ==============================================================================
+    
+    L_MAX_EXT = 24 bits (6 nibbles), T_MAX = 4096, INT_CAP = 1000000000, INF = 37
+    
+    Targets: 18 per-bit cells over N = [3, 4, 5, 6]
+    
+    --- Ablation: baseline  forbidden = []
+        L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+        L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+        L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+        L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+        L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+        L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   5.93 s)
+        8,444,436 sims in 6.3s
+    
+        N    J    zone    J*   id0      baseline
+      ------------------------------------------
+        3    0    hard     3            24      
+        3    1    hard     3            29      
+        3    2    easy     3            23      
+        4    0    hard     3            37*     
+        4    1    hard     3            37*     
+        4    2    easy     3            33      
+        4    3    easy     3     Y      10      
+        5    0    hard     4            37*     
+        5    1    hard     4            37*     
+        5    2    hard     4            37*     
+        5    3    easy     4            33      
+    ... (30 more lines)
+Baseline matches S150 exactly. Now run all six ablations at L_max=28 (so N=6 J=4 cell is included).
+  [Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm/run_L28.txt | tail -90
+    ==============================================================================
+    C3.a -- Arithmetic-primitive bounded-Kt VM (S105 successor)
+    ==============================================================================
+    
+    Extended VM: 16 ops, 4-bit encoding, L_MAX_EXT = 28
+                 T_MAX = 4096, INT_CAP = 1000000000
+                 INF_EXT = 41
+    
+    Op set: 0=PUSH0, 1=PUSH1, 2=PUSH_N, 3=INC, 4=ADD, 5=SUB, 6=MUL, 7=SHR1, 8=LOG2, 9=LI, a=DIV_LOG, b=GEO_SUM, c=DUP, d=EMIT_S, e=EMIT0, f=HALT
+    
+    Targets: 5 calibration + 15 per-bit cells = 20
+    
+    Enumerating extended-VM programs up to L = 28 bits (C inner loop, batch evaluator):
+      L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+      L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+      L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+      L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+      L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+      L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   6.02 s)
+      L = 28 bits  (268,435,456 total, 137,124,626 simulated   t = 119.96 s)
+      Total simulations: 145,569,062
+      Done in 126.4 s.
+    
+    CALIBRATION -- Kt_b' on canonical targets:
+      0^16          Kt_b' =  10  L=4b, steps=   64  prog: EMIT_S
+      1^16          Kt_b' =  15  L=8b, steps=  128  prog: PUSH1, EMIT_S
+      (01)^8        Kt_b' =  15  L=8b, steps=  127  prog: EMIT_S, PUSH_N
+      step8         Kt_b' =  29  L=20b, steps=  318  prog: GEO_SUM, DIV_LOG, EMIT_S, PUSH_N, PUSH_N
+      step7_9       Kt_b' =  33  L=24b, steps=  382  prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    
+    ... (49 more lines)
+Run all 6 ablations at L_max=28. Estimated ~13 min total.
+  [Bash] python3 brandt_per_bit_arith_vm_ablation.py --L_max 28 2>&1 | tee run_L28.txt
+    Command running in background with ID: b3o6n85hi. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/b3o6n85hi.output
+While the run completes, let me read the edges to verify references.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -25
+    session78_critique.md
+    session79_a3_cayley_spectral_primality.md
+    session80_d4_szegedy_walk.md
+    session81_c6_pillar_tradeoff_diagram.md
+    session82_c2_spike_eigenvectors.md
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E '^session1[0-9][0-9]' | sort | tail -30
+    session128_l1_lean_w8_corner.md
+    session129_l1_lean_w12_corner.md
+    session130_frontier_gen.md
+    session131_d2a1i_ph_discrete_b4.md
+    session132_critique.md
+    session133_c7_fhk_amplitude_max.md
+    session134_d10_mahler_chi_p.md
+    session135_c8b_random_n6_resolution.md
+    session136_frontier_gen.md
+    session137_l1_lean_w18_corner.md
+    session138_d2a2_ph_w_scan.md
+    session139_critique.md
+    session140_d30_pollicott_ruelle_chi_p.md
+    session141_d5_ctqw_chi_p.md
+    session142_frontier_gen.md
+    session143_l1_lean_w20_corner.md
+    session144_l1_lean_w10_corner_and_search.md
+    session145_d29_cohn_elkies_chi_p.md
+    session146_f1_bit_J_pn_polylog_map.md
+    session147_critique.md
+    session148_frontier_gen.md
+    session149_d31_ahk_matroid_hodge.md
+    session150_c3a_arith_vm.md
+    session151_l1_lean_w9_blocktriangular_presearch.md
+    session152_l1_lean_w9_corner.md
+    session153_g2_liouville_mobius_gowers_uk.md
+    session154_frontier_gen.md
+    session155_critique.md
+    session156_a7_gct_chi_p_orbit.md
+    session157_d43_kpz_pi_li.md
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -c "session1[0-9][0-9]"
+    155
+    ---
+    60
+  [Bash] tail -30 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt 2>/dev/null
+    (Bash completed with no output)
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/b3o6n85hi.output 2>/dev/null | tail -30
+    (Bash completed with no output)
+  [Bash] ls /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/ 2>/dev/null; ls /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt 2>/dev/null
+    b3o6n85hi.output
+    bdtcjilqn.output
+    /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt && tail -20 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+    0 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/bdtcjilqn.output 2>/dev/null | head -10; echo "==="; pwd
+    ===
+    /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation
+  [Bash] ps aux | grep -i brandt_per_bit | grep -v grep; echo "---"; ls -la run_L28.txt 2>/dev/null; date
+    root     1429953  0.0  0.0   4756  3476 ?        Ss   04:47   0:00 /bin/bash -c source /apps/aplikacijos/.claude/shell-snapshots/snapshot-bash-1777351305907-ti1s44.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && eval 'python3 brandt_per_bit_arith_vm_ablation.py --L_max 28 2>&1 | tee run_L28.txt' < /dev/null && pwd -P >| /tmp/claude-fcf0-cwd
+    root     1429956  0.0  0.0  19628 14000 ?        R    04:47   0:37 python3 brandt_per_bit_arith_vm_ablation.py --L_max 28
+    ---
+    -rw-r--r-- 1 root root 0 Apr 28 04:47 run_L28.txt
+    Tue Apr 28 04:48:16 UTC 2026
+Process is running but output is buffered. Let me prep other deliverables in parallel — read the main edges file and key edge entries.
+  [Grep] ^### E1\.3|^### E5\.8|^### E1\.5|^### E5\.3|^## §
+    90:### E1.3 — Per-bit difficulty of p(n) is a sharp 4-bit sigmoid    [EVS H]
+    202:### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
+    2773:### E5.3 — Growing-dim MPOW in TC^0 = the only OPEN frontier         [EVS H]
+    2897:### E5.8 — Brandt 2024 is structurally welded to MKtP                 [EVS shape]
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    90	### E1.3 — Per-bit difficulty of p(n) is a sharp 4-bit sigmoid    [EVS H]
+    91	
+    92	`novel/carry_propagation_boundary.md`; S40
+    93	`experiments/wildcard/carry_propagation_boundary.py`.
+    94	
+    95	Bit positions 0-7 (MSB) match round(R^{-1}(n)) at ≥95%. Positions 8-9
+    96	are 80-90%. From bit 10 onward, agreement is 50% (coin flip). Width of
+    97	the "hard zone" is *only ~4 bits* and located at ~60% from MSB. For
+    98	N-bit p(n), the hard region is bits 0.6·N .. N (asymptotic).
+    99	
+    100	> Why this is an edge: the hard region has a sharp boundary, not a long
+    101	> tail. A method that produces *any* extra bit beyond R^{-1}(n)'s ceiling
+    102	> is enough — you don't have to break the whole barrier, only the first
+    103	> bit past the cliff.
+    104	
+    105	**Bounded-Kt refinement (S105, C3):** Under the 3-bit-per-op stack VM
+    106	of `experiments/constructions/brandt_mktp/` (L_MAX = 12, T_MAX = 4096),
+    107	the per-bit family `{s_J^(N) : J = 0..N-1}` for N ∈ {4..7} exhibits
+    108	its bounded-Kt cut at `J*(N) := ⌈log₂( π(2^N - 1) + 1 )⌉ ≈ N - log₂ N`,
+    109	**not** at the 0.5N boundary above. For J ≥ J*(N), `π_J ≡ 0` and
+    110	Kt_b ∈ {5..8}; for J < J*(N) — including E1.3's "easy zone"
+    111	J ∈ [⌈0.5N⌉, J*) — Kt_b saturates at INF = 61. Stack-VM-class programs
+    112	resolve only the *trivially-zero* boundary; the smooth/oscillatory
+    113	transition E1.3 detects via Fourier weight is invisible to bounded-Kt
+    114	at this resolution. Detecting it would require arithmetic primitives
+    115	in the VM (LOG2, LI_APPROX, the R^{-1} kernel) — proposed C3.a. See
+    116	`experiments/constructions/brandt_per_bit/`.
+    117	
+    118	**Arithmetic-VM refinement (S150, C3.a):** Under a 4-bit-per-op
+    119	extended VM with R⁻¹-kernel arithmetic primitives (LOG2, LI_APPROX,
+    ... (90 more lines)
+  [Bash] tail -2 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt 2>/dev/null; ls -la /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+    -rw-r--r-- 1 root root 0 Apr 28 04:47 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+  [Bash] ps -p 1429956 -o pid,etime,stat,rss,cmd --no-headers 2>/dev/null && echo "ALIVE"; date
+    1429956 441077230-13:47:44 R 14000 python3 brandt_per_bit_arith_vm_ablation.py --L_max 28
+    ALIVE
+    Tue Apr 28 04:48:33 UTC 2026
+  [Bash] sleep 180 && wc -c /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt && ps -p 1429956 -o pid,etime,stat,rss --no-headers 2>/dev/null
+    <tool_use_error>Blocked: sleep 180 followed by: wc -c /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt ps -p 1429956 -o pid,etime,stat,rss --no-headers. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>
+  [ToolSearch] 
+  [Bash] until ! kill -0 1429956 2>/dev/null; do sleep 5; done; echo "DONE"; date
+    Command running in background with ID: bxevzm18o. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/bxevzm18o.output
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    1	# Closed Paths: Master Lookup (545+ Approaches)
+    2	
+    3	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    4	
+    5	Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57 + S60-fresh-crit, 198+ sub-agents)
+    6	
+    7	## Failure Modes
+    8	- **C** = Circularity (needs primes to compute primes)
+    9	- **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    10	- **I** = Information Loss (smooth approximation loses critical bits)
+    11	
+    12	---
+    13	
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    19	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    20	| Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    21	| 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    22	| Higher-order n-correlations of zeta zeros at orders 4, 5, 6 (ATTACK_VECTORS §C2) | FAIL | I | First project measurement extending S25/S45/S57 from order 3 to orders 4-6 at N=8000 (γ ≤ 8148). Three independent probes with K=20 GUE Monte Carlo batches (N=2000, central 60% kept ~ 1200 evs each) AND K=20 gap-shuffled controls. (A) Equally-spaced R_n(0, s, ..., (n-1)s) for n=4,5,6 at s ∈ {0.5..5}: max \|z_vs_theory\| = 2.36σ (n=4, s=2.0); n=5 raw 6.0σ at s=2 reproduced by GUE batch (Poisson-shot-noise on `n_ref·tol⁴ ≈ 12`, NOT arithmetic). (B) k-th nearest-neighbor spacings P_k(s) for k=0..5 (probes up to 7-point correlation): rms vs GUE pool ∈ [0.09, 0.22]; per-bin \|z_vs_GUE_pool\| ≤ 1.5× sample noise. (C) Cumulants κ_n(L) for n=2..6 at L=1..64: at L≥8 all \|z\| < 2.1σ for n=3..6; κ_2 retains ~9σ rigidity z-score (E7.1 confirmed); κ_4, κ_6 huge \|z\| at L=1, 2 due to Riemann-vM-vs-semicircle finite-N unfolding mismatch (eliminated at L≥8). The Conrey-Snaith conjectural arithmetic correction at order n scales as 1/L² ≈ 0.024 with L=log(γ/2π)≈6.5; empirical noise floor 1/√(n_tuples) ≥ 0.3 at order n=5. Signal is 1.5+ orders below floor. Refines E7.1 from "GUE up to order 3" to "GUE up to order 6 across (P_k, R_n, κ_n)." Detection demands Odlyzko γ ≥ 10⁶ (cf. §C1 / S71 closure shares 1/L² scaling barrier). Promotes CROSS_DOMAIN_TECHNIQUES §1 row "Sine-kernel n-correlation determinant" implicit USED (n=2,3) → USED (n≤6) with mode E. See `experiments/analytic/zeta_structure/n_correlations_4_5_6/`, `archive/sessions/session122_c2_higher_order_zero_correlations.md`. | 122 |
+    23	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    24	| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    25	| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    26	| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    27	| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    28	| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    29	| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    30	| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    ... (50 more lines)
+  [Grep] brandt_per_bit|S150|S105|C3\.a|arith.*VM|bounded-Kt
+    775:[Omitted long matching line]
+    792:[Omitted long matching line]
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (48613 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] awk 'NR==775 || NR==792' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -c 2000
+    | C3 (NOVELTY_CHALLENGES §1) — Brandt obstructions × per-bit difficulty: per-bit family `{π_J : J = 0..N-1}` under bounded-Kt | REFINEMENT | E | Composition of E5.8 (Brandt-class barrier on π(x) mod 2 — `MKtP not in DTIME[O(n)]` from ePrint 2024/687, S51 closure) + E1.3 (per-bit difficulty profile of π(x), S28 — Fourier weight / influence / R-correlation cleanly stratify bits at boundary J ≈ 0.5N). Defined π_J(x) := bit J of π(x), s_J^(N) := (π_J(0), ..., π_J(2^N - 1)) ∈ {0,1}^(2^N), and the per-bit family F_N = {s_J^(N) : J = 0..N-1}. Imported brandt_mktp.py's bounded-Kt simulator (3-bit-per-op stack VM, ops {PUSH 0, PUSH 1, DUP, FLIP, RPT2, RPT4, ALT, HALT}, L_MAX = 12, T_MAX = 4096, INF = 61). Computed Kt_b(s_J^(N)) for N ∈ {3..7}, J ∈ [0, N-1]. **Pre-stated falsifiers (3 outcomes)**: F1 (uniform saturation → DUPLICATE-PLUS), F2 (J-stratified at E1.3's 0.5N cut), F3 (anomalous). **Result: F2 holds in the meaningful saturation regime N ≥ 4** (N=3 truth-tables are 8 bits long, below VM's saturation threshold and consistent but uninformative). Crucial sharpening: the bounded-Kt cut location is at **J*(N) := ⌈log₂(π(2^N - 1) + 1)⌉ ≈ N − log₂ N**, NOT at E1.3's 0.5N. For J ≥ J*(N), π_J ≡ 0 on [0, 2^N) and Kt_b ∈ {5..8} (program: RPT4 → 4-zeros-per-step). For J < J*(N) — including J's in E1.3's "easy zone" J ∈ [⌈0.5N⌉, J*) — Kt_b = INF = 61 (saturated). Concrete examples: N=5 J=3 (13/32 ones, R-correlated) saturates; N=6 J=3 (34/64 ones, R-correlated) saturates; N=7 J=4 (75/128 ones) saturates. Numerical cuts: N=4: J*=3 vs 0.5N=2 (gap +1); N=5: J*=4 vs 2.5 (gap +1.5); N=6: J*=5 vs 3 (gap +2); N=7: J*=5 vs 3.5 (gap +1.5). The bounded VM is **blind to E1.3's smooth/oscillatory transition** at the Fourier cut — it only resolves the *trivially-zero* boundary; bits in E1.3's "easy zone" but below J* saturate exactly like hard-zone bits. **Structural extension argument** (independent of empirical data): the four Br
+  [Bash] ps -p 1429956 -o pid,etime,stat,rss,cmd --no-headers 2>/dev/null && echo "ALIVE" || echo "DONE"; date; wc -c /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+    1429956 441077230-13:48:16 R 14000 python3 brandt_per_bit_arith_vm_ablation.py --L_max 28
+    ALIVE
+    Tue Apr 28 04:49:14 UTC 2026
+    0 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+While the run continues, let me draft the results.md template.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation_results.md
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9be38d7a-36ef-4e48-82c1-e274e9b718ca/tasks/bxevzm18o.output 2>/dev/null; ps -p 1429956 --no-headers 2>/dev/null && echo "STILL RUNNING" || echo "PROCESS DONE"
+    1429956 ?        00:02:15 python3
+    STILL RUNNING
+  [Bash] until ! kill -0 1429956 2>/dev/null; do sleep 30; done; echo "DONE"; date; wc -l /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+    DONE
+    Tue Apr 28 04:55:27 UTC 2026
+    205 /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+Run finished. Let me read the results.
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/run_L28.txt
+    1	==============================================================================
+    2	C3.a.iv -- Arithmetic-primitive ABLATION of bounded-Kt VM
+    3	==============================================================================
+    4	
+    5	L_MAX_EXT = 28 bits (7 nibbles), T_MAX = 4096, INT_CAP = 1000000000, INF = 41
+    6	
+    7	Targets: 18 per-bit cells over N = [3, 4, 5, 6]
+    8	
+    9	--- Ablation: baseline  forbidden = []
+    10	    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    11	    L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+    12	    L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+    13	    L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+    14	    L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+    15	    L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   6.46 s)
+    16	    L = 28 bits  (268,435,456 total, 137,124,626 simulated   t = 114.20 s)
+    17	    145,569,062 sims in 121.0s
+    18	
+    19	--- Ablation: drop_LOG2  forbidden = ['LOG2']
+    20	    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    21	    L =  8 bits  (        256 total,          54 simulated   t =   0.00 s)
+    22	    L = 12 bits  (      4,096 total,       1,100 simulated   t =   0.00 s)
+    23	    L = 16 bits  (     65,536 total,      20,040 simulated   t =   0.01 s)
+    24	    L = 20 bits  (  1,048,576 total,     344,432 simulated   t =   0.22 s)
+    25	    L = 24 bits  ( 16,777,216 total,   5,719,584 simulated   t =   4.50 s)
+    26	    L = 28 bits  (268,435,456 total,  92,941,760 simulated   t =  75.89 s)
+    27	    99,026,972 sims in 80.6s
+    28	
+    29	--- Ablation: drop_LI  forbidden = ['LI']
+    30	    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    ... (176 more lines)
+The result is informative and unexpected — **F4** for the easy zone (no single primitive necessary). Let me write up the full results.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation_results.md
+    The file /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation/brandt_per_bit_arith_vm_ablation_results.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now update NOVELTY_CHALLENGES.md to mark C3.a.iv as built.
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    414	**Successor challenges (proposed in S150):**
+    415	
+    416	**C3.a.i — L_max = 32 sweep.** At L_max=32 (4.3B programs, ~5h with current C simulator; doable with multi-core), test whether `(N=6, J=3)` finally compresses. If yes, the F1 cut would extend to N=6 and the hypothesis "L_max needs only ~ target_len bits to reach E1.3's `⌈N/2⌉` boundary" gets one more confirmation. Cost: 1 session with parallelism.
+    417	
+    418	**C3.a.ii — Random-program sampling at larger N.** Run N=7 (target_len=128) with random sampling of K=10⁹ random 128-bit programs (full enumeration intractable). Test whether the within-easy-zone J-monotone hierarchy persists at larger N. Cost: 1 session.
+    419	
+    420	**C3.a.iii — VM-budget vs RH-scale.** S146 found the bit-level RH-scale anti-correlation valley sits at `J* = ⌊log₂(p(N))/2⌋` (Skewes-direction error scale). Test whether the VM-budget threshold `L_max(J)` for compressing bit J of π scales with the RH error magnitude. If `L_max(J) ∝ √π(2^N) · log` near the RH-scale J, this would be the first project link between **bounded-Kt complexity** and **RH-shadow bit phenomena** (S146). Cost: 1-2 sessions.
+    421	
+    422	**C3.a.iv — Drop / swap arithmetic primitives.** Re-run with single primitives ablated to identify which are NECESSARY for the cut shift. Hypothesis: LI is the only strictly-necessary one; LOG2 and DIV_LOG are convenience; GEO_SUM is incidental. Cost: 1 session.
+    423	
+    424	**Save under:** `experiments/constructions/brandt_per_bit/` (C3); `experiments/constructions/brandt_per_bit_arith_vm/` (C3.a).
+    425	
+    426	### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle — **BUILT (S120)**
+    427	**Edges:** E6.6 + E6.8 + E5.1
+    428	**Object:** Build a *unified* p(n) library that combines all three: Aggarwal's `O(sqrt(n) log^4 n)` binary-search reduction, Dusart's narrow bracket of width n, and BPSW as a TC⁰ primality oracle. The composition is non-trivial because BPSW is conditional. Build it, benchmark vs `algorithms/v10_c_accelerated.py`. The novel content is whether the conditional BPSW step propagates correctly through Aggarwal's wrapper.
+    429	**Why novel:** No published primecount-style library combines all three. Even the integration is publishable.
+    430	**Falsification:** Wall-clock benchmarks at p(10^k) for k = 6, 9, 12, 15.
+    431	**Outcome (S120):** Three modes built (`agg`, `bpsw`, `hybrid`); F1 (sympy.prime agreement) HOLDS at n ∈ {10⁴..10⁷}; F3 (hybrid 10×-faster than bpsw) HOLDS at 21×/34×/53× over n ∈ {10⁴..10⁶}; F2 (hybrid 1.5×-faster than agg) HOLDS only with C-accelerated pi (1.64× at n = 10⁷); fails in pure Python (1.30×); F4 (U-shape K-curve) HOLDS only with fast pi oracle: optimal `K*` shifts as `K* ~ pi_cost / bpsw_cost`. **Net new content**: (a) **K* depends on the pi/bpsw cost ratio** — Python `pi_lucy`: K* = width (composition collapses to E6.8 + E5.1, no Aggarwal narrowing); C-Lucy: K* ≈ 16K ≈ √width at n = 10⁷; HKM projection: K* small constant. This cost-ratio knob is invisible in Aggarwal 2025's asymptotic analysis. (b) **BPSW conditionality propagates 1-to-1 through Aggarwal's wrapper**, not amplified — a single BPSW pseudoprime in the final bracket shifts the answer by exactly one prime; the wrapper does not compound conditionals. (c) **Dusart bracket alone is worth ~50× over naive BPSW-from-2** (predicted `2 log p_n`, observed 21-53×). **Closure mode E** (constant-factor re-arrangement; no asymptotic improvement). The asymptotic falsifier on p(10^k) for k ≥ 9 is bottlenecked by Lucy DP / HKM in pi(x), not by the composition itself. Cites E5.1, E6.6, E6.8 (annotated S120). See `algorithms/aggarwal_dusart_bpsw/`.
+    432	**Status:** BUILT, no polylog opening. Closure row in CLOSED_PATHS.md (S120). E5.1, E6.6, E6.8 annotated in EDGES.md.
+    433	**Save under:** `algorithms/aggarwal_dusart_bpsw/` (working algorithm goes in `algorithms/`, not `experiments/constructions/`).
+  [Edit] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    The file /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md has been updated successfully.
+Now annotate EDGES.md (E1.3) with the primitive-class-robustness refinement.
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    147	
+    148	Caveats: (a) at L_max > target_len = 2^N the hard zone artefactually
+    149	"compresses" via combinatorial saturation (e.g. L_max = 28 spuriously
+    150	compresses N=4 hard-zone bits J=0,1 because 28-bit programs can
+    151	express any 16-bit pattern combinatorially); the meaningful regime
+    152	is `L_max ≤ target_len`. (b) The compressing programs grow with N
+    153	(no fixed polylog program), so this is **not** an unconditional
+    154	polylog circuit on `π_J`; it is a finite-N bounded-Kt-resolution
+    155	statement. (c) The structural Brandt obstructions O1–O4 (E5.8) are
+    156	unaffected by the VM choice — empirical compressibility of some
+    157	`s_J^(N)` does not yield a Brandt-style diagonalisation. See
+    158	`experiments/constructions/brandt_per_bit_arith_vm/`.
+    159	
+    160	**LSB-side refinement (S146, F1).** Direct bit-position measurement
+    161	on N=π(2·10⁸)≈1.1·10⁷ primes (`experiments/wildcard/bit_J_pn_polylog_map/`)
+    162	produces three findings refining E1.3:
+    163	
+    164	(i) **bit_0(p(n)) is trivially polylog.** For n ≥ 2, `p(n)` is odd, so
+    165	`bit_0(p(n)) = 1` deterministically. The constant predictor achieves
+    166	ag = 1.000. Yet `Li^{-1}(n)`'s LSB is essentially uniform mod 2, so
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+Now add a CLOSED_PATHS row. Let me find the right section.
+  [Bash] grep -n "^| C3 " /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    775:| C3 (NOVELTY_CHALLENGES §1) — Brandt obstructions × per-bit difficulty: per-bit family `{π_J : J = 0..N-1}` under bounded-Kt | REFINEMENT | E | Composition of E5.8 (Brandt-class barrier on π(x) mod 2 — `MKtP not in DTIME[O(n)]` from ePrint 2024/687, S51 closure) + E1.3 (per-bit difficulty profile of π(x), S28 — Fourier weight / influence / R-correlation cleanly stratify bits at boundary J ≈ 0.5N). Defined π_J(x) := bit J of π(x), s_J^(N) := (π_J(0), ..., π_J(2^N - 1)) ∈ {0,1}^(2^N), and the per-bit family F_N = {s_J^(N) : J = 0..N-1}. Imported brandt_mktp.py's bounded-Kt simulator (3-bit-per-op stack VM, ops {PUSH 0, PUSH 1, DUP, FLIP, RPT2, RPT4, ALT, HALT}, L_MAX = 12, T_MAX = 4096, INF = 61). Computed Kt_b(s_J^(N)) for N ∈ {3..7}, J ∈ [0, N-1]. **Pre-stated falsifiers (3 outcomes)**: F1 (uniform saturation → DUPLICATE-PLUS), F2 (J-stratified at E1.3's 0.5N cut), F3 (anomalous). **Result: F2 holds in the meaningful saturation regime N ≥ 4** (N=3 truth-tables are 8 bits long, below VM's saturation threshold and consistent but uninformative). Crucial sharpening: the bounded-Kt cut location is at **J*(N) := ⌈log₂(π(2^N - 1) + 1)⌉ ≈ N − log₂ N**, NOT at E1.3's 0.5N. For J ≥ J*(N), π_J ≡ 0 on [0, 2^N) and Kt_b ∈ {5..8} (program: RPT4 → 4-zeros-per-step). For J < J*(N) — including J's in E1.3's "easy zone" J ∈ [⌈0.5N⌉, J*) — Kt_b = INF = 61 (saturated). Concrete examples: N=5 J=3 (13/32 ones, R-correlated) saturates; N=6 J=3 (34/64 ones, R-correlated) saturates; N=7 J=4 (75/128 ones) saturates. Numerical cuts: N=4: J*=3 vs 0.5N=2 (gap +1); N=5: J*=4 vs 2.5 (gap +1.5); N=6: J*=5 vs 3 (gap +2); N=7: J*=5 vs 3.5 (gap +1.5). The bounded VM is **blind to E1.3's smooth/oscillatory transition** at the Fourier cut — it only resolves the *trivially-zero* boundary; bits in E1.3's "easy zone" but below J* saturate exactly like hard-zone bits. **Structural extension argument** (independent of empirical data): the four Brandt obstructions O1-O4 still apply to every fixed π_J in the per-bit family. (O1) Each π_J is a fixed total Boolean function; per-bit decomposition is parameter-controlled but each π_J is not oracle-dependent. (O2) π_J answers "is bit J of π(x) set", not "is z complicated"; no self-referential Kt inequality. (O3) The per-bit family supplies J*(N) ≈ N − log₂ N strings per N, but they are FIXED, not traversal-path-dependent fresh prefixes — Brandt's Lemma 2 needs an infinite supply of growing-length Kt-random prefixes generated on demand by oracle access, not a finite stack of pre-determined strings. (O4) Uniform DTIME bound, not circuit. The "minimal weakening of O1 admitting Brandt's TRAVERSE" the C3 spec asked about does NOT exist on {π_J : J = 0..N-1}. **Closure mode E** (equivalence): per-bit decomposition is structurally orthogonal to Brandt's diagonalisation skeleton; C3 reduces to E5.8 wholesale at the structural level. **Empirical novelty** (the only new content beyond E5.8 + E1.3): bounded-Kt cut location J*(N) ≈ N − log₂ N is a quantitative sharpening of E1.3's Fourier cut, expressing the limit of what stack-VM-class programs can resolve about per-bit difficulty. Detecting the smooth/oscillatory transition at the Kt level would require a richer VM with arithmetic primitives (LOG2, LI_APPROX, DIV_LOG, GEO_SUM — the R^{-1} kernel) — proposed as successor C3.a. **Cross-domain ingredient**: Brandt 2024 ePrint 2024/687 bounded-Kt simulator (3-bit stack VM), reused from S51. **Adds new finite-N empirical fact** (not previously measured): per-bit Kt-bounded cut at J*(N) ≈ N − log₂ N, gap to E1.3's 0.5N cut grows as 0.5N − log₂ N. Cites E5.8, E1.3, E1.9, E5.3. See experiments/constructions/brandt_per_bit/. | 105 |
+  [Bash] grep -n "^| C3.a " /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    792:| C3.a (NOVELTY_CHALLENGES §1, S105 successor) — Arithmetic-primitive bounded-Kt VM × per-bit difficulty: does adding LOG2 / LI_APPROX / DIV_LOG / GEO_SUM to the bounded-Kt simulator shift the cut on `s_J^(N) := (bit_J(π(0)),...,bit_J(π(2^N-1)))` from S105's `J*(N) ≈ N − log₂ N` toward E1.3's `⌈N/2⌉`? | REFINEMENT | E | Composition of E5.8 (Brandt-class barrier — structural argument inherited unchanged) + E1.3 (per-bit difficulty profile — refined inline). Built 4-bit-per-op extended VM (16 ops: 8 base {PUSH0/1/N, INC, ADD, SUB, MUL, SHR1, DUP, EMIT_S, EMIT0, HALT} + 4 R^{-1}-kernel arithmetic primitives {LOG2, LI_APPROX, DIV_LOG, GEO_SUM}) with integer stack alongside bit-emit stream; T_MAX = 4096, INT_CAP = 10⁹. C inner loop (`sim.c → sim.so`) batch-evaluates one program against all targets simultaneously; pre-skip of programs with no EMIT in pc cycle saves ~50% of enumeration. **Pre-stated falsifiers**: F1 (full shift to ⌈N/2⌉ — every easy-J compresses, every hard-J saturates); F2 (no shift — easy zone all saturated as in original VM, DUPLICATE-PLUS); F3 (intermediate hierarchy — some easy J compress, others saturate). **Result: F3 holds globally (intermediate hierarchy)**, with structure: per-N at L_max=24 (matched to target_lens 16/32/64), the cut moves fully to ⌈N/2⌉ for N ∈ {4, 5} and reverts to J*(N) for N=6; at L_max=28, N=6 partially shifts (J=4 compresses, J=3 still saturates). **Within-easy-zone J-monotone hierarchy identified**: bits closer to J*(N) (the trivial-zero boundary) compress at smaller L_max; bits closer to ⌈N/2⌉ (the E1.3 hard-easy boundary) require larger L_max — the bounded-Kt cost of bit-J of π is empirically monotone in N − J. **Headline compressing programs (L_max=24)**: (N=4, J=2) Kt_b'=33 prog `ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N` — emits `bit_0(LI(LI(2x)))` which EXACTLY matches `bit_2(π(x))` on [0, 16); (N=5, J=3) Kt_b'=33 prog `EMIT_S, LI, DUP, INC, PUSH_N, PUSH0`. Triple-LI program `EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S` (L=28) compresses (N=6, J=4). **Falsified**: original C3 spec's S105 prediction "if YES, R^{-1}-kernel-equipped VM resolves the smooth/oscillatory transition" was correct AT SMALL N (4, 5) but breaks at N=6; the predicted full shift is L_max-budget limited. **Negative content**: hard-zone (J < ⌈N/2⌉) cells remain saturated at L_max ≤ target_len for every tested N ≥ 4; no compressing programs found within budget for hard bits. The structural orthogonality of Brandt's TRAVERSE to the per-bit family (all four obstructions O1-O4 of E5.8) is unaffected by VM choice — empirical compressibility of some `s_J^(N)` does not enable a Brandt diagonalisation. **Quantitative regime caveat**: at L_max > target_len the hard-easy distinction begins to fray (e.g. L_max=28 spuriously "compresses" N=4 hard zone J=0,1 because 28-bit programs can express any 16-bit pattern combinatorially); the meaningful regime is L_max ≤ target_len. **Refines E1.3 inline** with VM-richness hierarchy: 3-bit stack VM cuts at J*(N), 4-bit arith VM cuts at ⌈N/2⌉ for N ≤ 5 with within-easy-zone monotone J-ranking. Cross-domain ingredient: arithmetic-augmented bounded-Kt simulator (analogous to Levin Kt with non-trivial primitive set) — first project use of Li-kernel primitives inside Kt simulator. **Adds new finite-N empirical fact** (not previously measured): bounded-Kt cut location is VM-richness-AND-N-dependent with explicit hierarchy. Cites E5.8 (unchanged), E1.3 (refined inline), E1.5, E1.9 (LSB still saturates), E5.3. Successors proposed (S150): C3.a.i L_max=32 sweep (resolves N=6, J=3); C3.a.ii larger N at random-program sampling; C3.a.iii VM-budget vs RH-scale linkage to S146 F1 results; C3.a.iv ablation drop/swap of arithmetic primitives. See `experiments/constructions/brandt_per_bit_arith_vm/`, `archive/sessions/session150_c3a_arith_vm.md`. | 150 |
+  [Bash] awk 'NR>=790 && NR<=800' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -c 600
+    | §D5 ATTACK_VECTORS — Continuous-time quantum walk on the divisor / coprime graph: does U(t) = exp(−iH t) with seed `|1⟩` and target `v_p = (1/√π(x)) Σ_{p≤x} |p⟩` concentrate amplitude polylogarithmically on primes (Childs glued-tree analogue)? (cross-domain: Childs 2009 PRL 102 = arXiv:0806.1972 + Childs-Cleve-Deotto-Farhi-Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131) | FAIL | E | Frontier wild_swing S141 on the natural CTQW successor to D4 (S80, Szegedy closed E). H_G ∈ {A, L = D − A} on G ∈ {D_x, C_x}. Eigendecomposition U(t) = Σ_k e^{−iλ_k t} u_k u_k^T; amp
+  [Bash] awk 'NR==792' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | tail -c 200
+    scale linkage to S146 F1 results; C3.a.iv ablation drop/swap of arithmetic primitives. See `experiments/constructions/brandt_per_bit_arith_vm/`, `archive/sessions/session150_c3a_arith_vm.md`. | 150 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update RESEARCH_AGENDA.md (Arc 4) and SESSION_INSIGHTS.md.
+  [Bash] grep -n "Arc 4\|Composition over EDGES\|^## Arc" /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md | head -20
+    531:* **Route B (Vandermonde / Dirichlet character).** Depends on the Arc 4
+    572:### Arc 4 — Composition over EDGES.md
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    572	### Arc 4 — Composition over EDGES.md
+    573	**Status:** IN PROGRESS — S135 (C8.b: random-control F4 resolution at N=6 via column enumeration)
+    574	**Owner:** any agent
+    575	**Goal:** Systematically explore the "compose two edges" challenge space.
+    576	See `NOVELTY_CHALLENGES.md` §1.
+    577	
+    578	**Milestones:**
+    579	- [x] **C1 (A⊕C₃ × per-step invariant) — BUILT S70.** All three predictions
+    580	  PASS at N = 2·10⁶. New deliverables: (a) per-component closed form
+    581	  extended from π to A, C_3 (mechanism is universal for monotone
+    582	  Ω-stratified counters); (b) new joint closed form for `g_q`:
+    583	  `H(g_q(x) | g_q(x−1)) = H_3(1−ρ_A, ρ_π, ρ_C3)`; (c) q-stable
+    584	  strengthening of E1.6 marginal independence to q ∈ {2..13}, MI
+    585	  ≤ 1.2·10⁻⁴ bits. No polylog opening — components are pseudorandom at
+    586	  full per-step rate. See
+    587	  `experiments/constructions/g_q_bisection_invariant/`.
+    588	- [x] **C5 (N/2 universality × non-π Boolean class) — BUILT S71.**
+    589	  4-measure subset of E1.4 battery (comm-rank, BM-LFSR, approximate
+    590	  degree, PTF degree) on {f_pi, f_sqfree, f_mu_pos, f_lam_pos,
+    591	  f_sqfree3, density-matched PRF} at N up to 14. Three new deliverables:
+    592	  (a) **N/2 universality is NOT universal** — it holds tightly only for
+    593	  the parity-of-Omega family {chi_P, mu_pos, lam_pos} at approximate /
+    594	  PTF degree, refining E1.4's scope; (b) **three exact closed-form
+    595	  rank identities**: rank(M_chi_P) = 2^{N/2-1}+1, rank(M_sqfree) =
+    596	  rank(M_mu_pos) = 3·2^{N/2-1}, rank(M_lam_pos) = 2^{N/2}; (c) a
+    597	  **structural unification of E2.7 + E2.8** via the column-zero density
+    598	  principle `rank(M_f^{balanced}) ≤ (1−ρ_f)·2^{N/2}`. No polylog
+    599	  opening. See `experiments/constructions/n_over_2_universality_class/`.
+    600	- [x] **C2 (free cumulants × MPS bond-dim) — BUILT S74.** Three-part
+    601	  structure of χ_P MPS unfolding spectrum: (a) finite structural peak
+    ... (60 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    645	  bits closer to `J*(N)` compress at smaller L_max. **Refines
+    646	  E1.3** with VM-richness × N-dependent cut hierarchy (annotated
+    647	  EDGES.md). E5.8 unchanged (structural Brandt obstructions
+    648	  independent of VM choice). Iterated LI applications are the
+    649	  dominant compression mechanism. Successors C3.a.{i, ii, iii, iv}
+    650	  proposed. CLOSED_PATHS row added (S150). See
+    651	  `experiments/constructions/brandt_per_bit_arith_vm/`.
+    652	- [x] **C4 (Aggarwal × Dusart × BPSW unified library) — BUILT S120.** Three
+    653	  modes (`agg`, `bpsw`, `hybrid`); composition agrees with `sympy.prime`
+    654	  at n ∈ {10⁴..10⁷}. F3 (hybrid ≥ 10× bpsw) HOLDS uniformly (21×/34×/53×).
+    655	  F2 (hybrid ≥ 1.5× agg) HOLDS with C-accelerated pi (1.64× at n=10⁷),
+    656	  PARTIALLY FAILS in pure Python (1.30× — Lucy-DP-call cost dominates).
+    657	  F4 (U-shape K-curve) HOLDS with fast pi oracle: K* ≈ 16K ≈ √width at
+    658	  n=10⁷ with C-Lucy; in pure Python the curve is monotone-decreasing and
+    659	  optimum is K = width (Aggarwal narrowing is negative-value). **Three
+    660	  new structural findings**: (a) optimal K depends on pi/bpsw cost ratio
+    661	  — a knob invisible at asymptotic order (Aggarwal 2025 quotes worst-
+    662	  case K = 1, the Aggarwal-pure regime); (b) BPSW conditional propagates
+    663	  1-to-1 through Aggarwal's wrapper, not amplified; (c) Dusart bracket
+    664	  alone is worth 50× over naive BPSW-from-2 (predicted 2 log p_n,
+    665	  observed 21-53×). No polylog opening. CLOSED_PATHS row added (S120).
+    666	  E5.1, E6.6, E6.8 annotated. See `algorithms/aggarwal_dusart_bpsw/`.
+    667	- [x] **C7 (calibrated 1-bit-bias random control × S84 depth-2 gap) — BUILT S89.**
+    668	  Composes E1.10 / E3.13 with the S84 PRIMES-vs-unbiased-random
+    669	  depth-2 sign-threshold W=1 gap at N=6. Class-conditional matched
+    670	  random `f_cal` on {0..63}: P(f_cal=1 | x odd) = 17/32, P(f_cal=1 |
+    671	  x even) = 1/32 (matching PRIMES exactly). 20 stratified + 20
+    672	  bernoulli samples through S84's `enum_d2_smart` ILP harness
+    673	  (K=1458 W=1 candidates, CBC, 120s/cell). **Result: F2 + F3 + F4
+    674	  pre-stated falsifiers HOLD; F1 fails.** Stratified histogram = {5: 4,
+    ... (10 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now add an entry to status/SESSION_INSIGHTS.md.
+  [Bash] head -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    # Session-by-Session Key Insights
+    
+    Detailed findings from each research session. Read the relevant session
+    if you need deep context on a specific topic. For a quick overview,
+    see the Status section of CLAUDE.md.
+    
+    ---
+    
+    ## Session 12
+    - "Is pi(x) in NC?" is EQUIVALENT to our target.
+      All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    
+    ## Session 13
+    (a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+        PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+        Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    (b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+        No GF(2) algebraic shortcut for counting primes.
+    (c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    (d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    (e) No new algorithmic breakthroughs in 2025-2026 literature.
+    
+    ## Session 14
+    (a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+        PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+        NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    (b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+        smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+        A GapL algorithm MUST avoid floor functions entirely.
+    (c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+  [Bash] grep -nE "^## Session 1(5[5-9]|6[0-9])" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    6784:## Session 156 — Frontier attack §A.A7: GCT orbit-dim invariants of f_χ_P^{(n)} (B-grade, mode E partial closure)
+    6901:## Session 157 (D43 frontier_attack — Hairer/KPZ on `D(x)=(π(x)-Li(x))log(x)/√x`)
+  [Bash] tail -20 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+      any arithmetic function, first project import of Hairer regularity
+      structures / KPZ universality. New edge E2.27 (11th orthogonal
+      pseudorandomness category, regularity-structures / Tracy-Widom).
+    
+    **Files:** `experiments/analytic/kpz_pi_li_d43/` (`d43_kpz_pi_li.py`,
+    `sweep_logX.py`, `spectral_signature.py`, `wide_spectrum.py`, +
+    results.md, +3 results.json); EDGES.md (+E2.27 entry, ~100 lines);
+    CLOSED_PATHS.md (+1 row in "Encoding / Novel Representations" section);
+    ATTACK_VECTORS.md (D43 marked PARTIAL CLOSURE; KPZ-grid Hölder + TW2
+    sub-frame closed, D43.b/D43.c sub-frames OPEN);
+    CROSS_DOMAIN_TECHNIQUES.md (§3 Hairer/KPZ/TW2 row updated PROPOSED →
+    USED PARTIAL with mode E and edge E2.27); NOVELTY_CHALLENGES.md
+    (D43.b, D43.c successor challenges added).
+    
+    **Next action:** D43.b — extend Hölder measurement to logX=28 (X=2²⁸=268M,
+    ~5x current cost); does α(D) drift toward 1/2 with X (asymptotic KPZ-creep)
+    or stay flat at 0.85 (conclusively reject KPZ)? Alternative: D43.c — replace
+    `π(x) − Li(x)` with K-truncated explicit-formula residual `π(x) − Li(x) −
+    Σ_{k≤K} 2 Re Li(x^{ρ_k})` for K ∈ {10, 100, 1000}; does the residual have
+    α<1/2 Hölder roughness after subtracting leading K oscillations?
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    6956 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'INSIGHTS_EOF'
+
+## Session 158 (C3.a.iv — Arithmetic-primitive ablation of bounded-Kt VM)
+
+- **Verdict F4 holds for the easy zone (E1.3 boundary).** The S150
+  bounded-Kt cut shift documented in C3.a is **arithmetic-primitive-
+  class robust, not LI-specific.** Six-condition ablation on `{LOG2,
+  LI, DIV_LOG, GEO_SUM}` at L_max=28 over N ∈ {3, 4, 5, 6} (1.6B
+  programs scanned in 463 s wall-time): every easy-zone cell
+  `{(3,2), (4,2), (5,3), (6,4)}` that compresses in baseline also
+  compresses under every single-drop AND under only_LI.
+
+- **Compressing-program substitution catalogue.** `drop_LI`'s
+  alternatives at L≤24 cells: `(N=3,J=2)` `EMIT_S, PUSH_N, GEO_SUM,
+  EMIT_S` (GEO_SUM); `(N=4,J=2)` `GEO_SUM, DIV_LOG, EMIT_S, PUSH_N,
+  INC, PUSH_N`; `(N=5,J=3)` `EMIT_S, INC, LOG2, DUP, PUSH_N, PUSH0`
+  (LOG2 ALONE substitutes for LI). Only the L=28 `(N=6, J=4)` cell
+  shows a +1-bit penalty when LI is removed.
+
+- **Refutes the narrowest reading of S150.** S150's "iterated LI is
+  the dominant compression mechanism" is technically correct (LI
+  programs are the cleanest realization in 3 of 4 cells) but
+  misleading: LI is one of four substitutable mechanisms, not the
+  unique cause of the easy-zone shift. The optimum-program
+  disassembly does not faithfully indicate primitive causality.
+
+- **Hard-zone primitive sensitivity differs.** Meaningful (L<target_len)
+  cell `(N=5, J=2)` requires LI ∧ DIV_LOG: drop_LI saturates,
+  drop_DIV_LOG saturates, drop_LOG2 and drop_GEO_SUM preserve. The
+  compressing program `DIV_LOG, LI, SHR1, SHR1, EMIT_S, PUSH_N,
+  PUSH0` realizes a structurally distinct floor(b/log a) >> 2 mod 2
+  mechanism — orthogonal to the easy-zone iterated-slow-grower
+  family. Hard-zone (where it occurs) requires specific primitive
+  combinations; easy-zone is class-redundant.
+
+- **Refines E1.3 (annotated EDGES.md).** Adds primitive-class-robustness
+  refinement: the cut shift is driven by the FAMILY of slow-growing-
+  integer-function primitives, not by LI specifically. CLOSED_PATHS
+  row added (S158); successors C3.a.iv.{α, β} proposed
+  (large-N gap scaling, alternative primitive set).
+
+- **Self-grade: B (substantive refinement of E1.3 + C3.a/S150).**
+  Result was non-obvious; the hypothesis "LI is the only strictly-
+  necessary primitive" was the stated prior, and was refuted at the
+  easy zone. New artifacts: per-cell ablation table, alternative
+  compressing programs, primitive-pair necessity at hard-zone (5,2).
+  Not A-grade (no new structural opening on the polylog-π frontier).
+
+**Files:** `experiments/constructions/brandt_per_bit_arith_vm_ablation/`
+(`brandt_per_bit_arith_vm_ablation.py`, `sim_ablation.c`,
+`sim_ablation.so`, `definition.md`, `brandt_per_bit_arith_vm_ablation_results.md`,
+`run_L28.txt`); EDGES.md (E1.3 +primitive-ablation refinement);
+CLOSED_PATHS.md (+1 row after C3.a row); NOVELTY_CHALLENGES.md (C3.a.iv
+marked BUILT, successors C3.a.iv.α and C3.a.iv.β proposed);
+RESEARCH_AGENDA.md (Arc 4 milestone added).
+
+**Next action:** C3.a.iv.α — N=7 random-program sampling at L_max=32
+under (baseline) and (drop_LI) to see if the +1-bit gap at (N=6, J=4)
+grows with N. If it does, LI gains strict asymptotic advantage; if not,
+F4 family-robustness extends. Alternative: C3.a.iv.β — replace one of
+{LOG2, LI, DIV_LOG, GEO_SUM} with an alternative slow-grower (LN,
+INV_LI, ZETA_K) and re-test F4.
+INSIGHTS_EOF
+echo "appended"
+    appended
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session158_c3aiv_arith_vm_ablation.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session158_c3aiv_arith_vm_ablation.md
+Now run the cleanup check and finish.
+  [Bash] cd /apps/aplikacijos/prime-research && find experiments/constructions/brandt_per_bit_arith_vm_ablation -name "*.py" | while read f; do
+  r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"
+done; echo "---"; ls experiments/constructions/brandt_per_bit_arith_vm_ablation/
+    ---
+    brandt_per_bit_arith_vm_ablation.py
+    brandt_per_bit_arith_vm_ablation_results.md
+    definition.md
+    run_L28.txt
+    sim_ablation.c
+    sim_ablation.so
+  [Bash] find /apps/aplikacijos/prime-research/experiments/constructions/brandt_per_bit_arith_vm_ablation -name "__pycache__" -type d 2>/dev/null
+    (Bash completed with no output)
+No stragglers. Mark all tasks complete and write the .run_state.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] echo 156 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    156
+Session complete.
+
+**Built C3.a.iv** — ablation experiment on the C3.a bounded-Kt VM at L_max=28, six conditions over `{LOG2, LI, DIV_LOG, GEO_SUM}`. 1.6B programs, 463 s wall-time.
+
+**Verdict F4 for the easy zone** (E1.3 boundary): **no single arithmetic primitive is strictly necessary** for the S150 cut shift. Every easy-zone cell `{(3,2), (4,2), (5,3), (6,4)}` survives every single-drop AND `only_LI`. Surfaced new compressing programs without LI — notably `(N=5, J=3)` compresses with `LOG2` alone. Hard-zone meaningful cell `(N=5, J=2)` orthogonally requires LI ∧ DIV_LOG.
+
+**Refutes S150's narrowest reading** that "iterated LI is the dominant compression mechanism" — LI is the cleanest realization but is one of four substitutable mechanisms. **Refines E1.3 inline**: cut shift is primitive-class-robust, not LI-specific.
+
+Files: `experiments/constructions/brandt_per_bit_arith_vm_ablation/` (sim_ablation.{c,so}, runner, definition.md, results.md, run_L28.txt); EDGES.md (E1.3 +ablation refinement); CLOSED_PATHS.md (+1 row, S158); NOVELTY_CHALLENGES.md (C3.a.iv → BUILT, +successors C3.a.iv.α and C3.a.iv.β); RESEARCH_AGENDA.md Arc 4 milestone; SESSION_INSIGHTS S158 entry; session158 synthesis.
+
+**Self-grade: B** (substantive refinement of E1.3 + C3.a; result was non-obvious, refuted the stated F1 prior). `.run_state` set to 156.
+--- Session ended ---
+Sleeping 60 seconds before next run...

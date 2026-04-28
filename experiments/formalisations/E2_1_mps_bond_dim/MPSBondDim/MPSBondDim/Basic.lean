@@ -2894,4 +2894,2251 @@ theorem mps_bond_dim_W_eq_18_d_eq_j_plus_1
     calc (7 : ℕ) = ((unfolding 18 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
       _ ≤ (unfolding 18 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
 
+/-! ## W = 20 corner section (S143)
+
+The `(W = 20, d = j + 1)` corner case of `mps_bond_dim`.
+-/
+
+/-- `chiP 47 = 1` since `47` is prime. -/
+theorem chiP_forty_seven_eq_one : chiP 47 = 1 := by
+  have h_prime_47 : Nat.Prime 47 := by norm_num
+  simp [chiP, h_prime_47]
+
+/-- `chiP 149 = 1` since `149` is prime. -/
+theorem chiP_one_hundred_forty_nine_eq_one : chiP 149 = 1 := by
+  have h_prime_149 : Nat.Prime 149 := by norm_num
+  simp [chiP, h_prime_149]
+
+/-- `chiP 199 = 1` since `199` is prime. -/
+theorem chiP_one_hundred_ninety_nine_eq_one : chiP 199 = 1 := by
+  have h_prime_199 : Nat.Prime 199 := by norm_num
+  simp [chiP, h_prime_199]
+
+/-- `chiP 241 = 1` since `241` is prime. -/
+theorem chiP_two_hundred_forty_one_eq_one : chiP 241 = 1 := by
+  have h_prime_241 : Nat.Prime 241 := by norm_num
+  simp [chiP, h_prime_241]
+
+/-- `chiP 337 = 1` since `337` is prime. -/
+theorem chiP_three_hundred_thirty_seven_eq_one : chiP 337 = 1 := by
+  have h_prime_337 : Nat.Prime 337 := by norm_num
+  simp [chiP, h_prime_337]
+
+/--
+Local `prod_univ_nine` lemma. Mathlib provides `Fin.prod_univ_eight` but
+not `Fin.prod_univ_nine`. We follow mathlib's pattern verbatim.
+-/
+private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    ∏ i, f i = f 0 * f 1 * f 2 * f 3 * f 4 * f 5 * f 6 * f 7 * f 8 := by
+  rw [Fin.prod_univ_castSucc, Fin.prod_univ_eight]
+  rfl
+
+set_option maxHeartbeats 2000000 in
+-- The W=20 corner has R = 9, producing 81 fin_cases × fin_cases subgoals in the
+-- BlockTriangular check (vs 49 at W=18, R=7). The simp blow-up scales as R² and
+-- pushes simp past the default 200000 heartbeats. See S143 synthesis.
+/--
+**Corner-case prime exhibit (W = 20, d = j + 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 20`, `d = j + 1`, where `R = min(20^j, φ(20)·1 + 1) = 9` for every `j ≥ 1`.
+Closed unconditionally using `chiP_two_eq_one`, `chiP_twenty_three_eq_one`,
+`chiP_forty_seven_eq_one`, `chiP_one_hundred_forty_nine_eq_one`,
+`chiP_one_hundred_ninety_nine_eq_one`, `chiP_two_hundred_eleven_eq_one`,
+`chiP_two_hundred_forty_one_eq_one`, `chiP_two_hundred_ninety_three_eq_one`,
+and `chiP_three_hundred_thirty_seven_eq_one`.
+
+The construction uses `ρ : Fin 9 → Fin (20^j)` mapping
+`(0..8) ↦ (0, 2, 9, 14, 1, 7, 12, 16, 10)` and
+`σ : Fin 9 → Fin (20^((j+1)-j))` mapping
+`(0..8) ↦ (1, 6, 18, 12, 2, 8, 0, 16, 10)`.
+The `9 × 9` submatrix is upper triangular with `1` on the diagonal
+(diagonal primes `{2, 47, 199, 293, 23, 149, 241, 337, 211}`),
+hence `IsUnit` over `ℚ`.
+
+`maxHeartbeats` is bumped because the `R = 9` corner produces 81
+`fin_cases` × `fin_cases` subgoals in the BlockTriangular check and
+9-deep `if-then-else` chains in the diagonal expansion; the default
+200000 is insufficient.
+-/
+theorem exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 9 → Fin (20 ^ j))
+      (σ : Fin 9 → Fin (20 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 20 (j + 1) j).submatrix ρ σ) := by
+  -- The exponent simplifies: `(j + 1) - j = 1`, hence `20 ^ ((j + 1) - j) = 20`.
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 20 ^ j := Nat.pow_pos (by norm_num)
+  have h_one_lt_pow_j : 1 < 20 ^ j := by
+    calc (1 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_two_lt_pow_j : 2 < 20 ^ j := by
+    calc (2 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_seven_lt_pow_j : 7 < 20 ^ j := by
+    calc (7 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_nine_lt_pow_j : 9 < 20 ^ j := by
+    calc (9 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_ten_lt_pow_j : 10 < 20 ^ j := by
+    calc (10 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_twelve_lt_pow_j : 12 < 20 ^ j := by
+    calc (12 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_fourteen_lt_pow_j : 14 < 20 ^ j := by
+    calc (14 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_sixteen_lt_pow_j : 16 < 20 ^ j := by
+    calc (16 : ℕ) < 20 := by norm_num
+      _ = 20 ^ 1 := by norm_num
+      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_one_lt_pow_dj : (1 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_two_lt_pow_dj : (2 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_six_lt_pow_dj : (6 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_eight_lt_pow_dj : (8 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_ten_lt_pow_dj : (10 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_twelve_lt_pow_dj : (12 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_sixteen_lt_pow_dj : (16 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_eighteen_lt_pow_dj : (18 : ℕ) < 20 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- ρ permutes original rows in the order `(0, 2, 9, 14, 1, 7, 12, 16, 10)`.
+  -- σ permutes original columns in the order `(1, 6, 18, 12, 2, 8, 0, 16, 10)`.
+  refine ⟨fun i =>
+    if i.val = 0 then ⟨0, h_pow_j_pos⟩
+                   else if i.val = 1 then ⟨2, h_two_lt_pow_j⟩
+                   else if i.val = 2 then ⟨9, h_nine_lt_pow_j⟩
+                   else if i.val = 3 then ⟨14, h_fourteen_lt_pow_j⟩
+                   else if i.val = 4 then ⟨1, h_one_lt_pow_j⟩
+                   else if i.val = 5 then ⟨7, h_seven_lt_pow_j⟩
+                   else if i.val = 6 then ⟨12, h_twelve_lt_pow_j⟩
+                   else if i.val = 7 then ⟨16, h_sixteen_lt_pow_j⟩
+                   else ⟨10, h_ten_lt_pow_j⟩,
+          fun i =>
+    if i.val = 0 then ⟨1, h_one_lt_pow_dj⟩
+                   else if i.val = 1 then ⟨6, h_six_lt_pow_dj⟩
+                   else if i.val = 2 then ⟨18, h_eighteen_lt_pow_dj⟩
+                   else if i.val = 3 then ⟨12, h_twelve_lt_pow_dj⟩
+                   else if i.val = 4 then ⟨2, h_two_lt_pow_dj⟩
+                   else if i.val = 5 then ⟨8, h_eight_lt_pow_dj⟩
+                   else if i.val = 6 then ⟨0, h_zero_lt_pow_dj⟩
+                   else if i.val = 7 then ⟨16, h_sixteen_lt_pow_dj⟩
+                   else ⟨10, h_ten_lt_pow_dj⟩, ?_⟩
+  -- Reduce `IsUnit` to `IsUnit (det)` and compute via `det_of_upperTriangular`.
+  rw [Matrix.isUnit_iff_isUnit_det]
+  -- Non-primality lemmas for the 36 below-diagonal zeros.
+  have h_not_prime_22 : ¬ Nat.Prime 22 := by decide
+  have h_not_prime_27 : ¬ Nat.Prime 27 := by decide
+  have h_not_prime_33 : ¬ Nat.Prime 33 := by decide
+  have h_not_prime_39 : ¬ Nat.Prime 39 := by decide
+  have h_not_prime_42 : ¬ Nat.Prime 42 := by decide
+  have h_not_prime_142 : ¬ Nat.Prime 142 := by norm_num
+  have h_not_prime_143 : ¬ Nat.Prime 143 := by norm_num
+  have h_not_prime_147 : ¬ Nat.Prime 147 := by norm_num
+  have h_not_prime_153 : ¬ Nat.Prime 153 := by norm_num
+  have h_not_prime_159 : ¬ Nat.Prime 159 := by norm_num
+  have h_not_prime_182 : ¬ Nat.Prime 182 := by norm_num
+  have h_not_prime_187 : ¬ Nat.Prime 187 := by norm_num
+  have h_not_prime_201 : ¬ Nat.Prime 201 := by norm_num
+  have h_not_prime_202 : ¬ Nat.Prime 202 := by norm_num
+  have h_not_prime_203 : ¬ Nat.Prime 203 := by norm_num
+  have h_not_prime_207 : ¬ Nat.Prime 207 := by norm_num
+  have h_not_prime_209 : ¬ Nat.Prime 209 := by norm_num
+  have h_not_prime_213 : ¬ Nat.Prime 213 := by norm_num
+  have h_not_prime_217 : ¬ Nat.Prime 217 := by norm_num
+  have h_not_prime_219 : ¬ Nat.Prime 219 := by norm_num
+  have h_not_prime_242 : ¬ Nat.Prime 242 := by norm_num
+  have h_not_prime_243 : ¬ Nat.Prime 243 := by norm_num
+  have h_not_prime_247 : ¬ Nat.Prime 247 := by norm_num
+  have h_not_prime_249 : ¬ Nat.Prime 249 := by norm_num
+  have h_not_prime_253 : ¬ Nat.Prime 253 := by norm_num
+  have h_not_prime_259 : ¬ Nat.Prime 259 := by norm_num
+  have h_not_prime_282 : ¬ Nat.Prime 282 := by norm_num
+  have h_not_prime_287 : ¬ Nat.Prime 287 := by norm_num
+  have h_not_prime_299 : ¬ Nat.Prime 299 := by norm_num
+  have h_not_prime_321 : ¬ Nat.Prime 321 := by norm_num
+  have h_not_prime_322 : ¬ Nat.Prime 322 := by norm_num
+  have h_not_prime_323 : ¬ Nat.Prime 323 := by norm_num
+  have h_not_prime_327 : ¬ Nat.Prime 327 := by norm_num
+  have h_not_prime_329 : ¬ Nat.Prime 329 := by norm_num
+  have h_not_prime_333 : ¬ Nat.Prime 333 := by norm_num
+  have h_not_prime_339 : ¬ Nat.Prime 339 := by norm_num
+  -- Compute the 9 diagonal entries (all = 1).
+  -- (0,0): unfolding(0, 1) = chiP 2 = 1
+  have hD00 : unfolding 20 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 20 ^ ((j + 1) - j) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  -- (1,1): unfolding(2, 6) = chiP 47 = 1
+  have hD11 : unfolding 20 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 20 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 20 ^ 1 + 6 + 1 : ℕ) = 47 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_seven_eq_one
+  -- (2,2): unfolding(9, 18) = chiP 199 = 1
+  have hD22 : unfolding 20 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 1 := by
+    change chiP (9 * 20 ^ ((j + 1) - j) + 18 + 1) = 1
+    rw [h_sub]
+    have h_eq : (9 * 20 ^ 1 + 18 + 1 : ℕ) = 199 := by norm_num
+    rw [h_eq]
+    exact chiP_one_hundred_ninety_nine_eq_one
+  -- (3,3): unfolding(14, 12) = chiP 293 = 1
+  have hD33 : unfolding 20 (j + 1) j ⟨14, h_fourteen_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 1 := by
+    change chiP (14 * 20 ^ ((j + 1) - j) + 12 + 1) = 1
+    rw [h_sub]
+    have h_eq : (14 * 20 ^ 1 + 12 + 1 : ℕ) = 293 := by norm_num
+    rw [h_eq]
+    exact chiP_two_hundred_ninety_three_eq_one
+  -- (4,4): unfolding(1, 2) = chiP 23 = 1
+  have hD44 : unfolding 20 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 20 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 20 ^ 1 + 2 + 1 : ℕ) = 23 := by norm_num
+    rw [h_eq]
+    exact chiP_twenty_three_eq_one
+  -- (5,5): unfolding(7, 8) = chiP 149 = 1
+  have hD55 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 1 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 8 + 1) = 1
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 8 + 1 : ℕ) = 149 := by norm_num
+    rw [h_eq]
+    exact chiP_one_hundred_forty_nine_eq_one
+  -- (6,6): unfolding(12, 0) = chiP 241 = 1
+  have hD66 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 0 + 1 : ℕ) = 241 := by norm_num
+    rw [h_eq]
+    exact chiP_two_hundred_forty_one_eq_one
+  -- (7,7): unfolding(16, 16) = chiP 337 = 1
+  have hD77 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨16, h_sixteen_lt_pow_dj⟩ = 1 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 16 + 1) = 1
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 16 + 1 : ℕ) = 337 := by norm_num
+    rw [h_eq]
+    exact chiP_three_hundred_thirty_seven_eq_one
+  -- (8,8): unfolding(10, 10) = chiP 211 = 1
+  have hD88 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨10, h_ten_lt_pow_dj⟩ = 1 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 10 + 1) = 1
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 10 + 1 : ℕ) = 211 := by norm_num
+    rw [h_eq]
+    exact chiP_two_hundred_eleven_eq_one
+  -- Compute the 36 below-diagonal entries (all = 0).
+  -- (1,0): unfolding(2, 1) = chiP 42 = 0
+  have hL10 : unfolding 20 (j + 1) j ⟨2, h_two_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 20 ^ 1 + 1 + 1 : ℕ) = 42 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_42]
+  -- (2,0): unfolding(9, 1) = chiP 182 = 0
+  have hL20 : unfolding 20 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 20 ^ 1 + 1 + 1 : ℕ) = 182 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_182]
+  -- (2,1): unfolding(9, 6) = chiP 187 = 0
+  have hL21 : unfolding 20 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 20 ^ 1 + 6 + 1 : ℕ) = 187 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_187]
+  -- (3,0): unfolding(14, 1) = chiP 282 = 0
+  have hL30 : unfolding 20 (j + 1) j ⟨14, h_fourteen_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (14 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (14 * 20 ^ 1 + 1 + 1 : ℕ) = 282 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_282]
+  -- (3,1): unfolding(14, 6) = chiP 287 = 0
+  have hL31 : unfolding 20 (j + 1) j ⟨14, h_fourteen_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (14 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (14 * 20 ^ 1 + 6 + 1 : ℕ) = 287 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_287]
+  -- (3,2): unfolding(14, 18) = chiP 299 = 0
+  have hL32 : unfolding 20 (j + 1) j ⟨14, h_fourteen_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (14 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (14 * 20 ^ 1 + 18 + 1 : ℕ) = 299 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_299]
+  -- (4,0): unfolding(1, 1) = chiP 22 = 0
+  have hL40 : unfolding 20 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 20 ^ 1 + 1 + 1 : ℕ) = 22 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_22]
+  -- (4,1): unfolding(1, 6) = chiP 27 = 0
+  have hL41 : unfolding 20 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 20 ^ 1 + 6 + 1 : ℕ) = 27 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_27]
+  -- (4,2): unfolding(1, 18) = chiP 39 = 0
+  have hL42 : unfolding 20 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 20 ^ 1 + 18 + 1 : ℕ) = 39 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_39]
+  -- (4,3): unfolding(1, 12) = chiP 33 = 0
+  have hL43 : unfolding 20 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 20 ^ 1 + 12 + 1 : ℕ) = 33 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_33]
+  -- (5,0): unfolding(7, 1) = chiP 142 = 0
+  have hL50 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 1 + 1 : ℕ) = 142 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_142]
+  -- (5,1): unfolding(7, 6) = chiP 147 = 0
+  have hL51 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 6 + 1 : ℕ) = 147 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_147]
+  -- (5,2): unfolding(7, 18) = chiP 159 = 0
+  have hL52 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 18 + 1 : ℕ) = 159 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_159]
+  -- (5,3): unfolding(7, 12) = chiP 153 = 0
+  have hL53 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 12 + 1 : ℕ) = 153 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_153]
+  -- (5,4): unfolding(7, 2) = chiP 143 = 0
+  have hL54 : unfolding 20 (j + 1) j ⟨7, h_seven_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (7 * 20 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (7 * 20 ^ 1 + 2 + 1 : ℕ) = 143 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_143]
+  -- (6,0): unfolding(12, 1) = chiP 242 = 0
+  have hL60 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 1 + 1 : ℕ) = 242 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_242]
+  -- (6,1): unfolding(12, 6) = chiP 247 = 0
+  have hL61 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 6 + 1 : ℕ) = 247 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_247]
+  -- (6,2): unfolding(12, 18) = chiP 259 = 0
+  have hL62 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 18 + 1 : ℕ) = 259 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_259]
+  -- (6,3): unfolding(12, 12) = chiP 253 = 0
+  have hL63 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 12 + 1 : ℕ) = 253 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_253]
+  -- (6,4): unfolding(12, 2) = chiP 243 = 0
+  have hL64 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 2 + 1 : ℕ) = 243 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_243]
+  -- (6,5): unfolding(12, 8) = chiP 249 = 0
+  have hL65 : unfolding 20 (j + 1) j ⟨12, h_twelve_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (12 * 20 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (12 * 20 ^ 1 + 8 + 1 : ℕ) = 249 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_249]
+  -- (7,0): unfolding(16, 1) = chiP 322 = 0
+  have hL70 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 1 + 1 : ℕ) = 322 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_322]
+  -- (7,1): unfolding(16, 6) = chiP 327 = 0
+  have hL71 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 6 + 1 : ℕ) = 327 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_327]
+  -- (7,2): unfolding(16, 18) = chiP 339 = 0
+  have hL72 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 18 + 1 : ℕ) = 339 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_339]
+  -- (7,3): unfolding(16, 12) = chiP 333 = 0
+  have hL73 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 12 + 1 : ℕ) = 333 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_333]
+  -- (7,4): unfolding(16, 2) = chiP 323 = 0
+  have hL74 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 2 + 1 : ℕ) = 323 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_323]
+  -- (7,5): unfolding(16, 8) = chiP 329 = 0
+  have hL75 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 8 + 1 : ℕ) = 329 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_329]
+  -- (7,6): unfolding(16, 0) = chiP 321 = 0
+  have hL76 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (16 * 20 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (16 * 20 ^ 1 + 0 + 1 : ℕ) = 321 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_321]
+  -- (8,0): unfolding(10, 1) = chiP 202 = 0
+  have hL80 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 1 + 1 : ℕ) = 202 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_202]
+  -- (8,1): unfolding(10, 6) = chiP 207 = 0
+  have hL81 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 6 + 1 : ℕ) = 207 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_207]
+  -- (8,2): unfolding(10, 18) = chiP 219 = 0
+  have hL82 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨18, h_eighteen_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 18 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 18 + 1 : ℕ) = 219 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_219]
+  -- (8,3): unfolding(10, 12) = chiP 213 = 0
+  have hL83 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 12 + 1 : ℕ) = 213 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_213]
+  -- (8,4): unfolding(10, 2) = chiP 203 = 0
+  have hL84 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 2 + 1 : ℕ) = 203 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_203]
+  -- (8,5): unfolding(10, 8) = chiP 209 = 0
+  have hL85 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 8 + 1 : ℕ) = 209 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_209]
+  -- (8,6): unfolding(10, 0) = chiP 201 = 0
+  have hL86 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 0 + 1 : ℕ) = 201 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_201]
+  -- (8,7): unfolding(10, 16) = chiP 217 = 0
+  have hL87 : unfolding 20 (j + 1) j ⟨10, h_ten_lt_pow_j⟩ ⟨16, h_sixteen_lt_pow_dj⟩ = 0 := by
+    change chiP (10 * 20 ^ ((j + 1) - j) + 16 + 1) = 0
+    rw [h_sub]
+    have h_eq : (10 * 20 ^ 1 + 16 + 1 : ℕ) = 217 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_217]
+  -- Helpers for `Fin 9` `.val` and the `if-then-else` ρ, σ.
+  have h0 : (0 : Fin 9).val = 0 := rfl
+  have h1 : (1 : Fin 9).val = 1 := rfl
+  have h2 : (2 : Fin 9).val = 2 := rfl
+  have h3 : (3 : Fin 9).val = 3 := rfl
+  have h4 : (4 : Fin 9).val = 4 := rfl
+  have h5 : (5 : Fin 9).val = 5 := rfl
+  have h6 : (6 : Fin 9).val = 6 := rfl
+  have h7 : (7 : Fin 9).val = 7 := rfl
+  have h8 : (8 : Fin 9).val = 8 := rfl
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  have hne_3_0 : (3 : ℕ) ≠ 0 := by decide
+  have hne_3_1 : (3 : ℕ) ≠ 1 := by decide
+  have hne_3_2 : (3 : ℕ) ≠ 2 := by decide
+  have hne_4_0 : (4 : ℕ) ≠ 0 := by decide
+  have hne_4_1 : (4 : ℕ) ≠ 1 := by decide
+  have hne_4_2 : (4 : ℕ) ≠ 2 := by decide
+  have hne_4_3 : (4 : ℕ) ≠ 3 := by decide
+  have hne_5_0 : (5 : ℕ) ≠ 0 := by decide
+  have hne_5_1 : (5 : ℕ) ≠ 1 := by decide
+  have hne_5_2 : (5 : ℕ) ≠ 2 := by decide
+  have hne_5_3 : (5 : ℕ) ≠ 3 := by decide
+  have hne_5_4 : (5 : ℕ) ≠ 4 := by decide
+  have hne_6_0 : (6 : ℕ) ≠ 0 := by decide
+  have hne_6_1 : (6 : ℕ) ≠ 1 := by decide
+  have hne_6_2 : (6 : ℕ) ≠ 2 := by decide
+  have hne_6_3 : (6 : ℕ) ≠ 3 := by decide
+  have hne_6_4 : (6 : ℕ) ≠ 4 := by decide
+  have hne_6_5 : (6 : ℕ) ≠ 5 := by decide
+  have hne_7_0 : (7 : ℕ) ≠ 0 := by decide
+  have hne_7_1 : (7 : ℕ) ≠ 1 := by decide
+  have hne_7_2 : (7 : ℕ) ≠ 2 := by decide
+  have hne_7_3 : (7 : ℕ) ≠ 3 := by decide
+  have hne_7_4 : (7 : ℕ) ≠ 4 := by decide
+  have hne_7_5 : (7 : ℕ) ≠ 5 := by decide
+  have hne_7_6 : (7 : ℕ) ≠ 6 := by decide
+  have hne_8_0 : (8 : ℕ) ≠ 0 := by decide
+  have hne_8_1 : (8 : ℕ) ≠ 1 := by decide
+  have hne_8_2 : (8 : ℕ) ≠ 2 := by decide
+  have hne_8_3 : (8 : ℕ) ≠ 3 := by decide
+  have hne_8_4 : (8 : ℕ) ≠ 4 := by decide
+  have hne_8_5 : (8 : ℕ) ≠ 5 := by decide
+  have hne_8_6 : (8 : ℕ) ≠ 6 := by decide
+  have hne_8_7 : (8 : ℕ) ≠ 7 := by decide
+  -- Establish the upper-triangular property of the submatrix.
+  set Mρ : Fin 9 → Fin (20 ^ j) :=
+    fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+             else if i.val = 1 then ⟨2, h_two_lt_pow_j⟩
+             else if i.val = 2 then ⟨9, h_nine_lt_pow_j⟩
+             else if i.val = 3 then ⟨14, h_fourteen_lt_pow_j⟩
+             else if i.val = 4 then ⟨1, h_one_lt_pow_j⟩
+             else if i.val = 5 then ⟨7, h_seven_lt_pow_j⟩
+             else if i.val = 6 then ⟨12, h_twelve_lt_pow_j⟩
+             else if i.val = 7 then ⟨16, h_sixteen_lt_pow_j⟩
+             else ⟨10, h_ten_lt_pow_j⟩ with hMρ_def
+  set Mσ : Fin 9 → Fin (20 ^ ((j + 1) - j)) :=
+    fun i => if i.val = 0 then ⟨1, h_one_lt_pow_dj⟩
+             else if i.val = 1 then ⟨6, h_six_lt_pow_dj⟩
+             else if i.val = 2 then ⟨18, h_eighteen_lt_pow_dj⟩
+             else if i.val = 3 then ⟨12, h_twelve_lt_pow_dj⟩
+             else if i.val = 4 then ⟨2, h_two_lt_pow_dj⟩
+             else if i.val = 5 then ⟨8, h_eight_lt_pow_dj⟩
+             else if i.val = 6 then ⟨0, h_zero_lt_pow_dj⟩
+             else if i.val = 7 then ⟨16, h_sixteen_lt_pow_dj⟩
+             else ⟨10, h_ten_lt_pow_dj⟩ with hMσ_def
+  set M : Matrix (Fin 9) (Fin 9) ℚ :=
+    (unfolding 20 (j + 1) j).submatrix Mρ Mσ with hM_def
+  have h_blocktri : M.BlockTriangular id := by
+    intro i k h_lt
+    simp only [id_eq, Fin.lt_def] at h_lt
+    fin_cases i <;> fin_cases k <;>
+      first
+        | (exact absurd h_lt (by decide))
+        | (simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def,
+                       if_true, if_false,
+                       Nat.one_ne_zero, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5, hne_7_0, hne_7_1, hne_7_2, hne_7_3, hne_7_4, hne_7_5, hne_7_6, hne_8_0, hne_8_1, hne_8_2, hne_8_3, hne_8_4, hne_8_5, hne_8_6, hne_8_7]
+           first | exact hL10 | exact hL20 | exact hL21 | exact hL30 | exact hL31 | exact hL32 | exact hL40 | exact hL41 | exact hL42 | exact hL43 | exact hL50 | exact hL51 | exact hL52 | exact hL53 | exact hL54 | exact hL60 | exact hL61 | exact hL62 | exact hL63 | exact hL64 | exact hL65 | exact hL70 | exact hL71 | exact hL72 | exact hL73 | exact hL74 | exact hL75 | exact hL76 | exact hL80 | exact hL81 | exact hL82 | exact hL83 | exact hL84 | exact hL85 | exact hL86 | exact hL87)
+  rw [Matrix.det_of_upperTriangular h_blocktri]
+  rw [prod_univ_nine']
+  simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def,
+             h0, h1, h2, h3, h4, h5, h6, h7, h8, if_true, if_false,
+             Nat.one_ne_zero, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5, hne_7_0, hne_7_1, hne_7_2, hne_7_3, hne_7_4, hne_7_5, hne_7_6, hne_8_0, hne_8_1, hne_8_2, hne_8_3, hne_8_4, hne_8_5, hne_8_6, hne_8_7]
+  rw [hD00, hD11, hD22, hD33, hD44, hD55, hD66, hD77, hD88]
+  norm_num
+
+/--
+**Corner-case main theorem (W = 20, d = j + 1).** The unfolding rank is
+exactly `9` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_18_d_eq_j_plus_1`
+(both citing the general `upper_bound`) and is fully formalised in Lean
+(no `sorry`, no `axiom`).
+
+**Upper-bound subtlety:** the matrix has `20^((j+1)-j) = 20` columns, so
+`rank_le_width` only gives `rank ≤ 20`. We instead cite the general
+`upper_bound` lemma, which evaluates to `φ(20) · 20^0 + 1 = 8 · 1 + 1 = 9`
+in this corner.
+
+Together with the `W ∈ {2, 3, 4, 5, 6, 8, 12, 18}` corners, this is the
+**tenth** unconditional instance of `mps_bond_dim` and the **eighth**
+instance over a wheel `W ≥ 3`. **First instance with `R = 9`.** The general
+`mps_bond_dim` still requires `exists_invertible_submatrix` whose proof
+is the only remaining `sorry` in this file.
+-/
+theorem mps_bond_dim_W_eq_20_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 20 (j + 1) j).rank = 9 := by
+  apply Nat.le_antisymm
+  · -- `≤ 9`: from `upper_bound`. (`rank_le_width` only gives `≤ 20`.)
+    have hW : (2 : ℕ) ≤ 20 := by norm_num
+    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    have h := upper_bound 20 (j + 1) j hW hj hj_hi
+    have h_eq : Nat.totient 20 * 20 ^ ((j + 1 : ℕ) - j - 1) + 1 = 9 := by
+      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+      rw [h_sub]
+      decide
+    linarith
+  · -- `9 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 20 (j + 1) j).submatrix ρ σ).rank = 9 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 20 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (9 : ℕ) = ((unfolding 20 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 20 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### Corner case: `W = 10`, `d = j + 1` — closed unconditionally (S144)
+
+When `W = 10` and `d = j + 1`, the formula gives
+`R = min(10^j, φ(10) · 10^0 + 1) = min(10^j, 5) = 5` for every `j ≥ 1`.
+
+**Construction.** Live columns at `W = 10` are `k ∈ {0, 2, 6, 8}`
+(residues `1, 3, 7, 9 (mod 10)`), giving `φ(10) = 4` live columns. We
+add the dead column `k = 1` (with `chiP 2 = 1` at row `0`), giving
+`R = φ(10) + 1 = 5`.
+
+The permutation `ρ ↦ (1, 0, 4, 3, 9)` and `σ ↦ (8, 1, 2, 0, 6)`
+triangularises the `5 × 5` submatrix:
+```
+   row 1 ⎡ chiP 19, chiP 12, chiP 13, chiP 11, chiP 17 ⎤   ⎡ 1, 0, 1, 1, 1 ⎤
+   row 0 ⎢ chiP  9, chiP  2, chiP  3, chiP  1, chiP  7 ⎥   ⎢ 0, 1, 1, 0, 1 ⎥
+   row 4 ⎢ chiP 49, chiP 42, chiP 43, chiP 41, chiP 47 ⎥ = ⎢ 0, 0, 1, 1, 1 ⎥.
+   row 3 ⎢ chiP 39, chiP 32, chiP 33, chiP 31, chiP 37 ⎥   ⎢ 0, 0, 0, 1, 1 ⎥
+   row 9 ⎣ chiP 99, chiP 92, chiP 93, chiP 91, chiP 97 ⎦   ⎣ 0, 0, 0, 0, 1 ⎦
+```
+Diagonal primes are `{19, 2, 43, 31, 97}`; below-diagonal composites
+are `{9, 32, 33, 39, 42, 49, 91, 92, 93, 99}`.
+
+**S128/S129 retraction.** Earlier session notes listed W=10 as
+"structurally obstructed" alongside `W ∈ {7, 9, 11}`, citing a
+"multiplicity-2 residue pattern" argument. The S144 DP-based search
+refuted this: a triangulation exists when row `9` is included (replacing
+some leading row), with dead column `k = 1`. The earlier search was
+inadvertently restricted to row prefixes `{0, 1, 2, 3, 4}`, which are
+indeed insufficient at W=10; row `9`'s window `chiP 91..100` provides
+`chiP 97` at the unique position breaking the rank-2 obstruction.
+
+**Determinant via `det_of_upperTriangular`** (mathlib has no
+`det_fin_five`, same situation as W=5/W=8/W=12). The proof mirrors
+`W = 8` exactly.
+
+**Upper-bound subtlety.** As with W=4/6/8/12, `rank_le_width` gives only
+`rank ≤ 10`, not the sharp `rank ≤ 5 = φ(10) + 1`. We cite the general
+`upper_bound`, which evaluates to `φ(10) · 10^0 + 1 = 4 · 1 + 1 = 5`.
+-/
+
+/--
+`chiP 97 = 1` since `97` is prime.
+-/
+theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+  have h_prime_97 : Nat.Prime 97 := by decide
+  simp [chiP, h_prime_97]
+
+/--
+**Corner-case prime exhibit (W = 10, d = j + 1).**
+
+Specialisation of `exists_invertible_submatrix` to the corner case
+`W = 10`, `d = j + 1`, where `R = min(10^j, 5) = 5` for every `j ≥ 1`.
+Closed unconditionally using `chiP_two_eq_one`, `chiP_nineteen_eq_one`
+(S117), `chiP_thirty_one_eq_one` (S122), `chiP_forty_three_eq_one` (S137),
+and `chiP_ninety_seven_eq_one` (new at S144).
+
+The construction uses `ρ : Fin 5 → Fin (10^j)` mapping
+`(0, 1, 2, 3, 4) ↦ (1, 0, 4, 3, 9)` and `σ : Fin 5 → Fin (10^((j+1)-j))`
+mapping `(0, 1, 2, 3, 4) ↦ (8, 1, 2, 0, 6)`. The `5 × 5` submatrix is
+upper triangular with `1` on the diagonal, hence `IsUnit` over `ℚ`.
+-/
+theorem exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 5 → Fin (10 ^ j))
+      (σ : Fin 5 → Fin (10 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 10 (j + 1) j).submatrix ρ σ) := by
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 10 ^ j := Nat.pow_pos (by norm_num)
+  have h_one_lt_pow_j : 1 < 10 ^ j := by
+    calc (1 : ℕ) < 10 := by norm_num
+      _ = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_three_lt_pow_j : 3 < 10 ^ j := by
+    calc (3 : ℕ) < 10 := by norm_num
+      _ = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_four_lt_pow_j : 4 < 10 ^ j := by
+    calc (4 : ℕ) < 10 := by norm_num
+      _ = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_nine_lt_pow_j : 9 < 10 ^ j := by
+    calc (9 : ℕ) < 10 := by norm_num
+      _ = 10 ^ 1 := by norm_num
+      _ ≤ 10 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 10 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_one_lt_pow_dj : (1 : ℕ) < 10 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_two_lt_pow_dj : (2 : ℕ) < 10 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_six_lt_pow_dj : (6 : ℕ) < 10 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_eight_lt_pow_dj : (8 : ℕ) < 10 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- ρ permutes original rows in the order `(1, 0, 4, 3, 9)`.
+  -- σ permutes original columns in the order `(8, 1, 2, 0, 6)`.
+  refine ⟨fun i => if i.val = 0 then ⟨1, h_one_lt_pow_j⟩
+                   else if i.val = 1 then ⟨0, h_pow_j_pos⟩
+                   else if i.val = 2 then ⟨4, h_four_lt_pow_j⟩
+                   else if i.val = 3 then ⟨3, h_three_lt_pow_j⟩
+                   else ⟨9, h_nine_lt_pow_j⟩,
+          fun i => if i.val = 0 then ⟨8, h_eight_lt_pow_dj⟩
+                   else if i.val = 1 then ⟨1, h_one_lt_pow_dj⟩
+                   else if i.val = 2 then ⟨2, h_two_lt_pow_dj⟩
+                   else if i.val = 3 then ⟨0, h_zero_lt_pow_dj⟩
+                   else ⟨6, h_six_lt_pow_dj⟩, ?_⟩
+  rw [Matrix.isUnit_iff_isUnit_det]
+  -- Non-primality lemmas for the ten below-diagonal zeros.
+  have h_not_prime_9  : ¬ Nat.Prime 9  := by decide
+  have h_not_prime_32 : ¬ Nat.Prime 32 := by decide
+  have h_not_prime_33 : ¬ Nat.Prime 33 := by decide
+  have h_not_prime_39 : ¬ Nat.Prime 39 := by decide
+  have h_not_prime_42 : ¬ Nat.Prime 42 := by decide
+  have h_not_prime_49 : ¬ Nat.Prime 49 := by decide
+  have h_not_prime_91 : ¬ Nat.Prime 91 := by decide
+  have h_not_prime_92 : ¬ Nat.Prime 92 := by decide
+  have h_not_prime_93 : ¬ Nat.Prime 93 := by decide
+  have h_not_prime_99 : ¬ Nat.Prime 99 := by decide
+  -- Compute the 5 diagonal entries (all = 1).
+  -- (0,0): unfolding(1, 8) = chiP 19 = 1
+  have hD00 : unfolding 10 (j + 1) j ⟨1, h_one_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 10 ^ ((j + 1) - j) + 8 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 10 ^ 1 + 8 + 1 : ℕ) = 19 := by norm_num
+    rw [h_eq]
+    exact chiP_nineteen_eq_one
+  -- (1,1): unfolding(0, 1) = chiP 2 = 1
+  have hD11 : unfolding 10 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_one_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 10 ^ ((j + 1) - j) + 1 + 1) = 1
+    simp [chiP, Nat.prime_two]
+  -- (2,2): unfolding(4, 2) = chiP 43 = 1
+  have hD22 : unfolding 10 (j + 1) j ⟨4, h_four_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 10 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 10 ^ 1 + 2 + 1 : ℕ) = 43 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_three_eq_one
+  -- (3,3): unfolding(3, 0) = chiP 31 = 1
+  have hD33 : unfolding 10 (j + 1) j ⟨3, h_three_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (3 * 10 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (3 * 10 ^ 1 + 0 + 1 : ℕ) = 31 := by norm_num
+    rw [h_eq]
+    exact chiP_thirty_one_eq_one
+  -- (4,4): unfolding(9, 6) = chiP 97 = 1
+  have hD44 : unfolding 10 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨6, h_six_lt_pow_dj⟩ = 1 := by
+    change chiP (9 * 10 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (9 * 10 ^ 1 + 6 + 1 : ℕ) = 97 := by norm_num
+    rw [h_eq]
+    exact chiP_ninety_seven_eq_one
+  -- Compute the 10 below-diagonal entries (all = 0).
+  -- (1,0): unfolding(0, 8) = chiP 9 = 0
+  have hL10 : unfolding 10 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 10 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 10 ^ 1 + 8 + 1 : ℕ) = 9 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_9]
+  -- (2,0): unfolding(4, 8) = chiP 49 = 0
+  have hL20 : unfolding 10 (j + 1) j ⟨4, h_four_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 10 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 10 ^ 1 + 8 + 1 : ℕ) = 49 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_49]
+  -- (2,1): unfolding(4, 1) = chiP 42 = 0
+  have hL21 : unfolding 10 (j + 1) j ⟨4, h_four_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 10 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 10 ^ 1 + 1 + 1 : ℕ) = 42 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_42]
+  -- (3,0): unfolding(3, 8) = chiP 39 = 0
+  have hL30 : unfolding 10 (j + 1) j ⟨3, h_three_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 10 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 10 ^ 1 + 8 + 1 : ℕ) = 39 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_39]
+  -- (3,1): unfolding(3, 1) = chiP 32 = 0
+  have hL31 : unfolding 10 (j + 1) j ⟨3, h_three_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 10 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 10 ^ 1 + 1 + 1 : ℕ) = 32 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_32]
+  -- (3,2): unfolding(3, 2) = chiP 33 = 0
+  have hL32 : unfolding 10 (j + 1) j ⟨3, h_three_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 10 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 10 ^ 1 + 2 + 1 : ℕ) = 33 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_33]
+  -- (4,0): unfolding(9, 8) = chiP 99 = 0
+  have hL40 : unfolding 10 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 10 ^ ((j + 1) - j) + 8 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 10 ^ 1 + 8 + 1 : ℕ) = 99 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_99]
+  -- (4,1): unfolding(9, 1) = chiP 92 = 0
+  have hL41 : unfolding 10 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨1, h_one_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 10 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 10 ^ 1 + 1 + 1 : ℕ) = 92 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_92]
+  -- (4,2): unfolding(9, 2) = chiP 93 = 0
+  have hL42 : unfolding 10 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 10 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 10 ^ 1 + 2 + 1 : ℕ) = 93 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_93]
+  -- (4,3): unfolding(9, 0) = chiP 91 = 0
+  have hL43 : unfolding 10 (j + 1) j ⟨9, h_nine_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (9 * 10 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (9 * 10 ^ 1 + 0 + 1 : ℕ) = 91 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_91]
+  -- Helpers for `Fin 5` `.val` and the `if-then-else` ρ, σ.
+  have h0 : (0 : Fin 5).val = 0 := rfl
+  have h1 : (1 : Fin 5).val = 1 := rfl
+  have h2 : (2 : Fin 5).val = 2 := rfl
+  have h3 : (3 : Fin 5).val = 3 := rfl
+  have h4 : (4 : Fin 5).val = 4 := rfl
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  have hne_3_0 : (3 : ℕ) ≠ 0 := by decide
+  have hne_3_1 : (3 : ℕ) ≠ 1 := by decide
+  have hne_3_2 : (3 : ℕ) ≠ 2 := by decide
+  have hne_4_0 : (4 : ℕ) ≠ 0 := by decide
+  have hne_4_1 : (4 : ℕ) ≠ 1 := by decide
+  have hne_4_2 : (4 : ℕ) ≠ 2 := by decide
+  have hne_4_3 : (4 : ℕ) ≠ 3 := by decide
+  -- Establish the upper-triangular property of the submatrix.
+  set Mρ : Fin 5 → Fin (10 ^ j) :=
+    fun i => if i.val = 0 then ⟨1, h_one_lt_pow_j⟩
+             else if i.val = 1 then ⟨0, h_pow_j_pos⟩
+             else if i.val = 2 then ⟨4, h_four_lt_pow_j⟩
+             else if i.val = 3 then ⟨3, h_three_lt_pow_j⟩
+             else ⟨9, h_nine_lt_pow_j⟩ with hMρ_def
+  set Mσ : Fin 5 → Fin (10 ^ ((j + 1) - j)) :=
+    fun i => if i.val = 0 then ⟨8, h_eight_lt_pow_dj⟩
+             else if i.val = 1 then ⟨1, h_one_lt_pow_dj⟩
+             else if i.val = 2 then ⟨2, h_two_lt_pow_dj⟩
+             else if i.val = 3 then ⟨0, h_zero_lt_pow_dj⟩
+             else ⟨6, h_six_lt_pow_dj⟩ with hMσ_def
+  set M : Matrix (Fin 5) (Fin 5) ℚ :=
+    (unfolding 10 (j + 1) j).submatrix Mρ Mσ with hM_def
+  have h_blocktri : M.BlockTriangular id := by
+    intro i k h_lt
+    simp only [id_eq, Fin.lt_def] at h_lt
+    fin_cases i <;> fin_cases k <;>
+      first
+        | (exact absurd h_lt (by decide))
+        | (simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def,
+                       if_true, if_false,
+                       Nat.one_ne_zero, hne_2_0, hne_2_1, hne_3_0, hne_3_1,
+                       hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3]
+           first | exact hL10 | exact hL20 | exact hL21
+                 | exact hL30 | exact hL31 | exact hL32
+                 | exact hL40 | exact hL41 | exact hL42 | exact hL43)
+  rw [Matrix.det_of_upperTriangular h_blocktri]
+  rw [Fin.prod_univ_five]
+  simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def,
+             h0, h1, h2, h3, h4, if_true, if_false,
+             Nat.one_ne_zero, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2,
+             hne_4_0, hne_4_1, hne_4_2, hne_4_3]
+  rw [hD00, hD11, hD22, hD33, hD44]
+  norm_num
+
+/--
+**Corner-case main theorem (W = 10, d = j + 1).** The unfolding rank
+is exactly `5` for every `j ≥ 1`. Mirrors the W=8/W=12 corners (both
+citing the general `upper_bound`) and is fully formalised in Lean
+(no `sorry`, no `axiom`).
+
+**Upper-bound subtlety:** the matrix has `10^((j+1)-j) = 10` columns,
+so `rank_le_width` only gives `rank ≤ 10`. We instead cite the general
+`upper_bound`, which evaluates to `φ(10) · 10^0 + 1 = 4 · 1 + 1 = 5`.
+
+Together with `W ∈ {2, 3, 4, 5, 6, 8, 12, 18, 20}` corners, this is the
+**eleventh** unconditional instance of `mps_bond_dim` and the **ninth**
+instance over a wheel `W ≥ 3`. **First instance refuting an entry on the
+S128/S129 "structurally obstructed" list** — W=10 turned out to be
+algorithmically reachable via DP search (S144).
+-/
+theorem mps_bond_dim_W_eq_10_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 10 (j + 1) j).rank = 5 := by
+  apply Nat.le_antisymm
+  · -- `≤ 5`: from `upper_bound`. (`rank_le_width` only gives `≤ 10`.)
+    have hW : (2 : ℕ) ≤ 10 := by norm_num
+    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    have h := upper_bound 10 (j + 1) j hW hj hj_hi
+    have h_eq : Nat.totient 10 * 10 ^ ((j + 1 : ℕ) - j - 1) + 1 = 5 := by
+      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+      rw [h_sub]
+      decide
+    linarith
+  · -- `5 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 10 (j + 1) j).submatrix ρ σ).rank = 5 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 10 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (5 : ℕ) = ((unfolding 10 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 10 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### W=9 corner support (S152)
+
+The W=9 corner case `(W = 9, d = j + 1)` requires four new prime witnesses:
+`13, 41, 53, 61`. Together with existing helpers, these support the
+`(1 + 3 + 3)` block-DIAGONAL decomposition discovered in the S151
+pre-search. The corner closure itself is the file's first use of
+`Matrix.det_fromBlocks_zero_21` (a different determinant technique
+from the previous nine corner closures, all of which used
+`Matrix.det_of_upperTriangular`).
+-/
+
+/-- `chiP 13 = 1` since `13` is prime. -/
+theorem chiP_thirteen_eq_one : chiP 13 = 1 := by
+  have h : Nat.Prime 13 := by decide
+  simp [chiP, h]
+
+/-- `chiP 41 = 1` since `41` is prime. -/
+theorem chiP_forty_one_eq_one : chiP 41 = 1 := by
+  have h : Nat.Prime 41 := by decide
+  simp [chiP, h]
+
+/-- `chiP 53 = 1` since `53` is prime. -/
+theorem chiP_fifty_three_eq_one : chiP 53 = 1 := by
+  have h : Nat.Prime 53 := by decide
+  simp [chiP, h]
+
+/-- `chiP 61 = 1` since `61` is prime. -/
+theorem chiP_sixty_one_eq_one : chiP 61 = 1 := by
+  have h : Nat.Prime 61 := by decide
+  simp [chiP, h]
+
+
+
+/-
+**Corner-case prime exhibit (W = 9, d = j + 1).**
+
+Closed at S152 via the BlockTriangular `(1 + 3 + 3)` decomposition
+identified in S151's pre-search. The construction uses
+`ρ : Fin 7 → Fin (9^j)` mapping `(0..6) ↦ (0, 1, 3, 5, 2, 4, 6)` and
+`σ : Fin 7 → Fin (9^((j+1)-j))` mapping `(0..6) ↦ (2, 1, 3, 7, 0, 4, 6)`.
+The `7 × 7` submatrix decomposes (via `finSumFinEquiv : Fin 4 ⊕ Fin 3 ≃ Fin 7`)
+into `Matrix.fromBlocks A B 0 D` with `A : Matrix (Fin 4) (Fin 4) ℚ` (det -1)
+and `D : Matrix (Fin 3) (Fin 3) ℚ` (det -1), giving total det = `(-1) · (-1) = 1`,
+hence `IsUnit` over `ℚ`. Uses `chiP_thirteen_eq_one`, `chiP_forty_one_eq_one`,
+`chiP_fifty_three_eq_one`, `chiP_sixty_one_eq_one` (new at S152) plus existing
+helpers for primes `{2, 3, 5, 7, 11, 17, 19, 23, 29, 31, 37, 43, 47, 59}`.
+First instance using `Matrix.det_fromBlocks_zero_21` (a determinant technique
+orthogonal to the previous nine corner closures).
+-/
+set_option maxHeartbeats 800000 in
+theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 7 → Fin (9 ^ j))
+      (σ : Fin 7 → Fin (9 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) := by
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 9 ^ j := Nat.pow_pos (by norm_num)
+  have h_1_lt_pow_j : 1 < 9 ^ j := by
+    calc (1 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_2_lt_pow_j : 2 < 9 ^ j := by
+    calc (2 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_3_lt_pow_j : 3 < 9 ^ j := by
+    calc (3 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_4_lt_pow_j : 4 < 9 ^ j := by
+    calc (4 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_5_lt_pow_j : 5 < 9 ^ j := by
+    calc (5 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_6_lt_pow_j : 6 < 9 ^ j := by
+    calc (6 : ℕ) < 9 := by norm_num
+      _ = 9 ^ 1 := by norm_num
+      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_1_lt_pow_dj : (1 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_2_lt_pow_dj : (2 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_3_lt_pow_dj : (3 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_4_lt_pow_dj : (4 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_6_lt_pow_dj : (6 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_7_lt_pow_dj : (7 : ℕ) < 9 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- ρ ↦ (0, 1, 3, 5, 2, 4, 6)
+  -- σ ↦ (2, 1, 3, 7, 0, 4, 6)
+  refine ⟨fun i =>
+           if i.val = 0 then ⟨0, h_pow_j_pos⟩
+           else if i.val = 1 then ⟨1, h_1_lt_pow_j⟩
+           else if i.val = 2 then ⟨3, h_3_lt_pow_j⟩
+           else if i.val = 3 then ⟨5, h_5_lt_pow_j⟩
+           else if i.val = 4 then ⟨2, h_2_lt_pow_j⟩
+           else if i.val = 5 then ⟨4, h_4_lt_pow_j⟩
+           else ⟨6, h_6_lt_pow_j⟩,
+         fun i =>
+           if i.val = 0 then ⟨2, h_2_lt_pow_dj⟩
+           else if i.val = 1 then ⟨1, h_1_lt_pow_dj⟩
+           else if i.val = 2 then ⟨3, h_3_lt_pow_dj⟩
+           else if i.val = 3 then ⟨7, h_7_lt_pow_dj⟩
+           else if i.val = 4 then ⟨0, h_zero_lt_pow_dj⟩
+           else if i.val = 5 then ⟨4, h_4_lt_pow_dj⟩
+           else ⟨6, h_6_lt_pow_dj⟩, ?_⟩
+  rw [Matrix.isUnit_iff_isUnit_det]
+  -- Non-primality for the composites used in the entries.
+  have h_not_prime_1 : ¬ Nat.Prime 1 := Nat.not_prime_one
+  have h_not_prime_4 : ¬ Nat.Prime 4 := by decide
+  have h_not_prime_8 : ¬ Nat.Prime 8 := by decide
+  have h_not_prime_10 : ¬ Nat.Prime 10 := by decide
+  have h_not_prime_12 : ¬ Nat.Prime 12 := by decide
+  have h_not_prime_14 : ¬ Nat.Prime 14 := by decide
+  have h_not_prime_16 : ¬ Nat.Prime 16 := by decide
+  have h_not_prime_20 : ¬ Nat.Prime 20 := by decide
+  have h_not_prime_21 : ¬ Nat.Prime 21 := by decide
+  have h_not_prime_22 : ¬ Nat.Prime 22 := by decide
+  have h_not_prime_25 : ¬ Nat.Prime 25 := by decide
+  have h_not_prime_26 : ¬ Nat.Prime 26 := by decide
+  have h_not_prime_28 : ¬ Nat.Prime 28 := by decide
+  have h_not_prime_30 : ¬ Nat.Prime 30 := by decide
+  have h_not_prime_32 : ¬ Nat.Prime 32 := by decide
+  have h_not_prime_34 : ¬ Nat.Prime 34 := by decide
+  have h_not_prime_35 : ¬ Nat.Prime 35 := by decide
+  have h_not_prime_38 : ¬ Nat.Prime 38 := by decide
+  have h_not_prime_39 : ¬ Nat.Prime 39 := by decide
+  have h_not_prime_40 : ¬ Nat.Prime 40 := by decide
+  have h_not_prime_44 : ¬ Nat.Prime 44 := by decide
+  have h_not_prime_46 : ¬ Nat.Prime 46 := by decide
+  have h_not_prime_48 : ¬ Nat.Prime 48 := by decide
+  have h_not_prime_49 : ¬ Nat.Prime 49 := by decide
+  have h_not_prime_50 : ¬ Nat.Prime 50 := by decide
+  have h_not_prime_52 : ¬ Nat.Prime 52 := by decide
+  have h_not_prime_55 : ¬ Nat.Prime 55 := by decide
+  have h_not_prime_56 : ¬ Nat.Prime 56 := by decide
+  have h_not_prime_57 : ¬ Nat.Prime 57 := by decide
+  have h_not_prime_58 : ¬ Nat.Prime 58 := by decide
+  have h_not_prime_62 : ¬ Nat.Prime 62 := by decide
+  -- Compute the 49 entries of the 7×7 submatrix.
+  have hE00 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 2 + 1 : ℕ) = 3 := by norm_num
+    rw [h_eq]
+    exact chiP_three_eq_one
+  have hE01 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 1 + 1 : ℕ) = 2 := by norm_num
+    rw [h_eq]
+    exact chiP_two_eq_one
+  have hE02 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 3 + 1 : ℕ) = 4 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_4]
+  have hE03 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 7 + 1 : ℕ) = 8 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_8]
+  have hE04 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 0 + 1 : ℕ) = 1 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_1]
+  have hE05 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 4 + 1 : ℕ) = 5 := by norm_num
+    rw [h_eq]
+    exact chiP_five_eq_one
+  have hE06 : unfolding 9 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨6, h_6_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 9 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 9 ^ 1 + 6 + 1 : ℕ) = 7 := by norm_num
+    rw [h_eq]
+    exact chiP_seven_eq_one
+  have hE10 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 2 + 1 : ℕ) = 12 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_12]
+  have hE11 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 1 + 1 : ℕ) = 11 := by norm_num
+    rw [h_eq]
+    exact chiP_eleven_eq_one
+  have hE12 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 3 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 3 + 1 : ℕ) = 13 := by norm_num
+    rw [h_eq]
+    exact chiP_thirteen_eq_one
+  have hE13 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 7 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 7 + 1 : ℕ) = 17 := by norm_num
+    rw [h_eq]
+    exact chiP_seventeen_eq_one
+  have hE14 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 0 + 1 : ℕ) = 10 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_10]
+  have hE15 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 4 + 1 : ℕ) = 14 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_14]
+  have hE16 : unfolding 9 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 9 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 9 ^ 1 + 6 + 1 : ℕ) = 16 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_16]
+  have hE20 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 2 + 1 : ℕ) = 30 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_30]
+  have hE21 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 1 + 1 : ℕ) = 29 := by norm_num
+    rw [h_eq]
+    exact chiP_twenty_nine_eq_one
+  have hE22 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 1 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 3 + 1) = 1
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 3 + 1 : ℕ) = 31 := by norm_num
+    rw [h_eq]
+    exact chiP_thirty_one_eq_one
+  have hE23 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 7 + 1 : ℕ) = 35 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_35]
+  have hE24 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 0 + 1 : ℕ) = 28 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_28]
+  have hE25 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 4 + 1 : ℕ) = 32 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_32]
+  have hE26 : unfolding 9 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 9 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 9 ^ 1 + 6 + 1 : ℕ) = 34 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_34]
+  have hE30 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 2 + 1 : ℕ) = 48 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_48]
+  have hE31 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 1 + 1 : ℕ) = 47 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_seven_eq_one
+  have hE32 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 3 + 1 : ℕ) = 49 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_49]
+  have hE33 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 1 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 7 + 1) = 1
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 7 + 1 : ℕ) = 53 := by norm_num
+    rw [h_eq]
+    exact chiP_fifty_three_eq_one
+  have hE34 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 0 + 1 : ℕ) = 46 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_46]
+  have hE35 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 4 + 1 : ℕ) = 50 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_50]
+  have hE36 : unfolding 9 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 9 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 9 ^ 1 + 6 + 1 : ℕ) = 52 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_52]
+  have hE40 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 2 + 1 : ℕ) = 21 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_21]
+  have hE41 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 1 + 1 : ℕ) = 20 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_20]
+  have hE42 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 3 + 1 : ℕ) = 22 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_22]
+  have hE43 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 7 + 1 : ℕ) = 26 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_26]
+  have hE44 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 0 + 1 : ℕ) = 19 := by norm_num
+    rw [h_eq]
+    exact chiP_nineteen_eq_one
+  have hE45 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 4 + 1 : ℕ) = 23 := by norm_num
+    rw [h_eq]
+    exact chiP_twenty_three_eq_one
+  have hE46 : unfolding 9 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 9 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 9 ^ 1 + 6 + 1 : ℕ) = 25 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_25]
+  have hE50 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 2 + 1 : ℕ) = 39 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_39]
+  have hE51 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 1 + 1 : ℕ) = 38 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_38]
+  have hE52 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 3 + 1 : ℕ) = 40 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_40]
+  have hE53 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 7 + 1 : ℕ) = 44 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_44]
+  have hE54 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 0 + 1 : ℕ) = 37 := by norm_num
+    rw [h_eq]
+    exact chiP_thirty_seven_eq_one
+  have hE55 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 4 + 1 : ℕ) = 41 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_one_eq_one
+  have hE56 : unfolding 9 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 9 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 9 ^ 1 + 6 + 1 : ℕ) = 43 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_three_eq_one
+  have hE60 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 2 + 1 : ℕ) = 57 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_57]
+  have hE61 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 1 + 1 : ℕ) = 56 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_56]
+  have hE62 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 3 + 1 : ℕ) = 58 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_58]
+  have hE63 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨7, h_7_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 7 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 7 + 1 : ℕ) = 62 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_62]
+  have hE64 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 0 + 1 : ℕ) = 55 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_55]
+  have hE65 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 4 + 1 : ℕ) = 59 := by norm_num
+    rw [h_eq]
+    exact chiP_fifty_nine_eq_one
+  have hE66 : unfolding 9 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 1 := by
+    change chiP (6 * 9 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (6 * 9 ^ 1 + 6 + 1 : ℕ) = 61 := by norm_num
+    rw [h_eq]
+    exact chiP_sixty_one_eq_one
+  -- Fin 7 .val and ≠ helpers for the if-then-else ρ, σ.
+  have hv0 : (0 : Fin 7).val = 0 := rfl
+  have hv1 : (1 : Fin 7).val = 1 := rfl
+  have hv2 : (2 : Fin 7).val = 2 := rfl
+  have hv3 : (3 : Fin 7).val = 3 := rfl
+  have hv4 : (4 : Fin 7).val = 4 := rfl
+  have hv5 : (5 : Fin 7).val = 5 := rfl
+  have hv6 : (6 : Fin 7).val = 6 := rfl
+  have hne_1_0 : (1 : ℕ) ≠ 0 := by decide
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  have hne_3_0 : (3 : ℕ) ≠ 0 := by decide
+  have hne_3_1 : (3 : ℕ) ≠ 1 := by decide
+  have hne_3_2 : (3 : ℕ) ≠ 2 := by decide
+  have hne_4_0 : (4 : ℕ) ≠ 0 := by decide
+  have hne_4_1 : (4 : ℕ) ≠ 1 := by decide
+  have hne_4_2 : (4 : ℕ) ≠ 2 := by decide
+  have hne_4_3 : (4 : ℕ) ≠ 3 := by decide
+  have hne_5_0 : (5 : ℕ) ≠ 0 := by decide
+  have hne_5_1 : (5 : ℕ) ≠ 1 := by decide
+  have hne_5_2 : (5 : ℕ) ≠ 2 := by decide
+  have hne_5_3 : (5 : ℕ) ≠ 3 := by decide
+  have hne_5_4 : (5 : ℕ) ≠ 4 := by decide
+  have hne_6_0 : (6 : ℕ) ≠ 0 := by decide
+  have hne_6_1 : (6 : ℕ) ≠ 1 := by decide
+  have hne_6_2 : (6 : ℕ) ≠ 2 := by decide
+  have hne_6_3 : (6 : ℕ) ≠ 3 := by decide
+  have hne_6_4 : (6 : ℕ) ≠ 4 := by decide
+  have hne_6_5 : (6 : ℕ) ≠ 5 := by decide
+  -- Set up the named ρ, σ, M for the rest of the proof.
+  set Mρ : Fin 7 → Fin (9 ^ j) :=
+    fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+             else if i.val = 1 then ⟨1, h_1_lt_pow_j⟩
+             else if i.val = 2 then ⟨3, h_3_lt_pow_j⟩
+             else if i.val = 3 then ⟨5, h_5_lt_pow_j⟩
+             else if i.val = 4 then ⟨2, h_2_lt_pow_j⟩
+             else if i.val = 5 then ⟨4, h_4_lt_pow_j⟩
+             else ⟨6, h_6_lt_pow_j⟩ with hMρ_def
+  set Mσ : Fin 7 → Fin (9 ^ ((j + 1) - j)) :=
+    fun i => if i.val = 0 then ⟨2, h_2_lt_pow_dj⟩
+             else if i.val = 1 then ⟨1, h_1_lt_pow_dj⟩
+             else if i.val = 2 then ⟨3, h_3_lt_pow_dj⟩
+             else if i.val = 3 then ⟨7, h_7_lt_pow_dj⟩
+             else if i.val = 4 then ⟨0, h_zero_lt_pow_dj⟩
+             else if i.val = 5 then ⟨4, h_4_lt_pow_dj⟩
+             else ⟨6, h_6_lt_pow_dj⟩ with hMσ_def
+  set M : Matrix (Fin 7) (Fin 7) ℚ :=
+    (unfolding 9 (j + 1) j).submatrix Mρ Mσ with hM_def
+  -- Explicit 7x7 matrix matching the entries.
+  let Mexp : Matrix (Fin 7) (Fin 7) ℚ :=
+    !![1, 1, 0, 0, 0, 1, 1;
+       0, 1, 1, 1, 0, 0, 0;
+       0, 1, 1, 0, 0, 0, 0;
+       0, 1, 0, 1, 0, 0, 0;
+       0, 0, 0, 0, 1, 1, 0;
+       0, 0, 0, 0, 1, 1, 1;
+       0, 0, 0, 0, 0, 1, 1]
+  -- Prove M = Mexp.
+  have hMeq : M = Mexp := by
+    ext i k
+    simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def]
+    fin_cases i <;> fin_cases k <;>
+      simp only [hv0, hv1, hv2, hv3, hv4, hv5, hv6,
+                 if_true, if_false, Nat.one_ne_zero,
+                 hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2,
+                 hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+                 hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4,
+                 hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    all_goals first
+      | exact hE00
+      | exact hE01
+      | exact hE02
+      | exact hE03
+      | exact hE04
+      | exact hE05
+      | exact hE06
+      | exact hE10
+      | exact hE11
+      | exact hE12
+      | exact hE13
+      | exact hE14
+      | exact hE15
+      | exact hE16
+      | exact hE20
+      | exact hE21
+      | exact hE22
+      | exact hE23
+      | exact hE24
+      | exact hE25
+      | exact hE26
+      | exact hE30
+      | exact hE31
+      | exact hE32
+      | exact hE33
+      | exact hE34
+      | exact hE35
+      | exact hE36
+      | exact hE40
+      | exact hE41
+      | exact hE42
+      | exact hE43
+      | exact hE44
+      | exact hE45
+      | exact hE46
+      | exact hE50
+      | exact hE51
+      | exact hE52
+      | exact hE53
+      | exact hE54
+      | exact hE55
+      | exact hE56
+      | exact hE60
+      | exact hE61
+      | exact hE62
+      | exact hE63
+      | exact hE64
+      | exact hE65
+      | exact hE66
+      | (simp [Mexp, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_fin_one])
+  rw [hMeq]
+  -- Now show Mexp.det = 1 via two nested fromBlocks decompositions:
+  --   Layer 1: Mexp = fromBlocks A B 0 D (1 + 6 split, lower-left zero).
+  --   Layer 2: D   = fromBlocks D1 0 0 D2 (3 + 3 split, both off-diagonals zero).
+  -- The 1×1 block A has det 1 (`det_fin_one`); the two 3×3 blocks D1, D2
+  -- each have det -1 (`det_fin_three`); total det = 1 * (-1 * -1) = 1.
+  -- Layer-1 blocks: 1+6 split.
+  let A : Matrix (Fin 1) (Fin 1) ℚ := !![1]
+  let B : Matrix (Fin 1) (Fin 6) ℚ := !![1, 0, 0, 0, 1, 1]
+  let D : Matrix (Fin 6) (Fin 6) ℚ :=
+    !![1, 1, 1, 0, 0, 0;
+       1, 1, 0, 0, 0, 0;
+       1, 0, 1, 0, 0, 0;
+       0, 0, 0, 1, 1, 0;
+       0, 0, 0, 1, 1, 1;
+       0, 0, 0, 0, 1, 1]
+  -- Layer-2 blocks: 3+3 split of D.
+  let D1 : Matrix (Fin 3) (Fin 3) ℚ := !![1, 1, 1; 1, 1, 0; 1, 0, 1]
+  let D2 : Matrix (Fin 3) (Fin 3) ℚ := !![1, 1, 0; 1, 1, 1; 0, 1, 1]
+  -- Layer 1 equality: under finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7.
+  have h_fromBlocks :
+      Mexp.submatrix finSumFinEquiv finSumFinEquiv = Matrix.fromBlocks A B 0 D := by
+    ext i j
+    rcases i with i | i <;> rcases j with j | j
+    all_goals fin_cases i <;> fin_cases j <;> rfl
+  -- Layer 2 equality: under finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6.
+  have h_fromBlocks_D :
+      D.submatrix finSumFinEquiv finSumFinEquiv =
+        Matrix.fromBlocks D1 (0 : Matrix (Fin 3) (Fin 3) ℚ) 0 D2 := by
+    ext i j
+    rcases i with i | i <;> rcases j with j | j
+    all_goals fin_cases i <;> fin_cases j <;> rfl
+  have h_Mexp_det :
+      Mexp.det = (Matrix.fromBlocks A B (0 : Matrix (Fin 6) (Fin 1) ℚ) D).det := by
+    rw [← h_fromBlocks]
+    simp [Matrix.det_submatrix_equiv_self]
+  rw [h_Mexp_det, Matrix.det_fromBlocks_zero₂₁]
+  -- A.det = 1 (1×1 case).
+  have hA_det : A.det = 1 := by
+    show (!![(1 : ℚ)] : Matrix (Fin 1) (Fin 1) ℚ).det = 1
+    simp [Matrix.det_fin_one]
+  -- D.det = 1 via the layer-2 split: D1.det * D2.det = (-1) * (-1) = 1.
+  have hD_det : D.det = 1 := by
+    have h_D_det_eq :
+        D.det =
+          (Matrix.fromBlocks D1 (0 : Matrix (Fin 3) (Fin 3) ℚ) 0 D2).det := by
+      rw [← h_fromBlocks_D]
+      simp [Matrix.det_submatrix_equiv_self]
+    rw [h_D_det_eq, Matrix.det_fromBlocks_zero₂₁]
+    have hD1 : D1.det = -1 := by
+      show (!![(1 : ℚ), 1, 1; 1, 1, 0; 1, 0, 1] :
+              Matrix (Fin 3) (Fin 3) ℚ).det = -1
+      simp [Matrix.det_fin_three]
+    have hD2 : D2.det = -1 := by
+      show (!![(1 : ℚ), 1, 0; 1, 1, 1; 0, 1, 1] :
+              Matrix (Fin 3) (Fin 3) ℚ).det = -1
+      simp [Matrix.det_fin_three]
+    rw [hD1, hD2]
+    norm_num
+  rw [hA_det, hD_det]
+  -- 1 * 1 = 1, IsUnit (1 : ℚ).
+  norm_num
+
+/--
+**Corner-case main theorem (W = 9, d = j + 1).** The unfolding rank is
+exactly `7` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_10_d_eq_j_plus_1`
+(both citing the general `upper_bound`, since `rank_le_width` only gives
+`rank ≤ 9`, not the sharp `rank ≤ 7 = φ(9) + 1`). Fully formalised in
+Lean (no `sorry`, no `axiom`).
+
+**Upper-bound subtlety:** the matrix has `9^((j+1)-j) = 9` columns, so
+`rank_le_width` gives only `rank ≤ 9`. We instead cite the general
+`upper_bound`, which evaluates to `φ(9) · 9^0 + 1 = 6 · 1 + 1 = 7`.
+
+**Proof technique novelty.** This is the **first** corner closure using
+`Matrix.det_fromBlocks_zero₂₁` (i.e., a non-triangular block-diagonal
+decomposition). Previous nine corner closures (W ∈ {2..6, 8, 10, 12, 18,
+20}) all used `Matrix.det_of_upperTriangular`, which is structurally
+unavailable here: S144's exhaustive DP search confirmed the W=9 slab
+admits NO leading-row + dead-col upper-triangulation in rows `[0, 9)`.
+The S151 pre-search identified the `(1 + 3 + 3)` block-DIAGONAL pattern
+at row set `{0, 1, 3, 5, 2, 4, 6}`, col set `{2, 1, 3, 7, 0, 4, 6}`.
+
+Together with prior corners, this is the **eleventh** unconditional
+instance of `mps_bond_dim` and the **tenth** instance over a wheel
+`W ≥ 3`.
+-/
+theorem mps_bond_dim_W_eq_9_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 9 (j + 1) j).rank = 7 := by
+  apply Nat.le_antisymm
+  · -- `≤ 7`: from `upper_bound`. (`rank_le_width` only gives `≤ 9`.)
+    have hW : (2 : ℕ) ≤ 9 := by norm_num
+    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    have h := upper_bound 9 (j + 1) j hW hj hj_hi
+    have h_eq : Nat.totient 9 * 9 ^ ((j + 1 : ℕ) - j - 1) + 1 = 7 := by
+      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+      rw [h_sub]
+      decide
+    linarith
+  · -- `7 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 9 (j + 1) j).submatrix ρ σ).rank = 7 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (7 : ℕ) = ((unfolding 9 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 9 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
+/-!
+### W=7 corner support (S159)
+
+The W=7 corner case `(W = 7, d = j + 1)` reuses the `(1 + 3 + 3)`
+block-DIAGONAL Lean assembly developed at S152 (W=9). W=7 is
+**structurally a small prime corner with NO new prime helpers**: the
+S159 pre-search (`w7_blocktriangular_search.py`) shows that the
+permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6)` and `σ ↦ (6, 1, 3, 5, 0, 2, 4)`
+gives a `1 + 3 + 3` block-DIAGONAL structure using only primes
+`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}` — every one
+of which is already declared in the file.
+
+Determinants: `D₁.det = -1`, `D₂.det = -2`, `A.det = 1`, total
+`det = 1 · (-1) · (-2) = 2 ≠ 0`, hence `IsUnit` over `ℚ`. (W=9 had
+total det `1`; W=7's nonzero-but-not-`±1` total is the first instance
+where the closing `IsUnit` requires `Ne.isUnit` rather than `IsUnit 1`.)
+-/
+
+/-
+**Corner-case prime exhibit (W = 7, d = j + 1).**
+
+Closed at S159 via the BlockTriangular `(1 + 3 + 3)` decomposition
+identified in the S159 pre-search. The construction uses
+`ρ : Fin 7 → Fin (7^j)` mapping `(0..6) ↦ (0, 1, 3, 5, 2, 4, 6)` and
+`σ : Fin 7 → Fin (7^((j+1)-j))` mapping `(0..6) ↦ (6, 1, 3, 5, 0, 2, 4)`.
+The `7 × 7` submatrix decomposes (via `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7`)
+into `Matrix.fromBlocks A B 0 D` with `A : Matrix (Fin 1) (Fin 1) ℚ` (det 1)
+and `D : Matrix (Fin 6) (Fin 6) ℚ` (det 2 via inner 3+3 split: D₁.det = -1,
+D₂.det = -2), giving total det = `1 · 2 = 2`, hence `IsUnit` over `ℚ`.
+NO new prime helpers — uses existing primes
+`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}`.
+-/
+set_option maxHeartbeats 800000 in
+theorem exists_invertible_submatrix_W_eq_7_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    ∃ (ρ : Fin 7 → Fin (7 ^ j))
+      (σ : Fin 7 → Fin (7 ^ ((j + 1) - j))),
+      IsUnit ((unfolding 7 (j + 1) j).submatrix ρ σ) := by
+  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+  have h_pow_j_pos : 0 < 7 ^ j := Nat.pow_pos (by norm_num)
+  have h_1_lt_pow_j : 1 < 7 ^ j := by
+    calc (1 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_2_lt_pow_j : 2 < 7 ^ j := by
+    calc (2 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_3_lt_pow_j : 3 < 7 ^ j := by
+    calc (3 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_4_lt_pow_j : 4 < 7 ^ j := by
+    calc (4 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_5_lt_pow_j : 5 < 7 ^ j := by
+    calc (5 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_6_lt_pow_j : 6 < 7 ^ j := by
+    calc (6 : ℕ) < 7 := by norm_num
+      _ = 7 ^ 1 := by norm_num
+      _ ≤ 7 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+  have h_zero_lt_pow_dj : (0 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_1_lt_pow_dj : (1 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_2_lt_pow_dj : (2 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_3_lt_pow_dj : (3 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_4_lt_pow_dj : (4 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_5_lt_pow_dj : (5 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  have h_6_lt_pow_dj : (6 : ℕ) < 7 ^ ((j + 1) - j) := by rw [h_sub]; norm_num
+  -- ρ ↦ (0, 1, 3, 5, 2, 4, 6)
+  -- σ ↦ (6, 1, 3, 5, 0, 2, 4)
+  refine ⟨fun i =>
+           if i.val = 0 then ⟨0, h_pow_j_pos⟩
+           else if i.val = 1 then ⟨1, h_1_lt_pow_j⟩
+           else if i.val = 2 then ⟨3, h_3_lt_pow_j⟩
+           else if i.val = 3 then ⟨5, h_5_lt_pow_j⟩
+           else if i.val = 4 then ⟨2, h_2_lt_pow_j⟩
+           else if i.val = 5 then ⟨4, h_4_lt_pow_j⟩
+           else ⟨6, h_6_lt_pow_j⟩,
+         fun i =>
+           if i.val = 0 then ⟨6, h_6_lt_pow_dj⟩
+           else if i.val = 1 then ⟨1, h_1_lt_pow_dj⟩
+           else if i.val = 2 then ⟨3, h_3_lt_pow_dj⟩
+           else if i.val = 3 then ⟨5, h_5_lt_pow_dj⟩
+           else if i.val = 4 then ⟨0, h_zero_lt_pow_dj⟩
+           else if i.val = 5 then ⟨2, h_2_lt_pow_dj⟩
+           else ⟨4, h_4_lt_pow_dj⟩, ?_⟩
+  rw [Matrix.isUnit_iff_isUnit_det]
+  -- Non-primality for the composites used in the entries.
+  have h_not_prime_1 : ¬ Nat.Prime 1 := Nat.not_prime_one
+  have h_not_prime_4 : ¬ Nat.Prime 4 := by decide
+  have h_not_prime_6 : ¬ Nat.Prime 6 := by decide
+  have h_not_prime_8 : ¬ Nat.Prime 8 := by decide
+  have h_not_prime_9 : ¬ Nat.Prime 9 := by decide
+  have h_not_prime_10 : ¬ Nat.Prime 10 := by decide
+  have h_not_prime_12 : ¬ Nat.Prime 12 := by decide
+  have h_not_prime_14 : ¬ Nat.Prime 14 := by decide
+  have h_not_prime_15 : ¬ Nat.Prime 15 := by decide
+  have h_not_prime_16 : ¬ Nat.Prime 16 := by decide
+  have h_not_prime_18 : ¬ Nat.Prime 18 := by decide
+  have h_not_prime_20 : ¬ Nat.Prime 20 := by decide
+  have h_not_prime_21 : ¬ Nat.Prime 21 := by decide
+  have h_not_prime_22 : ¬ Nat.Prime 22 := by decide
+  have h_not_prime_24 : ¬ Nat.Prime 24 := by decide
+  have h_not_prime_25 : ¬ Nat.Prime 25 := by decide
+  have h_not_prime_26 : ¬ Nat.Prime 26 := by decide
+  have h_not_prime_27 : ¬ Nat.Prime 27 := by decide
+  have h_not_prime_28 : ¬ Nat.Prime 28 := by decide
+  have h_not_prime_30 : ¬ Nat.Prime 30 := by decide
+  have h_not_prime_32 : ¬ Nat.Prime 32 := by decide
+  have h_not_prime_33 : ¬ Nat.Prime 33 := by decide
+  have h_not_prime_34 : ¬ Nat.Prime 34 := by decide
+  have h_not_prime_35 : ¬ Nat.Prime 35 := by decide
+  have h_not_prime_36 : ¬ Nat.Prime 36 := by decide
+  have h_not_prime_38 : ¬ Nat.Prime 38 := by decide
+  have h_not_prime_39 : ¬ Nat.Prime 39 := by decide
+  have h_not_prime_40 : ¬ Nat.Prime 40 := by decide
+  have h_not_prime_42 : ¬ Nat.Prime 42 := by decide
+  have h_not_prime_44 : ¬ Nat.Prime 44 := by decide
+  have h_not_prime_45 : ¬ Nat.Prime 45 := by decide
+  have h_not_prime_46 : ¬ Nat.Prime 46 := by decide
+  have h_not_prime_48 : ¬ Nat.Prime 48 := by decide
+  have h_not_prime_49 : ¬ Nat.Prime 49 := by decide
+  -- Compute the 49 entries of the 7×7 submatrix.
+  -- Row 0 (rho=0): n = 0*7 + sigma[k] + 1.
+  have hE00 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨6, h_6_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 6 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 6 + 1 : ℕ) = 7 := by norm_num
+    rw [h_eq]
+    exact chiP_seven_eq_one
+  have hE01 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 1 + 1 : ℕ) = 2 := by norm_num
+    rw [h_eq]
+    exact chiP_two_eq_one
+  have hE02 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 3 + 1 : ℕ) = 4 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_4]
+  have hE03 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨5, h_5_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 5 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 5 + 1 : ℕ) = 6 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_6]
+  have hE04 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 0 + 1 : ℕ) = 1 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_1]
+  have hE05 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 2 + 1 : ℕ) = 3 := by norm_num
+    rw [h_eq]
+    exact chiP_three_eq_one
+  have hE06 : unfolding 7 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (0 * 7 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (0 * 7 ^ 1 + 4 + 1 : ℕ) = 5 := by norm_num
+    rw [h_eq]
+    exact chiP_five_eq_one
+  -- Row 1 (rho=1): n = 1*7 + sigma[k] + 1 = sigma[k] + 8.
+  have hE10 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 6 + 1 : ℕ) = 14 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_14]
+  have hE11 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 1 + 1 : ℕ) = 9 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_9]
+  have hE12 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 3 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 3 + 1 : ℕ) = 11 := by norm_num
+    rw [h_eq]
+    exact chiP_eleven_eq_one
+  have hE13 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 1 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 5 + 1) = 1
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 5 + 1 : ℕ) = 13 := by norm_num
+    rw [h_eq]
+    exact chiP_thirteen_eq_one
+  have hE14 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 0 + 1 : ℕ) = 8 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_8]
+  have hE15 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 2 + 1 : ℕ) = 10 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_10]
+  have hE16 : unfolding 7 (j + 1) j ⟨1, h_1_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (1 * 7 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (1 * 7 ^ 1 + 4 + 1 : ℕ) = 12 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_12]
+  -- Row 2 (rho=3): n = 3*7 + sigma[k] + 1 = sigma[k] + 22.
+  have hE20 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 6 + 1 : ℕ) = 28 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_28]
+  have hE21 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 1 + 1 : ℕ) = 23 := by norm_num
+    rw [h_eq]
+    exact chiP_twenty_three_eq_one
+  have hE22 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 3 + 1 : ℕ) = 25 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_25]
+  have hE23 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 5 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 5 + 1 : ℕ) = 27 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_27]
+  have hE24 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 0 + 1 : ℕ) = 22 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_22]
+  have hE25 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 2 + 1 : ℕ) = 24 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_24]
+  have hE26 : unfolding 7 (j + 1) j ⟨3, h_3_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (3 * 7 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (3 * 7 ^ 1 + 4 + 1 : ℕ) = 26 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_26]
+  -- Row 3 (rho=5): n = 5*7 + sigma[k] + 1 = sigma[k] + 36.
+  have hE30 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 6 + 1 : ℕ) = 42 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_42]
+  have hE31 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 1 + 1) = 1
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 1 + 1 : ℕ) = 37 := by norm_num
+    rw [h_eq]
+    exact chiP_thirty_seven_eq_one
+  have hE32 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 3 + 1 : ℕ) = 39 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_39]
+  have hE33 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 1 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 5 + 1) = 1
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 5 + 1 : ℕ) = 41 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_one_eq_one
+  have hE34 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 0 + 1 : ℕ) = 36 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_36]
+  have hE35 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 2 + 1 : ℕ) = 38 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_38]
+  have hE36 : unfolding 7 (j + 1) j ⟨5, h_5_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (5 * 7 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (5 * 7 ^ 1 + 4 + 1 : ℕ) = 40 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_40]
+  -- Row 4 (rho=2): n = 2*7 + sigma[k] + 1 = sigma[k] + 15.
+  have hE40 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 6 + 1 : ℕ) = 21 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_21]
+  have hE41 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 1 + 1 : ℕ) = 16 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_16]
+  have hE42 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 3 + 1 : ℕ) = 18 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_18]
+  have hE43 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 5 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 5 + 1 : ℕ) = 20 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_20]
+  have hE44 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 0 + 1) = 0
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 0 + 1 : ℕ) = 15 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_15]
+  have hE45 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 2 + 1 : ℕ) = 17 := by norm_num
+    rw [h_eq]
+    exact chiP_seventeen_eq_one
+  have hE46 : unfolding 7 (j + 1) j ⟨2, h_2_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (2 * 7 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (2 * 7 ^ 1 + 4 + 1 : ℕ) = 19 := by norm_num
+    rw [h_eq]
+    exact chiP_nineteen_eq_one
+  -- Row 5 (rho=4): n = 4*7 + sigma[k] + 1 = sigma[k] + 29.
+  have hE50 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 6 + 1 : ℕ) = 35 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_35]
+  have hE51 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 1 + 1 : ℕ) = 30 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_30]
+  have hE52 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 3 + 1 : ℕ) = 32 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_32]
+  have hE53 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 5 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 5 + 1 : ℕ) = 34 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_34]
+  have hE54 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 0 + 1 : ℕ) = 29 := by norm_num
+    rw [h_eq]
+    exact chiP_twenty_nine_eq_one
+  have hE55 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 2 + 1) = 1
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 2 + 1 : ℕ) = 31 := by norm_num
+    rw [h_eq]
+    exact chiP_thirty_one_eq_one
+  have hE56 : unfolding 7 (j + 1) j ⟨4, h_4_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 0 := by
+    change chiP (4 * 7 ^ ((j + 1) - j) + 4 + 1) = 0
+    rw [h_sub]
+    have h_eq : (4 * 7 ^ 1 + 4 + 1 : ℕ) = 33 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_33]
+  -- Row 6 (rho=6): n = 6*7 + sigma[k] + 1 = sigma[k] + 43.
+  have hE60 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨6, h_6_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 6 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 6 + 1 : ℕ) = 49 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_49]
+  have hE61 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 1 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 1 + 1 : ℕ) = 44 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_44]
+  have hE62 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨3, h_3_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 3 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 3 + 1 : ℕ) = 46 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_46]
+  have hE63 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨5, h_5_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 5 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 5 + 1 : ℕ) = 48 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_48]
+  have hE64 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 1 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 0 + 1) = 1
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 0 + 1 : ℕ) = 43 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_three_eq_one
+  have hE65 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 2 + 1) = 0
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 2 + 1 : ℕ) = 45 := by norm_num
+    rw [h_eq]
+    simp [chiP, h_not_prime_45]
+  have hE66 : unfolding 7 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    change chiP (6 * 7 ^ ((j + 1) - j) + 4 + 1) = 1
+    rw [h_sub]
+    have h_eq : (6 * 7 ^ 1 + 4 + 1 : ℕ) = 47 := by norm_num
+    rw [h_eq]
+    exact chiP_forty_seven_eq_one
+  -- Fin 7 .val and ≠ helpers for the if-then-else ρ, σ.
+  have hv0 : (0 : Fin 7).val = 0 := rfl
+  have hv1 : (1 : Fin 7).val = 1 := rfl
+  have hv2 : (2 : Fin 7).val = 2 := rfl
+  have hv3 : (3 : Fin 7).val = 3 := rfl
+  have hv4 : (4 : Fin 7).val = 4 := rfl
+  have hv5 : (5 : Fin 7).val = 5 := rfl
+  have hv6 : (6 : Fin 7).val = 6 := rfl
+  have hne_1_0 : (1 : ℕ) ≠ 0 := by decide
+  have hne_2_0 : (2 : ℕ) ≠ 0 := by decide
+  have hne_2_1 : (2 : ℕ) ≠ 1 := by decide
+  have hne_3_0 : (3 : ℕ) ≠ 0 := by decide
+  have hne_3_1 : (3 : ℕ) ≠ 1 := by decide
+  have hne_3_2 : (3 : ℕ) ≠ 2 := by decide
+  have hne_4_0 : (4 : ℕ) ≠ 0 := by decide
+  have hne_4_1 : (4 : ℕ) ≠ 1 := by decide
+  have hne_4_2 : (4 : ℕ) ≠ 2 := by decide
+  have hne_4_3 : (4 : ℕ) ≠ 3 := by decide
+  have hne_5_0 : (5 : ℕ) ≠ 0 := by decide
+  have hne_5_1 : (5 : ℕ) ≠ 1 := by decide
+  have hne_5_2 : (5 : ℕ) ≠ 2 := by decide
+  have hne_5_3 : (5 : ℕ) ≠ 3 := by decide
+  have hne_5_4 : (5 : ℕ) ≠ 4 := by decide
+  have hne_6_0 : (6 : ℕ) ≠ 0 := by decide
+  have hne_6_1 : (6 : ℕ) ≠ 1 := by decide
+  have hne_6_2 : (6 : ℕ) ≠ 2 := by decide
+  have hne_6_3 : (6 : ℕ) ≠ 3 := by decide
+  have hne_6_4 : (6 : ℕ) ≠ 4 := by decide
+  have hne_6_5 : (6 : ℕ) ≠ 5 := by decide
+  -- Set up the named ρ, σ, M for the rest of the proof.
+  set Mρ : Fin 7 → Fin (7 ^ j) :=
+    fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+             else if i.val = 1 then ⟨1, h_1_lt_pow_j⟩
+             else if i.val = 2 then ⟨3, h_3_lt_pow_j⟩
+             else if i.val = 3 then ⟨5, h_5_lt_pow_j⟩
+             else if i.val = 4 then ⟨2, h_2_lt_pow_j⟩
+             else if i.val = 5 then ⟨4, h_4_lt_pow_j⟩
+             else ⟨6, h_6_lt_pow_j⟩ with hMρ_def
+  set Mσ : Fin 7 → Fin (7 ^ ((j + 1) - j)) :=
+    fun i => if i.val = 0 then ⟨6, h_6_lt_pow_dj⟩
+             else if i.val = 1 then ⟨1, h_1_lt_pow_dj⟩
+             else if i.val = 2 then ⟨3, h_3_lt_pow_dj⟩
+             else if i.val = 3 then ⟨5, h_5_lt_pow_dj⟩
+             else if i.val = 4 then ⟨0, h_zero_lt_pow_dj⟩
+             else if i.val = 5 then ⟨2, h_2_lt_pow_dj⟩
+             else ⟨4, h_4_lt_pow_dj⟩ with hMσ_def
+  set M : Matrix (Fin 7) (Fin 7) ℚ :=
+    (unfolding 7 (j + 1) j).submatrix Mρ Mσ with hM_def
+  -- Explicit 7x7 matrix matching the entries.
+  let Mexp : Matrix (Fin 7) (Fin 7) ℚ :=
+    !![1, 1, 0, 0, 0, 1, 1;
+       0, 0, 1, 1, 0, 0, 0;
+       0, 1, 0, 0, 0, 0, 0;
+       0, 1, 0, 1, 0, 0, 0;
+       0, 0, 0, 0, 0, 1, 1;
+       0, 0, 0, 0, 1, 1, 0;
+       0, 0, 0, 0, 1, 0, 1]
+  -- Prove M = Mexp.
+  have hMeq : M = Mexp := by
+    ext i k
+    simp only [hM_def, Matrix.submatrix_apply, hMρ_def, hMσ_def]
+    fin_cases i <;> fin_cases k <;>
+      simp only [hv0, hv1, hv2, hv3, hv4, hv5, hv6,
+                 if_true, if_false, Nat.one_ne_zero,
+                 hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2,
+                 hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+                 hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4,
+                 hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    all_goals first
+      | exact hE00
+      | exact hE01
+      | exact hE02
+      | exact hE03
+      | exact hE04
+      | exact hE05
+      | exact hE06
+      | exact hE10
+      | exact hE11
+      | exact hE12
+      | exact hE13
+      | exact hE14
+      | exact hE15
+      | exact hE16
+      | exact hE20
+      | exact hE21
+      | exact hE22
+      | exact hE23
+      | exact hE24
+      | exact hE25
+      | exact hE26
+      | exact hE30
+      | exact hE31
+      | exact hE32
+      | exact hE33
+      | exact hE34
+      | exact hE35
+      | exact hE36
+      | exact hE40
+      | exact hE41
+      | exact hE42
+      | exact hE43
+      | exact hE44
+      | exact hE45
+      | exact hE46
+      | exact hE50
+      | exact hE51
+      | exact hE52
+      | exact hE53
+      | exact hE54
+      | exact hE55
+      | exact hE56
+      | exact hE60
+      | exact hE61
+      | exact hE62
+      | exact hE63
+      | exact hE64
+      | exact hE65
+      | exact hE66
+      | (simp [Mexp, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_fin_one])
+  rw [hMeq]
+  -- Now show Mexp.det ≠ 0 via two nested fromBlocks decompositions:
+  --   Layer 1: Mexp = fromBlocks A B 0 D (1 + 6 split, lower-left zero).
+  --   Layer 2: D   = fromBlocks D1 0 0 D2 (3 + 3 split, both off-diagonals zero).
+  -- The 1×1 block A has det 1 (`det_fin_one`); the two 3×3 blocks D1, D2
+  -- have det -1 and -2 (`det_fin_three`); total det = 1 * ((-1) * (-2)) = 2.
+  -- Layer-1 blocks: 1+6 split.
+  let A : Matrix (Fin 1) (Fin 1) ℚ := !![1]
+  let B : Matrix (Fin 1) (Fin 6) ℚ := !![1, 0, 0, 0, 1, 1]
+  let D : Matrix (Fin 6) (Fin 6) ℚ :=
+    !![0, 1, 1, 0, 0, 0;
+       1, 0, 0, 0, 0, 0;
+       1, 0, 1, 0, 0, 0;
+       0, 0, 0, 0, 1, 1;
+       0, 0, 0, 1, 1, 0;
+       0, 0, 0, 1, 0, 1]
+  -- Layer-2 blocks: 3+3 split of D.
+  let D1 : Matrix (Fin 3) (Fin 3) ℚ := !![0, 1, 1; 1, 0, 0; 1, 0, 1]
+  let D2 : Matrix (Fin 3) (Fin 3) ℚ := !![0, 1, 1; 1, 1, 0; 1, 0, 1]
+  -- Layer 1 equality: under finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7.
+  have h_fromBlocks :
+      Mexp.submatrix finSumFinEquiv finSumFinEquiv = Matrix.fromBlocks A B 0 D := by
+    ext i j
+    rcases i with i | i <;> rcases j with j | j
+    all_goals fin_cases i <;> fin_cases j <;> rfl
+  -- Layer 2 equality: under finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6.
+  have h_fromBlocks_D :
+      D.submatrix finSumFinEquiv finSumFinEquiv =
+        Matrix.fromBlocks D1 (0 : Matrix (Fin 3) (Fin 3) ℚ) 0 D2 := by
+    ext i j
+    rcases i with i | i <;> rcases j with j | j
+    all_goals fin_cases i <;> fin_cases j <;> rfl
+  have h_Mexp_det :
+      Mexp.det = (Matrix.fromBlocks A B (0 : Matrix (Fin 6) (Fin 1) ℚ) D).det := by
+    rw [← h_fromBlocks]
+    simp [Matrix.det_submatrix_equiv_self]
+  rw [h_Mexp_det, Matrix.det_fromBlocks_zero₂₁]
+  -- A.det = 1 (1×1 case).
+  have hA_det : A.det = 1 := by
+    show (!![(1 : ℚ)] : Matrix (Fin 1) (Fin 1) ℚ).det = 1
+    simp [Matrix.det_fin_one]
+  -- D.det = 2 via the layer-2 split: D1.det * D2.det = (-1) * (-2) = 2.
+  have hD_det : D.det = 2 := by
+    have h_D_det_eq :
+        D.det =
+          (Matrix.fromBlocks D1 (0 : Matrix (Fin 3) (Fin 3) ℚ) 0 D2).det := by
+      rw [← h_fromBlocks_D]
+      simp [Matrix.det_submatrix_equiv_self]
+    rw [h_D_det_eq, Matrix.det_fromBlocks_zero₂₁]
+    have hD1 : D1.det = -1 := by
+      show (!![(0 : ℚ), 1, 1; 1, 0, 0; 1, 0, 1] :
+              Matrix (Fin 3) (Fin 3) ℚ).det = -1
+      simp [Matrix.det_fin_three]
+    have hD2 : D2.det = -2 := by
+      show (!![(0 : ℚ), 1, 1; 1, 1, 0; 1, 0, 1] :
+              Matrix (Fin 3) (Fin 3) ℚ).det = -2
+      simp [Matrix.det_fin_three]
+      norm_num
+    rw [hD1, hD2]
+    norm_num
+  rw [hA_det, hD_det]
+  -- 1 * 2 = 2, IsUnit (2 : ℚ) since (2 : ℚ) ≠ 0.
+  have h_ne_zero : (1 * 2 : ℚ) ≠ 0 := by norm_num
+  exact h_ne_zero.isUnit
+
+/--
+**Corner-case main theorem (W = 7, d = j + 1).** The unfolding rank is
+exactly `7` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_9_d_eq_j_plus_1`
+(both citing the general `upper_bound`, since `rank_le_width` only gives
+`rank ≤ 7`, but `R = φ(7) + 1 = 7` and the slab has 7 cols, so they
+coincide here). Fully formalised in Lean (no `sorry`, no `axiom`).
+
+**Upper-bound subtlety:** the matrix has `7^((j+1)-j) = 7` columns, so
+`rank_le_width` gives `rank ≤ 7`, which equals the target. We still cite
+the general `upper_bound` for uniformity with the other corner cases.
+
+**Proof technique novelty.** Twelfth corner closure; second use of
+`Matrix.det_fromBlocks_zero₂₁` (after S152's W=9). W=7 was on the S128
+"block-triangular-required" list; S159's pre-search found the same
+1+(3+3) decomposition shape as W=9 but with `D₂.det = -2` rather than
+`-1`. This is the **first instance with total `det = ±2`** (W=9 had
+total `det = 1`), demonstrating that the BlockTriangular template is
+robust to nontrivial determinant magnitudes — `IsUnit` over `ℚ` follows
+from `Ne.isUnit` since `(2 : ℚ) ≠ 0`.
+
+**Helper reuse.** S159 added zero new `chiP_X_eq_one` helpers — every
+prime in the 7×7 submatrix (`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+37, 41, 43, 47}`) was already declared. Ten new `h_not_prime_X` lemmas
+internal to the proof (for composites `{6, 9, 15, 18, 24, 27, 33, 36,
+42, 45}` not seen in the W=9 closure).
+
+Together with prior corners, this is the **twelfth** unconditional
+instance of `mps_bond_dim` and the **eleventh** instance over a wheel
+`W ≥ 3`.
+-/
+theorem mps_bond_dim_W_eq_7_d_eq_j_plus_1
+    (j : ℕ) (hj : 1 ≤ j) :
+    (unfolding 7 (j + 1) j).rank = 7 := by
+  apply Nat.le_antisymm
+  · -- `≤ 7`: from `upper_bound`. (`rank_le_width` also gives `≤ 7` here,
+    -- but we route through `upper_bound` for uniformity.)
+    have hW : (2 : ℕ) ≤ 7 := by norm_num
+    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    have h := upper_bound 7 (j + 1) j hW hj hj_hi
+    have h_eq : Nat.totient 7 * 7 ^ ((j + 1 : ℕ) - j - 1) + 1 = 7 := by
+      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+      rw [h_sub]
+      decide
+    linarith
+  · -- `7 ≤ rank`: from the corner-case prime exhibit.
+    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_7_d_eq_j_plus_1 j hj
+    have h_eq : ((unfolding 7 (j + 1) j).submatrix ρ σ).rank = 7 := by
+      have h := Matrix.rank_of_isUnit ((unfolding 7 (j + 1) j).submatrix ρ σ) hUnit
+      simpa using h
+    calc (7 : ℕ) = ((unfolding 7 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+      _ ≤ (unfolding 7 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+
 end E2_1

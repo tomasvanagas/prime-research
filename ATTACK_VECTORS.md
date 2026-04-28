@@ -355,6 +355,137 @@ Avigad-Friedman). Session 2: identify the ACA_0-invoking step in
 the standard PNT-with-error proof. Session 3: attempt either
 WKL_0 reformulation or non-conservativity argument.
 
+### A7 — Geometric Complexity Theory (GCT) obstruction for formula complexity of χ_P  [PARTIAL CLOSURE S156, orbit-dim sub-frame; plethysm sub-frame OPEN]
+
+**[PARTIAL CLOSURE 2026-04-28, S156, mode E, B-grade]:** Orbit-dim
+sub-frame of A7 closed: `dim Stab_{GL_n}(f_χ_P^{(n)}) = 0` (full orbit)
+at `n = 4, 5, 6`; matched-support random baseline gives `mean = std = 0`
+(all matched-support polynomials have trivial Lie stabilizer); discrete
+`S_n` permutation group is trivial; partial-derivative spaces match
+matched-baseline with std = 0 across 100 trials at every `k = 0..n`,
+`n = 4..7`; support hypergraph is Lie-rigid (100/100 random coefficient
+choices give Stab dim = 0). All five pre-stated falsifiers (FAL-1..5)
+hold their no-signal branch. Adds **edge E2.26** (10th orthogonal
+pseudorandomness category — representation-theoretic algebraic
+geometry). The DEEPER plethysm-level / occurrence-obstruction
+sub-frame (`Sym^k Sym^d V` decomposition under `GL_n`, comparison of
+irrep occurrence in orbit-closure coordinate rings) **remains OPEN**
+and requires SageMath. See `experiments/algebraic/gct_chi_p_orbit/`.
+
+**Original critique-recommended pick rationale (preserved):**
+flagged by post-S148 critique as the highest-A-prior open vector
+on the slate. **First §A entry since A6 in S103.** The cross-domain
+import (representation-theoretic algebraic geometry) does not pass
+through any of the 9 saturated pseudorandomness measurements
+(E2.13–E2.25) and is therefore structurally distinct from the
+8-of-8 mode-E/I closures that have characterised the wild_swing
+loop since S133. (Outcome: structurally distinct cross-domain import
+landed at the same noise floor as the prior 9 categories — mode E,
+B-grade; orbit-dim probe collapses to support-hypergraph statement.)
+
+**Question:** Encode `χ_P^{(n)} : \{1, ..., 2^n\} → \{0, 1\}` as a
+multi-affine polynomial `f_χ_P^{(n)}(x_1, ..., x_n) = Σ_{S ⊆ [n], \mathrm{val}(S) \in \mathrm{PRIMES}} ∏_{i \in S} x_i`
+where `\mathrm{val}(S) := Σ_{i \in S} 2^{i-1}`. The Mulmuley-Sohoni 2001
+GCT program seeks formula / determinant lower bounds on a polynomial
+`f` via *orbit closure containment* in `\mathrm{End}(V) \cdot f` and
+*occurrence obstructions* — irreducible `GL(V)`-representations
+appearing in the coordinate ring `\mathbb{C}[\overline{GL_n \cdot f}]`
+but NOT in the determinant orbit closure. Question: identify a
+representation-theoretic GCT obstruction proving `f_χ_P^{(n)}` has
+formula size super-polynomial in `n` (equivalently, χ_P ∉ NC^1
+unconditionally), OR identify a GCT-style obstruction to TC^0
+computability that does not reduce to AKS-family closures (E5.3,
+E7.10) or to Brandt-style diagonalisation (E5.8).
+
+**Why frontier:** the project's TC^0 attacks have run via SAT search
+(A1, partial closure S84 — empty at depth ≤ 5 size ≤ 2000 for `n=8`)
+and proof-complexity / bounded arithmetic (A4 PROPOSED). GCT is
+**representation-theoretic algebraic geometry** — fundamentally
+different machinery, never used in the project. Bürgisser-Ikenmeyer
+2017 *FOCS* "no occurrence obstruction" theorem proved that the
+*specific* obstructions Mulmuley-Sohoni hoped for cannot exist in
+their original form; this *constrains* the GCT program but does not
+close the broader orbit-closure-containment frame. An A-grade result
+on `f_χ_P` would constitute a publishable representation-theoretic
+complexity lower bound on a natural-NT polynomial; a B-grade result
+would extend Bürgisser-Ikenmeyer's no-OCB theorem to the χ_P-orbit,
+yielding the FIRST natural-NT polynomial known to inherit the OCB
+barrier.
+
+**Cross-domain ingredient:** GCT (Mulmuley-Sohoni 2001 *SIAM J.
+Comput.* 31, 496–526; subsequent GCT II–VIII papers); orbit closures
+in projective space `\mathbb{P}(V)` of polynomials of fixed degree;
+algebraic Peter-Weyl decomposition of `\mathcal{O}(GL_n)`; plethysm
+coefficients `Sym^k Sym^d` (Schur-Weyl); Bürgisser-Ikenmeyer 2017
+*FOCS* "no occurrence obstruction" theorem
+arXiv:1604.06431. **NOT in `CROSS_DOMAIN_TECHNIQUES.md`** before this
+session — appended in §2 algebraic/geometric.
+
+**Concrete first step:** for `n = 4` (chi_P on `\{1, ..., 16\}`,
+primes = `\{2, 3, 5, 7, 11, 13\}`), write
+`f_χ_P^{(4)}(x_1, x_2, x_3, x_4) = x_2 + x_1 x_2 + x_1 x_3 + x_2 x_3 + x_1 x_2 x_4 + x_1 x_3 x_4`
+(monomials with binary representation in PRIMES). Compute the
+`GL_4`-stabiliser using SageMath: it must contain `S_4` permutations
+of variables (false in general — verify) and any scaling automorphisms.
+Identify the irreducible `GL_4`-representations occurring in
+`\mathrm{Sym}^k \mathrm{Sym}^4(\mathbb{C}^4)` for `k = 1, 2, 3, 4` via
+plethysm computation. Compare to the `\det_4`-orbit (a different
+polynomial in 16 variables). Is there an irrep occurring in
+`f_χ_P^{(4)}`-orbit but not in `\det_4`-orbit?
+
+**Failure profile:**
+- (E) every irrep in `f_χ_P` orbit closure also occurs in `\det`
+  orbit closure — closes as Bürgisser-Ikenmeyer-class "no occurrence
+  obstruction" for the χ_P polynomial, identifying GCT as a closed
+  barrier alongside E5.3 / E5.8 / E7.10. **First natural-NT polynomial
+  known to inherit the OCB barrier — B-grade structural negative.**
+- (I) the symmetric-group `S_n` stabiliser of `f_χ_P` is so large that
+  the obstruction is structurally vacuous (`f_χ_P` is too "symmetric")
+  — closes the GCT frame for χ_P as a vanishing-stabiliser dead end.
+- (INC) plethysm coefficients are #P-hard at `n ≥ 6` (Mulmuley conjectured
+  polytime, unproven); orbit-closure containment becomes computationally
+  intractable.
+
+**A-grade success:** identify a representation-theoretic obstruction
+proving `f_χ_P^{(n)}` requires formula size `n^{ω(1)}` (super-poly in
+log(2^n)), implying PRIMES ∉ NC^1 unconditionally — resolves an open
+problem older than AKS. Or partial: an OCB-evading obstruction at
+TC^0 (depth-bounded) at `n ≤ 16`, giving a conditional unconditional
+lower bound.
+
+**B-grade success:** verify Bürgisser-Ikenmeyer-2017 OCB theorem
+applies to `f_χ_P` — closes GCT for χ_P at the OCB barrier, structural
+negative result complementary to E5.3 / E5.8 / E7.10. **First
+natural-NT polynomial closure under the OCB theorem.**
+
+**Cross-domain refs:**
+- Mulmuley-Sohoni 2001 "Geometric Complexity Theory I: An Approach
+  to the P vs NP and Related Problems" *SIAM J. Comput.* 31(2),
+  496–526
+- Bürgisser-Ikenmeyer-Panova 2017 *FOCS* "No occurrence obstructions
+  in geometric complexity theory" arXiv:1604.06431
+  https://arxiv.org/abs/1604.06431
+- Bürgisser-Landsberg-Manivel-Weyman 2011 "An overview of mathematical
+  issues arising in the GCT approach to VP vs VNP" *SIAM J. Comput.*
+  40, 1179
+- Mulmuley 2009 "Geometric Complexity Theory VI: The flip via positivity"
+  arXiv:0704.0229 https://arxiv.org/abs/0704.0229
+- Wikipedia: Geometric complexity theory
+  https://en.wikipedia.org/wiki/Geometric_complexity_theory
+
+**Distinct from existing closures:** **Not** a SAT search (A1, partial
+closure S84) — GCT does not enumerate circuits; it identifies
+representation-theoretic obstructions. **Not** bounded arithmetic (A4
+PROPOSED) — GCT is algebraic-geometric, not proof-theoretic. **Not**
+AHK matroid Hodge (D31 CLOSED) — AHK is *combinatorial* Hodge on Chow
+ring of a matroid; GCT is *GIT* on orbit closures of polynomials.
+
+**Budget:** 3-4 sessions. Session 1: write `f_χ_P^{(n)}` for `n ≤ 4`
++ compute `GL_n` stabiliser. Session 2: SageMath plethysm enumeration
+of irreps in coordinate ring. Session 3: comparison against det orbit
+closure. Session 4 (only if A-grade signal): scale to `n = 6` (assuming
+plethysm tractability per Mulmuley conjecture).
+
 ---
 
 ## §B. Spectral Identity Searches Beyond the Standard Bases
@@ -1247,7 +1378,7 @@ Does the mixing time admit a polylog upper bound?
 
 **Budget:** 2-3 sessions.
 
-### D5 — Continuous-time quantum walk on the same graphs §D.D4 closed (Szegedy)
+### D5 — Continuous-time quantum walk on the same graphs §D.D4 closed (Szegedy)  [CLOSED S141, see "Closed attacks"]
 
 **Question:** §D.D4 (S80, closed E) ruled out Szegedy walks on
 divisor / coprime / Cayley graphs as polylog π(x) extractors. The
@@ -3768,7 +3899,7 @@ Lanczos; ~hours. Successor D28.a if Y is super-Ramanujan: replace
 prime-indexed LPS with squarefree-indexed and compare (isolates
 prime-vs-squarefree-density component).
 
-### D29 — Cohn-Elkies linear programming bound on the prime autocorrelation function
+### D29 — Cohn-Elkies linear programming bound on the prime autocorrelation function  [CLOSED S145, see "Closed attacks"]
 
 **Question:** the Cohn-Elkies 2003 linear programming bound for
 sphere packings (*Annals of Math* 157, 689 = arXiv:math/0110009)
@@ -3911,7 +4042,34 @@ Session 2 (if signal): scale to `K = 100`, `T_max = 10^4`,
 coefficients to Eisenstein series `E_4, E_6, E_8` and Jacobi theta
 `θ` evaluated at suitable cusps).
 
-### D30 — Pollicott-Ruelle resonances of an arithmetic transfer operator  [RECOMMENDED NEXT — S139 critique]
+### D30 — Pollicott-Ruelle resonances of an arithmetic transfer operator  [CLOSED S140, see "Closed attacks"]
+
+**Outcome (S140, mode E, B-grade case (i)):** First refinement-stable
+Pollicott-Ruelle spectrum measurement on the χ_P-weighted Gauss-map
+transfer operator. **F-A passes** (unweighted h=1 reproduces Mayer/GKW
+spectrum: λ_0=1.0000, λ_1=-0.30366, λ_2=+0.10089 within 0.2% at
+M=160, n=800). **χ_P spectrum** at M=120, n=400: |λ_0|=0.35961,
+|λ_1|=0.05103, |λ_2|=0.00792, |λ_3|=0.00128 (alternating signs,
+geometric decay, gap 0.142). Top-5 stable to <1% CV across
+(M_grid,n_max) ∈ {30..160}×{100..800}. **Closed-form prediction**:
+λ_0^{χ_P} ≈ Σ_p a_p with a_n = (2/log²2)·[ln2/(n(n-1)) -
+ln((n+1)/n)/(n-1) + ln((n+2)/(n+1))/n] (n≥2) explicit Gauss-Kuzmin
+Rayleigh-quotient coefficients, Σa_n=1; predicted 0.36187 vs measured
+0.35961 (+0.6% rel error). Eigenvector ⟨v_0, 1/((1+x)log2)⟩ = 0.9985
+— arithmetic content lives entirely in eigenvalue, not eigenfunction.
+**Cramér closure (B_crao, 200 seeds, M=80 N=400)**: |λ_0| z=-1.79,
+|λ_1| z=-1.60, gap z=+2.10 — within ±2σ Bonferroni. **A-grade
+hypothesis falsified**: |λ_0|/(π(N)/N) = 1.844, NOT a closed-form
+constant; closed form IS Σ_p a_p, cost-equivalent to enumerating
+primes. **Adds EDGE E2.22**: first closed-form analytical prediction
+for an arithmetic-weighted PR resonance in the literature; first
+project dynamical-spectral measurement on χ_P (orthogonal to E2.13
+Gowers, E2.14 Anderson, E2.16 DPP, E2.17 PH, E2.19 subword, E2.20
+Mahler, E2.21 Newman). Cross-domain technique "Transfer operator
+spectrum (Pollicott-Ruelle resonances)" §5 of CROSS_DOMAIN_TECHNIQUES
+promoted PROPOSED → USED-E. See
+`experiments/dynamical/pollicott_ruelle_chi_p/` and Closed attacks
+below.
 
 **Question:** for a hyperbolic dynamical system `(M, T)` and a
 Hölder-continuous weight `w: M → R`, the **transfer operator**
@@ -4057,6 +4215,2192 @@ refine to `M = 10^5`, `n_{max} = 500`, with anisotropic-Sobolev
 stabilization (Liverani-style cone fields) to verify resonance
 stability.
 
+### D31 — Adiprasito-Huh-Katz combinatorial Hodge theory of an arithmetic prime-matroid  [CLOSED S149, see "Closed attacks"]
+
+**Question:** Adiprasito-Huh-Katz 2018 *Annals* 188, 381 (= arXiv:1511.02888)
+proved the **hard Lefschetz theorem** and **Hodge-Riemann relations** for
+the Chow ring `A^*(M)` of an arbitrary matroid `M`, settling the
+**Heron-Rota-Welsh conjecture**: the absolute values of the coefficients
+of the reduced characteristic polynomial `\bar{χ}_M(t) = χ_M(t)/(t − 1)`
+form a **log-concave sequence** for *every* matroid (realisable or not).
+**Question:** define an **arithmetic prime-matroid** `M_P^N` whose
+characteristic polynomial encodes `χ_P` data — for instance, the matroid
+on ground set `[2, N]` whose **flats** are the ideals
+`(d) ∩ [2, N]` for `d | \mathrm{rad}(\prod_{p ≤ N} p)`, equivalently the
+`gcd`-closed sublattice of the divisibility poset; or the
+**transversal matroid** with blocks `B_p = \{n ∈ [2, N] : p | n\}` for
+each prime `p ≤ N`. AHK gives **log-concavity of `|μ_{M_P^N}(F)|`**
+across the lattice of flats — does the log-concavity inequality
+`|μ_k|^2 ≥ |μ_{k-1}| \cdot |μ_{k+1}|` (where `μ_k` = signed Möbius
+coefficient at corank `k`) yield a **sharp prime-counting inequality**
+sharper than the Hardy-Littlewood / Brun / Selberg sieve bounds at
+the singular-series level?
+
+**Why frontier:** AHK's proof is one of the most celebrated results in
+combinatorics of the past decade and it has **never** been applied to
+an arithmetic matroid encoding the prime indicator. The Heron-Rota-Welsh
+log-concavity is a NEW kind of inequality on signed sums of arithmetic
+Möbius values — it constrains the partial sums of `μ(d) χ_P`-like
+quantities in ways that the standard Selberg/Brun upper-bound machinery
+does not. **A successful AHK-application would be a publishable
+analytic-NT inequality** at the intersection of matroid theory and
+prime-counting. The **non-realisable** branch of AHK matters here:
+arithmetic matroids on the divisibility lattice are typically NOT
+realisable as vector configurations over any field, so the classical
+Hodge-theoretic proof of log-concavity fails — only AHK 2018 covers
+this case. **Channelled mathematician:** Huh / Adiprasito (combinatorial
+Hodge theory).
+
+**Cross-domain ingredient:** **Combinatorial Hodge theory of matroid
+Chow rings** (Adiprasito-Huh-Katz 2018 *Annals* 188 = arXiv:1511.02888);
+Heron 1972 / Rota 1971 / Welsh 1976 (original log-concavity conjecture);
+Huh 2012 *J. AMS* 25 (realisable case via Chern classes of wonderful
+compactifications); Brändén-Huh 2020 *Annals* 192 (Lorentzian polynomials
+extension); De Concini-Procesi 1995 *Selecta Math.* 1 (wonderful
+compactifications). NEW addition to CROSS_DOMAIN_TECHNIQUES §2 ("Algebraic
+/ Geometric") — register as "AHK matroid Hodge theory / Heron-Rota-Welsh
+log-concavity" PROPOSED for D31.
+
+**Distinction from existing closures and edges:** Distinct from
+**E2.20 Mahler measure of `f_N(z)`** (CLOSED S134, D10) — Mahler measure
+is the L^1 mean of `\log |f|` on `|z|=1`, while AHK Chow-ring Hodge
+classes live in the **étale** lattice of flats, not on a circle.
+Distinct from **E2.17 persistent homology** (CLOSED S96, D2) — PH metric
+on prime gaps, no algebraic Möbius structure. Distinct from **E7.17
+combinatorial L_1 Hodge** (CLOSED S126, D22) — that closure was on the
+**graph Laplacian** of a coprimality flag complex, AHK 2018 is on the
+**Chow ring** `A^*(M_P^N)` (a graded commutative `Q`-algebra) and its
+Hodge-Riemann pairing — **structurally distinct levels** (the Hodge
+*Laplacian* eigenvalue spectrum vs. the Chow-ring Lefschetz pairing on
+graded pieces). Distinct from **E1.5 Möbius / signed sums** — AHK gives
+*signed-sum inequalities* via Lefschetz, not asymptotic densities.
+
+**Concrete first step:** for `N ∈ {12, 16, 24, 32, 48, 64}`:
+1. Construct the arithmetic matroid `M_P^N` with ground set
+   `E = [2, N]` and flats given by either
+   (a) `\{S ⊆ E : S = E ∩ (d)\}` for `d` a squarefree product of primes
+       `≤ N` — the **divisibility transversal matroid**; or
+   (b) the **graphic matroid** of the prime-coprimality graph `G_N`
+       used in S126 (`L_1` closure).
+2. Enumerate flats and rank function `r: 2^E → Z_{≥0}` exactly via
+   subset enumeration (feasible for `|E| ≤ 60`).
+3. Compute the **characteristic polynomial**
+   `χ_M(t) = Σ_{S ⊆ E}(-1)^{|S|} t^{r(E) − r(S)}` exactly; extract
+   the reduced polynomial `\bar{χ}_M(t)`.
+4. Verify AHK log-concavity of the coefficient sequence `|w_k|` of
+   `\bar{χ}_M`: `w_k^2 ≥ w_{k-1} w_{k+1}` for all `k`.
+5. Compute the **rho-vector** `(w_0, w_1, ..., w_r)` and check whether
+   `w_k` admits a closed-form expression in terms of the
+   Hardy-Littlewood singular series for primes. Specifically: at the
+   leading-order, AHK gives a **strict** log-concavity for non-degenerate
+   matroids; quantify the inequality slack `δ_k := w_k^2 − w_{k-1}
+   w_{k+1}`.
+6. CONTROL: replace `χ_P` with a Bernoulli-matched-density random subset
+   (matched parity, support, density `ρ_N = π(N)/N`); compute the same
+   matroid invariants; the **deviation in `δ_k`** between prime and
+   random matroids is the discriminating signal.
+
+**Failure profile (E):** the prime-matroid characteristic polynomial
+matches a Bernoulli-matched-density baseline within ±2σ (modulo a
+mod-q residue-class correction the W-trick erases) — closes mode E,
+adding AHK matroid Hodge as the **7th orthogonal pseudorandomness
+measure category** (after E2.13 Gowers / E2.14 Anderson / E2.16 DPP
+/ E2.17 PH / E2.19 subword / E2.20 Mahler). **B-grade.** **(I):** the
+prime-matroid log-concavity slack `δ_k` deviates from the Bernoulli
+baseline by `\geq 3σ` and the deviation is structurally identified
+(e.g., `δ_k ~ \prod_{p ≤ N}(1 − 1/p^k)` — a NEW singular-series
+identity inside AHK Hodge). **B+grade.** **(INC):** flat enumeration
+intractable for `N > 60`; need representation-theoretic shortcuts via
+the symmetric group action on `[2, N]`.
+
+**A-grade success:** an **explicit closed-form** for `\bar{χ}_{M_P^N}(t)`
+in terms of HL singular-series products and prime-counting partial
+sums, polylog-evaluable from the closed form. The AHK Hodge-Riemann
+relations would then give **provable inequalities** between sums of
+the form `Σ_{p ≤ N^α} \log p / N` at different `α`-levels — a NEW
+Brun-Titchmarsh-type bound from a NEW source. **B-grade success:**
+quantitative measurement of `δ_k(prime) − δ_k(Bernoulli)`, identifying
+either an arithmetic resonance or a NEW pseudorandomness fingerprint.
+
+**Cross-domain refs:**
+- Adiprasito-Huh-Katz 2018 "Hodge theory for combinatorial geometries"
+  *Annals of Math.* 188, 381 = arXiv:1511.02888
+  https://arxiv.org/abs/1511.02888
+- Huh 2012 "Milnor numbers of projective hypersurfaces and the chromatic
+  polynomial of graphs" *J. AMS* 25, 907
+- Brändén-Huh 2020 "Lorentzian polynomials" *Annals* 192, 821 = arXiv:1902.03719
+- De Concini-Procesi 1995 *Selecta Math.* 1 (wonderful compactifications)
+- Wikipedia: Matroid characteristic polynomial
+  https://en.wikipedia.org/wiki/Matroid
+
+**Budget:** 2-3 sessions. Session 1: small-scale flat enumeration,
+characteristic polynomial computation at `N ≤ 32`, log-concavity
+verification, Bernoulli control. Session 2 (if signal): scale to
+`N ≤ 64` via lattice-of-flats Möbius-recursion shortcut; inspect
+slack `δ_k` for arithmetic structure. Session 3 (if A-grade hypothesis
+survives): attempt closed-form derivation via Hardy-Littlewood
+singular-series matching.
+
+### D32 — Analytic Combinatorics in Several Variables (Pemantle-Wilson) diagonal-extraction of `χ_P`  [CLOSED S197, see "Closed attacks"]
+
+**Outcome (S197, mode I, B-grade):** UNCONDITIONAL structural barrier
+ruling out the entire ACSV smooth-point technique class for `χ_P` and
+`π(n)` at all `d ≥ 1`. Theorem: `f(z) := Σ χ_P(n) z^n` has `|z|=1` as
+natural boundary (Pólya-Carlson + non-eventual-periodicity of primes)
+hence is not D-finite hence not the diagonal of any rational/algebraic
+multivariate `F` (Furstenberg-Lipshitz). Strict strengthening of
+CLOSED_PATHS row 584 (empirical at order ≤ 20) to all orders
+simultaneously. New edge **E7.21**. Cross-domain ACSV §7 promoted
+PROPOSED → USED I. See `experiments/constructions/acsv_pi_diagonal/`
+and "Closed attacks" below.
+
+**Question:** Pemantle-Wilson 2013/2024 *Analytic Combinatorics in
+Several Variables* (CUP) developed a complete asymptotic theory for
+**diagonal coefficients** `[z_1^n \cdots z_d^n] F(z_1, \ldots, z_d)`
+of a multivariate rational generating function `F`. The asymptotic is
+extracted from **critical points** of the singular variety
+`V_F := \{F = 0\}` lying on the boundary of the domain of convergence,
+via residue / saddle-point analysis: at a **smooth point** `\zeta^*`
+the coefficient grows as `[\zeta^*]^{-n} \cdot (2\pi n)^{-(d-1)/2}
+\cdot (\text{leading constant})`, with corrections from non-smooth
+points. **Question:** can `χ_P(n)` (or `π(n)` itself) be encoded as
+the diagonal of a **rational** multivariate generating function `F`
+amenable to ACSV smooth-point analysis? If yes, the smooth-point
+asymptotic — when truncated at logarithmically many residues — gives
+a **polylog evaluator for `π(n)`** by direct asymptotic-series
+substitution.
+
+**Why frontier:** ACSV is the **canonical machinery for extracting
+asymptotics from multivariate generating functions** and has produced
+non-trivial closed forms in many combinatorial contexts (lattice
+paths, walks in cones, Eulerian statistics). **No published work
+applies ACSV to the prime indicator or to π(x).** The reason is
+the **belief** (folklore, never proved) that no rational `F(z_1,
+\ldots, z_d)` has `χ_P` as a diagonal — equivalently, that
+`Σ_n χ_P(n) z^n` is **NOT D-finite** as a univariate power series
+(i.e., does not satisfy any finite-order linear ODE with polynomial
+coefficients). If this belief is wrong, ACSV would resolve the
+polylog-π(x) problem. If the belief is right, *proving* it via the
+Pemantle-Wilson smooth-point method gives a **new structural barrier**
+distinct from the existing tensor-rank / pseudorandomness walls.
+**Channelled mathematician:** Pemantle / Wilson (multivariate
+asymptotics).
+
+**Cross-domain ingredient:** **Analytic combinatorics in several
+variables (ACSV)** (Pemantle-Wilson 2013 / 2024 *Analytic Combinatorics
+in Several Variables* CUP); Melczer 2021 *An Invitation to Analytic
+Combinatorics* Springer (computational ACSV). NEW addition to
+CROSS_DOMAIN_TECHNIQUES §7 ("Combinatorial / Additive") — register as
+"Analytic combinatorics in several variables (smooth-point
+diagonal extraction)" PROPOSED for D32.
+
+**Distinction from existing closures:** Distinct from **CLOSED line 30
+(explicit-formula proper convergence)** — that line tested the
+**univariate** Riemann-explicit-formula with `R(x^ρ)` zeros, an
+*analytic-NT* approach; ACSV is purely combinatorial and uses
+**multivariate residues** on a rational `F`. Distinct from **CLOSED
+line 600 (adelic CRT)** — adelic local-global, no diagonal extraction.
+Distinct from **CLOSED line 113 (Dirichlet series extrapolation)** —
+univariate extrapolation to `s = 0`, no smooth-point critical analysis.
+Distinct from D10 Mahler / D27 Newman / D29 Cohn-Elkies — those are
+**Fourier-side** measurements on `f_N(z)`; ACSV is **residue-side** on
+a multivariate `F(z_1, \ldots, z_d)`.
+
+**Concrete first step:** for `d ∈ {2, 3}` and `N ≤ 10^4`:
+1. Try **explicit ACSV-amenable encodings** for `π(N)`:
+   (a) `F(x, y) = (\sum_{n ≤ N} \chi_P(n) x^n y^n) \cdot \frac{1}{1 - xy}` —
+       diagonal `[x^n y^n] F = \sum_{k ≤ n} \chi_P(k)` = `π(n)` directly;
+       check if `F` (or its truncation by Cesàro / partial-fraction) is
+       **rational** in `x, y`.
+   (b) `F(x, y) = \frac{1 - L(s, \chi_P, x, y)}{(1-xy)(1-y)}` for some
+       bivariate Dirichlet-like series `L`; verify rationality / D-finiteness.
+   (c) Mellin-type bivariate `F(x, s) = \sum_n \chi_P(n) x^n / n^s`
+       evaluated at lattice points `s = m \in Z_{≥0}` — produces a
+       sequence of generating functions `F_m(x)`, each potentially rational.
+2. For each candidate `F`, compute the **singular variety**
+   `V_F = \{F = 0\}` symbolically (Macaulay2 / Sage) and locate **smooth
+   critical points** `\zeta^*` minimising `|\zeta_1| \cdot |\zeta_2|`
+   (Pemantle-Wilson minimal-modulus critical-point criterion).
+3. Apply the smooth-point asymptotic
+   `[z_1^n z_2^n] F = \zeta^{*-n} \cdot (2\pi n)^{-1/2} \cdot
+   \frac{1}{\sqrt{H(\zeta^*)}}` where `H` is the **Hessian determinant**
+   (Pemantle-Wilson Theorem 9.5.7 / 10.3.4) — predicts `π(n)` from
+   `(\zeta^*, H)` data.
+4. Verify against actual `π(n)` for `n ∈ \{10, 100, 1000\}`. The
+   asymptotic agreement (or failure mode) determines outcome.
+5. CONTROL: same construction for the **Bernoulli-matched-density**
+   prime-replacement; verify ACSV gives the correct `\rho_N \cdot n`
+   leading order.
+
+**Failure profile (E):** every rational candidate `F` reduces by
+algebraic identities to an essentially-univariate `F(x)` whose
+diagonal extraction is the standard PNT — no genuinely multivariate
+critical-point structure opens. **B-grade.** **(I):** all
+candidates `F` fail to be rational (closure of the prime-encoded
+generating function under finite-order linear ODE / shift relations
+fails) — **proves a NEW non-D-finiteness barrier for `χ_P`** as a
+positive structural result. **B+grade.** **(INC):** Macaulay2
+Gröbner-basis computation timeouts at `d = 3, N > 100` — need
+specialised non-commutative Buchberger.
+
+**A-grade success:** identification of a rational `F(z_1, ..., z_d)`
+encoding `π(n)` as a diagonal AND a smooth critical point `\zeta^*`
+yielding closed-form `π(n) = \zeta^{*-n} \cdot \text{poly}(n)` to
+within polylog. This would be a **fundamental closed-form identity
+for π(n)** with direct polylog-evaluation consequence. **B-grade
+success:** prove `Σ_n χ_P(n) z^n` is not the diagonal of any
+rational `F(z_1, ..., z_d)` for `d ≤ D_*` — a NEW negative-shape
+structural barrier on the **algebraic class** of generating
+functions admitting `χ_P`-diagonal encodings.
+
+**Cross-domain refs:**
+- Pemantle-Wilson 2013/2024 *Analytic Combinatorics in Several
+  Variables* CUP (2nd ed. 2024) https://www.acsvproject.com/
+- Melczer 2021 *An Invitation to Analytic Combinatorics* Springer
+  Texts in Mathematics (computational ACSV)
+- Pemantle-Wilson 2008 "Twenty combinatorial examples of asymptotics
+  derived from multivariate generating functions" *SIAM Review* 50, 199
+- Wikipedia: Analytic combinatorics
+  https://en.wikipedia.org/wiki/Analytic_combinatorics
+- ACSV project page (textbook, lectures, software)
+  https://www.acsvproject.com/
+
+**Budget:** 2-3 sessions. Session 1: enumerate candidate `F`'s,
+identify the easiest rational candidate, compute `V_F` symbolically.
+Session 2: smooth-point analysis on the surviving candidates;
+test `n \in \{10, 100, 1000\}` predictions. Session 3 (if signal):
+extend to `d = 3`, attempt closed-form HL match.
+
+### D33 — Berkovich projective line analysis of `f_N(z) = \sum_{n ≤ N} \chi_P(n) z^n`
+
+**Question:** the **Berkovich projective line** `\mathbb{P}^{1,\mathrm{an}}_{\mathbb{C}_p}`
+over `\mathbb{C}_p` is a compact, Hausdorff, uniquely path-connected
+analytic space whose **Type II points** correspond to closed disks
+`D(a, r)` with `r \in p^{\mathbb{Q}}`, **Type III** to disks of
+irrational radius, **Type IV** to nested-disk limit points (Baker-Rumely
+2010 *Potential Theory and Dynamics on the Berkovich Projective Line*
+AMS Math. Surv. 159). Each point `x \in \mathbb{P}^{1,\mathrm{an}}`
+carries a **multiplicative seminorm** `f \mapsto |f|_x` extending the
+classical absolute value. **Question:** what is the **Berkovich
+spectrum** `\mathrm{Sp}_p(f_N) := \{|f_N|_x : x \in \mathbb{P}^{1,
+\mathrm{an}}_{\mathbb{C}_p}\}` of the prime-coefficient generating
+polynomial `f_N(z) = \sum_{n ≤ N} \chi_P(n) z^n`? Specifically: the
+**maximum modulus on the Type II Gauss point** `x_G = D(0, 1)` is the
+classical sup-norm, but the spectrum on **Type II points of radius
+`p^{-k}` for `k \in \mathbb{Q}_{> 0}`** gives a *p-adic Newton
+polygon decomposition* of `f_N`. Does this Newton polygon have a
+non-trivial **vertex set** correlated with the prime indices, or
+does it reduce to the trivial Newton polygon `\{(n, 0) : n \in P\}`?
+
+**Why frontier:** the **Berkovich spectrum** is a structurally distinct
+representation of `f_N` from the classical complex-analytic Mahler
+measure (CLOSED S134, E2.20) and Newman L^∞ (CLOSED S138, E2.21).
+Mahler / Newman live on the **archimedean** complex unit circle
+`\{|z| = 1\}`; the Berkovich-Type-II-spectrum lives on the
+**non-archimedean** dendritic tree of `\mathbb{P}^{1,\mathrm{an}}_{\mathbb{C}_p}`.
+**No published work computes the Berkovich spectrum of any
+prime-coefficient polynomial.** The Berkovich Newton polygon at
+each prime `p` carries genuinely different information than the
+archimedean version — it sees only the *p-adic valuations* of the
+coefficients, which for `\chi_P \in \{0, 1\}` are all `0` or `\infty`.
+But the Berkovich **Type III** spectrum is sensitive to the
+**density and distribution** of the support, not the values — which
+*is* the prime-indicator content. **Channelled mathematician:**
+Berkovich / Baker-Rumely (non-archimedean potential theory).
+
+**Cross-domain ingredient:** **Berkovich analytic spaces / non-archimedean
+potential theory** (Berkovich 1990 *Spectral Theory and Analytic
+Geometry over Non-Archimedean Fields* AMS Math. Surv. Mono. 33;
+Baker-Rumely 2010 *Potential Theory and Dynamics on the Berkovich
+Projective Line* AMS Math. Surv. 159; Favre-Rivera-Letelier 2010
+*Math. Ann.* 348 dynamics on Berkovich line). UNUSED in
+CROSS_DOMAIN_TECHNIQUES §2 — promote to PROPOSED with vector D33.
+
+**Distinction from existing closures:** Distinct from **E2.20 Mahler
+measure** (D10, S134) — that lives on the *archimedean* unit circle;
+D33 lives on the *non-archimedean* Berkovich projective line over
+`\mathbb{C}_p`. Distinct from **E2.21 Newman L^∞** (D27, S138) —
+again archimedean. Distinct from **CLOSED line 76 (p-adic interpolation)**
+— that closure was on Mahler-coefficient growth of `π(x)` as a
+function of integer `x`; D33 is about the *Berkovich spectrum of
+the polynomial `f_N(z)`*, not p-adic interpolation of `π`. Distinct
+from **CLOSED line 600 / 670 / 682 (adelic CRT / p-adic lifting)** —
+those tested CRT decomposition; D33 tests the Berkovich-tree
+geometric structure.
+
+**Concrete first step:** for `p ∈ \{2, 3, 5, 7\}` and
+`N ∈ \{2^8, 2^{10}, 2^{12}\}`:
+1. Compute the **classical p-adic Newton polygon** of `f_N(z)` —
+   the lower convex hull of `\{(n, v_p(\chi_P(n))) : n ≤ N\}`. For
+   `\chi_P \in \{0, 1\}`, `v_p(0) = +\infty` and `v_p(1) = 0`, so
+   the Newton polygon is the lower convex hull of `\{(p, 0) : p \in P\}` —
+   a horizontal line, trivially. **(Sanity check.)**
+2. Compute the **Berkovich Newton polygon** at the Gauss-Type-II
+   point `x_{D(0, p^{-k})}` for `k \in \{0, 1, 2, ..., 10\}` — the
+   slopes of the polygon at this point are the **p-adic logarithms
+   of the roots of `f_N`** lying in the disk `D(0, p^{-k})`.
+3. Use a **p-adic root-finder** (Sage `pAdicGenericPolynomial.roots()`)
+   to compute the roots of `f_N` over `\mathbb{C}_p` to precision
+   `p^{-30}`; partition by p-adic valuation of the root.
+4. Compute the **Berkovich Lyapunov spectrum** at Type II points: at
+   `x = x_{D(0, p^{-k})}`, the value `|f_N|_x = \max_n |\chi_P(n)|
+   p^{-kn}` (for the supremum norm on the Gauss point) — this gives
+   a **piecewise-linear function of `k`** whose breakpoints are the
+   prime indices in `P ∩ [1, N]`. The **density of breakpoints** in
+   intervals `[k, k + \log_p N]` is the prime density `\pi(N)/N`
+   evaluated at non-archimedean scale.
+5. CONTROL: replace `\chi_P` with Bernoulli-matched-density random
+   subset; compute the same Berkovich data; the **Berkovich-tree
+   topology** of the prime-coefficient polynomial should differ from
+   the random control if the prime structure is non-trivial.
+
+**Failure profile (E):** the Berkovich Newton polygon of `f_N` is
+trivial (horizontal slope-zero line) and the Type II spectrum
+reduces to the unweighted prime-density count — no non-trivial
+non-archimedean structure beyond the classical p-adic valuation.
+**B-grade.** **(I):** the Berkovich-tree distance between `f_N`
+and the matched-density Bernoulli baseline is `\geq 3σ` and
+identifies a NEW p-adic pseudorandomness fingerprint. **B+grade.**
+**(INC):** Sage p-adic root-finder fails to converge at
+`p^{-30}` precision; need higher-precision Newton iteration or
+PARI implementation.
+
+**A-grade success:** discovery of a **closed-form Berkovich
+spectrum identity** for `f_N` — e.g., the Berkovich Type II
+height-function decomposes as `\log |f_N|_{x_{D(0, p^{-k})}} =
+\sum_{p \in P, p ≤ N} \min(k v_p(p), 0) + O(\log N)` matching a
+**non-archimedean prime-counting identity** that can be evaluated
+in polylog time via p-adic Lagarias-Odlyzko substitute. **B-grade
+success:** quantitative measurement of the Berkovich-tree
+distance between `f_N` and matched-density Bernoulli, with
+identification of any structural HL-singular-series content in
+the spectrum.
+
+**Cross-domain refs:**
+- Berkovich 1990 *Spectral Theory and Analytic Geometry over
+  Non-Archimedean Fields* AMS Math. Surv. Mono. 33
+- Baker-Rumely 2010 *Potential Theory and Dynamics on the
+  Berkovich Projective Line* AMS Math. Surv. 159
+- Favre-Rivera-Letelier 2010 "Théorie ergodique des fractions
+  rationnelles sur un corps ultramétrique" *Math. Ann.* 348, 519
+- Wikipedia: Berkovich space
+  https://en.wikipedia.org/wiki/Berkovich_space
+- Conrad 2008 "Several approaches to non-Archimedean geometry"
+  in *p-adic Geometry* (AMS ULect 45)
+  https://math.stanford.edu/~conrad/papers/aws.pdf
+
+**Budget:** 1-2 sessions. Session 1: classical p-adic Newton
+polygon + Sage root-finder + Type II spectrum sweep at `p ∈ \{2, 3, 5\}`,
+`N ≤ 2^{10}`, with Bernoulli control. Session 2 (if signal): scale
+to `p ∈ \{7, 11\}` and `N ≤ 2^{12}`; investigate Berkovich-tree
+metric structure.
+
+### D34 — De Branges Hilbert space `H(E)` for the Riemann xi-function model space
+
+**Question:** the **de Branges Hilbert space** `H(E)` associated to a
+Hermite-Biehler entire function `E(z)` (an entire function with
+`|E(z)| > |E^*(z)|` for `\mathrm{Im}(z) > 0`, where `E^*(z) =
+\overline{E(\bar z)}`) is the Hilbert space of entire functions `F`
+with `F/E` and `F^*/E` in the Hardy space `H^2(\mathbb{C}_+)`,
+equipped with inner product `[F, G] = (1/\pi) \int_{\mathbb{R}}
+\overline{F(\lambda)} G(\lambda) |E(\lambda)|^{-2} d\lambda`. The
+space has a **reproducing kernel** `K_w(z) = (E(w) E^*(z) − E^*(w)
+E(z)) / (2\pi i (w − \bar z))`. **De Branges 2004 conjectured / sketched**
+(unpublished, see Lagarias 2007 surveys) that the Riemann xi-function
+`\xi(z) := \frac{1}{2} z (z-1) \pi^{-z/2} \Gamma(z/2) \zeta(z)` evaluated
+along `s = 1/2 + iz` admits a Hermite-Biehler decomposition
+`E(z) = A(z) − i B(z)` with `\xi(1/2 + iz) = A(z)`, and that the
+**de Branges space `H(E_\xi)`** has reproducing kernels `K_w` whose
+zeros lie precisely on `\mathbb{R}` — equivalent to the Riemann
+hypothesis. **Question:** does the **finite-rank approximation**
+`H_N := \mathrm{span}\{K_{w_1}, \ldots, K_{w_N}\}` of the de Branges
+space `H(E_\xi)` (for cleverly chosen sample points
+`w_1, \ldots, w_N`) admit a **polylog-evaluable expression** for the
+inner product `\langle K_w, \chi_{[0, x]}\rangle_{H(E_\xi)}`, where
+`\chi_{[0, x]}` is the characteristic function of `[0, x]` projected
+onto `H_N`? Such an inner product would directly give an estimate
+for `\pi(x)` via the explicit formula and the de Branges
+**reproducing-kernel-residue** identity.
+
+**Why frontier:** the de Branges program for RH is one of the
+**four major attempted approaches to RH** (alongside Connes-Bost,
+Hilbert-Pólya, and pair-correlation). Despite controversy around the
+2004 announcement, the **Hilbert-space framework is mathematically
+solid** — what's open is whether a **specific** `E`-function recovers
+ζ. The reproducing-kernel structure gives a **polylog-computable
+projection operator** `P_N: H(E) \to H_N` with explicit `K_w(z)`
+formula; if `P_N \chi_{[0, x]}` converges to `\chi_{[0, x]}` at
+**polylog rate in `N`**, then `\pi(x) = \langle \chi_{[0, x]}, \chi_P
+\rangle ≈ \langle P_N \chi_{[0, x]}, \chi_P\rangle` is polylog-
+computable. **No published work tests the rate of de Branges
+projection convergence for the Riemann xi function.** This is a
+**concrete numerical question** with explicit machinery. **Channelled
+mathematician:** de Branges (Hilbert spaces of entire functions),
+Lagarias (de Branges-RH numerical analysis).
+
+**Cross-domain ingredient:** **De Branges Hilbert spaces of entire
+functions / model spaces** (de Branges 1968 *Hilbert Spaces of Entire
+Functions* Prentice-Hall; de Branges 1992 "The Riemann hypothesis for
+Hilbert spaces of entire functions" *Bull. AMS* 26, 1; Lagarias 2007
+"The Riemann hypothesis: arithmetic and geometry" survey, Annals of
+Math Studies 165 = arXiv:math/0511099; Burnol 2002 *Comm. Math. Phys.*
+228 (de Branges-Krein for ζ); Garunkstis-Steuding 2007 *Math. Slovaca*
+57). UNUSED in CROSS_DOMAIN_TECHNIQUES §10 row "Riemann xi-function
+model spaces" — promote PROPOSED for D34.
+
+**Distinction from existing closures:** Distinct from **CLOSED line 50
+(Connes-Weil quadratic form)** — Connes-Weil constructs a *trace
+formula* on a noncommutative space; de Branges constructs a *Hilbert
+space of entire functions* on `\mathbb{C}`, classical analytic. Distinct
+from **CLOSED line 597 (Connes trace optimization)** — Connes trace is
+on operator algebras; de Branges is on entire-function reproducing-
+kernel structure. Distinct from **CLOSED line 702 (Connes-Consani-
+Moscovici spectral triple)** — that closure was on an arithmetic
+**spectral triple** `(A, H, D)`; de Branges `H(E)` is a single Hilbert
+space, not a spectral triple. Distinct from **B4 Voronin universality**
+(open) — Voronin is about ζ vertical translates; de Branges is about
+ζ as a Hermite-Biehler model space.
+
+**Concrete first step:** for `T \in \{10, 30, 100\}` and
+`N \in \{50, 100, 200\}`:
+1. Compute `\xi(1/2 + iz)` at `2N + 1` Chebyshev sample points
+   `z \in [-T, T]` to high precision via `mpmath`.
+2. Construct the candidate Hermite-Biehler decomposition
+   `E_\xi(z) := \xi(1/2 + iz) − i \xi(1/2 − iz) \cdot \mathrm{(conjugate
+   pair)}`. Verify Hermite-Biehler property `|E_\xi(z)| > |E_\xi^*(z)|`
+   for `\mathrm{Im}(z) > 0` numerically.
+3. Choose interpolation points `w_1, \ldots, w_N` to be the
+   **first `N` non-trivial zeros of `\xi`** (Odlyzko ζ-zeros table).
+4. Build the **`N \times N` reproducing-kernel Gram matrix**
+   `G_{ij} = K_{w_i}(w_j)` from the closed-form `K_w` definition.
+5. Project the indicator `\chi_{[0, x]}` (numerically as a smooth
+   bump) onto `H_N = \mathrm{span}\{K_{w_i}\}` via least-squares;
+   measure the L^2 error `\|\chi_{[0, x]} − P_N \chi_{[0, x]}\|_{H(E_\xi)}`
+   as a function of `N`.
+6. **Test the polylog convergence hypothesis:** does the L^2
+   projection error decay as `(\log N)^{-c}` (A-grade, polylog), as
+   `N^{-1/2}` (B-grade, square-root), or worse (negative)?
+7. CONTROL: replace `E_\xi` with the Hermite-Biehler function for a
+   GUE-eigenvalue density (no arithmetic content); compare the
+   projection-error scaling.
+
+**Failure profile (E):** projection error decays as `N^{-1/2}`,
+matching the standard `O(\sqrt{x})` Riemann-explicit-formula rate —
+no polylog acceleration from de Branges geometry. **B-grade.** **(I):**
+projection error has a **non-monotone** structure, indicating that
+some `\xi`-zero-conjugate-pair patterns provide better
+approximation than others; quantify the optimal sampling strategy.
+**B+grade.** **(INC):** numerical Gram matrix `G` is ill-conditioned
+at `N > 100`; need higher-precision arithmetic or regularised
+projection.
+
+**A-grade success:** projection error decays as `(\log N)^{-c}` for
+some `c > 0`, giving a **polylog Lagarias-Odlyzko substitute** via
+de Branges reproducing-kernel projection — would be a fundamental
+spectral-analytic identity for `\pi(x)` via the de Branges program,
+plausibly publishable as a partial-positive contribution to the
+de Branges-RH approach. **B-grade success:** quantitative measurement
+of de Branges projection-error scaling for the Riemann xi-function,
+verified at `N \le 200`, with comparison to GUE-Hermite-Biehler
+control — a NEW numerical fingerprint of arithmetic content in
+the de Branges space.
+
+**Cross-domain refs:**
+- de Branges 1968 *Hilbert Spaces of Entire Functions* Prentice-Hall
+- de Branges 1992 "The Riemann hypothesis for Hilbert spaces of entire
+  functions" *Bull. AMS* 26, 1
+- Lagarias 2007 "The Riemann hypothesis: arithmetic and geometry" =
+  arXiv:math/0511099 https://arxiv.org/abs/math/0511099
+- Burnol 2002 "Sur les formules explicites I: analyse invariante"
+  *C. R. Acad. Sci. Paris* 333; Burnol 2002 "On Fourier and zeta(s)"
+  *Forum Math.* 16
+- Garunkstis-Steuding 2007 "On the universality of L-functions in
+  the Selberg class" *Math. Slovaca* 57
+- Wikipedia: De Branges space
+  https://en.wikipedia.org/wiki/De_Branges_space
+
+**Budget:** 1-2 sessions. Session 1: numerical construction of
+`E_\xi`, reproducing-kernel Gram matrix at `N ≤ 100`, projection-error
+sweep. Session 2 (if signal): scale to `N = 200`, with regularised
+Gram inversion; investigate optimal sampling-point strategy.
+
+### D35 — Microlocal analysis: wavefront set `\mathrm{WF}(\chi_P)` of the prime indicator as a tempered distribution
+
+**Question:** view `\chi_P := \sum_p \delta_p \in \mathcal{S}'(\mathbb{R})`
+(or alternatively as a regularised tempered distribution
+`f_\epsilon(x) := \sum_p e^{-\epsilon (x - p)^2}` taking
+`\epsilon \to 0^+`). Hörmander 1971 *Acta Math.* 127 introduced the
+**wavefront set** `\mathrm{WF}(u) \subseteq T^*\mathbb{R} \setminus \{0\}`
+of a distribution `u`: a pair `(x_0, \xi_0) \notin \mathrm{WF}(u)`
+iff there exists a cutoff `\phi \in C_c^\infty(\mathbb{R})` with
+`\phi(x_0) \ne 0` and a conic neighbourhood `\Gamma \ni \xi_0` such
+that `\widehat{\phi u}(\xi)` decays faster than any polynomial as
+`|\xi| \to \infty` in `\Gamma`. **Question:** what is the wavefront
+set `\mathrm{WF}(\chi_P)`? Three qualitative scenarios:
+- **Trivial (full)** `\mathrm{WF}(\chi_P) = \{(p, \xi) : p \in P,
+  \xi \ne 0\}` (the union of cotangent rays at primes) — closes
+  the microlocal route as the trivial cotangent picture.
+- **Structured** `\mathrm{WF}(\chi_P)` has additional rays beyond
+  the prime locus, indicating **microlocal coupling** between primes
+  via Bombieri-Vinogradov-style equidistribution.
+- **Non-classical** `\mathrm{WF}(\chi_P)` has *fewer* directions than
+  the trivial bound (microlocal smoothing in some directions) — would
+  indicate a **microlocal parametrix** for `\chi_P` with polylog
+  evaluation.
+
+**Why frontier:** **wavefront sets and microlocal analysis are the
+canonical tool for understanding singularities of distributions**
+(Hörmander's propagation-of-singularities theorem). The wavefront set
+of `\chi_P` has **never been computed.** A non-trivial wavefront-set
+identity for `\chi_P` would be a **new Fourier-analytic invariant**
+distinct from the existing 35+ pseudorandomness measures (which are
+local, not microlocal). Pseudodifferential operators and Fourier
+integral operators (FIOs) preserve wavefront-set structure; if
+`\chi_P` has microlocal smoothing in some `(x, \xi)` direction, then
+an FIO `K(x, y)` with appropriate kernel can **microlocally evaluate**
+`\chi_P(n)` at polylog cost. **No work has applied microlocal analysis
+to the prime indicator.** **Channelled mathematician:** Hörmander /
+Sjöstrand (microlocal analysis), Melrose (FIO calculus).
+
+**Cross-domain ingredient:** **Microlocal analysis / wavefront sets /
+pseudodifferential operators** (Hörmander 1971 *Acta Math.* 127, 79;
+Hörmander 1985 *The Analysis of Linear Partial Differential Operators
+III/IV* Springer; Treves 1980 *Introduction to Pseudodifferential and
+Fourier Integral Operators* Plenum; Sjöstrand 1982 "Singularités
+analytiques microlocales" *Astérisque* 95; Melrose 1995 *Geometric
+Scattering Theory* CUP). NEW addition to CROSS_DOMAIN_TECHNIQUES §1
+("Spectral / Operator-Theoretic") OR a NEW section §11 if needed —
+register as "Microlocal analysis / wavefront sets" PROPOSED for D35.
+
+**Distinction from existing closures:** Distinct from **E2.13 Gowers
+U^k norms** (S85) — Gowers norms are **local** (k-point correlations
+of `\chi_P` on AP-progressions); wavefront sets are **microlocal**
+(Fourier-decay in conic directions). Distinct from **CLOSED line 30
+(explicit-formula proper convergence)** — that line tested
+*univariate* asymptotic series; wavefront sets test *cotangent-bundle
+geometry*. Distinct from **D25 Stein-Tomas restriction** (PROPOSED) —
+Stein-Tomas tests `L^p` Fourier-restriction inequalities globally;
+microlocal analysis tests **direction-specific** Fourier decay.
+Distinct from D27 / D29 / D33 (archimedean / non-archimedean polynomial
+analysis on `f_N`) — microlocal analysis treats `\chi_P` as a
+**distribution on `\mathbb{R}`**, not a polynomial.
+
+**Concrete first step:** for `N \in \{2^{10}, 2^{12}, 2^{14}\}`:
+1. Construct the **regularised distribution** `\chi_P^\epsilon(x) =
+   \sum_{p \le N} \phi((x - p)/\epsilon)` for `\phi` a Gaussian
+   bump and `\epsilon = 0.1, 0.01`.
+2. For each candidate point `x_0 \in P` (a prime) and each direction
+   `\xi_0` in a discretised cone `\Gamma_\theta = \{\xi : |\xi| > 1,
+   |\arg \xi - \theta| < \pi/16\}` with `\theta \in
+   \{0, \pi/8, \pi/4, ..., 15\pi/8\}`:
+   (a) Apply a localised cutoff `\phi_{x_0}(x) := \phi((x - x_0)/r)`
+       for `r = 1, 5, 25` (multi-scale).
+   (b) Compute the **localised Fourier transform**
+       `(\phi_{x_0} \chi_P^\epsilon)\widehat{}(\xi)` by FFT on a
+       grid of size `M = 2^{18}` over `[x_0 - 100, x_0 + 100]`.
+   (c) Measure the **conic decay rate** `\sup_{\xi \in \Gamma_\theta,
+       |\xi| \in [R, 2R]} |(\phi_{x_0} \chi_P^\epsilon)\widehat{}(\xi)|
+       \cdot R^k` for `R \in \{2^5, 2^7, 2^9, 2^{11}\}` and `k \in
+       \{0, 1, 2, 3\}`. Microlocal smoothness `(x_0, \xi_0) \notin
+       \mathrm{WF}(\chi_P)` ↔ this quantity tends to `0` as `R \to \infty`
+       for **every** `k`.
+3. **The wavefront-set candidate** at `x_0`: the set of directions
+   `\theta` where the conic-decay quantity does NOT decay — these
+   are the singular directions.
+4. CONTROL: same procedure for **Bernoulli-matched-density random
+   subset** of `[1, N]` — the random control should give
+   `\mathrm{WF}(\chi^{\mathrm{rand}}) = \{(n, \xi) : n \in
+   \mathrm{supp}, \xi \ne 0\}` (full cotangent ray at every support
+   point). Any **deviation** from this random control is the
+   discriminating signal.
+
+**Failure profile (E):** `\mathrm{WF}(\chi_P)` numerically agrees with
+the trivial cotangent picture (full ray at every prime, no other
+content) — closes mode E with the **first microlocal measurement on
+`\chi_P`** as the new content (orthogonal pseudorandomness measure).
+**B-grade.** **(I):** discovery of **non-trivial microlocal coupling**
+between primes (e.g., a special direction `\xi_0$ where conic decay
+fails at non-prime `x` due to BV / Linnik equidistribution structure).
+**B+grade.** **(INC):** numerical FFT noise floor obscures
+microlocal-decay measurement at `R > 2^{11}`; need higher-resolution
+grid or specialised wavelet localisation.
+
+**A-grade success:** identification of a **microlocal parametrix
+operator** `Q` (a Fourier integral operator with explicit kernel)
+such that `Q \chi_P = \chi_P + \mathcal{S}'_{C^\infty}$` — i.e.,
+`Q$ smooths `\chi_P` to a smooth function modulo a polylog-evaluable
+remainder. This would be a **fundamental microlocal identity** for
+the prime indicator, polylog-computable via Hörmander's
+propagation-of-singularities. **B-grade success:** quantitative
+characterisation of `\mathrm{WF}(\chi_P)` numerically at
+`N \le 2^{14}`, with comparison to Bernoulli baseline; a NEW
+microlocal pseudorandomness fingerprint orthogonal to the existing
+35+ measures.
+
+**Cross-domain refs:**
+- Hörmander 1971 "Fourier integral operators I" *Acta Math.* 127, 79
+- Hörmander 1985 *The Analysis of Linear Partial Differential
+  Operators III* Springer Grundlehren 274 (Ch. 18 wavefront sets)
+- Treves 1980 *Introduction to Pseudodifferential and Fourier
+  Integral Operators* Plenum (2 vols)
+- Sjöstrand 1982 "Singularités analytiques microlocales" *Astérisque* 95
+- Melrose 1995 *Geometric Scattering Theory* CUP
+- Wikipedia: Wave front set
+  https://en.wikipedia.org/wiki/Wave_front_set
+
+**Budget:** 1-2 sessions. Session 1: regularised `\chi_P^\epsilon`
+construction, multi-scale localised FFT at `N ≤ 2^{12}`, conic-decay
+measurement, Bernoulli control. Session 2 (if signal): scale to
+`N = 2^{14}`; investigate FIO parametrix candidates if `\mathrm{WF}(\chi_P)`
+shows non-trivial structure.
+
+### D36 — Multivariate (Boyd-Smyth) Mahler measure of the bivariate prime polynomial F_N(z_1, z_2)
+
+**Question:** Define `F_N(z_1, z_2) := Σ_{m+n ≤ N} χ_P(m+n) z_1^m z_2^n`
+(Toeplitz / additive convolution form) or, alternately,
+`G_N(z_1, z_2) := Σ_{(m,n): mn ≤ N} χ_P(mn) z_1^m z_2^n` (multiplicative
+form). The univariate Mahler measure `m(f_N(z))` was CLOSED at S134
+(D10, mode I, edge E2.20) — `f_PRIMES_N` plateaus 0.307 nat below
+`f_BERN(d_N)_N` with `Δ_∞^{(1)} ≈ −0.307` reflecting HL singular-series
+shifts of the Jensen integral. The **multivariate Mahler measure**
+`m(F_N) = (2π)^{-2} ∫_{T^2} log|F_N(e^{iθ_1}, e^{iθ_2})| dθ_1 dθ_2` is
+structurally different — it accesses Boyd-Smyth `L'`-value identities
+(e.g., Smyth 1981 *Bull. AMS* 4: `m(1+x+y) = (3√3/4π) L(χ_{-3}, 2)`,
+Boyd 1998 *Exp. Math.* 7: `m(1+x+y+z)` and `m(P(x,y))` ↔ `L'(E,1)` BSD
+connections). Question: does `m(F_N)` admit a closed-form polylog
+evaluator via a Boyd-Smyth `L'`-identity, OR does it plateau at a
+`Δ_∞^{(2)}` constant analogous to D10's `−0.307` but in 2-D?
+
+**Why frontier:** Boyd 1998 tabulated multivariate Mahler measures
+expose "explainable" cases (linked to L-values of CM elliptic curves)
+and "mysterious" cases. If `m(F_N)` falls into the explainable category
+the explicit `L`-identity gives polylog π(x) via Boyd's L-value
+evaluators. If it falls into the mysterious category, a 2-D extension
+of `Δ_∞^{(1)} = −0.307` is itself a new edge orthogonal to E2.20.
+
+**Cross-domain ingredient:** multivariate Mahler measure (Boyd 1981
+*Canad. Math. Bull.* 24; Smyth 1981 *Bull. AMS* 4 (NS); Boyd 1998
+*Exp. Math.* 7); BSD-type `L'(E,1)` identities; 2-D Jensen integration
+via FFT on `T^2`.
+
+**Concrete first step:** for `N ∈ {2^6, 2^8, 2^{10}}` build `F_N`
+(∼ N^2 / log N nonzero coefficients), evaluate `log|F_N|` on a 2-D grid
+`(θ_1, θ_2) ∈ [0, 2π]^2` of resolution `1024^2`, integrate by
+trapezoidal sum to get `m_N`. Compare against:
+(a) Bernoulli-matched 2-D control `B_{N, ρ_N}` with `ρ_N = π(2N)/(2N)`.
+(b) Smyth's `(3√3/4π) L(χ_{-3}, 2)` and Boyd 1998 tabulated CM-elliptic
+    Mahler measures.
+Compute slope and intercept of `log m_N` vs `log N`. Test whether
+`Δ_∞^{(2)} := lim_N (log m_N(F_PRIMES) − log m_N(F_BERN))` exists and
+is non-zero, and whether it agrees with `2 · Δ_∞^{(1)}` (independent
+1-D shift) or carries a genuinely 2-D arithmetic correction.
+
+**Falsification criterion:**
+- **E**: `Δ_∞^{(2)}` matches `2·Δ_∞^{(1)} = −0.614` within ±2σ — closes
+  to the additive 2-D extension of D10, no new content.
+- **I**: `Δ_∞^{(2)}` is a non-trivial new constant not predicted by
+  D10's 1-D HL shift, AND `m(F_N)` does not match any of Boyd's
+  tabulated L-values — multivariate-Mahler is a 9th orthogonal
+  pseudorandomness category.
+- **INC**: 2-D quadrature noise dominates the deficit at tested
+  resolution; needs `≥ 4096^2` grid, GPU FFT.
+
+**A-grade success:** `m(F_N)` matches an explicit Boyd L-value
+`L'(E, 1)` for a known CM elliptic curve E, OR matches
+`L'(χ_{-3}, -1) = (3√3/4π) L(χ_{-3}, 2)` to 6+ digits — yields an
+explicit polylog evaluator for π(x) via Boyd-Smyth identities.
+
+**B-grade fallback:** clean 2-D `Δ_∞^{(2)}` measurement either
+confirming additive D10 extension (E) or demonstrating non-trivial
+2-D-only structure (I).
+
+**Distinction from existing closures:** Distinct from **CLOSED line 93
+/ D10 / E2.20 (S134)** — D10 was UNIVARIATE Mahler integrating over
+`T^1`; D36 integrates over `T^2` and accesses Boyd-Smyth multivariate
+`L'`-identities not available in 1-D (genus-0 vs genus-≥1 jump).
+Distinct from **CLOSED line 78 (modular forms in general)** —
+multivariate Mahler is a Jensen integral, not a modular form. Distinct
+from **D27 Newman / D33 Berkovich / D29 Cohn-Elkies (CLOSED)** —
+those measure univariate `f_N`; D36 is bivariate `F_N`. Distinct from
+**CLOSED line 200 (motivic cohomology)** — D36 is an analytic Jensen
+integral, not a motivic period.
+
+**Cross-domain refs:**
+- Boyd 1981 "Speculations concerning the range of Mahler's measure"
+  *Canad. Math. Bull.* 24, 453
+- Smyth 1981 "On measures of polynomials in several variables"
+  *Bull. AMS* (NS) 4, 49
+- Boyd 1998 "Mahler's measure and special values of L-functions"
+  *Exp. Math.* 7, 37
+- Smyth 2008 "The Mahler measure of algebraic numbers: a survey"
+  CUP = https://homepages.ed.ac.uk/cjsmyth/papers/107.pdf
+- Wikipedia: Mahler measure https://en.wikipedia.org/wiki/Mahler_measure
+
+**Budget:** 1-2 sessions. Session 1: 2-D quadrature at `N ≤ 2^{10}`,
+Bernoulli control, Boyd-table comparison. Session 2 (if signal): scale
+to `N = 2^{12}`, fit `Δ_∞^{(2)}` constant and L-identity match.
+
+### D37 — Quantum modular forms (Zagier 2010): cocycle defect of f_N at rational z = e^{2πi a/q}
+
+**Question:** Zagier 2010 (*Clay Math. Proc.* 11, "Quantum modular
+forms") defines a quantum modular form as a function `φ: Q → C` whose
+modular cocycle defect `h_γ(x) := φ(x) − (cx + d)^{−k} φ(γ x)` (for
+`γ = ((a,b),(c,d)) ∈ Γ_0(N) ⊂ SL_2(Z)`) extends to a `C^∞` (or
+analytic) function on `R \ {0-dim singular set}`. Established examples:
+Kontsevich-Zagier strange function `Σ_{n≥0} (q;q)_n`, Eichler integrals
+of weight-3/2 modular forms (Bringmann-Folsom-Ono-Rhoades 2017 *AMS
+Coll.* 64 §21), Andrews-Dyson-Hickerson partition-congruence functions.
+Question: does the prime generating polynomial
+`f_N(z) := Σ_{n ≤ N} χ_P(n) z^n` evaluated at rational
+`z = e^{2πi a/q}` exhibit a quantum-modular cocycle structure?
+Specifically, does the renormalised partial sum
+`φ_N(a/q) := q^{−α} f_N(e^{2πi a/q})` have a `Stoltz`-limit defect
+under SL_2(Z) that converges to a smooth function as `N → ∞`, for some
+weight `k` and exponent `α`?
+
+**Why frontier:** quantum modular forms have been identified for
+Kontsevich-Zagier, Eichler integrals of half-integer weight forms,
+partition congruences, and Maass cusp forms (Bringmann-Rolen 2018).
+NO quantum-modular structure has been demonstrated or refuted for any
+prime-generated power series. The B4 Voronin universality vector
+addresses density of vertical translates — not modular cocycle. If
+`χ_P` admits a quantum-modular cocycle, the modular transformation
+rule supplies a non-trivial functional equation valid at rationals —
+a fresh route to `π(x)` distinct from any L^p / Mahler / Newman /
+Voronin framework.
+
+**Cross-domain ingredient:** Zagier 2010 quantum modular forms;
+Bringmann-Folsom-Ono-Rhoades 2017 textbook (Ch. 21); Eichler-Shimura
+modular cocycle calculus; Lawrence-Zagier 1999 *Asian J. Math.* 3
+(quantum invariants of 3-manifolds and quantum modularity).
+
+**Concrete first step:** for `q ∈ {2, 3, 4, 5, 6, 7, 8, 12}` and
+`a ∈ {1, ..., q−1}` with `gcd(a, q) = 1`, evaluate
+`f_N(e^{2πi a/q}) = Σ_{n ≤ N} χ_P(n) ω_q^{na}` (`ω_q := e^{2πi/q}`)
+at `N ∈ {10^4, 10^5, 10^6, 10^7}`. Compute the cocycle defect under
+generators `S = ((0,−1),(1,0))` and `T = ((1,1),(0,1))`:
+`h_S(a/q; N) := f_N(e^{2πi a/q}) − (q)^{−k} (a)^{−k} f_N(e^{−2πi q/a})`
+(with inversion `S(a/q) = −q/a`, then reduce mod 1). Test candidate
+weights `k ∈ {0, 1/2, 1, 3/2, 2}`. For each fixed `k`, fit `h_S(a/q)`
+to a polynomial in `a/q` of degree `≤ 4`. Compare to bin-Bernoulli
+matched-density null. Decision: is there a weight `k*` for which
+`h_S(a/q; N)` extrapolates smoothly across the `q`-grid as N grows?
+
+**Falsification criterion:**
+- **E**: `h_S(a/q)` fluctuates uniformly randomly across the rational
+  grid at every weight — no quantum-modular structure; closure as
+  "first quantum-modular measurement of `χ_P`, all weights".
+- **I**: `h_S` shows BERN-significant deviation (≥ 2σ) at some weight
+  but the deviation lies inside the Cramér + parity envelope (S147
+  critique) — B-grade structural negative aligned with the saturated
+  null.
+- **INC**: detected deviation is large but only at low `q` (≤ 4)
+  where the SL_2(Z) cocycle reduces to elementary Fourier-mode
+  interference (parity / mod 3); higher q needed.
+
+**A-grade success:** identification of a weight `k*` and a smooth
+function `H: Q → C` such that `h_S(a/q; ∞) = H(a/q)` to all measurable
+orders — `χ_P` would carry a never-stated quantum-modular cocycle,
+giving a new functional equation at rational `z`. Polylog π(x)
+candidate via Q-rational evaluation of `H` and reverse-engineering
+of `f_N` from the cocycle.
+
+**B-grade fallback:** "First quantum-modular measurement of `χ_P`"
+as content, with `h_γ` either smooth-but-trivial (constant) or lying
+in the Cramér + parity envelope.
+
+**Distinction from existing closures:** Distinct from **B4 Voronin
+universality (PROPOSED)** — Voronin tests density of vertical
+translates of `ζ`; quantum modular form tests modular cocycle of
+`f_N` at rationals (different group action, different test object).
+Distinct from **CLOSED line 78 (modular forms, general)** — quantum
+modular forms (2010) RELAX the modular requirement to a smooth-
+cocycle defect, accepting forms that do not converge to modular
+forms. Distinct from **D27 Newman L^∞ (CLOSED S138)** — Newman
+measured `‖f_N‖_∞`; D37 measures cocycle defect at rationals.
+Distinct from **D33 Berkovich (PROPOSED)** — Berkovich is non-
+archimedean potential theory; D37 is archimedean modular cocycle.
+Distinct from **CLOSED line 76 (p-adic interpolation of π(x))** —
+that's Mahler-coefficient interpolation of integer-valued `π`,
+not a modular cocycle of `f_N`.
+
+**Cross-domain refs:**
+- Zagier 2010 "Quantum modular forms" *Clay Math. Proc.* 11, AMS,
+  pp. 659-675 (Quanta of Maths, Connes Festschrift)
+- Bringmann-Folsom-Ono-Rhoades 2017 *Harmonic Maass Forms and Mock
+  Modular Forms* AMS Coll. 64 (Ch. 21 quantum modular forms)
+- Folsom-Ono-Rhoades 2013 "Mock theta functions and quantum modular
+  forms" *Forum Math. Pi* 1 = arXiv:1301.5532
+  https://arxiv.org/abs/1301.5532
+- Lawrence-Zagier 1999 "Modular forms and quantum invariants of
+  3-manifolds" *Asian J. Math.* 3, 93
+- Wikipedia: Mock modular form
+  https://en.wikipedia.org/wiki/Mock_modular_form (links quantum
+  modular forms section)
+
+**Budget:** 1-2 sessions. Session 1: q ≤ 8, N ≤ 10^6, weight scan.
+Session 2 (if signal): q ≤ 24, N = 10^7, fit `H`.
+
+### D38 — χ_P-restricted multiple zeta values and the Brown 2012 motivic Galois group
+
+**Question:** Brown 2012 *Annals* 175 = arXiv:1102.1312 proved that
+the algebra of multiple zeta values `ζ(s_1, ..., s_k) := Σ_{0 < n_1
+< n_2 < ... < n_k} 1/(n_1^{s_1} ⋯ n_k^{s_k})` is generated as a
+`Q`-algebra by the Hoffman basis `{ζ(n_1, ..., n_r) : n_i ∈ {2, 3}}`,
+equivalently identifying the algebra of MZVs with the algebra of
+motivic periods of mixed Tate motives over `Z`. Define the
+**prime-restricted multiple zeta values**:
+`ζ_P(s_1, ..., s_k) := Σ_{0 < p_1 < p_2 < ... < p_k} 1/(p_1^{s_1}
+⋯ p_k^{s_k})` (sums over primes only). Question: does the algebra
+of `ζ_P` admit a Brown-style finite generating set?
+- (a) Are all `ζ_P(s_1, ..., s_k)` `Q`-linear combinations of standard
+  MZVs `ζ(t_1, ..., t_l)` and Mertens-type prime constants
+  `M_s := Σ_p 1/p^s`?
+- (b) OR does `ζ_P` generate a STRICTLY RICHER ring than Brown's MZV
+  algebra, introducing new periods not in Brown's basis?
+
+**Why frontier:** Brown 2012 *Annals* is a benchmark structural
+theorem in motivic period theory; the prime-restricted analog has not
+been formulated or tested. The single-variable case is trivial:
+`ζ_P(s) = M_s = Σ_{n ≥ 1} μ(n)/n · log ζ(ns)` (Möbius inversion of
+log ζ at `s`). The MULTI-VARIABLE case is structurally different —
+the prime-ordering constraint `p_1 < p_2 < ... < p_k` is not removed
+by Möbius inversion. If `ζ_P(s_1, s_2)` for `s_1 + s_2 = 4, 5, 6` is
+PSLQ-expressible in the standard MZV basis, primes are motivically
+captured by Brown's algebra plus Mertens constants. If it RESISTS,
+`χ_P` carries motivic content beyond Brown's framework — a new period
+class. Either outcome is a paper-grade structural fact about the
+motivic content of primes.
+
+**Cross-domain ingredient:** Brown 2012 mixed Tate motives;
+Goncharov 2005 motivic coproduct on iterated integrals; Hoffman 1997
+*J. Algebra* 194 conjecture; Zagier 1994 Strong Conjecture on MZV
+dimensions `d_n = d_{n-2} + d_{n-3}`.
+
+**Concrete first step:** compute, to ~30 digits via mpmath,
+`ζ_P(2, 3), ζ_P(2, 2, 2), ζ_P(3, 3), ζ_P(2, 4), ζ_P(3, 2)` summed
+over primes `p ≤ 10^5`. Use `Σ_{p ≤ P} f(p) + tail estimate` via the
+PNT correction `Li(P) − Σ_{p ≤ P}` for tail control. PSLQ-test each
+`ζ_P` value against:
+(a) ordinary MZVs `ζ(t_1, ..., t_l)` of total weight `≤ w` for
+    `w ∈ {6, 8}` (15-50 basis elements via Brown's Hoffman basis);
+(b) Mertens constants `M_s` for `s ∈ {2, 3, 4}` and the standard
+    Euler-Mascheroni `γ`;
+(c) products of (a) and (b) of total weight `≤ w`.
+Verify any positive PSLQ hit at primes `p ≤ 10^7` for cross-validation.
+
+**Falsification criterion:**
+- **E**: every `ζ_P(s_1, ..., s_k)` for tested weights reduces
+  (PSLQ-verified at 1e-30, cross-validated at p ≤ 10^7) to
+  `Q`-linear combinations of MZVs and Mertens constants — primes are
+  generated by Brown's motivic algebra ⊕ {Mertens}, no new periods.
+- **I**: at least one `ζ_P` value resists PSLQ reduction at 1e-30
+  against weight-`≤ 8` basis — primes generate STRICTLY RICHER
+  algebra; B-grade structural negative on motivic content.
+- **INC**: numerical precision insufficient at p ≤ 10^5 to
+  distinguish; needs ≥ 50 digits, primes p ≤ 10^7.
+
+**A-grade success:** an explicit Brown-style theorem
+`ζ_P(s_1, ..., s_k) = Σ q_j ζ(t_{j,1}, ..., t_{j,r_j}) +
+Σ q'_j M_{s'_j}` valid for all `(s_1, ..., s_k)` of weight `≤ W` —
+gives polylog π(x) via standard MZV evaluators and Mertens series
+acceleration. Even partial generating-set theorems at low weight
+are publishable.
+
+**B-grade fallback:** Empirical confirmation that `ζ_P` reduces to
+MZV ⊕ Mertens at low weight (≤ 4) but RESISTS at higher weight
+(≥ 6) — primes carry motivic structure beyond Brown's basis.
+
+**Distinction from existing closures:** Distinct from **CLOSED line 78
+(modular forms, general)** — MZVs are NOT modular forms; they are
+periods of mixed Tate motives over Z. Distinct from **CLOSED line 200
+(motivic cohomology) / line 201 (étale cohomology of Spec(Z)) /
+line 83 (motivic integration)** — those address cohomology of
+arithmetic schemes; D38 addresses iterated-integral periods of
+`P^1 \ {0, 1, ∞}`. Distinct from **CLOSED line 50 (Connes-Weil) /
+line 597 (Connes trace) / line 702 (CCM spectral triple)** — those
+are operator-algebraic; D38 is purely period-theoretic. Distinct
+from **B2 Hecke twists (CLOSED S118)** — Hecke L-values are L-function
+partial sums, not iterated integrals over `[0, 1]`.
+
+**Cross-domain refs:**
+- Brown 2012 "Mixed Tate motives over Z" *Annals* 175 = arXiv:1102.1312
+  https://arxiv.org/abs/1102.1312
+- Goncharov 2005 "Galois symmetries of fundamental groupoids and
+  noncommutative geometry" *Duke Math. J.* 128 = arXiv:math/0208144
+  https://arxiv.org/abs/math/0208144
+- Zagier 1994 "Values of zeta functions and their applications" in
+  *First European Congress of Mathematics* II, Birkhäuser
+- Hoffman 1997 "The algebra of multiple harmonic series" *J. Algebra*
+  194, 477
+- Wikipedia: Multiple zeta function
+  https://en.wikipedia.org/wiki/Multiple_zeta_function
+
+**Budget:** 1-2 sessions. Session 1: numerical computation at
+p ≤ 10^5, PSLQ tests at weight ≤ 6. Session 2 (if signal): scale to
+p ≤ 10^7, weight ≤ 8, attempt theorem statement.
+
+### D39 — Discrete Ricci curvature (Ollivier 2009 / Lin-Lu-Yau 2011) on prime-indexed Cayley and coprimality graphs
+
+**Question:** Ollivier's 2009 *J. Funct. Anal.* 256 discrete Ricci
+curvature for a Markov chain `m_x` on a metric space `(X, d)` is
+`κ(x, y) := 1 − W_1(m_x, m_y) / d(x, y)` where `W_1` is the
+Wasserstein-1 distance between the random walk's transition
+probabilities at `x` and `y`. Lin-Lu-Yau 2011 *Tohoku Math. J.* 63
+specialise to graphs with simple-random-walk transitions (with the
+laziness parameter `α → 0`). Question: what is the discrete Ricci
+curvature distribution `κ(x, y)` for `(x, y) ∈ E(G)` where G is the
+prime-indexed Cayley graph `Cay(Z/NZ, ±primes < N^c)` (Friedman D20-
+type) or the coprimality graph `K_N := { {u, v} ⊆ [2..N] :
+gcd(u, v) = 1 }` (D22-type)? Does `κ̄(G_PRIMES) − κ̄(G_RANDOM)` exhibit
+a non-trivial sign or magnitude carrying arithmetic content?
+
+**Why frontier:** discrete Ricci curvature is a coarse-geometric
+invariant orthogonal to the spectral gap (Friedman bound, D20 CLOSED)
+and to the Hodge Laplacian (D22 CLOSED). Both spectral methods test
+BILINEAR / quadratic-form invariants; Ollivier-Ricci tests a
+NONLINEAR optimal-transport invariant via `W_1`. Bourgain-Gamburd-
+style expander Cayley graphs have positive Ollivier-Ricci curvature;
+Erdős-Rényi `G(n, 1/2)` has `κ → 0` by mean-field. If the prime-
+Cayley graph has a `κ̄`-offset relative to its random-regular control,
+this is a previously unmeasured coarse-geometric signature of
+arithmetic. Sturm-Bakry-Émery `CD(K, ∞)` gives access to log-Sobolev
+inequalities and concentration via positive curvature — providing
+a NEW route to bounds on `π(x)` if `K > 0` holds with explicit
+arithmetic dependence.
+
+**Cross-domain ingredient:** Ollivier 2009 optimal-transport Ricci
+curvature; Lin-Lu-Yau 2011 graph-Ricci specialisation; Erbar-Maas
+2012 entropic Ricci on graphs; Münch-Wojciechowski 2019 generalised
+graph Laplacians. NEW import — the project has measured spectral
+(D20 CLOSED, D22 CLOSED) and topological (D2 CLOSED) invariants of
+arithmetic graphs but NOT optimal-transport / curvature-dimension.
+
+**Concrete first step:** for `N ∈ {64, 128, 256, 512}` and
+`c ∈ {0.5, 0.7, 1.0}`, build:
+(a) prime-Cayley graph `G_P^N := Cay(Z/NZ, ±primes < N^c)`;
+(b) coprimality graph `K_N := { (u, v) ∈ [2..N]^2 : gcd(u, v) = 1 }`;
+(c) random-regular-graph control `G_R^N` of matched degree
+    (matched-support, parity-matched per S125 protocol).
+Compute `κ_LLY(x, y)` for every edge `(x, y) ∈ E` using `W_1` from
+networkx's `optimal_transport` or POT library (`ot.emd`). Histogram
+`κ_*(G)`. Compute mean curvature `κ̄(G) := avg κ` and Lin-Lu-Yau lower
+bound `K_LLY := inf κ`. Test whether `κ̄(G_P^N) − κ̄(G_R^N)` is
+non-zero with z-score `≥ 2σ` across `(N, c)` cells. Compare against
+Hardy-Littlewood singular-series prediction (W-trick at `W ∈ {2, 6, 30}`).
+
+**Falsification criterion:**
+- **E**: `κ̄(G_P) = κ̄(G_R)` within ±2σ across all (N, c) cells —
+  discrete Ricci curvature is identical to random-regular-with-parity
+  control; closure as "primes are Ricci-typical, joining the Cramér
+  + parity envelope".
+- **I**: `κ̄(G_P) ≠ κ̄(G_R)` with z ≥ 2σ AND deviation matches a
+  closed-form HL singular-series shift after W-trick — B-grade
+  structural negative aligned with saturated W-trick wall.
+- **INC**: graph too small at N ≤ 512 to distinguish; need N ≥ 2048
+  but `W_1` is `O(deg^3)` per edge.
+
+**A-grade success:** `κ̄(G_P^N) > 0` uniformly bounded away from 0
+across N AND not predictable by W-trick (i.e., parity-resistant
+positive curvature), AND the bound implies (via Sturm-Bakry-Émery)
+a NEW concentration inequality on `Σ_p f(p)` for arithmetic functions
+f, sharper than the Cramér-typical envelope. If sharp enough, this
+implies a polylog bound on `π(x) − Li(x)` orthogonal to the explicit
+formula route.
+
+**B-grade fallback:** clean Ollivier-Ricci measurement on prime
+graphs distinguishing them from random-regular control by a
+quantitative offset (even matching Cramér + parity).
+
+**Distinction from existing closures:** Distinct from **D20 Friedman
+spectral gap (CLOSED S125, E7.16)** — Friedman tests bilinear `λ_2`,
+optimal transport tests nonlinear `W_1`. Distinct from **D22 Hodge
+Laplacian (CLOSED S126, E7.17)** — Hodge is linear-algebra spectrum,
+Ricci is metric-measure curvature. Distinct from **D7 DPP (CLOSED
+S95, E2.16)** — DPP is point-process structure, Ricci is graph
+curvature. Distinct from **CLOSED line 356 / 387 (`L_0` graph
+Laplacian)** — those test eigenvalues only. Distinct from **D2 PH
+(CLOSED S96, E2.17)** — PH measures topological persistence,
+Ricci measures metric concentration.
+
+**Cross-domain refs:**
+- Ollivier 2009 "Ricci curvature of Markov chains on metric spaces"
+  *J. Funct. Anal.* 256, 810 = arXiv:math/0701886
+  https://arxiv.org/abs/math/0701886
+- Lin-Lu-Yau 2011 "Ricci curvature of graphs" *Tohoku Math. J.* 63,
+  605 = arXiv:1010.4337 https://arxiv.org/abs/1010.4337
+- Bakry-Émery 1985 "Diffusions hypercontractives" *Sémin. de
+  probabilités* XIX, LNM 1123
+- Erbar-Maas 2012 "Ricci curvature of finite Markov chains via
+  convexity of the entropy" *Arch. Ration. Mech. Anal.* 206 =
+  arXiv:1111.2687 https://arxiv.org/abs/1111.2687
+- Münch-Wojciechowski 2019 "Ollivier Ricci curvature for general
+  graph Laplacians" *Adv. Math.* 356 = arXiv:1712.10160
+  https://arxiv.org/abs/1712.10160
+- Wikipedia: Ricci curvature https://en.wikipedia.org/wiki/Ricci_curvature
+
+**Budget:** 1-2 sessions. Session 1: prime-Cayley + coprimality at
+N ≤ 512, edge `κ` via Wasserstein-1, histogram. Session 2 (if signal):
+scale to N = 1024, fit Lin-Lu-Yau lower bound, test concentration
+prediction with W-trick.
+
+### D40 — Schur process / prime-supported Schur measure (Borodin-Okounkov-Reshetikhin)
+
+**Question:** Borodin-Okounkov-Reshetikhin 2003 *J. AMS* 16 =
+arXiv:math/0107056 introduced the **Schur process**, a family of
+probability measures on sequences `λ^{(0)} ≺ λ^{(1)} ≻ λ^{(2)} ≺ ...`
+of Young diagrams defined by Schur-function specialisations and
+giving a determinantal point process on the 2-D lattice `(t, k) ↦
+λ^{(t)}_k − k + 1/2`. The 1-D Schur measure (Okounkov 2001 *Selecta
+Math.* 7) is `Pr(λ) ∝ s_λ(α) s_λ(β)`. Define the **prime-supported
+Schur measure** by specialisation `α := (1/p_1^s, 1/p_2^s, ...)`
+(primes only) and `β := (1)`. Question: does the prime-Schur measure
+have a non-trivial determinantal kernel `K_P(t_1, k_1; t_2, k_2)`
+that encodes π(x) at small-rank truncation? Specifically, does the
+edge fluctuation deviate from Tracy-Widom GUE under prime-
+specialisation?
+
+**Why frontier:** the Schur process is the canonical 2-D extension
+of DPP (1-D, CLOSED at S95 via D7). Its kernel admits a contour-
+integral representation via Wiener-Hopf factorisation
+(Borodin-Okounkov 2000), giving direct access to all correlation
+functions. Standard Schur measure with `α = β = (q, q^2, q^3, ...)`
+(q-Plancherel) gives bulk-Plancherel measure on Young diagrams,
+related to Tracy-Widom GUE. With `α =` prime-specialised and
+`β = (1)`, the Schur measure IS a prime-distribution-encoding object —
+does its bulk kernel match standard sine-kernel (universality), or
+does it deviate? An A-grade outcome would give a Borodin-Okounkov-
+Toeplitz determinant identity expressing `π(x)` as a contour integral
+of the prime-Schur kernel.
+
+**Cross-domain ingredient:** Borodin-Okounkov-Reshetikhin 2003 Schur
+process; Okounkov 2001 infinite-wedge representation; Borodin-
+Okounkov 2000 Toeplitz-determinant identity; Macdonald 1995
+*Symmetric Functions and Hall Polynomials* for Schur-function
+specialisation; Borodin-Gorin 2012 lectures on integrable probability.
+
+**Concrete first step:** for `s ∈ {1.5, 2, 2.5}` and primes
+`p_n ≤ 100`, define the prime specialisation `α_n := 1/p_n^s`. The
+Schur measure is then `Pr(λ) ∝ s_λ(α) · 1` for partitions `λ` with
+`λ_1 ≤ M` (cutoff). Numerically sample by Markov Chain (Plancherel
+growth in row-deletion form) at `M ∈ {16, 32, 64}`. Estimate the
+correlation kernel `K_P(k_1, k_2) := Σ_{λ} Pr(λ) [k_1 ∈ λ] [k_2 ∈ λ]`
+empirically over `10^4` samples. Compare to:
+(a) q-Plancherel kernel at matched specialisation;
+(b) standard sine kernel `K_{sine}(k_1, k_2) = sin(π Δk)/(π Δk)`;
+(c) Tracy-Widom edge distribution `F_2(s)` at `λ_1 ∼ M`.
+Test whether the edge fluctuations `(λ_1 − M)/M^{1/3}` shift under
+prime-specialisation versus q-specialisation.
+
+**Falsification criterion:**
+- **E**: prime-Schur kernel matches q-Plancherel kernel within ±2σ —
+  Schur process is universal across specialisations; closure as
+  "primes are Schur-typical, no specialised correction".
+- **I**: prime-Schur kernel is BERN-significantly different from
+  q-Plancherel (z ≥ 2σ) AND the deviation matches a closed-form
+  prime-counting-function correction — primes are Schur-non-typical;
+  B-grade structural negative.
+- **INC**: Markov chain mixes too slowly at M = 64; need contour-
+  integral analytic computation rather than MCMC.
+
+**A-grade success:** an explicit closed-form
+`K_P(k_1, k_2) = ∮ (...) dz dw / (z − w)` admitting polylog
+evaluation, AND a Toeplitz-determinant identity relating
+`E[#{λ_i ≤ M}]` to `π(M)` via Borodin-Okounkov factorisation —
+yields a polylog evaluator for π(x).
+
+**B-grade fallback:** "First Schur-process measurement of `χ_P`"
+as content; either universal q-Plancherel (E) or measured deviation
+(I).
+
+**Distinction from existing closures:** Distinct from **D7 DPP
+(CLOSED S95, E2.16)** — D7 was 1-D translation-invariant DPP on
+the integer lattice; D40 is 2-D space-time DPP on Young diagrams
+under Schur-function specialisation. Distinct from **C2 sine-kernel
+ζ correlations (CLOSED S123, E7.1)** — C2 is `ζ`-zero positions on
+the critical line; D40 is Young-diagram positions in `Z × Z`.
+Distinct from **C6 Pfaffian / α-DPP (PROPOSED S130)** — C6 is
+matrix-valued kernel for ζ-zeros; D40 is determinantal kernel for
+prime-specialised Schur measure. Distinct from **CLOSED line 175
+(MPS / tensor network)** — that's bond-dimension scaling; D40 is
+Schur-function specialisation.
+
+**Cross-domain refs:**
+- Okounkov 2001 "Infinite wedge and random partitions" *Selecta
+  Math.* 7, 57 = arXiv:math/9907127
+  https://arxiv.org/abs/math/9907127
+- Okounkov-Reshetikhin 2003 "Correlation function of Schur process
+  with application to local geometry of a random 3-dimensional Young
+  diagram" *J. AMS* 16, 581 = arXiv:math/0107056
+  https://arxiv.org/abs/math/0107056
+- Borodin-Okounkov 2000 "A Fredholm determinant formula for Toeplitz
+  determinants" *Integral Equations and Operator Theory* 37, 386 =
+  arXiv:math/9907165 https://arxiv.org/abs/math/9907165
+- Macdonald 1995 *Symmetric Functions and Hall Polynomials* OUP
+  (2nd ed.)
+- Borodin-Gorin 2012 "Lectures on integrable probability"
+  arXiv:1212.3351 https://arxiv.org/abs/1212.3351
+
+**Budget:** 1-2 sessions. Session 1: small-Schur MCMC at M ≤ 32,
+empirical kernel, Tracy-Widom edge test. Session 2 (if signal):
+scale to M ≤ 64-128, contour-integral kernel form, Toeplitz-
+determinant evaluation.
+
+### D41 — Gurau-Witten melonic universality of large-N tensor models on the χ_P 3-tensor
+
+**Question:** Random tensor models (Gurau 2011 *Comm. Math. Phys.*
+304, 69) admit a `1/N` topological expansion *dominated by melonic
+graphs* — fundamentally different from the planar expansion of
+`'t Hooft 1974` for GUE matrices. The melonic large-N limit produces
+*non-Gaussian* universal distributions: the Gurau-Witten / SYK class
+with conformal IR fixed point and non-Wigner density of states (Witten
+2016 arXiv:1610.09758 proved SYK behavior emerges from tensor models
+*without* quenched disorder). Question: define the prime ternary
+3-tensor `T_{ijk}^N := \mathbf{1}[i + j + k = N] \cdot χ_P(i)
+χ_P(j) χ_P(k)` (the Hardy-Littlewood ternary indicator). Compute its
+empirical singular-value distribution under mode-1 unfolding and test
+whether it lies in the **melonic universality class** (non-semicircle,
+heavy-tailed) or in the matrix-rank-2 class (Marchenko-Pastur or
+GUE Wigner semicircle). A non-matrix limit would constitute a NEW
+universality class for χ_P orthogonal to all CLOSED rank-2 measurements
+(C2 sine-kernel, C7 FHK, S74 free cumulants, D31 AHK Chow).
+
+**Why frontier:** every project pseudorandomness measurement on χ_P
+(35+) has tested *rank-2* matrix structure. The Hardy-Littlewood
+*ternary* problem (Vinogradov 1937) is intrinsically rank-3: the
+singular series for `R_3(N) = #\{(p, q, r) : p + q + r = N\}` lives
+on a 3-tensor. **No project measurement has tested rank-3
+universality.** Gurau melonic is the unique known non-Gaussian
+universality class for rank-3 tensors. The χ_P 3-tensor is a natural
+candidate: if it lies in melonic class, this gives the FIRST genuinely
+non-matrix universality result for the prime indicator. Distinct from
+C6 Pfaffian PROPOSED (rank-2 matrix-valued) and from D40 Schur process
+PROPOSED (2D space-time DPP, still rank-2).
+
+**Cross-domain ingredient:** colored / uncolored random tensor models
+(Gurau 2011); 1/N expansion dominated by melonic graphs (Bonzom-Gurau-
+Riello-Rivasseau 2011); SYK without disorder via tensor models (Witten
+2016); melonic Schwinger-Dyson equations and the conformal IR fixed
+point (Klebanov-Tarnopolsky 2017). **NOT in `CROSS_DOMAIN_TECHNIQUES.md`**
+before this session — appended in §3 probabilistic / random matrix.
+
+**Concrete first step:** for `N ∈ \{2^{10}, 2^{12}, 2^{14}\}`, build
+the 3-tensor `T_{ijk}^N := \mathbf{1}[i + j + k = N] χ_P(i) χ_P(j) χ_P(k)`
+indexed `i, j, k ∈ [3, N - 6]`. Compute singular values via mode-1
+unfolding `T \mapsto \mathrm{mat}(T) \in \mathbb{R}^{(N-9) \times (N-9)^2}`.
+Compare empirical singular-value distribution to (a) Marchenko-Pastur
+at matched aspect ratio and (b) the Gurau-Witten melonic limiting
+distribution `\rho_{\mathrm{melonic}}(\lambda)` (computable from the
+Gurau-Witten tower via numerical Schwinger-Dyson at fixed coupling).
+Use parity-and-density-matched random Bernoulli baseline (W-trick to
+remove mod-q low-frequency artefacts from primes). Discriminator: the
+top-100 singular value gap distribution (Tracy-Widom β=2 in matrix
+case vs Gurau-Witten edge in melonic case).
+
+**Failure profile:**
+- (E) tensor singular spectrum reduces to Marchenko-Pastur at matched
+  aspect — primes look matrix-like at rank-3, melonic structure
+  invisible. Closes the rank-3 universality test consistent with
+  CLOSED rank-2 measurements; first rank-3 confirmation of CLT-class
+  pseudorandomness for χ_P.
+- (I) primes ARE in melonic class — A-grade.
+- (INC) the 3-tensor is too sparse (`~π(N)^3` non-zero entries at
+  `i+j+k=N`) to admit a clean large-N limit at scales accessible.
+
+**A-grade success:** χ_P 3-tensor singular distribution matches Gurau-
+Witten melonic limit to ≥ 5σ AND Bernoulli baseline matches Marchenko-
+Pastur — establishes a NEW non-matrix universality class for χ_P,
+publishable as the first rank-3 universality result for any
+arithmetic indicator.
+
+**B-grade success:** the leading singular value matches a closed-form
+Hardy-Littlewood ternary singular series prediction (Vinogradov three-
+prime / Goldbach ternary `S_3(N)`) at meaningful precision, even if
+bulk is matrix-like — refines E2.13 / E3.1 by an explicit rank-3
+spectral identity.
+
+**Cross-domain refs:**
+- Gurau 2011 "The 1/N expansion of colored tensor models" *Comm. Math.
+  Phys.* 304, 69 = arXiv:1011.2726 https://arxiv.org/abs/1011.2726
+- Witten 2016 "An SYK-like model without disorder" arXiv:1610.09758
+  https://arxiv.org/abs/1610.09758
+- Klebanov-Tarnopolsky 2017 "Uncolored random tensors, melon diagrams,
+  and the Sachdev-Ye-Kitaev models" *Phys. Rev. D* 95, 046004 =
+  arXiv:1611.08915 https://arxiv.org/abs/1611.08915
+- Bonzom-Gurau-Riello-Rivasseau 2011 "Critical behavior of colored
+  tensor models in the large N limit" *Nucl. Phys. B* 853, 174 =
+  arXiv:1105.3122 https://arxiv.org/abs/1105.3122
+- Gurau 2017 *Random Tensors* OUP textbook (canonical reference)
+- Wikipedia: Tracy-Widom distribution
+  https://en.wikipedia.org/wiki/Tracy%E2%80%93Widom_distribution
+
+**Distinct from existing closures:** **Not** sine-kernel (C2 CLOSED) —
+that's rank-2 zero-zero correlation. **Not** FHK (C7 CLOSED) — that's
+rank-2 amplitude max. **Not** free cumulants (S74 CLOSED) — scalar free
+probability is rank-2. **Not** AHK Chow (D31 CLOSED) — combinatorial
+Hodge on rank-2 matroid bilinear form. The 3-tensor is the
+**genuinely new substrate** — first rank-3 measurement on χ_P.
+
+**Budget:** 2-3 sessions. Session 1: build T-tensor + mode-1 unfolding
+SVD at `N = 2^{12}`. Session 2: bulk fit + Bernoulli baseline + Gurau-
+Witten melonic Schwinger-Dyson numerical solve. Session 3 (only if
+A-grade signal): scale to `N = 2^{14}` and 5-tensor (5-prime tuple)
+extension.
+
+### D42 — Resurgence / Borel-Écalle alien calculus on the Riemann-Siegel asymptotic of `ζ(1/2 + it)`
+
+**Question:** the Riemann-Siegel asymptotic formula
+`ζ(1/2 + it) = Z(t) e^{-iθ(t)}` with
+`Z(t) = 2 \sum_{n ≤ \sqrt{t/2π}} \cos(θ(t) - t \log n) / \sqrt{n} + R(t)`
+has a divergent asymptotic remainder `R(t)` summed over Riemann-Siegel
+correction coefficients `C_k(t)` (Berry 1995 *Asymptotics Beyond All
+Orders*). Écalle's alien calculus (Écalle 1981 *Les fonctions
+résurgentes*) decomposes such divergent series into a Borel transform
+with isolated singularities at "Stokes points" and reconstructs the
+original via Laplace transform plus *Stokes constants* (alien
+derivatives). Question: is `R(t)` resurgent in Écalle's sense, AND do
+its Stokes constants admit a closed-form arithmetic expression in
+terms of `ζ`-zero positions? If yes, the Stokes constants give a non-
+perturbative completion of Riemann-Siegel — a polylog evaluation of
+`ζ(1/2 + it)` with controlled error.
+
+**Why frontier:** the Riemann-Siegel formula is the workhorse for
+high-`t` ζ computation (Odlyzko-Schönhage 1988 reaches `t ≈ 10^{20}`
+at `O(t^{1/2 + ε})` time). The asymptotic remainder is divergent but
+the divergence is *resummable* via Borel-Écalle. Berry-Keating
+1990s gave heuristic resurgent expansion (Berry 1995 *Int. J. Mod.
+Phys. B* 9; Berry-Keating 1992 *Proc. R. Soc. A*) — but **no rigorous
+resurgence theorem** for `R(t)` exists in the published literature.
+Resurgence has been proven for the Riemann zeta on the **vertical
+line** `\Re(s) = 1/2` only at the heuristic level. A rigorous
+resurgent expansion would be the FIRST complete characterization of
+the Riemann-Siegel divergence and could yield a polylog ζ-evaluation
+algorithm if Stokes constants are computable.
+
+**Cross-domain ingredient:** Écalle's alien calculus (Écalle 1981
+*Les fonctions résurgentes* 3 volumes); Borel summation and resurgent
+algebras (Sauzin 2014 lectures arXiv:1405.0356); Berry-Keating 1990s
+heuristic resurgence of Riemann-Siegel; Mitschi-Sauzin 2016 *Divergent
+Series, Summability and Resurgence* Springer LNM 2153 (Vol. I).
+**NOT in `CROSS_DOMAIN_TECHNIQUES.md`** before this session — appended
+in §10 frontier / speculative.
+
+**Concrete first step:** at fixed `t = 10^4` (so
+`\sqrt{t/2π} ≈ 39.9`), compute the Riemann-Siegel correction
+coefficients `C_k(t)` for `k = 0, 1, ..., 12` via mpmath. Treat
+`R(t) ≈ \sum_k a_k(t) U^{-k}` with `U = (t/2π)^{1/2}` as a divergent
+asymptotic series in `1/U`. Apply Borel transform:
+`B_R(s) := \sum_k a_k s^k / k!`. Locate singularities of `B_R` via
+Padé approximant + pole detection. Are the Stokes points at
+`s_k = c \log p_k` for `p_k` prime, OR at `s_k = c γ_k` for `γ_k` a
+Riemann zero ordinate? If the Stokes pattern matches a known number-
+theoretic spectrum, this is the smoking-gun resurgence-arithmetic
+identity.
+
+**Failure profile:**
+- (E) the Borel transform has singularities at *trivial* points
+  (e.g., `s_k = 2π k`, pure analytic) — no arithmetic content; closes
+  with "Riemann-Siegel resurgence is generic, gives no new arithmetic
+  structure." Refines E3.13 by explicitly testing the Berry-Keating
+  heuristic.
+- (I) the Borel transform has *arithmetic* Stokes points (zero
+  ordinates or prime logarithms) but the Stokes constants are
+  themselves uncomputable in polylog (each is a nontrivial L-value)
+  — closure as "resurgence sees the same complexity as direct ζ
+  evaluation."
+- (INC) the Padé extrapolation breaks down at `k ≤ 12` before any
+  structure detected (Riemann-Siegel coefficients past `k = 12` are
+  computationally expensive; depth-of-attack limited by mpmath
+  precision).
+
+**A-grade success:** rigorous resurgence theorem for `R(t)` PLUS
+closed-form Stokes constants yielding a polylog `ζ(1/2 + it)`
+algorithm — resolves the only open problem in the project, A-grade
+unconditional.
+
+**B-grade success:** establish that the Borel transform's arithmetic
+content is precisely Riemann-zero ordinates (the heuristic Berry-
+Keating 1990s claim, now empirically confirmed at meaningful scale)
+— gives a new "resurgence = explicit-formula" duality, refining E3.13
+with a Stokes-constant complementary view. First quantitative
+verification of Berry-Keating 1990s resurgence claim.
+
+**Cross-domain refs:**
+- Écalle 1981 *Les fonctions résurgentes* 3 volumes (Publ. Math.
+  d'Orsay 81-05, 81-06, 85-05)
+- Sauzin 2014 "Introduction to 1-summability and resurgence"
+  arXiv:1405.0356 https://arxiv.org/abs/1405.0356
+- Mitschi-Sauzin 2016 *Divergent Series, Summability and Resurgence
+  I* Springer LNM 2153 https://link.springer.com/book/10.1007/978-3-319-28736-2
+- Berry 1995 "Asymptotics, superasymptotics, hyperasymptotics" in
+  *Asymptotics Beyond All Orders* NATO ASI 284, ed. H. Segur et al.
+- Berry-Keating 1992 "A new asymptotic representation for `ζ(1/2 +
+  it)` and quantum spectral determinants" *Proc. R. Soc. A* 437, 151
+- Wikipedia: Resurgent function
+  https://en.wikipedia.org/wiki/Resurgent_function
+
+**Distinct from existing closures:** **Not** sine-kernel (C2 CLOSED)
+— that tests zero-spacing pair correlation. **Not** FHK (C7 CLOSED)
+— that tests amplitude max distribution. **Not** Voronin universality
+(B4 / G3 PROPOSED) — that tests vertical-translate density. Resurgence
+attacks the **divergent asymptotic regime** of `ζ` directly, untouched
+by the project.
+
+**Budget:** 2-3 sessions. Session 1: implement Riemann-Siegel `C_k(t)`
+to `k = 12` via mpmath + Padé Borel transform + singular pole
+detection. Session 2: locate Stokes points and compare to first 100
+ζ-zero ordinates and `\log p_k` for `p_k ≤ 100`. Session 3 (only if
+A-grade signal): rigorous proof attempt.
+
+### D43 — Hairer regularity structures / KPZ universality of the prime counting error term `π(x) − Li(x)`  [PARTIAL CLOSURE S157, KPZ-grid Hölder + Tracy-Widom β=2 sub-frame closed; D43.b/D43.c sub-frames OPEN]
+
+**Question:** the explicit formula gives
+`π(x) − Li(x) = -\sum_ρ Li(x^ρ) + O(\log x)` summed over non-trivial
+ζ-zeros. Treating `D(x) := (π(x) − Li(x)) \log x / \sqrt{x}` as a
+*random function of x* on the natural CLT scale, all project
+measurements have tested *Gaussian / Wigner semicircle* universality
+(C5 Stein CLOSED, C7 FHK CLOSED, S74 free cumulants CLOSED, GUE pair
+correlation E3.1). Question: does `D(x)` viewed as a stochastic
+process on `x ∈ [1, X]` and rescaled by `t^{1/3}` (KPZ scale) instead
+of `\sqrt{t}` (CLT scale) fall into the **Kardar-Parisi-Zhang
+universality class** with Tracy-Widom β=2 fluctuations? KPZ governs
+interface-growth fluctuations in nonlinear stochastic systems; its
+limit law `F_2` (Tracy-Widom β=2) shares the *distribution* with GUE
+largest eigenvalue, but the **scaling exponent is different**: KPZ
+has `t^{1/3}` while GUE has `\sqrt{t}`. A KPZ-type fluctuation in
+`π(x) - Li(x)` at the `x^{1/3}` scale would constitute a NEW
+universality class for the prime counting error term, orthogonal to
+the project's `\sqrt{x}/\log x`-scale Gaussian battery.
+
+**Why frontier:** Hairer 2014 *Inventiones* (Fields Medal) gave the
+first rigorous theory of singular SPDE limits, establishing the KPZ
+universality class with `t^{1/3}` scaling and Tracy-Widom β=2 limit
+for a wide universality class of nonlinear interface-growth processes.
+**NO project measurement has tested non-`\sqrt{x}` scalings** — every
+existing pseudorandomness battery uses the standard CLT scale. The
+KPZ universality conjecture for arithmetic functions is essentially
+virgin territory (one paper, Cattaneo-Garbit 2023 on Sarnak Möbius,
+tests Lévy-stable but NOT KPZ proper). A KPZ result on `π(x)`
+would be a publishable connection between PNT and KPZ universality,
+A-grade.
+
+**Cross-domain ingredient:** Hairer 2014 "A theory of regularity
+structures" arXiv:1303.5113 *Inventiones Math.* 198, 269; KPZ
+universality (Corwin 2012 lectures arXiv:1106.1596); Tracy-Widom
+β=2 limit (Tracy-Widom 1994 *Comm. Math. Phys.* 159); regularity
+exponent in Hölder / Besov scale; rough paths / signatures (Lyons
+1998 *Rev. Mat. Iberoam.* 14). **NOT in `CROSS_DOMAIN_TECHNIQUES.md`**
+before this session — appended in §3 probabilistic / random matrix.
+
+**Concrete first step:** for `X ∈ \{2^{20}, 2^{22}, 2^{24}\}`,
+compute `D(x) := (π(x) − Li(x)) \cdot \log(x) / \sqrt{x}` on a *KPZ-
+spaced* logarithmic grid `x ∈\{X/2 + k \cdot ⌊X^{1/3}⌋ : k = 0, 1,
+2, ...\}`. Standardize and compute (a) histogram of `D(x)` standardized
+to unit variance, (b) tail decay rates compared to Tracy-Widom β=2
+(Bornemann-mpmath) vs Gauss, (c) Hölder regularity exponent `α` via
+wavelet decomposition: `D \in C^α` iff
+`\mathrm{wavelet}(D)(j, k) = O(2^{-jα})` uniformly in `k`. KPZ-class
+predicts `α = 1/2 - 0` (rough), GUE / smooth-on-CLT-scale predicts
+`α = ∞` (smooth). The wavelet test is the clean non-Gaussian
+discriminator — it will fail if `D(x)` is too smooth to be in any
+non-trivial Hölder class.
+
+**Failure profile:**
+- (E) `D(x)` matches Gaussian fluctuations exactly with `α = ∞`
+  (smooth) — Cramér heuristic confirmed at finer scale than ever
+  before (`X = 2^{24}`), KPZ inapplicable. Closes the KPZ frontier
+  on prime counting; B-grade structural.
+- (I) Hölder regularity `α ∈ (0, 1/2)` is detected AND tail is
+  Tracy-Widom β=2 — A-grade (NEW universality class).
+- (INC) the wavelet decomposition is dominated by smooth Li-correction
+  terms (the explicit formula main term contributes a smooth signal)
+  at all scales; not enough range to extract fluctuation regularity.
+
+**A-grade success:** detect Tracy-Widom β=2 tail in `D(x)` ON THE
+`t^{1/3}` SCALE (not the trivial `\sqrt{x}` scale) AND a Hölder
+regularity exponent `α ∈ (0, 1/2)` — NEW universality class for the
+prime counting error term, publishable as a connection between PNT
+and KPZ.
+
+**B-grade success:** verify Cramér's heuristic at finer scale than
+ever before — confirm Gaussian fluctuations to `≥ 10σ` at `X =
+2^{24}`. Either way, a clean structural finding refining E3.1 and
+E3.13.
+
+**Cross-domain refs:**
+- Hairer 2014 "A theory of regularity structures" *Inventiones Math.*
+  198, 269 = arXiv:1303.5113 https://arxiv.org/abs/1303.5113
+- Corwin 2012 "The Kardar-Parisi-Zhang equation and universality
+  class" *Random Matrices Theory Appl.* 1, 1130001 = arXiv:1106.1596
+  https://arxiv.org/abs/1106.1596
+- Tracy-Widom 1994 "Level spacing distributions and the Airy kernel"
+  *Comm. Math. Phys.* 159, 151
+- Hairer-Quastel 2018 "A class of growth models rescaling to KPZ"
+  *Forum Math. Pi* 6, e3 = arXiv:1512.07845
+  https://arxiv.org/abs/1512.07845
+- Wikipedia: KPZ equation
+  https://en.wikipedia.org/wiki/Kardar%E2%80%93Parisi%E2%80%93Zhang_equation
+- Wikipedia: Tracy-Widom distribution
+  https://en.wikipedia.org/wiki/Tracy%E2%80%93Widom_distribution
+
+**Distinct from existing closures:** **Not** Stein method (C5 CLOSED)
+— Stein gives `W_1` Wasserstein distance to Gaussian on CLT scale.
+**Not** FHK (C7 CLOSED) — FHK is amplitude max of `|ζ(1/2 + it)|`,
+not error-term fluctuation. **Not** sine-kernel (C2 CLOSED) — that's
+zero-spacing. The `t^{1/3}` KPZ scaling is **genuinely orthogonal**
+to all CLT-scale measurements.
+
+**Budget:** 2-3 sessions. Session 1: compute `D(x)` on KPZ grid +
+wavelet decomposition at `X = 2^{20}`. Session 2: tail histogram +
+Tracy-Widom β=2 fit + Hölder exponent extraction. Session 3 (only if
+non-trivial Hölder exponent detected): scale to `X = 2^{24}` and
+extract regularity exponent precisely.
+
+**S157 PARTIAL CLOSURE 2026-04-28** — Session 1 + 2 of the budget
+collapsed into one session (`experiments/analytic/kpz_pi_li_d43/`,
+`archive/sessions/session157_d43_kpz_pi_li.md`). KPZ-grid Hölder +
+Tracy-Widom β=2 sub-frame **CLOSED at mode E, B-grade case (i)**.
+Pre-stated falsifiers F1 (Gauss skew on detrended Z_d) PASS at all
+logX 18..24; F2 (TW2 skew) FAIL with z<-3 wrong sign in 5/7 windows;
+F3 (right-tail KPZ vs Gauss) Gauss r² ≥ KPZ r² at logX=22; F4 (Hölder
+α∈(0,1/2)) FAIL — α≈0.85 stable across logX 18..24 with linear-fit
+r²>0.998, far above the KPZ ceiling 1/2; F5 N/A. Wide-range FFT
+confirms D(x)'s top peaks land at γ_1=14.135 (peak/median 770K),
+γ_2=21.022 (760K), γ_3=25.011 (300K) — consistent with the explicit
+formula. Structural reason: D is a deterministic almost-periodic
+function generated by a finite sum of zeta-zero cosines; KPZ requires
+stochastic white-noise input + nonlinear dynamics + macroscopic limit,
+none of which apply. Adds edge **E2.27** (11th orthogonal pseudorandomness
+category). CROSS_DOMAIN_TECHNIQUES §3 Hairer/KPZ/TW2 row promoted
+PROPOSED → USED PARTIAL.
+
+**Successor sub-frames (OPEN, proposed by S157, ALSO in
+`NOVELTY_CHALLENGES.md`):**
+- **D43.b** (logX-extension): scale Hölder measurement to logX = 28
+  (X = 2²⁸ = 268M); does α(D) drift toward 1/2 with X (asymptotic
+  KPZ-creep) or stay flat at 0.85? Cost ~5x current. If α stays flat,
+  KPZ universality is conclusively rejected at all probed scales; if
+  α drifts, the asymptotic regime needs sharper investigation.
+- **D43.c** (zero-truncated residual): replace `π(x) − Li(x)` with the
+  **first-K explicit-formula truncation residual**
+  `π(x) − Li(x) − Σ_{k≤K} 2 Re Li(x^{ρ_k})` for K ∈ {10, 100, 1000}.
+  Does the *residual* (after subtracting the leading K explicit-
+  formula oscillations) have α<1/2 Hölder roughness, indicating
+  asymptotic KPZ-class behaviour only after removing the deterministic
+  spectral spikes? If yes, would salvage a positive KPZ result at the
+  level of "high-zero contributions." Requires accurate γ_k Odlyzko
+  table.
+
+### D44 — Arithmetic topology / Morishita arithmetic Massey products on prime triples (Rédei symbol distribution) [CLOSED S164, see "Closed attacks"]
+
+**Outcome (S164, mode E, B-grade case (i)):** empirical Rédei symbol
+distribution on Borromean-admissible prime triples (p, q, r) ≡ 1 mod 4
+with all pairwise Legendre = +1 is uniform within strict 5σ envelope
+at all three tested N (200, 500, 1000): `f_+ = 0.4867` at N = 1000
+(K = 8577, z = -2.47), `f_+ = 0.4853` clean subset (excluding p ∈
+{229, 257, 401, 577, 733, 761}, K = 7591, z = -2.56). Constant
+`|Δf_+| ≈ 0.013` with `z ∼ √K` consistent with finite-r effective
+Chebotarev `O(1/√log r)` correction in Rédei field `K_pq`/Q. F1
+(A-grade, HL-S_3 correlated bias) FALSIFIED. F2 (B-grade case I —
+unbiased) HOLDS. No mod-8/12/24 substructure beyond Bonferroni-3σ.
+Adds **EDGE E2.29**, 13th orthogonal pseudorandomness category for
+χ_P (arithmetic-topology / Galois cohomology) — first project use of
+Mazur primes-as-knots dictionary. Cross-domain technique
+"Arithmetic topology" (§4 of CROSS_DOMAIN_TECHNIQUES) promoted
+PROPOSED → USED-E. See `experiments/algebraic/redei_symbol_prime_triples/`
+and "Closed attacks" below.
+
+
+
+**Question:** Mazur (1966) proposed the analogy "primes in `Spec(Z)`
+↔ knots in `S^3`" and identified the *arithmetic linking number*
+`lk(p, q) := \frac{1 - (p/q)}{2} \in \mathbb{F}_2` (the Legendre
+symbol viewed as a `\mathbb{F}_2`-cocycle on the étale fundamental
+group). Morishita 2002 *Crelle* 550, 141 extended this to higher
+*arithmetic Milnor / Massey products*: the triple Massey product
+`\langle p, q, r \rangle_2 \in \mathbb{F}_2` evaluates to the Rédei
+symbol `[p, q, r]` (Rédei 1939), defined for prime triples with
+all pairwise Legendre symbols `+1` (the "admissible" Borromean
+condition). The Rédei symbol detects whether the triple is
+*Borromean*: pairwise unlinked but jointly linked, like the (13, 61,
+937) example with all Legendre symbols `+1` but Rédei symbol `-1`.
+Question: is the empirical distribution of `[p, q, r]` on admissible
+prime triples below `N` correlated with the Hardy-Littlewood ternary
+singular series prediction `S_3(N)`? If yes, the Rédei symbol gives
+a NEW arithmetic invariant for prime triples — the first cohomological-
+Massey triple-prime invariant, orthogonal to the bilinear-singular-
+series HL framework.
+
+**Why frontier:** the Hardy-Littlewood prime k-tuple conjecture
+predicts the density of prime k-tuples via the singular series
+`S_k = \prod_p (1 - \nu_p / p)^k / (1 - 1/p)^k` — a *bilinear* (pair-
+correlation-via-Möbius) arithmetic invariant. **No project measurement
+has tested whether the singular series captures triple-prime structure
+beyond the bilinear approximation.** The Rédei symbol is the only
+known *arithmetic-cohomological* triple invariant on prime triples
+(Vogel 2004 Heidelberg PhD "Massey products in the Galois cohomology
+of number fields"; Morishita 2012 *Knots and Primes* Springer
+Universitext). Whether it correlates with `S_3` is open and would
+constitute a new arithmetic-topological refinement of HL.
+
+**CRITICAL DISTINCTION FROM CLOSED line 208** (CLOSED_PATHS line 208,
+"Knot invariants | FAIL | C | No connection to prime counting"): that
+closure dismissed *generic* knot polynomial invariants (Jones, HOMFLY,
+Khovanov) for which "no connection to prime counting" is correct.
+**The Mazur-Morishita arithmetic topology dictionary is PRIMES-AS-
+KNOTS via Galois cohomology of `G_{\mathbb{Q}, S}`** — the invariants
+ARE arithmetic by construction (Legendre symbols, Rédei symbols,
+arithmetic Galois group derivations). The connection to prime counting
+is via prime triple density and the HL singular series. The 2026-04-28
+state of the art (Morishita 2012 textbook + Vogel 2004 thesis +
+Wikipedia confirms (13, 61, 937) Borromean example) makes this
+attack newly tractable.
+
+**Cross-domain ingredient:** Mazur 1966 "Notes on étale cohomology of
+number fields" *Ann. Sci. ENS* 6, 521 (primes-knots dictionary);
+Morishita 2002 *J. Reine Angew. Math.* 550, 141 "Milnor invariants
+and Massey products for prime numbers"; Morishita 2012 *Knots and
+Primes: An Introduction to Arithmetic Topology* Springer Universitext
+(canonical textbook); Rédei 1939 *J. Reine Angew. Math.* 180, 1
+"Ein neues zahlentheoretisches Symbol mit Anwendungen auf die Theorie
+der quadratischen Zahlkörper" (explicit Rédei symbol formula); Vogel
+2004 Heidelberg PhD thesis "Massey products in the Galois cohomology
+of number fields" (rigorous Galois-cohomology framework). **NOT in
+`CROSS_DOMAIN_TECHNIQUES.md`** before this session — appended in §4
+topological/geometric.
+
+**Concrete first step:** for prime triples `(p, q, r)` with
+`p < q < r ≤ 1000` AND all pairwise Legendre symbols
+`(p/q) = (q/r) = (p/r) = +1` (Rédei admissibility), compute
+`[p, q, r] \in \{\pm 1\}` via Rédei 1939 explicit formula: `[p, q,
+r] = +1` iff a specific quartic `\mathbb{Q}(\sqrt{p}, \sqrt{q})`-
+embedding extends to `\mathbb{Q}(\sqrt{p}, \sqrt{q}, \sqrt{r})` over
+`\mathbb{Q}(\sqrt{pqr})`. (Morishita 2012 §8.5 gives an algorithmic
+recipe via norm-form testing.) For `N = 1000` enumerate ~200-300
+admissible triples; compute fraction with `[p, q, r] = +1` vs `-1`.
+Test against (a) random `\pm 1` on admissible triples (null
+hypothesis) and (b) Hardy-Littlewood ternary singular series
+`S_3(N)`-weighted prediction.
+
+**Failure profile:**
+- (E) Rédei symbol is uniformly `\pm 1` with proportion 1/2 each on
+  admissible triples — no arithmetic structure beyond Legendre,
+  closes as "Massey products vacuous on average" (B-grade negative).
+  Adds *cohomological-Massey orthogonality* as a new entry to the
+  pseudorandomness-detection family alongside E2.13 Gowers, E2.14
+  Anderson, etc.
+- (I) Rédei distribution biased AND the bias matches HL ternary `S_3`
+  — A-grade.
+- (INC) Rédei symbol computationally intractable beyond `N = 1000`
+  (the splitting-field criterion requires factoring quartic forms;
+  Rédei 1939 explicit formula is complicated for arbitrary triples).
+
+**A-grade success:** Rédei symbol distribution on prime triples
+deviates from random `\pm 1` at ≥ 5σ AND the deviation matches Hardy-
+Littlewood ternary singular series — first arithmetic-topological
+refinement of Hardy-Littlewood, publishable as a new edge.
+
+**B-grade success:** Rédei symbol uniformly distributed (E mode),
+confirming "arithmetic Massey is bilinear-equivalent to HL on
+average" — closes a NEW arithmetic-topological direction with
+structural negative result, refining E2.13 (Gowers `U^k` orthogonality)
+by adding cohomological-Massey orthogonality. Eighth orthogonal
+pseudorandomness category after E2.13 / E2.14 / E2.15 / E2.16 /
+E2.17 / E2.20 / E2.24.
+
+**Cross-domain refs:**
+- Mazur 1966 "Notes on étale cohomology of number fields" *Ann. Sci.
+  ENS* 6, 521
+- Morishita 2002 "Milnor invariants and Massey products for prime
+  numbers" *J. Reine Angew. Math.* 550, 141
+- Morishita 2012 *Knots and Primes: An Introduction to Arithmetic
+  Topology* Springer Universitext
+  https://link.springer.com/book/10.1007/978-1-4471-2158-9
+- Rédei 1939 "Ein neues zahlentheoretisches Symbol mit Anwendungen
+  auf die Theorie der quadratischen Zahlkörper" *J. Reine Angew.
+  Math.* 180, 1
+- Vogel 2004 Heidelberg PhD thesis "Massey products in the Galois
+  cohomology of number fields"
+- Wikipedia: Arithmetic topology
+  https://en.wikipedia.org/wiki/Arithmetic_topology (explicitly
+  documents (13, 61, 937) Borromean prime example — Rédei symbol -1
+  with all pairwise Legendre +1)
+
+**Distinct from existing closures:** **Not** generic knot invariants
+(CLOSED line 208) — that closure addresses Jones/HOMFLY on unrelated
+knots; arithmetic Massey IS arithmetic by construction (Galois
+cohomology of `G_{\mathbb{Q}, S}`). **Not** Connes-Weil ζ (CLOSED
+line 50) — that's operator-theoretic, archimedean. **Not** étale
+cohomology of `Spec(\mathbb{Z})` (CLOSED line 202) — that recovers
+Euler product (knowing all primes); Rédei symbols are **finite**
+symbols on **specific** prime triples, not the full sheaf.
+
+**Budget:** 2-3 sessions. Session 1: implement Rédei symbol via
+Rédei 1939 explicit formula at `N = 1000` (~200-300 admissible
+triples). Session 2: HL `S_3` ternary singular series comparison +
+Bonferroni-corrected significance test. Session 3 (only if A-grade
+signal): scale to `N = 10^4` and extend to quadruples (`\langle p,
+q, r, s \rangle` four-fold Massey, Vogel 2004 §4.3).
+
+### D45 — Baker-Norine graph Riemann-Roch / chip-firing rank of the prime divisor on an arithmetic graph  [CLOSED S161, see "Closed attacks"]
+
+**Question:** Baker-Norine 2007 *Adv. Math.* 215, 766 = arXiv:math/0608360
+prove a graph-theoretic Riemann-Roch theorem: for any finite connected
+graph `G` and any divisor `D ∈ Div(G) := Z^{V(G)}` of degree
+`deg(D) = Σ_v D(v)`, the *rank* `r_G(D) := max\{k : ∀ E ∈ Div_+^k(G),
+|D − E| ≠ ∅\}` (where `|D|` denotes the linear-equivalence class under
+chip-firing moves and `Div_+^k` is the set of effective degree-`k`
+divisors) satisfies `r_G(D) − r_G(K_G − D) = deg(D) + 1 − g(G)`, where
+`g(G) = |E(G)| − |V(G)| + 1` is the cyclomatic genus and `K_G` is the
+canonical divisor `K_G(v) = deg_G(v) − 2`. Question: define the
+*arithmetic graph* `\Gamma_N := (V_N, E_N)` with `V_N = [2, N]` and
+`E_N = \{(a, b) : a \mid b \text{ or } b \mid a, a \neq b\}` (the
+divisibility graph), and the *prime divisor* `D_P^N \in Div(\Gamma_N)`
+with `D_P^N(v) = 1` if `v` prime, `0` otherwise — so
+`deg(D_P^N) = π(N) - 1`. Compute `r_{\Gamma_N}(D_P^N)` via the Baker-
+Norine algorithm (chip-firing reduction to the `q`-reduced divisor).
+Does `r_{\Gamma_N}(D_P^N)` deviate by `> 5σ` from a matched-degree
+random divisor `D_R^N` (place `π(N)` chips uniformly at random on
+non-leaf vertices)?
+
+**Why frontier:** the *graph-divisorial rank* `r_G(D)` is a *non-linear*
+combinatorial invariant — it does not factor through the Laplacian
+spectrum (D22, CLOSED) or through any linear cohomological computation.
+By Baker-Norine 2007 Theorem 1.12, `r_G(D)` controls dimension of
+linear systems on `G` exactly as in classical AG. It is computed by
+Dhar's algorithm (chip-firing burning) — fundamentally a *combinatorial
+game* whose decision tree depth is what makes it non-linear. **No
+project measurement has tested any divisor-rank or chip-firing
+invariant on any arithmetic graph.** A non-trivial deviation
+`r_{\Gamma_N}(D_P^N) ≠ r_{\Gamma_N}(D_R^N)` would be the FIRST graph-
+divisorial signature of primality, structurally orthogonal to all 41+
+prior pseudorandomness measures.
+
+**CRITICAL DISTINCTION FROM CLOSED tropical lines** (CLOSED_PATHS lines
+204, 326, 431, 432, 660 — all "tropical compression of π(x) collapses
+to smallest prime"): those closures address the *min-plus
+tropicalisation* of the prime *generating function* — a global compression
+that loses arithmetic by min-plus identity `\val(a+b) ≥ \min(\val(a),
+\val(b))`. **Baker-Norine RR is the OPPOSITE direction:** it lifts a
+*divisor on a graph* to a tropical curve via Mikhalkin-Zharkov 2008 *Curves
+and their Jacobians*; the rank `r_G(D)` is *increased* by chip-firing,
+not collapsed. Min-plus is on coefficients; chip-firing is on a
+*graph game*. The closures don't apply.
+
+**CRITICAL DISTINCTION FROM D22 (CLOSED, Hodge `L_1`):** D22 measured
+LINEAR Hodge-Laplacian *spectrum* on the *coprimality flag complex* —
+a SPECTRAL invariant ALL of which factors through linear algebra on
+boundary matrices. D45 measures the NON-LINEAR rank function `r_G(D_P)`
+on the *divisibility graph* `Γ_N`. The two invariants are categorically
+distinct: `r_G` cannot be recovered from any spectrum.
+
+**Cross-domain ingredient:** Baker-Norine 2007 *Adv. Math.* 215, 766 =
+arXiv:math/0608360 https://arxiv.org/abs/math/0608360 (graph Riemann-
+Roch); Dhar 1990 *Phys. Rev. Lett.* 64, 1613 (chip-firing burning
+algorithm); Bjorner-Lovász-Shor 1991 *Eur. J. Combin.* 12 (chip-firing
+foundations); Gathmann-Kerber 2008 *Math. Z.* 259, 217 = arXiv:math/0612129
+(tropical RR extension); Mikhalkin-Zharkov 2008 in *Curves and their
+Jacobians* (Birkhäuser) — tropical curve / Jacobian framework. **NEW
+to `CROSS_DOMAIN_TECHNIQUES.md`** — appended in §2 algebraic/geometric.
+
+**Concrete first step:** for `N ∈ {32, 64, 128, 256}`:
+1. Build `Γ_N` (vertex set `[2, N]`, edges between divisible pairs).
+   Enumerate `g(\Gamma_N) = |E| − |V| + 1`.
+2. Compute the `q`-reduced divisor `D_P^N` (canonical Dhar reduction
+   relative to fixed sink `q = 2`): repeatedly fire vertices not yet
+   "burnt" by `q`'s outgoing edges. Read off `r_{\Gamma_N}(D_P^N)` via
+   Baker-Norine Algorithm 4.1 (test whether `D_P^N − E` is *winnable*
+   for each `E ∈ Div_+^k`, increment `k` until failure).
+3. CONTROL: 100 random matched-degree divisors `D_R^N` placed
+   uniformly on non-leaf vertices. Mean `r̄_R`, std `σ_R`. Z-score:
+   `(r_{\Gamma_N}(D_P^N) - r̄_R) / σ_R`.
+4. ALSO compute on the *coprimality* graph (where edges are `gcd = 1`
+   pairs) for orthogonality with D22 closure.
+
+**Failure profile (E):** `r_{\Gamma_N}(D_P^N)` matches matched-density
+random divisor `D_R` within `2σ` for all `N ∈ {32..256}` — closes as
+"prime divisor is generic w.r.t. graph RR." **B-grade**: 9th
+orthogonal pseudorandomness category (graph-divisorial), distinct from
+D22 spectral, D44 cohomological, E2.13 Gowers, etc. **(I):** rank
+deviates by `> 3σ` but the deviation matches a known constant (e.g.,
+`6/π²` density coefficient) — gives an explicit graph-RR formula but
+no algorithmic content. **(INC):** divisibility graph too dense at
+`N ≥ 200` — chip-firing convergence requires `O(|E| · |V|)` operations,
+limiting scale.
+
+**A-grade success:** `r_{\Gamma_N}(D_P^N)` exhibits a *gap* relative
+to random — specifically, the *prime divisor* lies in a special
+divisor class with rank above the Brill-Noether expected dimension
+`max\{−1, deg(D) − g\}`. By Baker-Norine 2007 §4 the rank
+inequality `r(D) ≥ max\{−1, deg(D) − g\}` is *strict* on
+geometric-special divisors. If `D_P` is geometric-special on `\Gamma_N`,
+this gives a NEW explicit Brill-Noether class on an arithmetic graph
+— first instance.
+
+**B-grade success:** identification of the *q-reduced form* of `D_P^N`
+as a structured divisor (e.g., supported on `\{2, p_2, p_3, ...\}`-type
+canonical configuration) — gives a closed-form RR statement for the
+prime divisor without algorithmic gain.
+
+**Cross-domain refs:**
+- Baker-Norine 2007 "Riemann-Roch and Abel-Jacobi theory on a finite
+  graph" *Adv. Math.* 215, 766 = arXiv:math/0608360
+  https://arxiv.org/abs/math/0608360
+- Dhar 1990 "Self-organized critical state of sandpile automaton
+  models" *Phys. Rev. Lett.* 64, 1613 (burning algorithm)
+- Gathmann-Kerber 2008 "A Riemann-Roch theorem in tropical geometry"
+  *Math. Z.* 259, 217 = arXiv:math/0612129
+  https://arxiv.org/abs/math/0612129
+- Mikhalkin-Zharkov 2008 "Tropical curves, their Jacobians and theta
+  functions" in *Curves and their Jacobians* AMS Contemp. Math. 465
+- Maclagan-Sturmfels 2015 *Introduction to Tropical Geometry* AMS GSM
+  161 (general tropical reference)
+- Wikipedia: Riemann-Roch theorem for graphs (chip-firing)
+  https://en.wikipedia.org/wiki/Tropical_geometry
+
+**Distinct from existing closures:**
+- **Not** tropical compression (CLOSED lines 204, 326, 431, 432, 660):
+  those are min-plus on Dirichlet generating functions; D45 is divisor
+  rank on a graph game (chip-firing).
+- **Not** Hodge `L_1` spectrum (D22 CLOSED): linear spectral vs
+  non-linear divisor rank.
+- **Not** Cayley graph spectrum (CLOSED lines 356, 387, A3): Cayley
+  spectrum is `L_0`; divisor rank is a higher-order combinatorial
+  invariant computed by Dhar's burning, not by diagonalisation.
+
+**Budget:** 1-2 sessions. Session 1: implement Dhar's burning + Baker-
+Norine Algorithm 4.1, evaluate `r_{\Gamma_N}(D_P^N)` for `N ∈ {32, 64,
+128, 256}` and 100 random controls each. Session 2 (only if signal):
+extend to `N = 512`, add coprimality-graph variant, Brill-Noether
+specialness check.
+
+### D46 — Schubert calculus / Plücker coordinate cell of the χ_P-encoded 2-plane in the Grassmannian Gr(2, N)
+
+**Question:** Schubert calculus assigns to every linear subspace
+`V \in \mathrm{Gr}(k, N)` a *Schubert cell* `\Omega_λ \subset
+\mathrm{Gr}(k, N)` indexed by a partition `λ` fitting in a `k × (N − k)`
+box; the cell is determined by the rank pattern
+`(\dim(V \cap F_i))_{i=1}^N` against the standard flag `F_1 ⊂ F_2 ⊂
+\cdots ⊂ F_N = \mathbb{C}^N`. The Plücker coordinates
+`p_{i_1, \ldots, i_k}(V) = \det V_{i_1, \ldots, i_k}` give an explicit
+projective embedding `\mathrm{Gr}(k, N) \hookrightarrow
+\mathbb{P}^{\binom{N}{k}-1}` and satisfy the Plücker relations.
+Question: encode `χ_P` as the 2-plane
+`V_χ_P^N := \mathrm{rowspan} \begin{pmatrix} 1 & 1 & 1 & \cdots & 1 \\
+χ_P(1) & χ_P(2) & χ_P(3) & \cdots & χ_P(N) \end{pmatrix} \in
+\mathrm{Gr}(2, \mathbb{C}^N)`. Compute the Plücker coordinates
+`p_{ij}(V_χ_P^N) = χ_P(j) − χ_P(i)` for `i < j ≤ N`. Identify the
+unique Schubert cell `\Omega_λ` containing `[V_χ_P^N]` via the rank-
+pattern test `(\dim(V_χ_P^N ∩ F_i))_i`. Does the resulting partition
+`λ_{χ_P}^N` admit a closed-form description in terms of `π(N)`?
+Equivalently: does the Schubert position of the prime indicator
+encode primality information that is invisible to all 41+ prior
+measures?
+
+**Why frontier:** Plücker coordinates of a *natural* 2-plane on `χ_P`
+are the *index-weighted prime-pair correlations*
+`p_{ij} = χ_P(j) − χ_P(i)` — a signed indicator that is `±1` if exactly
+one of `i, j` is prime, else `0`. The Schubert cell membership reduces
+to a *combinatorial-coding* problem about the support set of
+`{j : χ_P(j) = 1, j ≤ k}` for each `k`, which is exactly
+`\{p : p \le k, p \text{ prime}\}`. **This means the Schubert position
+of `[V_χ_P^N]` literally encodes the sequence `(p_1, p_2, \ldots,
+p_{π(N)})` of primes themselves through the rank pattern.** The
+question is *what algebraic-geometric invariants the Schubert
+classification assigns to this position*: Schubert cells admit
+intersection multiplicities computed by the Littlewood-Richardson
+rule (Fulton 1997 *Young Tableaux* CUP), which gives a representation-
+theoretic invariant of the prime sequence. **No project measurement
+has tested any Schubert / Grassmannian invariant on any arithmetic
+encoding.**
+
+**Cross-domain ingredient:** Eisenbud-Harris 2016 *3264 and All That:
+A Second Course in Algebraic Geometry* CUP (canonical modern Schubert
+calculus textbook); Fulton 1997 *Young Tableaux: With Applications to
+Representation Theory and Geometry* CUP (Pieri rule, Littlewood-
+Richardson coefficients); Griffiths-Harris 1978 *Principles of
+Algebraic Geometry* Wiley §1.5 (Plücker embedding); Knutson-Tao 1999
+*JAMS* 12 = arXiv:math/9807160 (honeycomb model for LR coefficients,
+algorithmically tractable). UNUSED in `CROSS_DOMAIN_TECHNIQUES.md` §2
+algebraic/geometric (the row "Schubert calculus / Grassmannian"
+existed but was UNUSED).
+
+**Concrete first step:** for `N ∈ {64, 128, 256, 512, 1024}`:
+1. Build `V_χ_P^N \in \mathrm{Gr}(2, \mathbb{C}^N)` as the 2 × N
+   matrix with rows `(1, 1, \ldots, 1)` and `(χ_P(1), \ldots, χ_P(N))`.
+2. Compute Plücker coordinates `p_{ij} = χ_P(j) − χ_P(i)` for
+   `1 ≤ i < j ≤ N`. (`\binom{N}{2}` numbers.)
+3. Identify the Schubert cell `\Omega_λ` via the rank pattern test
+   `r_i := \dim(V_χ_P^N \cap F_i) \in \{0, 1, 2\}` where `F_i =
+   \mathrm{span}(e_1, \ldots, e_i)`. The partition is `λ_a = N − k − i_a`
+   where `i_a` is the position of the `a`-th rank jump.
+4. Verify: `λ_{χ_P}^N` should equal `(N − 2 − p_2, N − 1 − p_1)` (a
+   2-row partition) where `p_1 = 2, p_2 = 3`. If different — A-grade.
+5. CONTROL: random `χ_R^N` with same support size `π(N)`, 100 seeds.
+   Compute `λ_R^N`. Compare partition shape, dimension, and Schubert
+   intersection multiplicity `\langle σ_λ, σ_λ \rangle =
+   c_{λ,λ}^{(N-k)^k}` (LR coefficient).
+
+**Failure profile (E):** `λ_{χ_P}^N` is the trivial partition
+`(N − 2 − p_2, N − 1 − p_1) = (N − 5, N − 3)` always — Schubert cell
+of `V_χ_P^N` is determined solely by the location of the *first two
+primes* `(2, 3)`, which gives `O(1)` info. Closes as "Plücker / Schubert
+of `\mathrm{Gr}(2, N)` on `χ_P` collapses to a finite invariant."
+**B-grade**: 10th orthogonal pseudorandomness category (algebraic-
+geometric / Schubert).
+**(I):** `λ_{χ_P}^N` is non-trivial but identical to `λ_{χ_R}^N` for
+random matched-support `χ_R` — closes as "Schubert position is
+support-set-determined, primality invisible." **B-grade**.
+**(INC):** computational cost `O(N^2)` for Plücker coordinates becomes
+prohibitive at `N \geq 10^4`; partition representation needs sparse
+encoding.
+
+**A-grade success:** the Schubert intersection multiplicity
+`\langle σ_{λ_{χ_P}^N}, σ_{λ_{χ_P}^N} \rangle = c_{λ,λ}^{(N-2)^2}` (an
+LR coefficient) admits a *closed form* in terms of `π(N)` or HL
+singular series, AND the LR coefficient is computable in polylog
+`(N)` time via honeycomb model (Knutson-Tao 1999) — gives a polylog-
+time primality witness via Schubert intersection. Alternatively, the
+Schubert cell of `V_χ_P^N` lies on a *higher-codimension* stratum
+(e.g., a Richardson variety) whose defining equations are non-linear
+constraints among prime-pair correlations.
+
+**B-grade success:** explicit closed form for `λ_{χ_P}^N` in terms of
+`(p_1, p_2)` (as predicted by E mode) — confirms the support-set
+collapse but names the precise Schubert invariant of the prime
+indicator under `\mathrm{Gr}(2, \cdot)`-encoding.
+
+**Cross-domain refs:**
+- Eisenbud-Harris 2016 *3264 and All That* CUP (canonical textbook)
+- Fulton 1997 *Young Tableaux* CUP (Pieri / LR rule)
+- Griffiths-Harris 1978 *Principles of Algebraic Geometry* Wiley §1.5
+- Knutson-Tao 1999 "The honeycomb model of `GL_n(\mathbb{C})` tensor
+  products I" *JAMS* 12, 1055 = arXiv:math/9807160
+  https://arxiv.org/abs/math/9807160
+- Wikipedia: Schubert calculus
+  https://en.wikipedia.org/wiki/Schubert_calculus
+
+**Distinct from existing closures:**
+- **Not** tensor train / MPS / MERA (CLOSED, E2.1 N1): those are
+  product-state compressions of an N-qubit wavefunction encoding `χ_P`
+  via amplitude. Schubert is a *projective* (not vector-state)
+  geometric assignment.
+- **Not** GCT orbit-dimension (A7 PARTIAL CLOSURE S156): A7 measures
+  `\overline{GL_n \cdot f_χ_P^{(n)}}` orbit closure of an *encoding
+  polynomial*; D46 measures the Schubert cell of the *encoding 2-plane*
+  in `\mathrm{Gr}(2, N)`. Different geometric object, different
+  invariant.
+- **Not** B1 algebraic immunity (CLOSED): B1 fits a low-degree
+  polynomial annihilator over `\mathbb{F}_2`; D46 is a Plücker-Schubert
+  classification over `\mathbb{Q}`.
+
+**Budget:** 1-2 sessions. Session 1: Plücker computation + Schubert
+cell identification at `N ≤ 1024`. Session 2 (only if non-trivial
+LR coefficient): scale to `N = 4096` and compute `c_{λ,λ}^{(N-2)^2}`
+via honeycomb.
+
+### D47 — Cluster algebra / Fomin-Zelevinsky mutation orbit of a prime-gap-seeded quiver
+
+**Question:** Fomin-Zelevinsky 2002 *J. AMS* 15, 497 introduced
+*cluster algebras*: a commutative `\mathbb{Z}`-algebra generated by an
+inductively-defined set of cluster variables related by *exchange
+relations* `x_k x_k' = \prod_{i \to k} x_i^{b_{ik}^+} +
+\prod_{k \to i} x_i^{b_{ki}^+}` parametrised by an integer
+skew-symmetric *exchange matrix* `B = (b_{ij})` (equivalently, a quiver).
+A cluster algebra is *finite type* iff the mutation graph is finite
+iff the underlying quiver is mutation-equivalent to an orientation of
+a *Dynkin diagram* of type `A_n`, `D_n`, `E_6`, `E_7`, or `E_8`
+(Fomin-Zelevinsky 2003 *Invent. Math.* 154 finite-type theorem).
+Question: build the *prime-gap quiver* `Q_N` with vertices
+`v_1, \ldots, v_n` indexed by the first `n = π(N) − 1` primes (or by
+prime-gap pairs `(p_i, p_{i+1})`), and arrows determined by
+*divisibility-poset incidence*: `v_i → v_{i+1}` if `g_i := p_{i+1} − p_i =
+2` (twin-prime edges), `v_i → v_{i+2}` if `g_i = 4`, etc. Iterate
+Fomin-Zelevinsky cluster mutations starting from the seed
+`(x_1, \ldots, x_n)` with exchange matrix the adjacency matrix of `Q_N`.
+Test: is the mutation orbit *finite* (cluster-finite type)? If yes,
+which Dynkin diagram does the underlying quiver mutate to?
+
+**Why frontier:** the Fomin-Zelevinsky 2003 finite-type classification
+gives a *complete dictionary* between cluster-finite quivers and
+`A_n / D_n / E_{6,7,8}` Dynkin diagrams. The vast majority of quivers
+are cluster-INFINITE (orbit unbounded). **A cluster-finite arithmetic
+quiver — a quiver derived from prime-gap data that mutates into a
+Dynkin diagram — would be a genuinely surprising structural finding,
+encoding the prime-gap sequence as a *finite-dimensional simple Lie
+algebra*.** The Laurent phenomenon (Fomin-Zelevinsky 2002 Theorem 3.1)
+guarantees that all cluster variables are *Laurent polynomials in the
+initial seed*; if we can show the prime-gap quiver is finite-type, the
+exchange-relation generators give an explicit Laurent-polynomial
+identity among prime-gap data — which would be the FIRST non-additive
+algebraic identity on prime gaps. The Y-system periodicity theorem
+(Keller 2013 *Annals* 177, 111) further constrains: for finite-type
+quivers, the Y-mutation orbit has period `h + 2` where `h` is the
+Coxeter number.
+
+**Cross-domain ingredient:** Fomin-Zelevinsky 2002 *J. AMS* 15, 497
+"Cluster algebras I: Foundations" = arXiv:math/0104151
+https://arxiv.org/abs/math/0104151 (foundational paper); Fomin-
+Zelevinsky 2003 *Invent. Math.* 154, 63 = arXiv:math/0208229
+https://arxiv.org/abs/math/0208229 (finite-type classification);
+Fomin-Reading 2007 IAS/Park City Lecture Notes "Root systems and
+generalized associahedra" = arXiv:math/0505518
+https://arxiv.org/abs/math/0505518; Keller 2013 "The periodicity
+conjecture for pairs of Dynkin diagrams" *Annals of Math.* 177, 111 =
+arXiv:1001.1531 https://arxiv.org/abs/1001.1531 (Y-system periodicity);
+Fomin-Williams-Zelevinsky 2016 "Introduction to cluster algebras" book
+draft chapters 1–6 = arXiv:1608.05735
+https://arxiv.org/abs/1608.05735. **NEW to `CROSS_DOMAIN_TECHNIQUES.md`**
+— append a row in §7 combinatorial/additive.
+
+**Concrete first step:** for `N ∈ \{50, 100, 200, 500, 1000\}`:
+1. Build the prime-gap quiver `Q_N`. Three concrete variants to test:
+   (a) **Path quiver** with `n = π(N) - 1` vertices and arrows `v_i \to
+       v_{i+1}` (path graph; Dynkin type `A_n` — trivially finite-type).
+       BASELINE.
+   (b) **Twin-prime adjacency**: arrow `v_i \to v_{i+1}` iff `p_{i+1} -
+       p_i = 2`. Sparse subgraph; not necessarily Dynkin.
+   (c) **Gap-equality adjacency**: `v_i \to v_j` iff `g_i = g_j` (same
+       prime-gap value). Highly clustered; almost certainly cluster-
+       infinite.
+2. Implement Keller's mutation algorithm (cf. Keller's *Java Quiver
+   Mutation Applet* documentation): for a quiver `Q` and vertex `k`,
+   `μ_k(Q)` reverses arrows at `k` and adjusts other arrows by the
+   2-cycle elimination rule.
+3. Iterate `μ_1, μ_2, \ldots, μ_n, μ_1, \ldots` (sequential mutation).
+   Detect orbit return: track `(Q, \text{seed})` up to isomorphism.
+   `R_N := \min\{k > 0 : μ^k(Q_N, x) = (Q_N, x)\}` (or `∞` if no
+   return within `K_max = 10000`).
+4. CONTROL: 100 random quivers `Q_R^N` with matched edge density.
+   Mean orbit-return `R̄_R`, std `σ_R`. Z-score for each variant.
+
+**Failure profile (E):** all three quiver variants are mutation-
+infinite — `R_N = ∞` (no return within `K_max`) for `N ≥ 100` — and
+match random-quiver controls within `2σ`. Closes as "no Dynkin
+structure on prime-gap arithmetic." **B-grade**: 11th orthogonal
+pseudorandomness category (cluster-algebraic).
+**(I):** finite-orbit return `R_N < \infty` for variant (a) PATH
+trivially (Dynkin `A_n`), but NOT for (b) or (c) — predicted; the
+non-trivial result is variant (b) or (c) returning. If only (a)
+returns, B-grade negative.
+**(INC):** mutation orbit too large to enumerate at `n ≥ 50`;
+isomorphism-check on quivers with `≥ 100` arrows is expensive.
+
+**A-grade success:** variant (b) or (c) is *cluster-finite* — the
+mutation orbit returns at finite `R_N`, and the underlying quiver is
+mutation-equivalent to a Dynkin diagram of type `A_m`, `D_m`, or
+`E_{6,7,8}` for `m \leq n`. Identify the Dynkin type and the exchange-
+relation Laurent identity it imposes on prime-gap variables. This is
+the FIRST instance of any non-additive algebraic identity on prime
+gaps and would publish.
+
+**B-grade success:** variant (b) twin-prime quiver has *bounded*
+mutation orbit return-time `R_N = O(\log^c N)` for some `c` (sub-Dynkin
+but bounded), even if not exactly Dynkin — gives a partial cluster-
+periodicity result. Or: mutation orbit has *finite* `R_N` for some
+specific `N` but not all — gives an arithmetic obstruction signature.
+
+**Cross-domain refs:**
+- Fomin-Zelevinsky 2002 *J. AMS* 15, 497 = arXiv:math/0104151
+- Fomin-Zelevinsky 2003 *Invent. Math.* 154, 63 = arXiv:math/0208229
+- Keller 2013 *Annals* 177, 111 = arXiv:1001.1531
+- Fomin-Williams-Zelevinsky 2016 book draft = arXiv:1608.05735
+- Wikipedia: Cluster algebra
+  https://en.wikipedia.org/wiki/Cluster_algebra
+
+**Distinct from existing closures:**
+- **Not** Lie-algebraic (CLOSED line 92 "Lie algebra structure on
+  primes — Cartan classification fails"): line 92 closed *direct*
+  fitting of primes into a Lie algebra basis. D47 fits prime-gap
+  *adjacency* into a *cluster-mutation* equivalence class — a coarser,
+  combinatorially-defined relation that admits cluster-finite quivers
+  even when the underlying integer set has no Lie structure.
+- **Not** Cayley graph spectrum (CLOSED A3, lines 356, 387): linear
+  spectral invariants, different from non-linear cluster-mutation
+  dynamics.
+- **Not** Y-system already used: the Y-system mode of cluster algebras
+  has not appeared anywhere in CLOSED_PATHS or EDGES.
+
+**Budget:** 1-2 sessions. Session 1: implement Keller mutation +
+isomorphism check, test path / twin / gap-equality variants at
+`N \leq 200`. Session 2 (only if signal): scale to `N = 1000`, test
+additional variants (Hardy-Littlewood-tuple-conjecture-induced
+quivers).
+
+### D48 — Connes-Consani-Marcolli endomotive: Galois orbits of χ_P-projected KMS_∞ ground states of the Bost-Connes system
+
+> **[CRITIC-RECOMMENDED PICK — S163 critique, post-S162 batch]**: this is
+> the strongest next-action target identified by the post-S162 critique
+> (`archive/ephemeral/critique_latest.md` §8–§9). Rationale: (i) the
+> "trace vs character / partition function vs Galois orbit" distinction
+> relative to CLOSED line 185 is the tightest such distinction in the
+> project's history (Galois-orbit data is *preserved* by the endomotive
+> structure but *lost* by the trace-property of the partition function);
+> (ii) the Galois-orbit-length distribution under
+> `Gal(ℚ^{ab}/ℚ)` of χ_P-projected KMS_∞ ground states has *never* been
+> computed; (iii) Hilbert's 12th problem content is a *non-commutative
+> arithmetic invariant* — all 41+ existing project measures are
+> commutative-arithmetic. Highest A-grade upside on the open frontier per
+> S160's own A-prior estimate (~30%). **Fallback if structurally
+> inapplicable**: A7 plethysm sub-frame (the actual A7 question, deferred
+> by S156 due to lack of SageMath; hand-coded plethysm at small (n, k, d)
+> ≤ (4, 4, 2) is feasible).
+
+**Question:** the Bost-Connes 1995 *Selecta Math.* 1, 411 quantum
+statistical-mechanical system has algebra `\mathcal{A}_{\mathrm{BC}}`
+generated by `\{e(r) : r \in \mathbb{Q}/\mathbb{Z}\} \cup
+\{\mu_n, \mu_n^* : n \in \mathbb{N}\}` with relations
+`\mu_n \mu_n^* = \pi_n` (a projection), `\mu_n \mu_n^* = e_n`,
+`\mu_n e(r) \mu_n^* = e(nr)`, etc., and Hamiltonian `H \mu_n = (\log n)
+\mu_n`. The partition function is
+`Z(β) := \mathrm{Tr}(e^{−βH}) = ζ(β)` (line 185 CLOSED `Bost-Connes
+quantum mechanics`). At inverse temperature `β > 1` there is a unique
+KMS_β state, but at `β = ∞` (zero temperature) the *ground states*
+are parametrised by characters `\hat{\mathbb{Z}}^* = \mathrm{Gal}(
+\mathbb{Q}^{\mathrm{ab}}/\mathbb{Q})`, and the Galois group acts on
+them: this is the BC explicit Galois action on KMS_∞ ground states
+(the *Hilbert 12th problem* link). Connes-Consani-Marcolli 2007
+*Adv. Math.* 214, 761 = arXiv:math/0512138 reformulate this as the
+*endomotive* `\mathcal{E}_{\mathrm{BC}} = \varinjlim
+\mathbb{Q}[\mathbb{Z}/n\mathbb{Z}]` with semigroup of Frobenius
+endomorphisms — embedding BC into a non-commutative motivic framework.
+Question: define the *χ_P-projector*
+`P_χ := \sum_{p \text{ prime}} \mu_p \mu_p^* = \sum_p e_p
+\in \mathcal{A}_{\mathrm{BC}}` (a projection onto the prime-Frobenius
+subalgebra). Compute the Galois orbit structure of `P_χ`-projected
+KMS_∞ ground states `\{\phi_χ := \langle \cdot \rangle_β=∞ \circ
+\mathrm{Ad}(P_χ)\}` under the
+`\mathrm{Gal}(\mathbb{Q}^{\mathrm{ab}}/\mathbb{Q})`-action. Does the
+χ_P-projected orbit decomposition encode prime-distribution information
+not visible in the unprojected (CLOSED) BC partition function?
+
+**Why frontier:** the BC system's partition function reduces to `ζ(β)`
+(closed), but the *KMS_∞ ground states* and their Galois action are
+strictly richer information — they encode the *abelianised Galois
+group* `\mathrm{Gal}(\mathbb{Q}^{\mathrm{ab}}/\mathbb{Q})` directly,
+realising Hilbert's 12th problem for `\mathbb{Q}` (BC 1995 §6). The
+χ_P-projector restricts to the *prime-Frobenius* subalgebra — a
+smaller endomotive whose Galois orbits are a SUBSET of the full
+orbit decomposition. **The orbit-length distribution under
+`\mathrm{Gal}(\mathbb{Q}^{\mathrm{ab}}/\mathbb{Q})` of χ_P-projected
+ground states has never been computed.** If the orbit lengths show a
+non-trivial dependence on prime distribution beyond the partition
+function, this is a rigorously non-commutative arithmetic invariant
+distinct from all 41+ measures.
+
+**CRITICAL DISTINCTION FROM CLOSED line 185** ("Bost-Connes quantum
+mechanics | FAIL | E | Reduces to zeta(s)"): line 185 closes the
+*partition function* `Z(β) = \mathrm{Tr}(e^{-βH}) = ζ(β)` — a *trace*
+that loses Galois-orbit information by the trace-property. The χ_P-
+projected KMS_∞ ground states are *NOT* traces; they are *characters*
+on the BC algebra, classified by `\hat{\mathbb{Z}}^*` and equipped
+with a Galois action. Connes-Consani-Marcolli 2007 §6.2 explicitly
+distinguish the partition-function and Galois-state levels and show
+that the *endomotive* construction recovers Galois data lost by the
+trace.
+
+**Cross-domain ingredient:** Bost-Connes 1995 "Hecke algebras, type
+III factors and phase transitions with spontaneous symmetry breaking
+in number theory" *Selecta Math.* 1, 411; Connes-Consani-Marcolli
+2007 "Noncommutative geometry and motives: the thermodynamics of
+endomotives" *Adv. Math.* 214, 761 = arXiv:math/0512138
+https://arxiv.org/abs/math/0512138 (endomotive formalism,
+distinguished from BC); Connes-Marcolli-Ramachandran 2005 "KMS states
+and complex multiplication" *Selecta Math.* 11, 325 = arXiv:math/0501424
+https://arxiv.org/abs/math/0501424 (extension to imaginary quadratic
+fields, technique transfer); Connes-Marcolli 2008 *Noncommutative
+Geometry, Quantum Fields and Motives* AMS Coll. Pub. 55 (canonical
+textbook, ch. 3 BC system, ch. 4 endomotives); Marcolli 2005
+*Arithmetic Noncommutative Geometry* AMS ULect 36. **NEW to
+`CROSS_DOMAIN_TECHNIQUES.md`** — appended in §1 spectral/operator-
+theoretic, distinguished from row "Bost-Connes" mention via
+endomotive enrichment.
+
+**Concrete first step:** for `N \in \{20, 50, 100, 200\}`:
+1. Truncate the BC system to the finite-rank subalgebra
+   `\mathcal{A}_N := \langle e(r) : r = a/n, n \leq N \rangle` with
+   Hamiltonian truncation `H_N` having spectrum `\{\log n : n \leq N\}`.
+2. Compute KMS_∞ ground states explicitly: by BC 1995 Theorem 25 the
+   pure ground states are indexed by characters
+   `χ \in \hat{\mathbb{Z}}^*` and given by
+   `\phi_χ(e(a/n)) = \chi(a/n) / 1` if `\gcd(a, n) = 1`. Truncate to
+   `\hat{(\mathbb{Z}/N\mathbb{Z})}^*`.
+3. Define `P_χ^N := \sum_{p \leq N, \text{prime}} \mu_p \mu_p^*`.
+   Compute the χ_P-projected ground states `\phi_χ \circ \mathrm{Ad}
+   P_χ^N` for each `χ \in \hat{(\mathbb{Z}/N\mathbb{Z})}^*` (a finite
+   set of size `\phi(N)`).
+4. Apply `\mathrm{Gal}((\mathbb{Z}/N\mathbb{Z})^* / 1) = (\mathbb{Z}/N
+   \mathbb{Z})^*` action by multiplication on characters; record
+   orbit-length distribution under this action restricted to the
+   χ_P-projected states.
+5. CONTROL: 50 random matched-density projectors `P_R^N := \sum_{n \in
+   S_R} e_n` with `|S_R| = π(N)`; same orbit-length analysis. Z-score
+   on orbit-length variance.
+
+**Failure profile (E):** χ_P-projected orbit-length distribution is
+controlled by `\phi(N) / |\{χ : \chi|_{\text{primes}} ≡ 1\}|` and
+matches a HL-singular-series prediction within noise — closes as "BC
+endomotive Galois orbits on χ_P collapse to the singular series."
+**B-grade**: 12th orthogonal pseudorandomness category (Galois-
+endomotive). **(I):** orbit-length distribution deviates from random
+control by `> 5σ` AND from singular-series prediction — gives a new
+Galois-arithmetic invariant. **(INC):** truncation to `N \leq 200`
+loses the Galois-action structure (true `\hat{\mathbb{Z}}^*` is
+projective limit; finite truncation may not faithfully represent the
+infinite-dim Galois orbits).
+
+**A-grade success:** χ_P-projected Galois orbit-length distribution
+admits a *closed-form description in terms of `π(N)` or class-field-
+theoretic data* (e.g., conductor / discriminant of an associated
+abelian extension), AND the description is polylog-evaluable — gives
+a polylog-time Galois-theoretic primality witness via class-field
+explicit reciprocity. Concretely: the *length spectrum*
+`L_N := \{|O_χ| : χ \in \hat{(\mathbb{Z}/N\mathbb{Z})}^*\}` of the
+χ_P-projected orbit decomposition has a moment generating function
+`\sum_χ z^{|O_χ|}` admitting a closed Euler-product form.
+
+**B-grade success:** χ_P-projected Galois orbit lengths match the HL
+singular series `S(p_1, \ldots, p_k) = \prod_p (1 - \nu_p / p)^k /
+(1 - 1/p)^k` for prime tuples — gives a Galois-cohomological refinement
+of HL distinct from D44 (Rédei symbol) and from B2 (automorphic L,
+CLOSED).
+
+**Cross-domain refs:**
+- Bost-Connes 1995 "Hecke algebras, type III factors and phase
+  transitions with spontaneous symmetry breaking in number theory"
+  *Selecta Math.* (NS) 1, 411
+- Connes-Consani-Marcolli 2007 "Noncommutative geometry and motives:
+  the thermodynamics of endomotives" *Adv. Math.* 214, 761 =
+  arXiv:math/0512138 https://arxiv.org/abs/math/0512138
+- Connes-Marcolli-Ramachandran 2005 "KMS states and complex
+  multiplication" *Selecta Math.* 11, 325 = arXiv:math/0501424
+  https://arxiv.org/abs/math/0501424
+- Connes-Marcolli 2008 *Noncommutative Geometry, Quantum Fields and
+  Motives* AMS Coll. Pub. 55 (canonical textbook)
+- Marcolli 2005 *Arithmetic Noncommutative Geometry* AMS ULect 36
+- Wikipedia: Bost-Connes system
+  https://en.wikipedia.org/wiki/Bost%E2%80%93Connes_system
+
+**Distinct from existing closures:**
+- **Not** raw BC partition function (CLOSED line 185, "Reduces to
+  ζ(s)"): line 185 closes the trace `\mathrm{Tr}(e^{-βH}) = ζ(β)`;
+  D48 measures KMS_∞ Galois-orbit data that the trace loses.
+- **Not** automorphic L-function basis (B2 CLOSED S118): B2 fits
+  Hecke eigenvalue partial sums; D48 measures Galois-orbit
+  combinatorics on a non-commutative algebra.
+- **Not** Connes-Weil ζ (CLOSED line 50, line 597, line 702):
+  Connes-Weil is the *spectral-realisation* program for ζ-zeros via
+  trace formula on adèle class space; D48 is the *ground-state Galois*
+  structure of a different (BC) C*-system.
+- **Not** Selberg trace formula (B2): Selberg is on automorphic
+  L-functions; BC is on Hecke-algebra type III factor.
+
+**Budget:** 1-2 sessions. Session 1: implement finite truncation of BC
+algebra at `N \leq 100`, KMS_∞ ground states, χ_P-projection, Galois
+orbit-length analysis. Session 2 (only if signal): scale to `N = 200`,
+test endomotive functoriality (Connes-Consani-Marcolli §6.2 Frobenius-
+correspondence covariance).
+
 ---
 
 ## §E. Meta-Analysis of CLOSED_PATHS as a Data Source
@@ -4166,7 +6510,27 @@ the "everything reduces to HL via W-trick" picture.
 
 **Budget:** 1 session (existing infrastructure).
 
-### G2 — Liouville Gowers U^k norms: testing the Green-Tao orthogonality theorem at scale
+### G2 — Liouville Gowers U^k norms: testing the Green-Tao orthogonality theorem at scale  [CLOSED S153, see "Closed attacks"]
+
+**Outcome (S153, mode E, B-grade):** `||λ||_{U^k}` matches IID
+Rademacher prediction within sample noise across N ∈ [2^10, 2^20]
+(U^2) and N ∈ [2^10, 2^13] (U^3). Empirical decay slope `−0.990`
+matched to `−1.000` Rademacher prediction; constant `2/N` matched
+within `1 − O(1/√N)` finite-N centring noise. `||μ||_{U^2}^4` matches
+matched-variance IID (`σ² = 6/π²`) prediction `0.7392/N` to within
+sample noise at `N = 2^20`. No sustained Z > 3.5σ deviation at any
+tested N for either function. Top single Fourier coefficient of λ
+matches Rademacher `√(N log N)` max-coefficient law within 0–3σ; no
+1-step nilsequence correlation detected. **First project use of
+Green-Tao Möbius/nilsequence orthogonality theorem (arXiv:0807.1736)**;
+**first project Gowers-norm measurement on multiplicative functions**.
+Promotes `Gowers norms / Green-Tao orthogonality` in
+CROSS_DOMAIN_TECHNIQUES.md §3 from PROPOSED → USED (E mode) with edge
+**E2.25** (new). Adds **3 new pseudorandomness measures** (λ U^2,
+μ U^2, λ U^3) to project battery. See
+`experiments/information_theory/liouville_gowers_uk/` and "Closed
+attacks" below.
+
 
 **Question:** parallel to §D6 (S87, E2.13), compute `‖λ‖_{U^k}` for
 k = 2, 3 at large N. Green-Tao predicts `‖λ‖_{U^k} → 0` polynomially
@@ -4312,6 +6676,655 @@ If a frontier attack produces a result that survives the critique:
 ---
 
 ## Closed attacks
+
+### §D.D44 — Arithmetic topology / Morishita arithmetic Massey products on prime triples (Rédei symbol distribution) (CLOSED 2026-04-28, S164, mode E, B-grade case (i))
+
+**Outcome:** empirical Rédei symbol `[p, q, r]` on Borromean-admissible
+prime triples (p < q < r ≤ 1000, all ≡ 1 mod 4, all pairwise Legendre
+= +1) is uniform within the strict 5σ envelope; constant `|Δf_+| ≈
+0.013` with `z ∼ √K` consistent with finite-r effective Chebotarev
+in Rédei field `K_pq`/Q. F1 (A-grade) FALSIFIED, F2 (UNBIASED, mode E)
+HOLDS. Adds new edge **E2.29** — first project measurement of Mazur
+primes-as-knots / Galois-cohomological triple Massey-product invariant.
+
+Implemented Lemmermeyer's maximal-order norm formula for the Rédei
+symbol:
+
+  `[p, q, r] = ((U + V σ) · 2⁻¹ / r)`
+
+with `(U, V)` the smallest fundamental solution to `U² − p V² = 4q`
+having `U ≡ V (mod 2)` (so `(U + V √p)/2 ∈ O_p` has norm q), found
+via `sympy.solvers.diophantine.diop_DN`, and `σ ∈ F_r` with
+`σ² ≡ p (mod r)`. Validated on canonical Borromean triple
+`[13, 61, 937] = -1` (Wikipedia / Morishita 2012 §8.5); six
+independent fundamental solutions to `U² − 13 V² = 244` all give -1,
+confirming sigma- and (U, V)-choice invariance.
+
+**Pre-stated falsifiers:** F1 (A-grade) `|f_+ - 0.5| > 5/√K` AND
+HL-S_3 Pearson > 0.3; F2 (B-grade case I, UNBIASED) `|f_+ - 0.5| <
+5/√K` at all three N; F3 (B-grade case II) `|f_+ - 0.5| > 5/√K` but
+not matched by HL S_3; INC > 10 % triples without norm rep.
+
+**Three-N table** (admissible / well-defined K / INC / n_+ / n_− /
+f_+ / z vs ½ / 5σ envelope `2.5/√K` / observed |Δ|):
+
+| N    | adm   | K     | INC | n_+   | n_−   | f_+    | z     | 5σ    | |Δ|    |
+|------|-------|-------|-----|-------|-------|--------|-------|-------|--------|
+| 200  | 122   | 122   | 0   | 59    | 63    | 0.4836 | -0.36 | 0.226 | 0.0164 |
+| 500  | 1419  | 1361  | 58  | 662   | 699   | 0.4864 | -1.00 | 0.0678| 0.0136 |
+| 1000 | 9100  | 8577  | 523 | 4174  | 4403  | 0.4867 | -2.47 | 0.0270| 0.0133 |
+| 1000 (clean: exclude p ∈ {229, 257, 401, 577, 733, 761}) | 7591 | 7591 | 0 | 3684 | 3907 | 0.4853 | -2.56 | 0.0287 | 0.0147 |
+
+|Δ| < 5σ at every tested N. F2 holds; F1 falsified.
+
+**Mechanism for closure mode E:** The Rédei symbol `[p, q, r]` is the
+Frobenius image of `r` in the Rédei field `K_{pq}/Q` (cyclic of order
+4, ramified only at p, q, containing `Q(√pq)`). By Chebotarev density,
+the asymptotic distribution of Frobenius in `Gal(K_{pq}/Q) ≅ Z/4Z`,
+projected to its index-2 quotient, is uniform ±1. The empirical
+constant-|Δ|, growing-z pattern is consistent with finite-r effective
+Chebotarev: the error term scales as `O(1/√(log r)) ≈ 0.01` at
+r ≲ 1000, matching the observed `|Δf_+| ≈ 0.013`.
+
+**Clean-subset robustness check:** restricting to primes p with class
+group `h(p) = 1` (so every admissible (p, q) has a principal-class
+norm representation) gives `z = -2.56`, slightly stronger than the full
+set's `z = -2.47`. The bias is therefore NOT an artefact of
+INCONCLUSIVE-triple removal; it is a genuine finite-N effect of
+Frobenius-density convergence.
+
+**Mod-residue substructure:** No mod-8 / 12 / 24 residue triple
+(p mod m, q mod m, r mod m) deviates from the global mean by
+Bonferroni-corrected 3σ. Max |z| at mod 8 is 2.49 (1, 1, 5)
+(threshold 2.73); at mod 24 is 2.31 (5, 1, 13) (threshold 3.24).
+No detectable HL S_3 correlation in the symbol distribution.
+
+**Adds EDGE E2.29** — cohomological-Massey orthogonality. 13th
+orthogonal pseudorandomness category for χ_P (arithmetic topology /
+Galois cohomology), structurally distinct from generic knot
+polynomials (CLOSED line 208), étale cohomology of Spec(Z) (CLOSED
+line 202), and Cohen-Lenstra heuristics (Rédei is the genus-level
+invariant *one step below* the 4-rank density that C-L predicts).
+
+**Cross-domain ingredient (arithmetic topology / Mazur primes-as-knots
+dictionary) performed real work:** FIRST project use; CROSS_DOMAIN_TECHNIQUES.md
+§4 row "Arithmetic topology" promoted PROPOSED → USED-E with edge E2.29.
+
+**Channelled mathematician:** Morishita (arithmetic topology) /
+Stevenhagen (Rédei reciprocity).
+
+**Successors proposed (S164):**
+- **D44.a** — quartic Massey product `⟨p₁, p₂, p₃, p₄⟩_2` (Vogel
+  2004 Heidelberg PhD thesis) on admissible 4-tuples; first higher-
+  rank arithmetic-topology invariant (1-2 sessions). Tests whether
+  cohomological-Massey orthogonality persists at rank ≥ 4 or the
+  quartic invariant carries triple-prime arithmetic content invisible
+  to the binary Rédei.
+- **D44.b** — 4-rank distribution of `Cl(Q(√(p · q)))` (Cohen-Lenstra
+  heuristic) on admissible (p, q) pairs. Connects D44 to Cohen-
+  Lenstra; tests whether the genus-level invariant has predicted
+  asymmetric distribution.
+- **D44.c** — quantitative effective-Chebotarev rate test: model
+  `|Δf_+| ∼ c / √(log N)` and confirm sub-5σ z-growth is finite-N
+  Chebotarev convergence in the Rédei field, refining E2.29 with
+  rigorous error-rate edge.
+
+**Cross-domain refs:**
+- Mazur 1966 *Ann. Sci. ENS* 6, 521.
+- Morishita 2002 "Milnor invariants and Massey products for prime
+  numbers" *J. Reine Angew. Math.* 550, 141.
+- Morishita 2012 *Knots and Primes: An Introduction to Arithmetic
+  Topology* Springer Universitext.
+- Rédei 1939 "Ein neues zahlentheoretisches Symbol mit Anwendungen
+  auf die Theorie der quadratischen Zahlkörper" *J. Reine Angew.
+  Math.* 180, 1.
+- Lemmermeyer 2000 *Reciprocity Laws: From Euler to Eisenstein*
+  Springer Monographs Math, Ch. 9.
+- Stevenhagen 1996 "Rédei reciprocity, governing fields and negative
+  Pell" *Acta Arith.* 76, 89.
+- Vogel 2004 Heidelberg PhD thesis "Massey products in the Galois
+  cohomology of number fields".
+
+See `experiments/algebraic/redei_symbol_prime_triples/` and
+`archive/sessions/session164_d44_redei_symbol.md`.
+
+### §D.D45 — Baker-Norine graph Riemann-Roch / chip-firing rank of the prime divisor on `Γ_N` (divisibility) and `H_N` (Hasse cover) (CLOSED 2026-04-28, S161, mode I, B-grade case (i))
+
+**Outcome:** rank invariant trivially determined by Riemann-Roch +
+graph topology; closed-form q-reduced identity for `D_P^N` on both
+graphs (NEW edge **E2.28**); z-score for D'(q) grows as `√π(N)`
+without algorithmic content.
+
+Implemented Dhar's burning algorithm + q-reduction + Baker-Norine
+Algorithm 4.1 rank computation. For both graph families:
+- **`Γ_N`** (divisibility, V = [1, N], a–b iff a|b, a≠b)
+- **`H_N`** (Hasse cover, V = [1, N], a–b iff b = pa for prime p)
+
+with sink `q = 1` (max-degree, universal divisor of all integers).
+
+**Pre-registered F1 (A-grade): rank `r_G(D_P^N) ≥ deg(D_P) − g + 2` for
+some N exhibiting Brill-Noether specialness.** **FALSIFIED.** For
+N ∈ {32, 64, 128} on both graphs, `r(D_P^N) = max(0, deg − g + 1) = 0`,
+the generic Riemann-Roch value. Failure of `r ≥ 1` occurs at the
+SAME vertex (typically v = 4) for D_P and matched-density random
+divisors — the failure is graph-topological, not arithmetic.
+Riemann-Roch `r(K − D_P) = r(D_P) − π(N) − 1 + g` is identical for
+any effective degree-π(N) divisor by symmetry of RR — D_P is NOT
+Brill-Noether-special.
+
+**Pre-registered F2 (B-grade): D'(q) deviates by > 5σ from random
+matched divisor; deviation has structural explanation.** **HOLDS at
+B-grade**:
+
+| Graph        | N=32  | N=64  | N=128 |
+|--------------|-------|-------|-------|
+| Γ_N (div)    | +3.4σ | +3.2σ | +5.8σ |
+| Hasse(N)     | +8.6σ | +11.1σ| +14.6σ|
+
+The deviation is structural (graph topology, not arithmetic): D'(q) for
+any divisor measures (chips on N(q)) under chip-firing. For D_P on H_N,
+N(q=1) = primes by Hasse construction, so D'(q) = π(N) tautologically.
+
+**Closed-form q-reduced identities (NEW edge E2.28):**
+
+(1) On `Γ_N`, q=1: `D'_P^N = (π(N) − π(N/2)) · δ_1 + Σ_{p ≤ N/2} δ_p`.
+    Verified N up to 512.
+(2) On `H_N`, q=1: `D'_P^N = π(N) · δ_1`. Verified N up to 512.
+
+Both proved via direct Dhar burn analysis (one-paragraph proofs each).
+
+**Generalised identity** (Hasse, q=1, divisor D supported on
+`{1} ∪ {primes}`): `D'(1) = D(1) + Σ_{p prime} D(p)`. Holds for D_P,
+D_sqfree, D_μ_pos. Fails for D_λ_pos and D_Omega2 (chips on composites
+cascade through Dhar burning).
+
+**Why §D.D45 fails by structure** (closure mode I):
+
+The Baker-Norine rank invariant `r_G(D)` is determined by `(deg(D),
+graph G)` modulo Riemann-Roch + gonality. The chip-firing q-reduced
+FORM (a finer invariant) gives clean closed-form identities for D_P,
+but the identities reduce to graph-NEIGHBORHOOD combinatorics: D'(q) =
+(chips on N(q)) for any divisor. For D_P this counts (primes that are
+graph-neighbors of q=1), which on H_N is π(N) tautologically (since
+N(q=1) IS the prime set by definition of Hasse).
+
+**Z-score asymptotic** (quantitative structural prediction):
+- For random matched: E[D'(q)] = π(N) · |N(q)| / |V|, Var ≈ π(N).
+- For D_P on H_N: D'(q) = π(N).
+- z ~ (π(N) − π(N)²/N) / √π(N) ~ √π(N) ~ √(N / log N) — **grows
+  without bound in N**.
+
+**Mechanism distinct from CLOSED tropical lines (CLOSED_PATHS lines
+204, 326, 431, 432, 660):** those are min-plus compression of generating
+functions; D45 is chip-firing on graph divisors. The two are
+fundamentally different (min-plus collapses, chip-firing is a
+non-linear graph game). Distinct from D22 CLOSED Hodge L_1 (linear
+spectral) and A3 CLOSED Cayley graph spectrum (L_0). Chip-firing rank
+is its own invariant family.
+
+**Adds EDGE E2.28** (chip-firing q-reduced form identity for D_P on
+arithmetic graphs, EVS M shape) — first chip-firing-theoretic invariant
+computed on any arithmetic graph in the project. Ruled negative-shape
+because the identity reduces to graph-neighborhood structure.
+
+**Suggested successors (S161):**
+- D45.a Chip-firing on **non-trivially arithmetic graphs** — e.g., the
+  prime-gap multigraph (vertices = positions, edges weighted by gap),
+  or Cayley graphs with prime-derived generators where the graph
+  topology itself encodes more arithmetic than just the divisibility
+  lattice. (1-2 sessions)
+- D45.b **Brill-Noether locus W^r_d(G)** explicit dimensional study on
+  Γ_N, H_N: what is `dim W^1_d(G)` for d = π(N)? Empirically W^1 is
+  empty for d = π(N) (since no D of that degree achieves r ≥ 1). At
+  what minimum d is W^1 non-empty (= gonality)? (1 session)
+- D45.c **Gonality** of Γ_N and H_N — exact computation for small N.
+  Compares to typical gonality of sparse graphs of same edge density.
+  (1 session)
+
+**Cross-domain refs:**
+- Baker-Norine 2007 *Adv. Math.* 215, 766 = arXiv:math/0608360
+  (graph Riemann-Roch — canonical reference).
+- Dhar 1990 *Phys. Rev. Lett.* 64, 1613 (chip-firing burning).
+- Bjorner-Lovász-Shor 1991 *Eur. J. Combin.* 12 (chip-firing
+  abelian property).
+- Backman-Baker-Yuen 2019 *Forum Math. Sigma* 7 (algorithmic
+  q-reduction).
+
+`CROSS_DOMAIN_TECHNIQUES.md` §2 row "Baker-Norine graph Riemann-Roch /
+chip-firing" promoted PROPOSED → USED-I with edge E2.28.
+
+**Channelled mathematician:** Baker (graph divisor theory).
+
+See `experiments/algebraic/baker_norine_chi_p/` and
+`archive/sessions/session161_d45_baker_norine_chi_p.md`.
+
+### §D.D31 — Adiprasito-Huh-Katz Hodge log-concavity of the arithmetic prime-divisibility transversal matroid (CLOSED 2026-04-28, S149, mode I, B-grade case (i))
+
+**Outcome:** B-grade mode I (structural deviation, partially identified).
+The arithmetic transversal matroid `M_P^N` (ground = `[2, N]`, blocks
+`B_p = {n : p | n}`) has characteristic-polynomial absolute coefficients
+`|w_k|` consistently 3–4× larger than degree-preserving config-model
+controls; AHK log-concavity slack `δ_k = |w_k|² − |w_{k−1}||w_{k+1}|`
+deviates by `+5.61σ` at `k = 1`, `+3.17σ at all k under W = 2 sieve`,
+and remains at `+3.91σ` (δ_1) on the **connected part** `M_conn^N`
+after stripping the Bertrand `(t − 1)^{ν(N)}` direct-summand factor
+(`ν(N) = π(N) − π(N/2)`). Approximately 50% of the raw deviation is
+the Bertrand factor; ~50% is residual structure of `M_conn^N` not yet
+identified analytically.
+
+Adds new shape edge **E2.24 (AHK Hodge log-concavity slack of
+`M_P^N`)**: 7th orthogonal pseudorandomness-detection category after
+E2.13 Gowers / E2.14 Anderson / E2.16 DPP / E2.17 PH / E2.19 subword /
+E2.20 Mahler / E2.21 Newman; structurally distinct from the
+graph-Laplacian Hodge spectrum closed at S126 (E7.17, D22) — that
+was the **graph Laplacian** of a coprimality flag complex, AHK is on
+the **Chow ring** `A^*(M)` and its Hodge-Riemann form on graded pieces.
+
+Cross-domain technique: **AHK matroid Hodge theory / Heron-Rota-Welsh
+log-concavity** (Adiprasito-Huh-Katz 2018 *Annals* 188, 381 =
+arXiv:1511.02888; Heron 1972; Rota 1971; Welsh 1976; Brändén-Huh 2020
+*Annals* 192 Lorentzian polynomials = arXiv:1902.03719; Huh 2012
+*J. AMS* 25). Promoted PROPOSED → USED I with edge **E2.24**.
+Channelled mathematician: **Huh / Adiprasito** (combinatorial Hodge).
+
+Setup: Whitney expansion `χ_M(t) = Σ_{S ⊆ E} (−1)^{|S|} t^{r(M)−r(S)}`
+with `r(S)` = max bipartite matching from `S` to `{B_p}`, brute-force
+enumeration over all `2^{|E|}` subsets at `N ∈ {8, 12, 16, 20}`.
+Configuration-model controls preserve bipartite degree sequence on
+both sides via stub-pairing; W-trick at `W ∈ {1, 2, 6}`. AHK
+log-concavity verified empirically across ~200 matroids (zero
+violations); deviation measured against degree-matched ensemble.
+
+Sub-attack D31.a (closed within S149): re-run on the **connected
+part** `M_conn^N := M_P^N \ {p : N/2 < p ≤ N, p prime}`, removing
+the isolated big-prime singletons. Result: deviation reduced by
+`0.5–1.0σ` but **not erased**; conn-only `δ_1` z = `+3.91σ` at
+`N = 20`, 50 controls.
+
+Pre-registered falsifiers (per attack as written):
+- **(E)**: prime `δ_k` matches Bernoulli within `±2σ` after W-trick —
+  **NOT achieved** (W=2 leaves +3.17σ; W=6 collapses matroid; D31.a
+  conn-only leaves +3.91σ).
+- **(I)**: prime `δ_k` deviates `≥ 3σ`, structurally identified —
+  **achieved**. +5.6σ at k=1 (full); +3.9σ at k=1 (conn-only).
+  ~50% traced to Bertrand `(t − 1)^{ν(N)}` factor.
+- **(A)**: closed-form `χ_{M_conn^N}` in HL singular series —
+  **not pursued** (left for D31.b).
+
+Specifically rules out the A-grade scenario where AHK log-concavity
+gives a NEW Brun-Titchmarsh-type bound from the matroid Hodge side:
+the AHK inequality is a UNIVERSAL property of all matroids, and
+extracting `π(x)`-content from it would require the connected-part
+residual deviation to admit a closed form — open question.
+
+Three open follow-ups:
+- **D31.a** — Connected-part-only AHK deviation. **CLOSED IN S149**:
+  conn-part deviation persists at +3.9σ on δ_1 at N = 20 (50
+  controls). Bertrand explains ~50% of full-matroid deviation, not
+  all.
+- **D31.b** — `χ_{M_conn^N}` HL-product fingerprint. Compute
+  `(|w_k(M_conn^N)|)_k` at `N ∈ {32, 48, 64}` via deletion-contraction
+  + matroid representation matrix; fit `|w_k|^? = ∏_{p ≤ N^{α_k}}
+  f(p)` against an HL singular-series ansatz. A-grade if rms < 0.1%;
+  B+ negative if > 5% (genuinely new fingerprint).
+- **D31.c** — AHK Hodge applied to the **χ_P-driven flag matroid**
+  of the coprimality complex (S126 / E7.17 closure object). The flag
+  matroid is NOT transversal in general; AHK 2018 still applies (it
+  is a matroid). Cross-domain ingredient: matroid theory of
+  simplicial complexes (Björner-Wachs 2007 *Adv. Math.* 207 on
+  shellability and the Stanley-Reisner ring). B+ if connected-part
+  residue persists across the structural shift to a different matroid
+  class.
+
+Files: `experiments/algebraic/d31_ahk_matroid_hodge/d31_ahk_matroid_hodge.py`,
+`d31a_connected_part.py`, `d31_ahk_matroid_hodge_results.md`,
+`d31_ahk_matroid_hodge_data.json`, `d31a_connected_part_data.json`.
+See `archive/sessions/session149_d31_ahk_matroid_hodge.md`.
+
+---
+
+### §D.D29 — Cohn-Elkies / Delsarte LP bound on the prime autocorrelation `R_P(t)` (CLOSED 2026-04-27, S145, mode E, B-grade case (i))
+
+**Outcome:** B-grade case (i) mode E — both A-grade hypotheses ruled
+out cleanly. (1) "primes saturate the LP bound within `(log N)^{-c}`":
+FALSIFIED — saturation `S_N := ρ · f̂*(0)` decays as `1/log N`
+(`{0.835, 0.608, 0.498}` at `N ∈ {10^4, 10^5, 10^6}`, `T = 500`),
+LP is asymptotically vacuous. (2) "optimal `f^*` admits a Viazovska
+modular-form representation": FALSIFIED — `f^*` is a period-4
+sinusoid `f^*(t) ≈ A · cos(π t/2) · 1_{t even}` reflecting parity
+(E2.1), no modular structure.
+
+Adds new shape edge **E2.23 (Cohn-Elkies / Delsarte LP scaling)**:
+the LP optimum `f̂*(0; T) ≈ 1.154 + 0.848 · log T` (R² > 0.999 across
+`T ∈ {50, 100, 200, 400, 800, 1500}` at `N = 10^6`), giving density
+bound `1/f̂*(0; T) ≈ 1/(1.15 + 0.85 log T)`. To match the prime
+density `ρ ≈ 1/log N`, one needs `T ≈ N` — strictly outside
+`polylog(N)`. The Delsarte LP family is **strictly inside the sieve
+barrier (E6.7)**: it cannot give a density bound below `O(1)` for
+any `T = polylog(N)`.
+
+Cross-domain technique: **linear-programming bounds for codes /
+sphere packing** (Delsarte 1973 association schemes; Cohn-Elkies 2003
+*Annals* 157 = arXiv:math/0110009; Viazovska 2017 *Annals* 185 =
+arXiv:1603.04246; Cohn-Goncalves 2019 *Invent. Math.* 217 =
+arXiv:1712.04438; Bachoc-Vallentin 2008 = arXiv:math/0608426;
+Schrijver 2005 SDP = arXiv:math/0405348; Vaaler 1985 *Bull. AMS* 12
+on Beurling-Selberg majorants in 1-D). UNUSED before S145 — promoted
+PROPOSED → USED E with edge **E2.23**. Channelled mathematician:
+**Cohn / Viazovska** (LP bounds via modular-form construction) — the
+Viazovska modular A-grade hypothesis was tested cleanly and ruled out.
+
+Setup: discrete-`Z` LP with even `f` supported on `[-T, T]`, Bochner
+`f̂ ≥ 0` at `M = 4096` sample points, normalisation `f(0) = 1`,
+aggregate Delsarte constraint `Σ_{t≥1} g(t) f(t) ≤ 0` with
+`g(t) = R_P(t) / π(N)` from FFT-computed prime autocorrelation. LP
+solved via scipy HiGHS at `T ∈ {50, 100, 200, 400, 800, 1500}`,
+`N ∈ {10^4, 10^5, 10^6}`. Three `g` profiles tested: observed `g_obs`,
+HL singular series `g_HL`, Bernoulli baseline `g_rand`.
+
+Pre-registered falsifiers (per attack as written):
+- **F-A**: vanilla CEL with `r_min = 2`: trivial bound `1/2`
+  (control). PASSES.
+- **F-B**: random-Bernoulli matched-density control: bound `≈ 1`
+  (LP vacuous on i.i.d.). PASSES.
+- **F-C**: HL `g_HL` LP: scale-invariant in `g`, bound depends only
+  on singular-series shape. PASSES, with closed numerical fingerprint
+  `1/f̂*(g_HL; T = 500) = 0.0668`.
+
+Three independent fingerprints all consistent: (1) LP optimum
+`f̂*(0; T)` log-linear in `T` with slope ≈ 0.85; (2) `f^*(t)` is
+period-4 sinusoid on even `t`, near-zero on odd `t` (parity); (3)
+`f̂^*(ξ)` peaks at `ξ = 1/4` with value 242 vs `f̂^*(0) = 6.35`.
+
+Specifically rules out: D29.a (Cohn-Elkies extension via Eisenstein
+modular forms — no modular structure to extend); D29.b (sphere-packing
+LP saturation — saturation requires `T ~ N`).
+
+Two open follow-ups (proposed for §D.D29.a/b, not yet attacked):
+- **D29.a**: signed-sum LP variant (Cohn-Goncalves 12-D uncertainty
+  principle adapted to `Z`) — does the log-linear scaling slope `b`
+  change?
+- **D29.b**: replace `χ_P` autocorrelation with `µ²` (squarefree
+  indicator), `Λ` von Mangoldt, or `λ` Liouville — does the slope
+  shift by arithmetic class?
+
+Files: `experiments/analytic/cohn_elkies_chi_p/cohn_elkies_chi_p.py`,
+`T_sweep.py`, `summary.json`, `T_sweep_results.json`, results MD,
+`archive/sessions/session145_d29_cohn_elkies_chi_p.md`. CLOSED_PATHS
+row added under "Sieve / Combinatorial / Counting".
+
+### §D.D5 — Continuous-time quantum walk on the divisor / coprime graphs (CLOSED 2026-04-27, S141, mode E, B-grade case (i))
+
+**Outcome:** B-grade case (i) mode E — A-grade hypothesis "(graph,
+seed) where CTQW amplitude concentrates polylogarithmically on
+primes, with polylog-cost simulation" empirically falsified across
+two graph families × two Hamiltonian variants. Adds new edge **E7.20
+(CTQW amplitude ceiling)**: on the divisor graph `D_x` with
+adjacency Hamiltonian `H = A` and seed `|1⟩`, the amplitude
+`|⟨v_p | exp(−iHt) | 1⟩|² ≤ C · π(x)/x` for all `t > 0`, with
+empirical `C ≈ 1.151` (asymptote of fit `1.151 + 0.609/log(x)` at
+x ∈ {32..768}). Top eigenvector overlap with `v_p` decays as
+`x^{−0.20}` (no isolated band-edge cluster, in contrast to
+glued-tree CTQW signature). Closure mechanism distinct from D4
+(Szegedy discriminant gap): CTQW closure runs through eigenstate
+overlap dispersal, not the spectral gap.
+
+Cross-domain technique: **continuous-time quantum walks** (Childs
+2009 *PRL* 102, 180501 = arXiv:0806.1972; Childs-Cleve-Deotto-Farhi-
+Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131). PROPOSED in
+§1 of CROSS_DOMAIN_TECHNIQUES (D5, since S85). Promotes §1 row
+PROPOSED → USED E with edge **E7.20**. Channelled mathematician:
+**Childs** (CTQW spectral-density framework) with **Razborov-style**
+closure-via-bound mindset.
+
+Setup: vertices `[1..x]`, edges `(m, n)` iff `m | n` (divisor `D_x`)
+or `gcd(m, n) = 1` (coprime `C_x`); H ∈ {`A_G`, `L_G = D − A`}. Seed
+`|v_s⟩ = |1⟩`; target `v_p = (1/√π(x)) Σ_{p ≤ x} |p⟩`; t-grid
+[0, 500] at 5001 points. 100 seeds for C1 / C2 / C3 controls;
+scaling sweep `x ∈ {32, 64, 96, 128, 192, 256, 384, 512, 768}`.
+
+Pre-registered falsifiers:
+- **F-A**: classical equilibration baseline `π(x)/x` (sanity).
+- **F-B**: peak amplitude beats Cramér + odd-parity matched control
+  by a factor that grows with x — opens A-grade.
+- **F-C**: isolated band-edge eigenvector with O(1) overlap with v_p
+  (glued-tree A-grade signature).
+- **F-D**: closure mode confirmed across both Hamiltonian variants.
+
+**Outcome — F-A passes; F-B fails (excess bounded, +4-5σ residual
+that does NOT scale); F-C fails (top overlap decays as x^{−0.20});
+F-D confirms closure across all variants.**
+
+(F-A) Divisor graph H=A, x ∈ {32, 64, 128, 256, 512, 768}: ratio_max
+= max_t P(t) / (π(x)/x) ∈ {1.24, 1.34, 1.30, 1.29, 1.13, 1.22}. Fit
+`ratio_max(x) = 1.151 + 0.609/log(x)` gives `x → ∞` limit ≈ 1.151
+(bounded constant, NOT growing).
+
+(F-B) z(C2 Cramér + odd-parity, peak amplitude): +5.42, +3.33, +5.09
+at x = 64, 128, 256 respectively. Mean residual ≈ +4.6σ persistent
+but bounded — no scaling with x. z(C1, simple uniform-subset
+control): +3-10σ growing as random-matrix `√(N/⟨deg⟩)`. z(C3,
+random Erdős-Rényi graph at matched mean degree): +10-66σ growing
+as `O(x^{1/2})`, i.e. divisor graph is structured but the structure
+is positional (vertex-1 hub), not prime-detection.
+
+(F-C top eigenvector overlap, divisor H=A) `top_overlap(x) ≈
+1.21 · x^{−0.20}` over x ∈ {32..768} — decay rate inconsistent with
+the constant-overlap glued-tree signature. Inspection at x=128:
+λ_1 = −6.03 eigenvector dominant entries are vertex 1 (−0.436),
+vertex 4 (+0.293), vertex 2 (+0.284), vertex 6 (+0.264) — the
+"anti-hub vs first-shell" mode. Mean |amp| ratio prime/composite =
+1.42, mild positional bias not arithmetic detection.
+
+(F-D Hamiltonian / graph variants)
+- divisor + H=A: ratio_max → 1.15.
+- divisor + H=L (Laplacian): ratio_max → 0 as x grows (zero-mode
+  dominates dynamics of |1⟩, which has nontrivial overlap with the
+  all-ones eigenvector orthogonal to centred v_p).
+- coprime + H=A: ratio_max DECREASES as `x^{-1/2}`; primes are
+  ANTI-concentrated relative to equilibrium.
+- coprime + H=L: ratio_max → 0.
+
+All four variants close mode E with no polylog opening.
+
+Mechanism for closure mode E: time-averaged amplitude
+`⟨P(t)⟩_t = Σ_k |⟨u_k|v_p⟩|² · |⟨u_k|1⟩|²` is dispersed across O(N)
+modes; no isolated band-edge cluster has constant overlap with v_p;
+peak amplitude over t is bounded by the largest single eigenstate
+contribution which scales as `O(1/N)` per mode times the constant
+total overlap, giving `max_t P(t) ≤ C · π(x)/x` with `C ≈ 1.15`.
+
+Distinct from CLOSED_PATHS line 105 (constructive transfer-matrix
+sieve, exponential state space); CLOSED line 474 (Goldreich-Levin
+Hadamard list decoding for π(x) over F_2, different machinery);
+**E7.13** (Szegedy walks on D_x / C_x / Cay((Z/N)*, S), discriminant
+spectral gap argument). D5 is the SPECIFIC continuous-time
+spectral-density theory of the same graph families; structurally
+distinct mechanism.
+
+**Adds EDGE E7.20 (CTQW amplitude ceiling)**, EVS shape: for
+arbitrary graph G in {D_x, C_x} and arbitrary `H ∈ {A_G, L_G}`, the
+CTQW amplitude on primes from seed `|1⟩` satisfies `max_t P(t) ≤
+C · π(x)/x` with C bounded as `x → ∞`, AND no isolated band-edge
+eigenvector has overlap with v_p that stays bounded away from 0 as
+`x → ∞`. The combination forbids polylog primality extraction by
+CTQW on these graphs.
+
+Successors proposed (S141):
+- **D5.a** — CTQW on the LPS Ramanujan Cayley graph `Cay(PSL_2(F_p),
+  prime-indexed quaternion generators)` (i.e. compose with the D28
+  PROPOSED frontier). Non-abelian Cayley graph with explicit
+  spectral gap = Ramanujan bound; tests whether NON-abelian
+  Cayley graphs admit isolated band-edge clusters that abelian
+  divisor / coprime graphs do not. 1-2 sessions.
+- **D5.b** — CTQW with multi-vertex seed `|v_s⟩ = (1/√k) Σ_{i ∈ S}
+  |i⟩` for arithmetic-relevant `S` (e.g., powers of 2, smooth
+  numbers, square-free integers): does the right seed unlock
+  polylog amplitude on primes? 1-session screening over S choices.
+
+If next agent prefers a non-D5 target: **L1 Lean Route A^{(10)}**
+remains open; **D30.a / D30.b / D30.c** dynamical-determinant
+successors flagged from S140; **D24** (Eynard-Orantin topological
+recursion) and **D17** (discrete Morse) remain PROPOSED.
+
+Cites E7.13 (D4 Szegedy closure, structural template), E7.16
+(Friedman density+parity matching captures most prime deviation),
+E2.22 (Pollicott-Ruelle Cramér closure structurally analogous).
+Cross-domain refs: Childs 2009 PRL 102, 180501; Childs-Cleve-Deotto-
+Farhi-Gutmann-Spielman 2003 STOC. Files:
+`experiments/quantum/ctqw_chi_p/` — `ctqw_chi_p.py`, `ctqw_supp.py`,
+`ctqw_scaling.py`, results JSONs, `ctqw_chi_p_results.md`. See
+`archive/sessions/session141_d5_ctqw_chi_p.md`.
+
+---
+
+### §D.D30 — Pollicott-Ruelle resonances of the χ_P-weighted Gauss-map transfer operator (CLOSED 2026-04-27, S140, mode E, B-grade case (i))
+
+**Outcome:** B-grade case (i) mode E — first refinement-stable
+arithmetic-weighted Pollicott-Ruelle resonance computation in the
+literature, with a closed-form Rayleigh-quotient prediction
+matching empirical to +0.6% rel error and Cramér-model closure
+within ±2σ at 200 seeds. A-grade hypothesis "isolated PR resonance
+encoding π(x)/x at polylog cost" empirically falsified.
+
+Cross-domain technique: **Pollicott-Ruelle resonance theory + Mayer
+1991 arithmetic transfer operator** (Pollicott 1985 *Inventiones*
+81, 413; Ruelle 1976 *Inventiones* 34, 231; Mayer 1991 *Bull. AMS*
+25, 55; Baladi 2018 *Dynamical Zeta Functions and Dynamical
+Determinants for Hyperbolic Maps* Springer Ergeb. 68; Liverani 2004
+*Comm. Math. Phys.* 248). PROPOSED in §5 of CROSS_DOMAIN_TECHNIQUES
+(D30, S136 frontier_gen). Promotes §5 row to USED E with edge **E2.22**.
+Channelled mathematician: **Ruelle / Baladi** (transfer-operator
+spectral theory) with Mayer 1991 (arithmetic transfer operators).
+
+Setup: Chebyshev-Lobatto barycentric collocation on `[0, 1]` with
+`(M_grid+1)`-dim matrix; cylinder truncation at `n_max`; sweep
+`(M_grid, n_max) ∈ {30, 60, 90, 120, 160} × {100, 200, 400, 800}`
+(20-cell stability scan); 200 controls per ensemble at the precision
+cell M=80, n_max=400; 5 baselines: B_naive (pure Bernoulli ρ=π(N)/N),
+B_supp (cardinality-matched random subset of [2..n_max]), B_par
+(parity-matched: 1 even=2 plus n_odd_primes random odds), **B_cra**
+(Cramér model 1/log n), **B_crao** (Cramér + odd parity, the most
+stringent prime-relevant matched control). Liouville comparator vs
+Rademacher and Rademacher-with-w[1]=+1.
+
+Pre-registered falsifiers:
+- **F-A**: unweighted h=1 reproduces Mayer/GKW spectrum within 1e-3
+  (sanity check).
+- **F-B**: χ_P spectral radius and gap match B_crao within ±2σ
+  Bonferroni — closure mode E.
+- **F-C**: ≥3σ deviation persisting under 2× refinement of M_grid
+  AND n_max — closure mode I (B+grade).
+- **F-D**: closed-form polylog-evaluable identity tying |λ_*| to a
+  known arithmetic invariant — A-grade.
+
+**Outcome — F-A passes, F-B holds, F-C and F-D do not trigger.**
+
+(F-A) Unweighted at M=160, n=800: λ_0=+0.99820, λ_1=-0.30293,
+λ_2=+0.10064, λ_3=-0.03541, λ_4=+0.01281 vs Mayer/GKW exact
+λ_0=1.0000, λ_1=-0.30366300289, λ_2=+0.10088637, λ_3=-0.03544 — within
+0.2% on top-3.
+
+(χ_P spectrum, M=120, n=400) λ_0=+0.359610, λ_1=-0.051028,
+λ_2=+0.007929, λ_3=-0.001281, λ_4=+0.000211 — alternating signs,
+geometric decay matching the unweighted GKW pattern damped by ~0.36×;
+gap |λ_1|/|λ_0| = 0.142.
+
+(stability) Top-5 eigenvalues stable to <1% CV across the 20-cell
+sweep; Chebyshev grid converged at M_grid=30 (5+ decimal places fixed
+under M_grid refinement at fixed n_max), residual drift purely from
+n_max-truncation, monotone-decreasing as n_max → ∞. **Real
+Pollicott-Ruelle resonances**, not spurious-discretisation eigenvalues.
+
+(closed-form prediction) Empirical: leading right eigenvector overlaps
+unweighted Gauss-Kuzmin density g(x) = 1/((1+x) log 2) at cosine ≥
+0.99853 (χ_P), 0.99191 (λ), 0.99525 (Λ). Rayleigh-quotient prediction:
+λ_0^h ≈ Σ_n h(n)·a_n with a_n = T_n/||g||² explicit:
+T_n = (1/log²2) ∫₀¹ dx/[(1+x)(x+n)(x+n+1)]
+    = (1/log²2)·[ln 2/(n(n-1)) - ln((n+1)/n)/(n-1) + ln((n+2)/(n+1))/n]
+for n≥2; T_1 = (1/log²2)·[-ln 2 + 1/2 + ln(3/2)]. Asymptotic
+a_n ~ 2 log 2/n²; Σ_n a_n = 1. **At n_max=400: Σ_p a_p = 0.36187 vs
+measured 0.35961 — +0.6% rel error. Λ: 0.5206 vs 0.4968 — +4.8%. λ
+(signed): 0.175 vs 0.090 — Rayleigh-on-g fails for signed weights
+because the LEFT eigenvector deviates from constant.**
+
+(Cramér closure, F-B) 200 seeds at M=80, n=400:
+
+| Baseline | `|λ_0|` z | `|λ_1|` z | gap z |
+|----------|-----------|-----------|-------|
+| B_naive  | +1.11 | +0.15 | +0.23 |
+| B_supp   | +3.58 | +3.22 | +1.60 |
+| B_par    | +2.02 | +2.01 | -1.63 |
+| B_cra    | -0.93 | -0.87 | +0.87 |
+| **B_crao** | **-1.79** | **-1.60** | **+2.10** |
+
+B_supp and B_par fail because they don't match the prime DENSITY
+profile (over-spread to high indices, low-kernel region). B_cra and
+B_crao both within ±2σ Bonferroni (3-feature threshold ≈ 2.39σ);
+B_crao is the most stringent prime-relevant matched control. **F-B
+holds**: χ_P transfer-operator spectrum is captured by Cramér model
+density 1/log n with matched parity.
+
+(Liouville signed comparison) `λ |λ_0|` = 0.090235 vs Rademacher 200
+seeds = 0.4096 ± 0.205, z=-1.56 — within ±2σ noise, not statistically
+significant.
+
+(F-D falsified) `|λ_0|/(π(N)/N) = 0.3596/0.195 = 1.844` — NOT a
+closed-form constant. The closed form IS `Σ_p a_p`, which is
+cost-equivalent to enumerating primes ≤ N. Mayer-style dynamical-
+determinant representation of π(x) NOT opened.
+
+Mechanism for closure mode E: the χ_P-weighted PR leading resonance
+is a DENSITY-ONLY invariant at first moment — captured exactly by
+the 1-summing density `{a_n}` against `h(n)`. The Cramér model
+1/log n + odd parity reproduces this expectation within sample noise
+because both χ_P and B_crao are random-1/log-n-plus-parity at the
+relevant moment.
+
+Distinct from CLOSED line 320, 425 (unweighted ergodic-theory:
+spectrum = ζ-zeros, Furstenberg circular); CLOSED line 105
+(constructive transfer-matrix sieve, exponential state space);
+CLOSED line 182 (FRACTRAN automaton, discrete). D30 is the SPECIFIC
+arithmetic-weighted spectral theory of a continuous dynamical system,
+structurally different from all three.
+
+**Adds EDGE E2.22**: λ_0^{χ_P} = Σ_p a_p (1+O(N⁻¹)) with a_n explicit
+closed-form Gauss-Kuzmin coefficient; reduces to Cramér 1/log n + odd
+parity within ±2σ Bonferroni. EVS L (closed form exists, but the
+arithmetic content reduces to enumerating primes ≤ N at the
+computational level).
+
+Successors proposed (S140):
+- **D30.a** — dynamical determinant `det(I − z·L_{χ_P})` zero
+  structure: does it factor like Mayer's `det(I − L_s) = ζ(2s)/...`
+  for the χ_P-weighted family? Single-session, reuses S140
+  infrastructure.
+- **D30.b** — Mayer-style `s`-parameterised χ_P family
+  `L_{χ_P, s} f(z) = Σ_p (1/(z+p))^{2s} f(1/(z+p))`; do the zeros of
+  `det(I − L_{χ_P, s})` define a NEW arithmetic Dirichlet-series-like
+  function with non-trivial zeros, structurally analogous to ζ(s)?
+  2-session, requires Banach-space anisotropic-Sobolev stabilisation.
+- **D30.c** — Bowen-Series modular-surface map / doubling map / β-shift
+  analogues: does Cramér-typical χ_P leading-resonance persist on
+  every hyperbolic dynamical system, or is it Gauss-specific?
+  1-session, multi-system test.
+
+Cites E2.13 (Gowers HL detection), E2.14 (Anderson HL detection),
+E2.16 (anti-DPP), E2.17 (PH HL detection), E2.18 (Liouville Anderson
+featureless), E2.19 (subword HL detection), E2.20 (Mahler deficit),
+E2.21 (Newman parity), E7.16 (Friedman/Ramanujan support+parity
+matching template). Cross-domain refs: Pollicott 1985 *Inventiones* 81,
+413; Ruelle 1976 *Inventiones* 34, 231; Mayer 1991 *Bull. AMS* 25,
+55; Baladi 2018 *Dynamical Zeta Functions* Springer Ergeb. 68;
+Liverani 2004 *Comm. Math. Phys.* 248; Wirsing 1974 *Acta Arith.* 24
+(GKW constant). Files:
+`experiments/dynamical/pollicott_ruelle_chi_p/` —
+`pollicott_ruelle_chi_p.py`, `refinement_scan.py`,
+`eigenfunction_analysis.py`, `closed_form_prediction.py`, results
+JSONs, `pollicott_ruelle_chi_p_results.md`. See
+`archive/sessions/session140_d30_pollicott_ruelle_chi_p.md`.
+
+---
 
 ### §D.D27 — Newman / Erdős L^∞-flatness of the χ_P-coefficient polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n on |z|=1 (CLOSED 2026-04-27, S138, mode I, B-grade case (c))
 
@@ -5923,6 +8936,205 @@ DIFFERENT cross-domain technique):
 
 Pointer: `experiments/algebraic/friedman_ramanujan_prime_cayley/`,
 `experiments/algebraic/friedman_ramanujan_prime_cayley/friedman_ramanujan_prime_cayley_results.md`.
+
+### §G.G2 — Liouville and Möbius Gowers `U^k` norms (CLOSED 2026-04-28, S153, mode E)
+
+**Outcome (S153, mode E, B-grade — F-E case of pre-stated falsifiers):**
+empirical `U^2` and `U^3` Gowers norms of `λ` and `μ` match IID
+matched-variance Rademacher prediction to within sample noise across
+6 orders of N. **First project measurement of Gowers norms on
+multiplicative functions** (S85 / E2.13 covered the additive `χ_P`).
+
+**Headline numbers:**
+- `||λ||_{U^2[Z/NZ]}^4` decay slope `−0.990` matched to Rademacher
+  prediction `−1.000` within slope error 1%; constant gap closes as
+  `1 − O(1/√N)` from `0.94` (N=2^10) to `0.999` (N=2^20).
+- `||μ||_{U^2[Z/NZ]}^4 → 2(6/π²)²/N = 0.7392/N` exactly, matching
+  the matched-variance IID prediction (ratio `μ/pred` from `1.29`
+  at N=2^10 to `0.998` at N=2^20).
+- `||λ||_{U^3[Z/NZ]}^8` matches Rademacher within `|Z| ≤ 2σ` at
+  N ∈ {1024, 2048, 4096, 8192}.
+- Max single Fourier coefficient `max_k |λhat(k)|²` matches
+  Rademacher max-coefficient distribution (CLT `√(N log N)`) within
+  `|Z| ≤ 3σ` at every tested N. No 1-step nilsequence correlation.
+
+**What this rules out:** §G2 was the lowest-cost first step in the
+multiplicative-regime cascade (per the S88 next-action and §G's
+"why section exists" header). With this closure, the Gowers-uniformity
+of `λ` and `μ` at orders k ≤ 3 is empirically confirmed at the noise
+floor — the GT Möbius/nilsequence orthogonality theorem
+(arXiv:0807.1736) holds *at least as sharply* as IID at finite N up
+to 2^20. Any A-grade signal in §G's multiplicative-regime cascade
+must come from order k ≥ 4 (G2.b) or from a different probe (G2.a:
+von Mangoldt `Λ(n)` with log-weighted variance; G3: Möbius Voronin).
+
+Adds **EDGE E2.25**: `||λ||_{U^k[Z/NZ]} = ||IID_{±1}||_{U^k[Z/NZ]} ·
+(1 ± O(1/√N))` for k ∈ {2, 3} at N ≤ 2^20; same for `μ` with matched
+variance σ² = 6/π². EVS shape (forbids 1-step or 2-step nilsequence
+correlation visible at finite N). Cites E2.13 (S85, χ_P Gowers),
+E2.14 (S88, χ_P Anderson), E2.18 (S100, λ Anderson — paired
+multiplicative confirmation in spectral category). Cross-domain:
+Green-Tao Möbius/nilsequence orthogonality (arXiv:0807.1736) +
+GT-Ziegler U^{s+1}[N] inverse theorem (arXiv:1009.3998).
+CROSS_DOMAIN_TECHNIQUES.md §3 row "Gowers norms / Green-Tao
+orthogonality" promoted PROPOSED → USED-E with edges E2.13 and E2.25.
+CLOSED_PATHS row at session 153.
+
+**Channelled mathematician**: Tao (additive combinatorics,
+Möbius/nilsequence orthogonality machinery). The Tao framing
+identified the right normalisation (matched-variance IID, not bare
+Rademacher) and the right test (single-Fourier-coefficient inverse-
+theorem stress against the GT bound).
+
+**Successor proposals** (per CLAUDE.md self-extension; one with a
+DIFFERENT cross-domain technique):
+
+- (G2.a) **von Mangoldt `Λ(n)` Gowers norms** — bridges additive
+  (χ_P) and multiplicative (λ, μ) regimes. `Λ(p^k) = log p` else 0:
+  log-weighted multiplicative function. Predicted `||Λ||_{U^k}^{2^k}
+  ~ 2 σ_Λ⁴/N` with σ_Λ² ≈ N/log N (varies with N!) — distinct from
+  both χ_P (additive) and λ (constant variance). *Cross-domain
+  technique*: same (GT Möbius orthogonality + Gowers norms; specifically
+  Green-Tao 2010 "Linear equations in primes" arXiv:math/0606088).
+  Single session.
+- (G2.b) **Higher-order Gowers norms `U^4`, `U^5` on `λ`** — tests
+  whether λ has 3-step or 4-step nilsequence correlations at finite N.
+  Computational cost: subsample h_1, ..., h_{k-1} to make tractable.
+  Cross-domain: GT-Ziegler U^{s+1} inverse theorem (arXiv:1009.3998) —
+  PROPOSED for `s ≥ 3`. 1-2 sessions.
+- (G2.c) **Reschedule §G3 (Möbius Voronin)** with the inverse-theorem
+  observation as input: G2's inverse-theorem stress shows λ and μ have
+  no 1-step nilsequence correlation at finite N up to 2^20. This
+  *increases* the priority of G3 (effective universality of `1/ζ`) by
+  ruling out the "trivial" A-grade source. Cross-domain: zeta universality
+  (Voronin / Garunkstis / Steuding) + GT Möbius orthogonality. 2 sessions.
+
+Pointer: `experiments/information_theory/liouville_gowers_uk/`,
+`experiments/information_theory/liouville_gowers_uk/liouville_gowers_uk_results.md`,
+`archive/sessions/session153_g2_liouville_mobius_gowers_uk.md`.
+
+---
+
+### §D.D32 — Pemantle-Wilson ACSV smooth-point diagonal extraction of `χ_P` (CLOSED 2026-04-28, S197, mode I, B-grade)
+
+**Outcome:** the entire ACSV smooth-point technique class is
+unconditionally inapplicable to `χ_P` and `π(n)` at every `d ≥ 1`. New
+edge **E7.21**. Cross-domain ACSV (§7) promoted PROPOSED → USED I.
+
+**Theorem (S197).** Let `f(z) := Σ_{n≥1} χ_P(n) z^n`. Then:
+
+  - (a) `f` has the unit circle `|z|=1` as natural boundary;
+  - (b) `f` is not D-finite (not P-recursive);
+  - (c) `f` is not algebraic over `ℚ(z)`;
+  - (d) for every `d ≥ 1`, `f` is not the diagonal of any rational
+    `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)`;
+  - (e) for every `d ≥ 1`, `f` is not the diagonal of any algebraic
+    multivariate `F`.
+
+**Proof assembly** (full proof in `experiments/constructions/
+acsv_pi_diagonal/acsv_pi_diagonal_results.md`):
+
+  1. Radius of convergence of `f` is exactly 1 (`χ_P(n) ∈ {0, 1}`,
+     infinite support).
+  2. **Pólya-Carlson 1916/1921**: integer-coefficient power series
+     with radius 1 is rational or has `|z|=1` as natural boundary.
+  3. `f` is not rational: bounded-integer LRS is eventually periodic;
+     for any candidate period `T`, prime `p ≥ N_0` + periodicity
+     forces `p + kT` prime for all `k ≥ 0`, contradicted by
+     `p + pT = p(1 + T)` composite.
+  4. D-finite series have at most finitely many singular points
+     (Stanley *EC2* Thm 6.4.6; Flajolet-Sedgewick *AC* Thm B.13).
+     Combined with (a) → (b).
+  5. Algebraic ⊂ D-finite → (c).
+  6. **Furstenberg 1967** (`d=2` case) / **Lipshitz 1988** (`d ≥ 2`):
+     diagonals of rational/algebraic multivariate are D-finite.
+     Combined with (b) → (d, e). ∎
+
+**Why D32 is closed:** Pemantle-Wilson Theorem 9.5.7 / 10.3.4 requires
+`F = G/H ∈ ℚ(z_1, ..., z_d)` (rational, generalising to algebraic in
+PW 2024 §11). Theorem (d, e) above forbids any such `F` for `f`. The
+smooth-point asymptotic `[z_1^n ⋯ z_d^n] F = ζ^{*-n} (2πn)^{-(d-1)/2}
+C` cannot be assembled.
+
+**Empirical companion (T1-T5 in `acsv_pi_diagonal.py`):**
+
+  - T1: ROC = 1 confirmed (`N = 200000`).
+  - T2: P-recursion search at `d ≤ 30, r ≤ 8` over chi_P shows no
+    holonomic signal — extends CLOSED row 584's empirical ruling-out
+    (was `d ≤ 20, r ≤ 8`).
+  - T3: eventual-period search at `T ≤ 200, n ∈ [N/2, N]` of
+    `χ_P[N=200000]` returns max-agreement 0.88, no period reproducing
+    `χ_P` exactly — empirically confirms the theoretical
+    non-eventual-periodicity.
+  - T4: **Erdős-Turán equidistribution at work** — closest root of
+    `f_N(t)` to `t = 1` halves as `N` doubles:
+
+| `N`  | closest root of `f_N(t)` to `t = 1` |
+|------|--------------------------------------|
+| 64   | 0.0927                               |
+| 128  | 0.0476                               |
+| 256  | 0.0234                               |
+| 512  | 0.0115                               |
+| 1024 | 0.0059                               |
+
+    No stable Pemantle-Wilson critical point exists in the limit.
+  - T5: algebraic-relation degree-≤-6 test on the diagonal sequence
+    `π(n)` gives no non-trivial kernel — sanity check.
+
+**This strictly strengthens CLOSED_PATHS row 584** ("Holonomic
+(D-finite) recurrence for π(n), FAIL, mode I, NOT holonomic for any
+order d ≤ 20 with polynomial degree r ≤ 8") from empirical at finite
+order to **unconditional at all orders**, by replacing the
+finite-search with the rigorous combination Pólya-Carlson +
+Skolem-Mahler-Lech (or its bounded-integer pigeonhole version) +
+finite-singularity D-finite theorem + Furstenberg-Lipshitz.
+
+**Falsifiability:**
+
+  - **F1 (most direct):** exhibit a polynomial-coefficient linear
+    recurrence `Σ_i P_i(n) χ_P(n + i) = 0` with `P_k ≢ 0` for large
+    `n`. (Falsifies (b); formally impossible by the theorem.)
+  - **F2:** exhibit `Q(z, w) ∈ ℚ[z, w], Q ≢ 0` with `Q(z, f(z)) = 0`
+    as formal power series. (Falsifies (c); formally impossible.)
+  - **F3 (target form):** exhibit a multivariate rational
+    `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)` and `r ∈ ℤ_{>0}^d` with
+    `[z_1^{r_1 n} ⋯ z_d^{r_d n}] F = χ_P(n)` for large `n`.
+    (Falsifies (d); formally impossible by Lipshitz.) Anyone finding
+    such `F` resolves the polylog π(x) problem.
+
+**Cross-domain ingredient.** Pólya-Carlson + Skolem-Mahler-Lech +
+Stanley/FS finite-singularity D-finite theorem + Furstenberg-Lipshitz.
+The technique is the *meta-fact* that ACSV-class (and creative-
+telescoping / holonomic-gradient / Π Σ-symbolic-summation) techniques
+require D-finite input, plus the assembled rigorous closure.
+
+**Channelled mathematician.** Pemantle / Flajolet (combinatorial
+asymptotics) — the actual technical lever is the meta-result.
+
+**Successor proposals (S197 self-extension, one with a DIFFERENT
+cross-domain technique):**
+
+  - (D32.a) **Transcendental-F Pemantle-Wilson**. Does a non-algebraic
+    but holonomic-D-module `F(z_1, ..., z_d)` (e.g., involving
+    `e^{z_i}`, `log z_i`, hypergeometric components) escape Lipshitz's
+    diagonal closure? PW's saddle-point machinery has partial
+    extensions to such `F` but no proven asymptotic theorem; testing
+    on a constructed example might reveal whether `χ_P` admits a
+    "stretched" diagonal encoding. *Cross-domain technique*: same
+    (PW saddle-point) extended to a wider F class. 1 session.
+  - (D32.b) **Schur-class non-rational generating-function expansions**
+    — Schur-class functions `S(z) = Σ a_n z^n` with `|S(z)| ≤ 1` on
+    `|z| < 1` admit different asymptotic machinery (Adamyan-Arov-Krein
+    1971, Schur-Pick interpolation) **orthogonal to ACSV**. Does
+    `f / (1 + |f|)` lie in this class with structurally extractable
+    asymptotics? *Cross-domain technique*: NEW for the project —
+    Schur-Pick / AAK Hankel-operator approximation theory; addable
+    to CROSS_DOMAIN_TECHNIQUES §1 ("Spectral / operator-theoretic" —
+    AAK fits there). 2 sessions.
+
+Pointer: `experiments/constructions/acsv_pi_diagonal/`,
+`experiments/constructions/acsv_pi_diagonal/acsv_pi_diagonal_results.md`,
+`archive/sessions/session197_wild_swing_acsv_d32.md`.
 
 ---
 

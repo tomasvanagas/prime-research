@@ -1,0 +1,511 @@
+[autonomy] Default mode 'cross_domain' overridden by 'commit'
+=== Run #163 — Mode: commit — Tue Apr 28 11:35:56 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:s82_invariant_subspace
+    sessions_used:0
+    session_history:
+  [ToolSearch] 
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session82_c2_spike_eigenvectors.md
+    1	# Session 82 — C2 sub-arc: spike-eigenvector identification
+    2	
+    3	**Date:** 2026-04-26
+    4	**Mode:** ARC continuation (Arc 4 — Composition over EDGES.md)
+    5	**Target:** open sub-arc from Arc 4 next-action: "characterizing *which*
+    6	eigenvectors the spikes correspond to (small-prime indicators? Selberg
+    7	eigenfunctions? cross-block correlation modes?)" — left over from S74's
+    8	C2 (free_cumulants_chi_p).
+    9	
+    10	## Self-grade: B (substantive structural refinement; A-adjacent)
+    11	
+    12	The session produced **a precise structural identification of the S74
+    13	spike band** as the residue-class character subspace at small odd primes
+    14	coprime to W. This is a substantive refinement of S74's "polynomial-in-N
+    15	spike count" finding into a fully-accounted decomposition with per-prime
+    16	counts matched to `phi(p)` exactly.
+    17	
+    18	**Why B and not A:** the identification is empirical (verified at
+    19	(W=2, d ∈ {14, 16, 18, 20}) plus W=6 cross-check), not a theorem. A
+    20	theorem-level statement that the residue-class projection commutes with
+    21	`M^T M` on the spike subspace — which would lift this to A-grade — is
+    22	plausible but not produced this session.
+    23	
+    24	**Why not C:** the per-prime identification is a structural fact that
+    25	did NOT exist in the project before; CLOSED_PATHS.md previously had
+    26	S74's spike-count regularity but not its residue-class decomposition.
+    27	The C-circular collapse interpretation (spike subspace = small-mod
+    28	residue-class biases) is also new to the catalogue.
+    29	
+    30	## What this session produced (CLAUDE.md §"self-evaluation")
+    ... (107 more lines)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvectors_chi_p/spike_eigenvectors_chi_p_results.md
+    1	# S82 / C2 sub-arc — Spike eigenvectors of chi_P MPS unfolding are
+    2	# Dirichlet-character vectors at small primes
+    3	
+    4	**Construction:** `spike_eigenvectors_chi_p.py` (this directory).
+    5	**Edges composed:** E2.1 (MPS bond-dim identity) × E1.5 (`pi mod m` saturation) ×
+    6	free probability (S74's spike-band finding).
+    7	**Date:** 2026-04-26.
+    8	**Verdict:** **BUILT.** The polynomial-in-N "spike band" found in S74
+    9	decomposes into per-prime sectors of dimension `phi(p)` indexed by odd
+    10	primes `p` not dividing the wheel `W`. The spike eigenvectors are residue-
+    11	class character vectors. The spike count grows as the cumulative
+    12	character-dimension of small primes.
+    13	**Failure mode (algorithmic):** **C-circular** — the spike subspace
+    14	encodes exactly the small-modulus residue-class biases `pi(N; q, a)`,
+    15	so spectral compression of the chi_P MPS reduces to small-q prime
+    16	counting (E1.5 / T6 saturation regime).
+    17	**Grade:** **B** (substantive structural refinement of E2.1 + S74; A-
+    18	adjacent, but no closed-form theorem yet — currently empirical at four
+    19	(W, d) pairs).
+    20	
+    21	## Pre-stated falsifiers (set BEFORE running)
+    22	
+    23	- **PR1**: For `W=2, d=20, j=10`, EACH of the top `k_*=26` spike
+    24	  eigenvectors (excluding the leading rank-1 mean component) achieves
+    25	  `max_q (residue-energy fraction) > 0.5` for some `q ∈ {2..200}`.
+    26	- **PR2**: For the matched-active-Bernoulli baseline at the same shape,
+    27	  NO singular vector beyond `k=1` achieves `max_q (residue-energy
+    28	  fraction) > 0.2` for any `q`.
+    29	- **PR3**: The total dimension of residue-class subspaces visited by
+    30	  spike eigenvectors satisfies `sum_{q in visited} (q-1) ~ k_*(N)`
+    ... (237 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvectors_chi_p/
+    d20_run.log
+    spike_d14_results.json
+    spike_d18_results.json
+    spike_d20_results.json
+    spike_eigenvectors_chi_p.py
+    spike_eigenvectors_chi_p_results.md
+    spike_w6_d6_chi_only.json
+    spike_w6_d6_results.json
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvectors_chi_p/spike_eigenvectors_chi_p.py
+    1	#!/usr/bin/env python3
+    2	"""S82 / C2 sub-arc — Characterization of spike singular vectors of chi_P MPS unfolding.
+    3	
+    4	S74 (free_cumulants_chi_p) found that the chi_P MPS unfolding M^(j) of
+    5	shape (W^j, W^{d-j}) has a three-component spectrum: a finite structural
+    6	peak, a band of O(N^{0.42}) "spike" eigenvalues absent from the matched
+    7	random baseline, and an MP bulk at rate c = phi(W)/W.
+    8	
+    9	The spike COUNT is empirically polynomial; the next question is what the
+    10	spike EIGENVECTORS encode arithmetically. Three candidate origins:
+    11	  (a) Residue-class biases pi(N; q, a) for small q;
+    12	  (b) Selberg / explicit-formula low-lying zeta-zero contributions;
+    13	  (c) Cross-block correlation modes (i.e., pure linear-algebraic noise).
+    14	
+    15	This script tests (a) directly. For each top singular pair (u_k, v_k)
+    16	of M, reconstruct f_k = sigma_k * outer(u_k, v_k) flattened to length N,
+    17	then for each modulus q in q_list compute the L^2 fraction of f_k that
+    18	sits in the subspace of "functions of n mod q". A small Q* such that the
+    19	spikes are entirely absorbed by V_{<= Q*} would identify the spike
+    20	subspace as the residue-class character subspace; a "diffuse" pattern
+    21	(no q captures > 50% of f_k for k > 1) would falsify (a) and push us
+    22	toward (b) or (c).
+    23	
+    24	Pre-stated falsifiers:
+    25	  PR1: For W=2 d=20 j=10, EACH of the top k_*=26 spike eigenvectors
+    26	       (excluding the leading rank-1 mean component) achieves
+    27	       max_q (residue-energy fraction) > 0.5 for some q in {2..200}.
+    28	  PR2: For the matched-active-Bernoulli baseline at the same shape, NO
+    29	       singular vector beyond k=1 achieves max_q (residue-energy
+    30	       fraction) > 0.2 for any q in {2..200}.
+    ... (334 more lines)
+Strong setup — S82 has a precise hypothesis and saved JSON dumps. The first commit step is to (a) write up the proof framework and (b) test the |L(1,χ)|² eigenvalue prediction against the existing data. Let me check what's in the JSON dumps.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvectors_chi_p && python3 -c "
+import json, math
+for fn in ['spike_d14_results.json', 'spike_d18_results.json', 'spike_d20_results.json']:
+    with open(fn) as f: data = json.load(f)
+    rec = data[0]
+    print(f'=== {fn}: W={rec[\"W\"]} d={rec[\"d\"]} j={rec[\"j\"]} N={rec[\"N\"]} ===')
+    print(f'k_star={rec[\"k_star_assumed\"]}')
+    print(f'top-30 sv: {[round(s, 3) for s in rec[\"S_chi_top60\"][:30]]}')
+    print(f'shape: {rec[\"shape\"]}')
+"
+
+    === spike_d14_results.json: W=2 d=14 j=7 N=16384 ===
+    k_star=5
+    top-30 sv: [21.473, 11.571, 11.209, 7.682, 7.498, 7.074, 6.702, 6.543, 6.423, 6.205, 6.135, 6.044, 5.958, 5.817, 5.727, 5.67, 5.578, 5.523, 5.334, 5.282, 5.23, 4.976, 4.891, 4.784, 4.635, 4.577, 4.545, 4.524, 4.443, 4.231]
+    shape: [128, 128]
+    === spike_d18_results.json: W=2 d=18 j=9 N=262144 ===
+    k_star=15
+    top-30 sv: [64.244, 32.979, 32.616, 18.442, 17.885, 17.838, 17.298, 14.465, 14.211, 13.889, 13.811, 13.645, 13.28, 13.067, 12.945, 12.757, 12.737, 12.612, 12.483, 12.427, 12.2, 12.113, 12.085, 11.966, 11.85, 11.828, 11.701, 11.646, 11.538, 11.5]
+    shape: [512, 512]
+    === spike_d20_results.json: W=2 d=20 j=10 N=1048576 ===
+    k_star=26
+    top-30 sv: [114.16, 57.946, 57.548, 30.789, 30.422, 30.198, 30.112, 22.776, 22.356, 22.25, 21.996, 21.793, 21.702, 19.54, 19.427, 19.159, 18.907, 18.724, 18.652, 18.538, 18.284, 18.062, 17.766, 17.6, 17.5, 17.451, 17.325, 17.267, 17.232, 17.118]
+    shape: [1024, 1024]
+Now I have enough understanding to plan. Let me update the todo, write up the proof framework, and run the numerical check on |L(1,χ)|² scaling.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/ 2>/dev/null && ls /apps/aplikacijos/prime-research/experiments/constructions/ 2>/dev/null | head -30
+    E2_1_mps_bond_dim
+    README.md
+    README.md
+    brandt_mktp
+    brandt_per_bit
+    brandt_per_bit_arith_vm
+    brandt_per_bit_arith_vm_ablation
+    d2_sign_threshold_w_m_tradeoff
+    free_cumulants_chi_p
+    g_q_bisection_invariant
+    n_over_2_universality_class
+    pillar_tradeoff_diagram
+    primes_dpp_ppp_fit
+    spike_eigenvectors_chi_p
+    tensor_compression_family_closure
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared && ls /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/
+    (Bash completed with no output)
+Let me write the proof attempt + empirical test.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared && python3 spike_eigenvalue_l_squared.py 2>&1 | head -120
+    JSON files to test: ['spike_d14_results.json', 'spike_d18_results.json', 'spike_d20_results.json']
+    === Predicted |L(1, chi)|^2 totals per conductor-2p block ===
+    
+    p=3: phi(p)=2 non-principal chars, sum |L(1,chi)|^2 = 0.365541
+        chi_1_mod_3: L(1,chi) = 0.60460+0.00000j,  |L|^2 = 0.36554
+    
+    p=5: phi(p)=4 non-principal chars, sum |L(1,chi)|^2 = 1.764389
+        chi_1_mod_5: L(1,chi) = 0.86481+0.20415j,  |L|^2 = 0.78957
+        chi_2_mod_5: L(1,chi) = 0.43041+0.00000j,  |L|^2 = 0.18525
+        chi_3_mod_5: L(1,chi) = 0.86481-0.20415j,  |L|^2 = 0.78957
+    
+    p=7: phi(p)=6 non-principal chars, sum |L(1,chi)|^2 = 3.621827
+        chi_1_mod_7: L(1,chi) = 0.80421+0.39867j,  |L|^2 = 0.80568
+        chi_2_mod_7: L(1,chi) = 0.53775-0.10530j,  |L|^2 = 0.30026
+        chi_3_mod_7: L(1,chi) = 1.18741+0.00000j,  |L|^2 = 1.40994
+        chi_4_mod_7: L(1,chi) = 0.53775+0.10530j,  |L|^2 = 0.30026
+        chi_5_mod_7: L(1,chi) = 0.80421-0.39867j,  |L|^2 = 0.80568
+    
+    p=11: phi(p)=10 non-principal chars, sum |L(1,chi)|^2 = 8.013587
+        chi_1_mod_11: L(1,chi) = 1.41575+0.17403j,  |L|^2 = 2.03463
+        chi_2_mod_11: L(1,chi) = 0.72507+0.19987j,  |L|^2 = 0.56567
+        chi_3_mod_11: L(1,chi) = 0.54229+0.53050j,  |L|^2 = 0.57551
+        chi_4_mod_11: L(1,chi) = 0.58053+0.21294j,  |L|^2 = 0.38236
+        chi_5_mod_11: L(1,chi) = 0.94723-0.00000j,  |L|^2 = 0.89724
+        chi_6_mod_11: L(1,chi) = 0.58053-0.21294j,  |L|^2 = 0.38236
+        chi_7_mod_11: L(1,chi) = 0.54229-0.53050j,  |L|^2 = 0.57551
+        chi_8_mod_11: L(1,chi) = 0.72507-0.19987j,  |L|^2 = 0.56567
+        chi_9_mod_11: L(1,chi) = 1.41575-0.17403j,  |L|^2 = 2.03463
+    
+    p=13: phi(p)=12 non-principal chars, sum |L(1,chi)|^2 = 10.412268
+    ... (73 more lines)
+Significant finding — the S82 prediction `eigenvalue ~ |L(1,χ)|²` is **refuted** by the empirical data. The CV of σ²/|L|² across p={3,5,7,11} is 1.4 (not <0.2 as the hypothesis predicts). But there's a clean alternative scaling visible: `sum sigma^2 ~ N/(p · log²N)`. Let me extend the test to verify this.
+  [Edit] /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared.py
+    The file /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared.py has been updated successfully.
+  [Bash] python3 spike_eigenvalue_l_squared.py 2>&1 | tail -50
+    === Block-ratio test (does sigma^2_q / sigma^2_{q'} match L^2 ratios?) ===
+    
+       d          N    p   n_spikes    sum_sigma^2    sum |L|^2  ratio = sigma^2/|L|^2
+      14      16384    3          2         259.53      0.36554                 709.99
+      14      16384    5          0           0.00      1.76439                   0.00
+      14      16384    7          0           0.00      3.62183                   0.00
+      14      16384   11          4         106.95      8.01359                  13.35
+      18     262144    3          2        2151.43      0.36554                5885.60
+      18     262144    5          4        1277.38      1.76439                 723.98
+      18     262144    7          5         981.04      3.62183                 270.87
+      18     262144   11          8        1049.70      8.01359                 130.99
+      20    1048576    3          2        6669.54      0.36554               18245.66
+      20    1048576    5          4        3692.06      1.76439                2092.54
+      20    1048576    7          6        2943.31      3.62183                 812.66
+      20    1048576   11         15        4320.69      8.01359                 539.17
+    
+    
+    === Constancy-of-ratio diagnostic ===
+    
+    If sigma^2 = K(N) * |L|^2 holds, ratio (sigma^2 / |L|^2) is constant across p at fixed d.
+    Compute the std/mean of the ratio across p={3,5,7,11} for each d:
+    
+       d          N  ratios (p=3,5,7,11)                       mean    std    cv
+      14      16384  [  710.0]    710.0     0.0 0.000
+      18     262144  [ 5885.6   724.0   270.9]   2293.5  2546.7 1.110
+      20    1048576  [18245.7  2092.5   812.7   539.2]   5422.5  7426.6 1.370
+    
+    Low CV (<0.2) => |L(1,chi)|^2 scaling holds as predicted by S82.
+    High CV (>0.5) => the eigenvalue is NOT simply proportional to |L|^2; the
+                      S82 prediction is wrong or needs a per-q correction.
+    ... (20 more lines)
+Excellent — the alternative scaling fits to 8% CV across (d, p). The session has a substantive negative result on S82's conjecture and a clean positive discovery. Let me write up the results.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/spike_eigenvalue_l_squared/spike_eigenvalue_l_squared_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me add a per-character resolution test to confirm the within-block scaling.
+  [Bash] python3 -c "
+import json, math
+from spike_eigenvalue_l_squared import L_squared_contributions
+
+# Within-block: do sigma^2 values match individual |L|^2 values?
+with open('../spike_eigenvectors_chi_p/spike_d20_results.json') as f:
+    rec = json.load(f)[0]
+spikes = rec['chi_p_spikes']
+
+# Group spikes by min_q_conductor.
+print('Within-block per-spike sigma^2 vs per-character |L|^2:')
+print()
+
+for p, q_target in [(3, 6), (5, 10), (7, 14), (11, 22)]:
+    block_sigmas2 = sorted([s['sigma']**2 for s in spikes if s.get('min_q_conductor') == q_target], reverse=True)
+    if not block_sigmas2:
+        continue
+    _, contribs = L_squared_contributions(p)
+    L2s = sorted([c[1] for c in contribs], reverse=True)
+    print(f'q={q_target}, p={p}:')
+    print(f'  spike sigma^2 (desc): {[round(x,1) for x in block_sigmas2]}')
+    print(f'  spread: max/min = {block_sigmas2[0]/block_sigmas2[-1]:.2f}')
+    print(f'  |L(1,chi)|^2 (desc): {[round(x,4) for x in L2s]}')
+    if len(L2s) > 1:
+        print(f'  spread: max/min = {L2s[0]/L2s[-1]:.2f}')
+    print()
+"
+
+    Within-block per-spike sigma^2 vs per-character |L|^2:
+    
+    q=6, p=3:
+      spike sigma^2 (desc): [3357.8, 3311.8]
+      spread: max/min = 1.01
+      |L(1,chi)|^2 (desc): [0.3655]
+    
+    q=10, p=5:
+      spike sigma^2 (desc): [947.9, 925.5, 911.9, 906.7]
+      spread: max/min = 1.05
+      |L(1,chi)|^2 (desc): [0.7896, 0.7896, 0.1853]
+      spread: max/min = 4.26
+    
+    q=14, p=7:
+      spike sigma^2 (desc): [518.7, 499.8, 495.1, 483.8, 474.9, 471.0]
+      spread: max/min = 1.10
+      |L(1,chi)|^2 (desc): [1.4099, 0.8057, 0.8057, 0.3003, 0.3003]
+      spread: max/min = 4.70
+    
+    q=22, p=11:
+      spike sigma^2 (desc): [283.2]
+      spread: max/min = 1.00
+      |L(1,chi)|^2 (desc): [2.0346, 2.0346, 0.8972, 0.5755, 0.5755, 0.5657, 0.5657, 0.3824, 0.3824]
+      spread: max/min = 5.32
+The within-block per-character test is decisive — σ² values cluster within 10% while |L(1,χ)|² values vary by 4-5×. The hypothesis fails even after rank-correlating. Now let me update status files and write the synthesis.
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    1	# Closed Paths: Master Lookup (545+ Approaches)
+    2	
+    3	**SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    4	
+    5	Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57 + S60-fresh-crit, 198+ sub-agents)
+    6	
+    7	## Failure Modes
+    8	- **C** = Circularity (needs primes to compute primes)
+    9	- **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    10	- **I** = Information Loss (smooth approximation loses critical bits)
+    11	
+    12	---
+    13	
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    19	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    20	| Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    21	| 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    22	| Higher-order n-correlations of zeta zeros at orders 4, 5, 6 (ATTACK_VECTORS §C2) | FAIL | I | First project measurement extending S25/S45/S57 from order 3 to orders 4-6 at N=8000 (γ ≤ 8148). Three independent probes with K=20 GUE Monte Carlo batches (N=2000, central 60% kept ~ 1200 evs each) AND K=20 gap-shuffled controls. (A) Equally-spaced R_n(0, s, ..., (n-1)s) for n=4,5,6 at s ∈ {0.5..5}: max \|z_vs_theory\| = 2.36σ (n=4, s=2.0); n=5 raw 6.0σ at s=2 reproduced by GUE batch (Poisson-shot-noise on `n_ref·tol⁴ ≈ 12`, NOT arithmetic). (B) k-th nearest-neighbor spacings P_k(s) for k=0..5 (probes up to 7-point correlation): rms vs GUE pool ∈ [0.09, 0.22]; per-bin \|z_vs_GUE_pool\| ≤ 1.5× sample noise. (C) Cumulants κ_n(L) for n=2..6 at L=1..64: at L≥8 all \|z\| < 2.1σ for n=3..6; κ_2 retains ~9σ rigidity z-score (E7.1 confirmed); κ_4, κ_6 huge \|z\| at L=1, 2 due to Riemann-vM-vs-semicircle finite-N unfolding mismatch (eliminated at L≥8). The Conrey-Snaith conjectural arithmetic correction at order n scales as 1/L² ≈ 0.024 with L=log(γ/2π)≈6.5; empirical noise floor 1/√(n_tuples) ≥ 0.3 at order n=5. Signal is 1.5+ orders below floor. Refines E7.1 from "GUE up to order 3" to "GUE up to order 6 across (P_k, R_n, κ_n)." Detection demands Odlyzko γ ≥ 10⁶ (cf. §C1 / S71 closure shares 1/L² scaling barrier). Promotes CROSS_DOMAIN_TECHNIQUES §1 row "Sine-kernel n-correlation determinant" implicit USED (n=2,3) → USED (n≤6) with mode E. See `experiments/analytic/zeta_structure/n_correlations_4_5_6/`, `archive/sessions/session122_c2_higher_order_zero_correlations.md`. | 122 |
+    23	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    24	| Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    25	| PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    26	| DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    27	| Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    28	| Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    29	| Self-correcting explicit formula + integer constraints | FAIL | I | Use fewer zeros + rounding/monotonicity/primality constraints. Truncation error is systematic bias ~O(N), not random noise. Constraints only help when error < 1, but error >> 1 with few zeros. Autocorr > 0.98. No triangulation possible. | 35,36 |
+    30	| Explicit formula proper convergence (mpmath R(x^ρ)) | FAIL | I | Naive R(x^ρ) summation DIVERGES: error grows from 3.5 (K=0) to 2076 (K=100) at x=10^4. Complex li branch cuts cause numerical instability. Only Lagarias-Odlyzko contour method is numerically stable. | 36 |
+    ... (50 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -10
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    1	# EDGES.md — Mathematical Cracks in the sqrt(x) Wall
+    2	
+    3	Vulnerability-research-style catalogue of every **real** mathematical edge,
+    4	identity, structural deviation, or partial signal that AI agents have
+    5	surfaced over 49 sessions / 690+ closed paths. Listed individually with
+    6	exact provenance, then chained into hypothetical attack scenarios.
+    7	
+    8	Conventions:
+    9	- **Edge** = a verified mathematical fact, identity, or measurable statistical
+    10	  deviation from what a "fully random" object would give. Even if it has
+    11	  already failed in isolation, it is recorded here because its value in a
+    12	  *chain* is what matters.
+    13	- **EVS** (Edge-Value Score, qualitative): H = high (could be a primary
+    14	  primitive), M = medium (useful in conjunction), L = low (probably noise but
+    15	  recorded for completeness).
+    16	- Sources cited as `file:line` or `Sxx` for session number; consult
+    17	  `status/CLOSED_PATHS.md` for individual closure entries.
+    18	
+    19	---
+    20	
+    21	## 0. The frame the chain has to fit through
+    22	
+    23	Every chain must address all four targets simultaneously, because a chain that
+    24	misses any one of them lands in a known closed path:
+    25	
+    26	T1. **Smooth target (~50% of bits):** R^{-1}(n) gives the top ~60% of the
+    27	    bit-length of p(n) in O(polylog) (carry-propagation boundary, S40,
+    28	    `novel/carry_propagation_boundary.md`). Any chain that only delivers
+    29	    these bits is a duplicate of R^{-1}(n).
+    30	T2. **Oscillatory bits (~40%):** the remaining bits encode the GUE-random
+    ... (20 more lines)
+  [Bash] grep -n "S82\|S147\|S146\|S144\|S145\|spike_eigenvalue" /apps/aplikacijos/prime-research/EDGES.md | head -10
+    176:**LSB-side refinement (S146, F1).** Direct bit-position measurement
+    478:**S82 spike-eigenvector identification (C2 sub-arc):** the S74 spike
+    530:S143/S144/S152/S159 progressively extended the orthogonal corner to
+    540:obstructed wheels at `R ≤ 22` (per S144 enumeration) are
+    1821:S145, mode E (polylog-tightness ruled out), B-grade case (i).
+  [Bash] cat /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md | head -80
+    # Research Agenda — Long-Horizon Arcs
+    
+    This file holds **multi-session research arcs**. Each arc is a research
+    direction that takes more than one session to pursue. Arcs survive
+    across sessions, accumulate state, and have explicit next-actions.
+    
+    This file is for *continuity*. NOVELTY_CHALLENGES.md is for *targets*.
+    EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
+    
+    ---
+    
+    ## Active arcs
+    
+    ### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    **Status:** NOT STARTED
+    **Owner:** any agent who picks it up
+    **Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 + E7.14
+    into a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+    
+    **Milestones:**
+    - [ ] Outline the FIVE sections (one per closure family).
+    - [ ] Write precise statement of each family-level closure as a theorem
+      (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
+      E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
+      exhaustion; **E7.14 = Maynard sieve aggregate-not-pointwise +
+      divisor-enumeration sub-poly**).
+    - [ ] Write a unified introduction framing the five as "structural
+      barriers to polylog π(x)".
+    - [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
+      Bombieri-Vinogradov, the Aggarwal optimum.
+    ... (50 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    470	W ∈ {2, 3, 5, 6, 30}. Matched-active iid Bernoulli baseline matches MP
+    471	from drop_1; chi_P needs `O(R^{0.85})` drops — the difference is the new
+    472	content. **Algorithmic implication:** any spectral compression of `M^(j)`
+    473	faithful at the second-moment level (i.e., reproducing κ_2) needs rank
+    474	Ω(N^{0.42}). Polynomial-in-N barrier recovered from a free-probabilistic
+    475	angle independent of the explicit-formula machinery.
+    476	See `experiments/constructions/free_cumulants_chi_p/`.
+    477	
+    478	**S82 spike-eigenvector identification (C2 sub-arc):** the S74 spike
+    479	band IS the **residue-class character subspace at small odd primes
+    480	coprime to W**. Empirically, the top `k_*` singular vectors of `M^(j)`
+    481	(after the leading mean) decompose into per-prime sectors of dimension
+    482	exactly `phi(p)` indexed by primes `p ≤ P*(N)` not dividing `W`, plus
+    483	cross-sectors of dimension `phi(p_1)·phi(p_2)`. Conductor of each
+    484	spike is `2 · p` (or `2 · p_1 · p_2`). Verified at (W=2, d ∈ {14, 16,
+    485	18, 20}) and (W=6, d=6); matched-Bernoulli baseline shows centered
+    486	residue energy ≤ `5×10⁻⁴` while chi_P spikes ≥ `10⁻²` (≥ 20× ratio).
+    487	**Sharpened algorithmic implication:** the polynomial-in-N spike
+    488	content IS exactly the small-modulus residue-class biases
+    489	`pi(N; q, a)` for `q ≤ Q*(N) ≈ N^{0.21}`, so the C2 spectral compression
+    490	barrier is the same object as the E1.5 / T6 saturation barrier viewed
+    491	from the spectral side — a textbook **C-circular** collapse.
+    492	See `experiments/constructions/spike_eigenvectors_chi_p/`.
+    493	
+    494	**S83 / S98 / S99 / S106 / S107 Lean formalisation status (L1):** in
+    495	`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`,
+    496	`mps_bond_dim` (the main theorem), `upper_bound`, `rank_le_min_dim`,
+    497	`row_support_coprime`, `live_columns_count`, and `lower_bound` are all
+    498	closed `sorry`-free over Lean 4 + mathlib `v4.30.0-rc2`. The single
+    499	remaining obligation is the existential `exists_invertible_submatrix`
+    ... (20 more lines)
+Now let me update EDGES.md, CLOSED_PATHS.md, the commit_state, and write the session synthesis.
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] grep -n "S82\|spike_eigenvectors\|residue-class character" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -10
+    763:| Spike eigenvectors of chi_P MPS unfolding identified as Dirichlet character vectors at small odd primes — C2 sub-arc S82 sharpening of S74 | REFINEMENT | C | Sub-arc closure of S74 (free_cumulants_chi_p): the polynomial-in-N "spike band" of `M^(j) M^(j)^T` eigenvalues found in S74 decomposes structurally as **direct sum of residue-class character subspaces at small odd primes coprime to W**. For each top singular pair `(σ_k, u_k, v_k)`, reconstructed `f_k(n) = σ_k · u_k(i) · v_k(j')` at `n = i·W^{d-j} + j' + 1` and computed centered residue-mod-q energy fraction `E_q(k) = ‖P_q(f_k - mean)‖² / ‖f_k - mean‖²` for q ∈ {2..200}; defined `min_q_conductor(k)` = smallest q achieving 95% of `max_q E_q(k)`. **Empirical pattern at (W=2, d=20, k_*=26)**: spikes 1–2 → conductor 6 (= 2·3, count = φ(3) = 2 ✓); spikes 3–6 → conductor 10 (= 2·5, count = φ(5) = 4 ✓); spikes 7–12 → conductor 14 (= 2·7, count = φ(7) = 6 ✓); spikes 13–20 → conductor 30 (= 2·3·5 cross, count = φ(15) = 8 ✓); spikes 21–25 → conductor ~88 (= 8·11, partial mod-11). Saturation across d ∈ {14, 16, 18, 20}: each prime sector first appears as "transitional" partial at small N then locks in at exactly φ(p) once `N/log N ≫ p · φ(p)`. **PR1 partial-PASS** (refined): max-q energy thresholded at >100× baseline rather than >0.5 absolute. **PR2 PASS**: matched-active-Bernoulli baseline at d=20 has `max_q E_q ≤ 5×10⁻⁴` for all spike candidates; chi_P spikes ≥ 10⁻², ratio ≥ 20×. **PR3 PASS**: visited-q dimension sums to k_* within factor 1.5 (25 observed vs 26 predicted). **Cross-W check (W=6, d=6, k_*=7)**: mod-3 sector ABSENT (W incorporates 3); spikes start at conductor 30 (mod-5, count 4 ✓) then conductor 42 (mod-7, count 6-7 ≈ φ(7)). **Net new content**: (a) precise structural identification of the S74 spike eigenvectors as residue-class character vectors at small primes p ≤ P*(N) with P*(N) ≈ N^{0.21}; (b) PNT-consistent prediction `k_* ≈ N^{0.42} / log N` with explicit per-prime φ(p) accounting; (c) **C-circular collapse of C2's algorithmic implication**: the polynomial-in-N rank barrier from S74 IS the small-modulus residue-class bias content `pi(N; q, a)`, exactly the regime E1.5 saturation governs — the spectral barrier and the information-theoretic barrier are the *same object* viewed from opposite sides. (d) E2.1 annotated S82 with the structural identification. **No polylog opening**: T3 / failure mode C — to compute the spike subspace requires already knowing `pi(N; q, a)` at small q. Cites E2.1 (annotated S74, S77, S82), E1.5, S74 (free_cumulants_chi_p). Cross-domain references: Iwaniec-Kowalski 2004 Ch. 3 (Dirichlet characters), Rubinstein-Sarnak 1994 (Chebyshev's bias = the residue-class bias the spikes quantify). See experiments/constructions/spike_eigenvectors_chi_p/. | 82 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    760	| §D.D4 ATTACK_VECTORS — Szegedy quantum walks on number-theoretic graphs (cross-domain: Szegedy 2004 discriminant matrix theorem) | FAIL | E | Frontier attack on whether Szegedy walks on a number-theoretic graph yield polylog primality extraction. Tested **three families** with the discriminant matrix `D(x,y) = sqrt(P(x,y)·P(y,x))` and the eigenvalue-lifting theorem `cos(θ_k) → e^{±2iθ_k}` (mixing time `O(1/sqrt(δ))`). **(A) Cayley `Cay((Z/NZ)*, {2,3,5,inv})`** for primes N∈{31,…,1009} (14 sizes): empirical `t_classical(N) ~ N^{0.789}`, `t_szegedy(N) ~ N^{0.414}` — quadratic Szegedy speedup empirically realised but neither is polylog. Direct **quantum extension of E7.12 (S79)**: classical Cayley spectrum probes ω(n) not primality, AND Szegedy quantisation inherits the same poly-mixing barrier. **(B) Coprime `C_x = ([1..x], gcd=1)`** for x∈{30,…,1000}: spectral gap is `Ω(1)` (asymptotically `δ → 0.4166...`); stationary prime mass / uniform prime mass `→ ζ(2) = π²/6 ≈ 1.6449` (Mertens; verified at x=1000 with deviation -0.022). Both classical and Szegedy mix in `O(1)`, but bias is constant — `O(log x)` samples to hit a prime + AKS verification = no polylog extractor of π(x). **(C) Divisor `D_x = ([1..x], m|n)`**: gap `~Ω(1)` (slowly decaying 0.21 → 0.166 across x=30..1000). High-prime-mass eigenvectors localise on **prime-centered divisor clusters** `{p, 2p, 3p, ..., 1}` for *individual* primes near x/3-x/2 (e.g., k=14 eigenvector at x=250 is concentrated 100% on {43, 47} ∪ multiples ∪ {1}). Each eigenvector identifies 1-2 specific primes — same structural mechanism as E7.12 (degree class probing), not global primality. **Cross-domain ingredient performed real work**: empirical confirmation `t_Q ≈ sqrt(t_C)` for the Szegedy-Cayley case validates the discriminant theorem at the project's scale; the π²/6 stationary identity is a clean Mertens-law derivation specific to the coprime-graph chain. **Falsification check**: no graph yields mixing time `O(polylog(x))` AND a primality-localised eigenvector with poly-log gap; both Cayley (poly mixing) and coprime/divisor (Ω(1) mixing but no global primality eigenvector) miss the joint condition. Closes ATTACK_VECTORS §D.D4. **Suggested EDGE** (E7.13 candidate): "Szegedy-walk quantisation of any reversible chain on `[1..x]` with adjacency defined by simple arithmetic relation does not yield polylog primality extraction — either spectral gap shrinks polynomially (Cayley class) or eigenvectors capture primality only via degree-class clustering (coprime / divisor class). The two conditions are exhaustive on the families tested." Cites E5.3, E5.8, E7.10, E7.12. Cross-domain reference: Szegedy 2004 (arxiv quant-ph/0401053). See experiments/quantum/szegedy_walk_prime_graphs/. | 80 |
+    761	| C6 (NOVELTY_CHALLENGES) — three-pillars × HKM time-space tradeoff classification | REFINEMENT | I | Composition of E7.7 (three-pillars informational closure: prime positions / zeta zeros / floor values) and E6.7 (HKM at (T = N^{8/15}, S = N^{1/3})). Built (alpha, beta) catalog of 14 algorithms (4 prime / 4 zeta / 6 floor) and computed per-pillar Pareto frontiers, cross-pillar dominance, and saturation against E7.6 lower bound (T*S ≥ Ω(N^{5/6}/log N)). **Findings**: (i) HKM is on the floor-pillar Pareto frontier and DOMINATES every other floor-pillar entry elementwise (Lucy DP, Lucy+Fenwick, Meissel-Lehmer classical, Gourdon, primecount); (ii) HKM has NO cross-pillar dominators — its (8/15, 1/3) point is uniquely accessible on the floor pillar (no zero-pillar or prime-pillar entry achieves both T ≤ N^{8/15} AND S ≤ N^{1/3}); (iii) **pillar dominance regions are non-overlapping**: time-only minimum is shared by prime/zeta pillars at α=1/2, space-only minimum is unique to floor at β=1/3, T*S minimum is unique to floor at 13/15 ≈ 0.867; (iv) HKM saturates E7.6 to within N^{0.034} (gap 13/15 - 5/6 = 1/30); (v) Aggarwal binary search (E6.6) is a meta-algorithm whose effective placement migrates with the chosen pi(x) sub-routine. All four pre-stated falsification criteria (F1: HKM dominated; F2: HKM cross-pillar dominated; F3: identical pillar frontiers; F4: floor-pillar T*S < 5/6) PASS. **Net new content**: (a) explicit pillar-by-pillar Pareto map of the project's catalog; (b) HKM uniqueness lemma (HKM's (T, S) point is achievable on the floor pillar ONLY); (c) saturation verdict (floor pillar asymptotically tight). No polylog opening — refinement of E7.7 and E6.7, not a new edge. Cites E5.1, E6.5, E6.6, E6.7, E6.8, E6.9, E7.6, E7.7, E7.9. See experiments/constructions/pillar_tradeoff_diagram/. | 81 |
+    762	| §A.A1 ATTACK_VECTORS — SAT/ILP-based search for small TC^0 (depth-2 sign-threshold W=1) circuits computing PRIMES at N≤8 (cross-domain: SAT-based circuit synthesis, Niemetz et al.) | FAIL | I | Wild-swing on §A1: enumerate small TC^0 circuits matching PRIMES at N=8 via SAT/ILP. Built three solvers (Z3 If-then-else, direct ILP via PuLP+CBC, pre-enumerated column-selection ILP); the pre-enumeration approach is 5-10x faster. **Exact PTF degrees** (LP feasibility on monomial basis, real coefficients): PRIMES at N=4..8 → 2, 3, 3, 3, **4**; pi(x) mod 2 → 3, 3, 3, 4, 4; matched random median over 5 seeds → 2, 3, 3, 3, 4. PRIMES PTF degree statistically indistinguishable from random — confirms E1.10/E3.13 at the Boolean-function level. **Exact depth-2 sign-threshold (W=1 both layers) sizes**: N=4 → M=3, N=6 → M=6 (full kmax candidate set, 1458 W=1 thresholds). N=7 inconclusive (M=5, 6 unsat; M=7, 8 timed out at 180s). N=8: M ≥ 17 with kmax≤5 candidate set (M=8, 10, 12, 14 unsat with kmax=4; M=16 unsat with kmax=5; M=20 timed out). **Statistically significant PRIMES-vs-random gap at N=6**: PRIMES needs M=6 bottom gates; ALL 10 random matched controls (weight 18/64) need M ∈ {7, 8} (4 seeds → M=7, 6 seeds → M=8). Binomial null p < 0.001. **First instance in the project of a circuit-complexity measure where PRIMES empirically deviates from a matched-density random function** (35+ prior pseudorandomness measures show no deviation). **Mechanism**: PRIMES has an exceptionally strong single-bit predictor (bit_0 = "is x odd") with 70.3% accuracy at N=8, vs random's best 1-bit at 57.0% (max over 30 seeds). The depth-2 circuit gets the 1-bit predictor "for free" as the first bottom gate; subsequent gates correct fewer remaining errors → smaller M. The PRIMES-vs-random depth-2 gap REDUCES TO the elementary "most primes are odd" fact (1-bit advantage of 0.13 absolute at N=8). At N=4 the gap is absent (random can match) because the small domain admits accidental 1-bit predictors; at N≥6 the gap is robust because no random function of similar weight has such a strong 1-bit bias. **Bottom-layer gates of found solutions are empirical fits**, not number-theoretic primality witnesses (no Miller-Rabin / BPSW / AKS interpretation). **Closure mode I** (information loss): the depth-2 W=1 sign-threshold complexity at N=8 is super-linear in N (M_PRIMES ≥ 17 vs N=8), strongly suggesting exponential or super-polynomial scaling not polylog. **Cross-domain ingredient performed real work**: SAT/ILP search across 35K candidate functions enabled exact bounds infeasible by hand. Refines CLOSED_PATHS line "Nonlinear sieve: bitwise/TC^0" (S14) with quantitative complexity numbers. ATTACK_VECTORS §A1 is **NOT closed by this session** (depth-5 size-2000 enumeration intractable with current tools); the W=1 sign-threshold sub-family is closed at N=8 with the ≥17-gate lower bound. Cites E1.10, E3.13, E5.3, E7.10, S20, S28, novel/pseudorandomness_of_pi.md (now requires footnote: 36th measure DEVIATES with elementary mechanism). See experiments/circuit_complexity/sat_tc0_primes_n8/. | 84 |
+    763	| Spike eigenvectors of chi_P MPS unfolding identified as Dirichlet character vectors at small odd primes — C2 sub-arc S82 sharpening of S74 | REFINEMENT | C | Sub-arc closure of S74 (free_cumulants_chi_p): the polynomial-in-N "spike band" of `M^(j) M^(j)^T` eigenvalues found in S74 decomposes structurally as **direct sum of residue-class character subspaces at small odd primes coprime to W**. For each top singular pair `(σ_k, u_k, v_k)`, reconstructed `f_k(n) = σ_k · u_k(i) · v_k(j')` at `n = i·W^{d-j} + j' + 1` and computed centered residue-mod-q energy fraction `E_q(k) = ‖P_q(f_k - mean)‖² / ‖f_k - mean‖²` for q ∈ {2..200}; defined `min_q_conductor(k)` = smallest q achieving 95% of `max_q E_q(k)`. **Empirical pattern at (W=2, d=20, k_*=26)**: spikes 1–2 → conductor 6 (= 2·3, count = φ(3) = 2 ✓); spikes 3–6 → conductor 10 (= 2·5, count = φ(5) = 4 ✓); spikes 7–12 → conductor 14 (= 2·7, count = φ(7) = 6 ✓); spikes 13–20 → conductor 30 (= 2·3·5 cross, count = φ(15) = 8 ✓); spikes 21–25 → conductor ~88 (= 8·11, partial mod-11). Saturation across d ∈ {14, 16, 18, 20}: each prime sector first appears as "transitional" partial at small N then locks in at exactly φ(p) once `N/log N ≫ p · φ(p)`. **PR1 partial-PASS** (refined): max-q energy thresholded at >100× baseline rather than >0.5 absolute. **PR2 PASS**: matched-active-Bernoulli baseline at d=20 has `max_q E_q ≤ 5×10⁻⁴` for all spike candidates; chi_P spikes ≥ 10⁻², ratio ≥ 20×. **PR3 PASS**: visited-q dimension sums to k_* within factor 1.5 (25 observed vs 26 predicted). **Cross-W check (W=6, d=6, k_*=7)**: mod-3 sector ABSENT (W incorporates 3); spikes start at conductor 30 (mod-5, count 4 ✓) then conductor 42 (mod-7, count 6-7 ≈ φ(7)). **Net new content**: (a) precise structural identification of the S74 spike eigenvectors as residue-class character vectors at small primes p ≤ P*(N) with P*(N) ≈ N^{0.21}; (b) PNT-consistent prediction `k_* ≈ N^{0.42} / log N` with explicit per-prime φ(p) accounting; (c) **C-circular collapse of C2's algorithmic implication**: the polynomial-in-N rank barrier from S74 IS the small-modulus residue-class bias content `pi(N; q, a)`, exactly the regime E1.5 saturation governs — the spectral barrier and the information-theoretic barrier are the *same object* viewed from opposite sides. (d) E2.1 annotated S82 with the structural identification. **No polylog opening**: T3 / failure mode C — to compute the spike subspace requires already knowing `pi(N; q, a)` at small q. Cites E2.1 (annotated S74, S77, S82), E1.5, S74 (free_cumulants_chi_p). Cross-domain references: Iwaniec-Kowalski 2004 Ch. 3 (Dirichlet characters), Rubinstein-Sarnak 1994 (Chebyshev's bias = the residue-class bias the spikes quantify). See experiments/constructions/spike_eigenvectors_chi_p/. | 82 |
+    764	| §D6 ATTACK_VECTORS — Gowers U^k uniformity norms of the bare prime indicator chi_P (cross-domain: additive combinatorics, Green-Tao-Ziegler U^{s+1} inverse theorem) | FAIL | E | Frontier attack on whether chi_P deviates from random pseudorandomly under any Gowers norm at k <= 3 — the only family of "k-degree polynomial structure" tests untouched by the project's 35+ pseudorandomness measures. Computed normalized Gowers norms `Q^k(f) := ‖f‖_{U^k}^{2^k} / E[f]^{2^k}` on Z/NZ for chi_P, matched-density Bernoulli, Liouville indicator, and W-tricked chi_{W,1} (W ∈ {6, 30, 210}). U^2 via FFT identity `‖f‖_{U^2}^4 = (1/N^4) Σ_k |fhat(k)|^4` (O(N log N)) at N ∈ {2^10, 2^12, 2^14, 2^16, 2^18}; U^3 via recursion `‖f‖_{U^3}^8 = (1/N) Σ_h ‖Δ_h f‖_{U^2}^4` with `Δ_h f(x) = f(x)f(x+h)` (O(N^2 log N)) at N ∈ {2^10, 2^11, 2^12, 2^13}. **Hardy-Littlewood prediction**: `Q^k(chi_P) → S_k = Π_p α_p(k) / (1 - 1/p)^{2^k}` (singular series for {0,1}^k-cube prime k-tuple), where `α_p(k) = #{(x, h) ∈ (Z/p)^{k+1} : x + ε·h ≢ 0 mod p ∀ε ∈ {0,1}^k} / p^{k+1}`. Numerical truncated values: **S_2 = 2.300938** (P_max=100, 1e-5 truncation error), **S_3 = 54.116088** (P_max=47, 0.2% error). **Empirical Q^2(chi_P) trend**: 2.103 (N=2^10) → 2.132 (N=2^12) → 2.146 (N=2^14) → 2.149 (N=2^16) → 2.153 (N=2^18); monotonic increase toward S_2; gap S_2 - Q^2(chi_P) decays as O(1/log N) (from 0.198 at N=2^10 to 0.148 at N=2^18). **Q^2(Bernoulli) ~ 1 + O(1/N)** (1.049 → 1.008 across same range). **Q^3(chi_P) ≈ 35.5** stable across N ∈ [2^10, 2^13], well above Bernoulli's Q^3 → 1 but below S_3 = 54.12 due to slow finite-N convergence at U^3 (compounded log-factors). **Liouville**: Q^2(L) = 1.000 to 4 digits at N=2^10..2^12 — Gowers-uniform at U^2, consistent with Green-Tao Mobius/nilsequence orthogonality (the prime-parity indicator is structurally OPPOSITE to chi_P at U^k). **W-trick**: predicted `S^(W)_k = Π_{p∤W} α_p(k)/(1-1/p)^{2^k}`. At N=2^12, **W=210**: empirical Q^2(chi_{W,1}) = 1.0029 vs HL prediction 1.0023 (match within 0.1%); empirical Q^3 = 1.066 vs HL 1.029 (match within 4%, dominated by finite-N noise on Q^3). **W=30**: Q^2 = 1.005 vs 1.007, exact match. The W-trick empirically restores Gowers-uniformity to chi_P, exactly as the Green-Tao W-trick predicts for Lambda. **First instance in the project's pseudorandomness battery (after S84 circuit-depth gap at N=6) where chi_P deviates from random by a CLOSED-FORM, predicted, constant multiplicative factor**, with the deviation EXACTLY matching the Hardy-Littlewood box singular series. **Closure mode E**: U^k structure of chi_P provides only HL-level information, already conjecturally known; no additional bit of structure detected; algorithmic extraction of Q^k itself costs Θ(N^2 log N), not polylog. **Cross-domain ingredient performed real work**: Gowers norms (Gowers 2001) detect higher-order correlation structure invisible to the project's local statistics; the FFT identity for U^2 and recursion for U^3 are standard machinery from additive combinatorics. **Cited new EDGE: E2.13** (Q^k(chi_P) = S_k {0,1}^k-cube). Cites E1.10, E3.13, E7.1, E2.9, S84. Cross-domain refs: Gowers (2001); Green-Tao (arXiv:math/0606088); Green-Tao (arXiv:0807.1736); Green-Tao-Ziegler (arXiv:1009.3998); Hardy-Littlewood (1923). See experiments/information_theory/gowers_uk_chi_p_results.md. | 85 |
+    765	
+    766	| C4 (NOVELTY_CHALLENGES) — Aggarwal × Dusart × BPSW unified p_n library | REFINEMENT | E | Composition of E6.6 (Aggarwal binary search optimality) + E6.8 (Dusart bracket of width n) + E5.1 (BPSW as TC^0 primality oracle). Built three modes: `agg` (Aggarwal binary search on `pi_lucy(x)`, no BPSW), `bpsw` (BPSW-walk from 2, no Dusart), `hybrid` (Aggarwal narrow-to-K then BPSW-walk in `[L, R]`). All three agree with `sympy.prime(n)` at n ∈ {1, 2, 3, 5, 6, 10, 25, 50, 100, 168, 169, 500, 1000, 10⁴, 10⁵, 10⁶, 10⁷}. Wall-clock benchmark @ pure-Python `pi_lucy`: at n = 10⁶ agg = 379 ms, bpsw = 15.27 s, hybrid (K=64) = 291 ms. **F1 (agreement) HOLDS**; **F3 (hybrid ≥ 10× bpsw at n ≥ 10⁴) HOLDS** at 21×/34×/53× across n ∈ {10⁴, 10⁵, 10⁶}; **F2 (hybrid ≥ 1.5× agg at n ≥ 10⁵) PARTIALLY FAILS** in pure-Python regime (only 1.30× at n = 10⁶) but HOLDS at 1.64× when `pi_lucy` is C-accelerated; **F4 (U-shape in K) FAILS** in pure-Python regime — the K-sweep at n = 10⁶ is monotone-decreasing in time, optimum is K = bracket-width (composition collapses to E6.8 + E5.1 with no Aggarwal narrowing); **F4 HOLDS** under C-accelerated `pi_lucy`: K-sweep at n = 10⁷ shows U-shape with K* ≈ 16384 ≈ √(bracket width), inflating to 0.49 s at K = bracket width. **Net new content**: (a) **the optimal K depends on the `pi(x) / BPSW` cost ratio**, a knob invisible at asymptotic-order analysis (Aggarwal 2025) — Python `pi_lucy` regime: K* = width; C-Lucy: K* ≈ √width; HKM/primecount projection: K* ≈ small constant ⇒ Aggarwal-pure dominates, BPSW adds nothing; (b) **BPSW conditionality propagates 1-to-1 through Aggarwal's wrapper**, not amplified — a single BPSW pseudoprime in the final `[L, R]` shifts the answer by exactly one prime; (c) the **Dusart bracket alone is worth ~50× over naive BPSW-from-2**, matching predicted `2 p_n / n ~ 2 log p_n` at n = 10⁴-10⁷. **Closure mode E** (equivalence): hybrid is a constant-factor re-arrangement of Aggarwal's `O(sqrt(n) log⁴ n)` bound, not an asymptotic improvement; the BPSW conditional is the only non-trivial composition content. No polylog opening — the bottleneck remains `pi(x)` evaluation at HKM/Lucy cost. Cites E5.1, E6.6, E6.8 (annotated). Cross-domain ingredient: none (all three components were already in the project's catalogue). See `algorithms/aggarwal_dusart_bpsw/`. | 120 |
+    767	| C7 (NOVELTY_CHALLENGES) — calibrated 1-bit-bias random control for the S84 PRIMES-vs-random depth-2 sign-threshold gap | REFINEMENT | C | Composition of E1.10 / E3.13 (35-measure pseudorandomness battery, `novel/pseudorandomness_of_pi.md`) + S84 result (PRIMES min M=6 vs unbiased matched-density random min M ∈ {7,8} at N=6, binomial p < 0.001). S84 conjectured the gap was driven by PRIMES's 1-bit-predictor advantage (bit_0 = "is x odd" gives 75.0% accuracy on PRIMES at N=6, vs ~66% for unbiased random of weight 18/64). C7 builds the matched-class-conditional random control `f_cal` on {0..63}: P(f_cal=1 \| x odd) = 17/32 (exactly matching PRIMES's 17 odd primes); P(f_cal=1 \| x even) = 1/32 (exactly matching PRIMES's 1 even prime, namely 2). Two modes: STRATIFIED (exact 17 odd + 1 even, weight always 18, bit_0_acc always 0.75) and BERNOULLI (independent draws; variable weight, variable bit_0_acc 0.625-0.81). 20 samples each through S84's `enum_d2_smart` ILP harness (K=1458 W=1 candidates, CBC, 120s/cell). **Pre-stated falsifiers (4 outcomes)**: F1 (≥1 stratified > 6 → residual structure), F2 (all stratified ≤ 6 → gap is oddness), F3 (≥1 stratified < 6 → calibration overshoots), F4 (stratified mean < unbiased mean → bit_0 primary driver). **Result: F2 + F3 + F4 HOLD; F1 FAILS.** Stratified histogram = {5: 4, 6: 16}, mean 5.80, max 6 — 0/20 above PRIMES; 4/20 *strictly easier* than PRIMES at M=5. Bernoulli histogram = {5: 7, 6: 11, 7: 2} — both M=7 cases have bit_0_acc < 0.75 (PRIMES's value: 0.7344 and 0.7188), empirically confirming the proposed monotonic relationship `bit_0_acc ↑ ⇒ min_M ↓` at fixed weight. PRIMES sits at +0.5σ of the calibrated distribution; under the calibrated null `P(M ≤ 6) = 1.0` (vs unbiased null `P(M ≤ 6) = 0/10 → 0.5^10 ≈ 0.001`). **The S84 PRIMES-vs-random gap REDUCES TO elementary parity** ("π(x) ≈ 1 iff x odd, for x > 2"); no PRIMES-specific structure beyond oddness. **Sub-finding** (Bernoulli stratified by bit_0_acc bins): bit_0_acc ≥ 0.78 → mean min_M = 5.50; [0.75, 0.78) → 5.67; [0.72, 0.75) → 6.40 (the M=7 region); < 0.72 → 5.00 (low-weight compensation). The (bit_0_acc, weight, min_M) surface is the structural explanation. **Closure mode C** (circular): the depth-2 gap is fully captured by an elementary fact already in the project's frame (bit_0 "free first gate" mechanism, S84 §"Mechanism: single-bit predictor advantage"); calibration formally verifies the explanation. Recommends footnote on `novel/pseudorandomness_of_pi.md`: 36th measure (depth-2 sign-threshold) DEVIATES from unbiased random but the deviation is fully captured by the trivial 1-bit oddness fact; pseudorandomness thesis stands "modulo the obvious mod-2 bias." **Net new content**: (a) verified S84 mechanism (bit_0 → depth-2 size) under direct calibrated control; (b) new mechanism prediction empirically confirmed (bit_0_acc-vs-min_M monotonic at fixed weight); (c) PRIMES-vs-calibrated indistinguishability removes the only known deviation in the 35+ measure battery from "structural" to "elementary parity" status. Spawned successor C7.a (NOVELTY_CHALLENGES) — N=8 calibrated extension. Cites E1.10, E3.13, E1.6, E1.4, S84. See experiments/circuit_complexity/sat_tc0_primes_n8_calibrated/. | 89 |
+    768	| §C4 ATTACK_VECTORS — Anderson localisation Lyapunov exponent gamma(E) of chi_P-driven discrete 1D Schrödinger operator (cross-domain: Aizenman-Warzel random operators, Furstenberg-Kifer theorem) | FAIL | E | Frontier attack on whether chi_P deviates from random pseudorandomness on a SPECTRAL-GLOBAL statistic (Lyapunov exponent) — orthogonal to all 36 prior pseudorandomness measures (which are local correlation / entropy / Fourier / tensor rank / Gowers). Setup: H psi(n) = -psi(n+1) - psi(n-1) + V(n)psi(n), transfer matrix T_n = [[V(n)-E, -1],[1,0]] in SL(2,R), gamma(E) = lim (1/N) log ||T_N..T_1||. Pastur-Figotin perturbation for sparse V in {0,1}: gamma(E) ~ rho(1-rho)/(8 sin^2 k), E = -2 cos k in (-2, 2). Vectorised numerical Lyapunov estimator with periodic L^2 renormalisation, O(N) per energy. **Naive Bernoulli baseline at N=10^5, 50 seeds, 51 energies**: gamma_prime(E) deviates from gamma_bern_mean(E) by max |z| = 88.5 sigma at E = 0.108 (k = pi/2 parity resonance). Z-score grows as sqrt(N): 12.3 at N=10^4 → 88.5 at N=10^5. **Confounder: chi_P concentrated on odd indices.** Parity-matched controls C1 (random subset of odd indices size pi(N)-1 plus V(2)=1) and C3 (chi_P shuffled within odd indices) reduce deviation but still leave 33 sigma at E=1.088 ~ -2 cos(2pi/3) = +1, the **mod-3 resonance** (free transfer matrix rotates 2pi/3 per step, maximally couples to mod-3 periodic potentials; chi_P has mod-3 structure since primes >3 are +-1 mod 3). **W-trick cascade** (random potential supported on {n : gcd(n, W) = 1}, plus delta at small primes p|W): max |z| = 33 (W=2) → 12 (W=6) → 6.3 (W=30) → 6.1 (W=210) → 4.0 (W=2310, N=2*10^5). Cascade ends at residual ~ 4 sigma, borderline noise (Bonferroni 0.05/31 → z_thresh ≈ 3.16). **Same structural reason as E2.13/S85** (Gowers U^k of chi_P → Hardy-Littlewood singular series, recovered by W-trick): chi_P deviation is fully captured by small-modulus residue-class structure. Adds new EDGE E2.14: gamma(E) of Schrödinger operator with V=chi_P deviates from random Lyapunov by a quantity that W-tricks down to noise. **Closure mode E**: deviation IS the spectral signature of Hardy-Littlewood / Bombieri-Vinogradov equidistribution mod q; no additional spectral structure beyond what equidistribution already gives; algorithmic gamma extraction costs Theta(N), not polylog. **Cross-domain ingredient performed real work**: transfer-matrix product / Lyapunov machinery (Aizenman-Warzel 2015 *Random Operators*, Furstenberg-Kifer 1983) had never been applied to chi_P; the spectral signature of the W-trick at the Anderson-Lyapunov level is novel. **PROVIDES SECOND INDEPENDENT CONFIRMATION** (after E2.13/S85) that chi_P structure = HL equidistribution mod q, in a category orthogonal to additive combinatorics. Cites E2.13, E1.10, E3.13, E7.1. Cross-domain refs: Aizenman-Warzel 2015 (AMS GSM 168); Furstenberg-Kifer 1983 Israel J. Math. 46; Pastur-Figotin 1992; Green-Tao arXiv:math/0606088 (W-trick). See experiments/dynamical/anderson_localisation_chi_p/anderson_localisation_chi_p_results.md. | 88 |
+    769	| §B1 ATTACK_VECTORS — slice rank / Croot-Lev-Pach polynomial method on chi_P, via algebraic immunity AI(chi_P) over F_2 (cross-domain: cap-set polynomial method, Tao slice rank, Courtois-Meier algebraic immunity) | FAIL | E | Frontier attack on whether the cap-set polynomial-method machinery yields a polylog primality witness via low-degree annihilators of chi_P. Three structurally distinct invariants: (1) algebraic immunity AI(chi_P) over F_2 (smallest deg g with g·chi_P==0 or g·(1+chi_P)==0); (2) F_p multilinear ANF degree on (F_p)^k via base-p expansion; (3) slice rank brackets via Tao 2016 flattening lower bound + greedy upper bound. **Main empirical finding**: AI(chi_P, N) = 2 for ALL N in [4, 13] while AI(matched-density Bernoulli) grows as Theta(log_2(1/rho)) — reaching 4 at N=11/12 with zero std. Liouville+ AI grows like random; Mobius!=0 also has constant AI=2. **Mechanism (extracted via nullspace recovery)**: the unique smallest annihilator is the SAME polynomial g(x) = (1 + x_0)(1 + x_1) for every N >= 5, which equals 1 iff n ≡ 0 mod 4. The annihilation works because no prime > 2 is divisible by 4 (and chi_P(2) gets killed by bit_1=1). AI(chi_P)=2 is *exactly* the polynomial-method encoding of the trivial mod-4 sieve fact; same g annihilates Mobius!=0 because squarefree numbers exclude multiples of 4. Liouville+ does NOT inherit this since lambda(4)=+1. **W-trick correction CONFIRMS deviation is mod-q structure**: at W=6, b∈{1,5} and W=30, b∈{1,7,11}, AI(chi_P_{W,b}) tracks AI(random) within ±1 across N=8..11; many cells exact match with zero std (e.g. W=6 b=1 N=11: chi_P=5, random=5.00 std 0). **F_p multilinear ANF degree**: chi_P near-saturates max possible degree (p-1)·k at all tested (p,k) other than (3,3) where deg drops 1 below random max, and (5,3) similar single-degree drop. **Slice rank brackets**: at p=2 non-informative (2-row flattenings cap rank at 2 trivially, both chi_P and random); at p=3 chi_P matches random for k>=3. **Same structural reason as E2.13 (Gowers, S85), E2.14 (Anderson, S88)**: chi_P deviation is fully captured by small-modulus residue-class structure; the polynomial-method invariant gives no additional bit beyond mod-q. **Adds EDGE E2.15**: AI_F_2(chi_P) = 2 for all N >= 4 with explicit annihilator (1+x_0)(1+x_1); W-trick at W>=6 removes deviation. THIRD INDEPENDENT CONFIRMATION (after E2.13/S85 Gowers and E2.14/S88 Anderson) that chi_P structure = HL equidistribution mod q, now in a third orthogonal mathematical category (Boolean polynomial method / algebraic cryptanalysis). **Closure mode E**: AI deviation IS the polynomial-method encoding of the mod-4 sieve fact; no additional polynomial-method content beyond mod-q. AI extraction itself is exponential time in N (LP over 2^N x sum_i C(N,i) F_2 monomial-evaluation matrix), not polylog. **Cross-domain ingredient performed real work**: Croot-Lev-Pach / Tao slice rank / Courtois-Meier algebraic immunity machinery had never been applied to chi_P; the polynomial-method signature of the W-trick at AI level is novel. Cites E2.13, E2.14, E1.10, E3.13. Cross-domain refs: Croot-Lev-Pach arXiv:1605.01506; Tao 2016 blog (slice rank); Ellenberg-Gijswijt 2017 Annals 185, 339; Courtois-Meier 2003 Eurocrypt LNCS 2656; Green-Tao arXiv:math/0606088 (W-trick). See experiments/algebraic/algebraic_immunity_chi_p/algebraic_immunity_chi_p_results.md. | 92 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now let me check current session count to determine the proper synthesis number, then write it.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oP 'session\d+' | sort -t'n' -k2 -n | tail -10
+    session155
+    session156
+    session157
+    session158
+    session159
+    session160
+    session161
+    session162
+    session163
+    session164
+Now write the session synthesis (session 165) and update commit_state.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session165_commit_s82_invariant_subspace.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session165_commit_s82_invariant_subspace.md
+  [Write] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research && find experiments/constructions/spike_eigenvalue_l_squared/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; rm -rf experiments/constructions/spike_eigenvalue_l_squared/__pycache__ 2>/dev/null; echo "Cleanup done"
+    Cleanup done
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] cat .commit_state && echo "---" && ls archive/sessions/session165* && echo 164 > .run_state && cat .run_state
+    thread:s82_invariant_subspace
+    sessions_used:1
+    session_history:S165
+    ---
+    archive/sessions/session165_commit_s82_invariant_subspace.md
+    164
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+## Session 165 — Commit thread session 1/5: S82 invariant-subspace theorem
+
+**Self-grade: B** (refutation + clean alternative discovery)
+
+### What happened
+
+Tested S82's specific eigenvalue conjecture `σ_χ² ~ |L(1, χ)|²` against the saved JSON dumps from S82 at d ∈ {14, 18, 20}, W=2:
+
+- **Refuted**: per-block ratio `Σσ² / Σ|L|²` varies by **34×** across p ∈ {3, 5, 7, 11} at d=20 (CV = 1.37, far above 0.2 threshold). Within-block per-spike σ² spread is 1.10× while per-character |L|² spread is 4.7× — sigma values cluster, L-values don't.
+
+- **Discovered**: `K = Σσ² · p · log²N / N` is constant within 8% (mean 3.86, CV = 0.082) across 7 (d, p) cells. Equivalent to `Σσ² ≈ 3.86 · π(N)/(p log N) ≈ 3.86 · π(N; p, *)` — a Gallagher-Montgomery-Vaughan PNT-in-AP variance scaling, not an L-value formula.
+
+### Implications
+
+S82's residue-class character *identification* stands; its eigenvalue *formula* falls. The C-circular collapse sharpens: spike block energy = Gallagher 2nd-moment of π(N; q, a), controlled by Bombieri-Vinogradov, with no polylog method. The hoped-for "look up L(1, χ) from spike eigenvalues" route is closed.
+
+### Files changed
+- `experiments/constructions/spike_eigenvalue_l_squared/{spike_eigenvalue_l_squared.py, _results.md}` (new)
+- `EDGES.md` — S82 entry annotated with S148 correction
+- `status/CLOSED_PATHS.md` — S148 row (mode C, REFUTATION+DISCOVERY)
+- `archive/sessions/session165_commit_s82_invariant_subspace.md`
+- `.commit_state` — sessions_used: 0 → 1
+- `.run_state` — 164
+
+### Next action (session 2 of commit thread)
+Either (a) derive K = 3.86 analytically from MPS-unfolding 2nd-moment, or (b) extend to d=22 to test per-character within-block correlation at higher resolution.
+--- Session ended ---
+Sleeping 60 seconds before next run...

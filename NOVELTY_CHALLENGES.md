@@ -35,6 +35,19 @@ the middle of an arc, pick from there instead. The frontier sections:
 - **§E** Meta-Analysis of CLOSED_PATHS as a Data Source (2 attacks)
 - **§F** Synthesis Targets That Would Be Publishable (3 multi-session arcs)
 
+**S147 critique recommended next pick (highest A-prior open vector):**
+**ATTACK_VECTORS.md §D.D31 — Adiprasito-Huh-Katz combinatorial Hodge
+theory of an arithmetic prime-matroid.** S142 self-stated 25%
+A-grade prior, AHK 2018 *Annals* 188 (= arXiv:1511.02888) machinery
+fully mature, Heron-Rota-Welsh log-concavity of `|μ_{M_P^N}(F)|` is
+an explicit testable inequality, flat enumeration feasible at N ≤ 32
+with Bernoulli-matched-density control. If D31 closes E or I, pivot
+to D32 (ACSV Pemantle-Wilson). Backup synthesis: a unifying
+`novel/cramer_parity_envelope.md` covering E2.18 / E2.20 / E2.21 /
+E2.22 / E2.23 / E7.16 / E7.20 — ≥ 8 measurements of the same
+structural fact (primes are density+parity Cramér-typical at first
+moment) is a defensible synthesis target.
+
 **§D6 — CLOSED (S85, mode E, B-grade).** Gowers U^k norms of χ_P
 empirically match the Hardy-Littlewood {0,1}^k-cube singular series
 S_2 = 2.301 (Q^2(χ_P) = 2.153 at N=2^18, monotonically converging
@@ -315,6 +328,80 @@ to exhibit a 2×2 submatrix with determinant ±1. Note S90 audit:
 Route A (full closure) requires Hoheisel-grade prime-density not in
 mathlib — multi-session arc on its own.
 
+**§D43 PARTIAL CLOSURE (S157, mode E, B-grade case (i)).** KPZ
+universality / Hairer regularity structures on `D(x) := (π(x) − Li(x))
+· log(x) / √x` on KPZ-spaced grid `x_k = X/2 + k · ⌊X^{1/3}⌋`. Wavelet
+Hölder α(D) ≈ 0.85 stable across logX ∈ {18..24} with linear-fit
+r²>0.998 — far above KPZ ceiling 1/2. Pre-stated falsifiers F1–F4
+reject KPZ; F2 TW2 skewness rejected at |z|≥5 in 5/7 windows.
+Wide-range FFT (x ∈ [10⁴, 10⁷]) confirms D's top peaks at first 12
+non-trivial Riemann γ_k (γ_1=14.135 peak/median 770000, γ_2=21.022
+ratio 760000) — D is deterministic almost-periodic, NOT stochastic
+SPDE. Adds **edge E2.27**. CROSS_DOMAIN_TECHNIQUES §3 Hairer/KPZ/TW2
+PROPOSED → USED PARTIAL. See
+`experiments/analytic/kpz_pi_li_d43/d43_kpz_pi_li_results.md`,
+`archive/sessions/session157_d43_kpz_pi_li.md`.
+
+**Successor challenges (proposed in S157):**
+
+**§D43.b — logX-extension to 2^28.** Scale wavelet Hölder measurement
+to logX = 28 (X = 2²⁸ = 268M, ~5x current cost). The CLT-scale theory
+of Bombieri/Heath-Brown predicts `Var(D) ~ log log x` (slowly growing)
+with Gauss-asymptotic shape; but does Hölder α(D) drift toward 1/2 with
+X (asymptotic KPZ-creep — would be a partial positive A-grade signal),
+or stay flat at 0.85 (conclusively reject KPZ)? Either outcome is
+informative. Cost: 1 session at logX=28; 2 sessions if also testing
+logX=26, 27 to extract α(logX) trend slope. Cross-domain ingredient
+(unchanged): Hairer regularity / wavelet Hölder.
+
+**§D43.c — CLOSED (S160, mode E, B-grade refinement of E2.27).**
+K-truncated residual `R_K(x) := (π(x) − Li(x)) + Σ_{k≤K} 2 Re Li(x^{ρ_k})`
+(corrected sign — challenge spec had it reversed; the explicit formula
+gives `π − Li ≈ −Σ 2 Re Li(x^{ρ_k}) − log 2` so to cancel we ADD).
+Tested at logX = 22, db4 wavelet, K ∈ {0, 1, 5, 10, 25, 50, 100, 200,
+500, 1000, 2000, 4000} using the 8000-zero Odlyzko table. Asymptotic
+`Ei(z) ~ e^z/z · Σ n!/z^n` is exact on `Re Ei` to rel_err 3·10⁻¹¹
+(the iπ Stokes term is purely imaginary; cancels in 2 Re).
+
+**Outcome: A-grade conjecture REFUTED.** Full-band α(D_K) drops below
+1/2 at K* ∈ [200, 500] but with crashing r² (0.998 → 0.005); fine-band
+fit (only wavelet levels above γ_K cutoff) gives U-shape α: smooth at
+K = 0..25, dipping to −0.40 at K=1000 (r²=0.48), rebounding to +0.74
+at K=4000 (r²=0.70). No (K, fit) cell achieves both α<0.5 AND r²>0.5
+— no clean KPZ regime.
+
+**B-grade content (new):** (i) variance reduction curve
+var(R_K)/var(R_0) = 1.00, 0.85, 0.68, 0.54, 0.48, 0.35, 0.27, 0.23, 0.21,
+0.19, 0.18, 0.18 at K = 0,1,5,10,25,50,100,200,500,1000,2000,4000 —
+first 50 zeros account for ~65% of var(π−Li); first 4000 for ~82%;
+(ii) Cramér control with same subtraction is structurally inert:
+var(R_K^C)/var(R_0^C) = 1.012–1.022 flat, α_full(C) ≈ 0.98 at all K,
+α_fine(C) ≥ 0.89 at all K — the explicit formula has nothing to remove
+from Cramér; (iii) **π-vs-Cramér α_fine gap ≤ −0.2 from K=50 onwards**
+is a new structural measurement: the explicit formula structurally
+describes π in a way invisible on a Bernoulli prime model.
+**Refines E2.27 inline.** See
+`experiments/analytic/d43c_k_truncated_residual/d43c_k_truncated_residual_results.md`,
+`archive/sessions/session160_d43c_k_truncated_residual.md`.
+
+**Successor challenges (proposed in S160):**
+
+**§D43.c.i — Higher logX (logX=26) confirmation of variance curve.**
+At logX=22 the variance ratio plateaus at ~0.18 by K=2000. Does the
+plateau drop at higher logX (more variance to extract from more
+zeros)? Predicted: var(R_K)/var(R_0) at fixed K decreases as logX
+grows. If the plateau drops below 0.10 at logX=26, the structural-
+description claim sharpens. Cost: 1 session (sieve at 2^26 ≈ 67M is
+~30s; full sweep ~5 min).
+
+**§D43.c.ii — Asymptotic 1/2 ceiling test.** The infinite-tail residual
+has Hölder regularity exactly α* = 1/2 − ε. To detect it empirically,
+need K ~ √x to reach amplitudes ~ x^{1/2}/γ_K large enough to escape
+the Cramér noise floor. This requires K ≫ 10⁵, beyond the available
+8000-zero Odlyzko table. Path: rigorously compute high zeros via
+mpmath.zetazero up to γ ~ 10⁵ (cost: hours per zero) AND scale logX
+to ~30. Multi-session arc (probably out of practical reach).
+
 §C1 (BK Odlyzko zeros) is now **closed** by S71-redux with a quantitative
 L⁴ obstruction (N_required ≥ 0.81 L⁴ for κ=3 detection); no further
 attempts there.
@@ -359,8 +446,40 @@ or "construction-incoherent" if the object isn't well-defined.
 **Why novel:** E5.8 closed Brandt for π(x) mod 2 wholesale. A per-bit version might side-step O1 if J is parameter-controlled.
 **Falsification:** Either O2/O3/O4 also obstruct π_J (closes per-bit too), or one of them survives (genuinely new partial result).
 **Outcome (S105):** **F2 holds in the saturation regime (N ≥ 4); empirical sharpening of F2.** Built per-bit family `{s_J^(N) : J = 0..N-1}` for N ∈ {3..7} and computed `Kt_b(s_J^(N))` under brandt_mktp's 3-bit stack VM (L_MAX=12, INF=61). Bounded-Kt cut location: `J*(N) := ⌈log₂(π(2^N - 1) + 1)⌉` — for J < J*(N), all bits saturate (Kt_b = 61), including E1.3's "easy zone" J ∈ [⌈0.5N⌉, J*); for J ≥ J*(N), `π_J ≡ 0` and Kt_b ∈ {5..8}. The bounded VM is **blind to E1.3's smooth/oscillatory transition** — it only sees the trivially-zero boundary, materially higher than `0.5N` (gap ≈ 0.5N − log₂ N). Structurally, all four Brandt obstructions O1-O4 still apply to every fixed `π_J`: O1 (each π_J is a fixed function — per-bit decomposition is parameter-controlled but each π_J itself is a fixed total Boolean function); O2 (π_J answers "is bit J set", not "is z complicated"); O3 (per-bit family supplies J*(N) ≈ N − log₂ N strings, but no traversal-path-dependent fresh prefixes); O4 (uniform DTIME, not circuits). The "minimal weakening of O1 admitting TRAVERSE" the spec asked about does **not** exist on `{π_J}`. **Status:** BUILT, no polylog opening. Closure mode E (DUPLICATE-PLUS of E5.8) at structural level + empirical refinement of E1.3 at bounded-Kt resolution.
-**Successor (S105):** C3.a — arithmetic-primitive bounded-Kt VM. Extend the 8-op stack VM with primitives like `LOG2`, `LI_APPROX`, `DIV_LOG`, `GEO_SUM` (R^{-1} kernel), then re-measure `Kt_b'(s_J^(N))`. Question: does the bounded-Kt cut shift from `J* ≈ N − log₂ N` toward E1.3's `0.5N`? If yes, R^{-1}-kernel-equipped VM resolves the smooth/oscillatory transition; if no, a new Kt-cut hierarchy emerges indexed by VM richness. Save under `experiments/constructions/brandt_per_bit_arith_vm/`. Cost: 1 session.
-**Save under:** `experiments/constructions/brandt_per_bit/`
+**Successor C3.a (S105 → BUILT S150):** arithmetic-primitive bounded-Kt VM. Built 4-bit-per-op extended VM with all four R⁻¹-kernel primitives {LOG2, LI_APPROX, DIV_LOG, GEO_SUM} added to base 8-op stack VM; T_MAX = 4096; C inner-loop simulator (`sim.c → sim.so`) with batch evaluator. Scanned (N=3..6, J=0..N-1) at L_max ∈ {24, 28}. **Verdict: F3 (intermediate hierarchy)**. The cut shifts to E1.3's `⌈N/2⌉` boundary fully for N ∈ {4, 5} at L_max=24 (matched to target_lens 16, 32) — `bit_2(π)` at N=4 and `bit_3(π)` at N=5 BOTH compress, with explicit programs `ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N` (24 bits, computes `bit_0(LI(LI(2x)))` matching `bit_2(π(x))` exactly on [0,16)) and `EMIT_S, LI, DUP, INC, PUSH_N, PUSH0` (24 bits). At N=6 the easy zone splits at L_max=28: `J=4` (closer to `J*(N)=5`) compresses via triple-LI program `EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S`; `J=3` (closer to `⌈N/2⌉`) remains saturated. **Within-easy-zone J-monotone hierarchy identified**: bits closer to `J*(N)` compress at smaller L_max — bounded-Kt cost of `bit_J(π)` is empirically monotone in N − J. Hard-zone bits saturate at L_max ≤ target_len for all N ≥ 4. Iterated LI applications (LI∘LI, LI∘LI∘LI) are the dominant compression mechanism. **Refines E1.3** with explicit VM-richness × N-dependent cut hierarchy (annotated EDGES.md). **E5.8 unchanged** — empirical compressibility of some `s_J^(N)` does not enable a Brandt-style diagonalisation; obstructions O1-O4 are independent of VM choice. CLOSED_PATHS row added (S150). See `experiments/constructions/brandt_per_bit_arith_vm/`.
+
+**Successor challenges (proposed in S150):**
+
+**C3.a.i — L_max = 32 sweep.** At L_max=32 (4.3B programs, ~5h with current C simulator; doable with multi-core), test whether `(N=6, J=3)` finally compresses. If yes, the F1 cut would extend to N=6 and the hypothesis "L_max needs only ~ target_len bits to reach E1.3's `⌈N/2⌉` boundary" gets one more confirmation. Cost: 1 session with parallelism.
+
+**C3.a.ii — Random-program sampling at larger N.** Run N=7 (target_len=128) with random sampling of K=10⁹ random 128-bit programs (full enumeration intractable). Test whether the within-easy-zone J-monotone hierarchy persists at larger N. Cost: 1 session.
+
+**C3.a.iii — VM-budget vs RH-scale.** S146 found the bit-level RH-scale anti-correlation valley sits at `J* = ⌊log₂(p(N))/2⌋` (Skewes-direction error scale). Test whether the VM-budget threshold `L_max(J)` for compressing bit J of π scales with the RH error magnitude. If `L_max(J) ∝ √π(2^N) · log` near the RH-scale J, this would be the first project link between **bounded-Kt complexity** and **RH-shadow bit phenomena** (S146). Cost: 1-2 sessions.
+
+**C3.a.iv — Drop / swap arithmetic primitives — BUILT (S158, mode E, B-grade refinement of E1.3).** Six ablation conditions on `{LOG2, LI, DIV_LOG, GEO_SUM}` at `L_max=28`, `N ∈ {3, 4, 5, 6}`: baseline + four single-drops + only_LI. **Verdict: F4 — no single arithmetic primitive is strictly necessary for the easy-zone cut shift.** Every easy-zone cell `{(3,2), (4,2), (5,3), (6,4)}` that compresses in baseline also compresses under every single-drop AND under only_LI. drop_LI matches baseline at L≤24 cells with alternative programs (`(N=4,J=2)`: GEO_SUM+DIV_LOG; `(N=5,J=3)`: LOG2 alone), and is +1 bit at `(N=6, J=4)`. **Refutes S150's narrowest reading** that LI is the dominant compression mechanism — it is one of four substitutable mechanisms. Hard-zone primitive sensitivity differs: meaningful cell `(N=5, J=2)` requires LI ∧ DIV_LOG (either-alone saturates), an orthogonal observation. **Refines E1.3** with primitive-class-robustness: the cut shift is driven by the FAMILY of slow-growing integer-function primitives, not by LI specifically. CLOSED_PATHS row (S158); EDGES.md annotated. See `experiments/constructions/brandt_per_bit_arith_vm_ablation/`, `archive/sessions/session158_c3aiv_arith_vm_ablation.md`.
+
+**Successor challenges (proposed in S158):**
+
+**C3.a.iv.α — LI-vs-non-LI gap scaling at large N.** The +1-bit
+`(N=6, J=4)` `drop_LI` gap is the only cell where LI is strictly
+shorter than non-LI alternatives at `L_max=28`. At larger N the
+iterated-LI mechanism may pull strictly ahead of GEO_SUM/LOG2-based
+alternatives (the slow-growth match to `Li(x)` is asymptotically
+sharper than to alternative slow-growers). Run N=7 with random
+sampling at `L_max=32` under (baseline) and (drop_LI) to estimate
+gap(N) := Kt_b'(drop_LI) − Kt_b'(baseline) at the easy-zone cell
+closest to `J*(N)`. Cost: 1 session with multi-core sampling.
+
+**C3.a.iv.β — Successor primitive set: LN, INV_LI, ZETA_K.**
+Replace one of the four S150 primitives with an alternative
+slow-growing primitive (LN truncating-natural-log; INV_LI = R⁻¹;
+ZETA_K computing `floor(zeta(2 + k))` for small k). Re-run S158's F4
+test with the new primitive. Question: is the F4 family-robustness
+specific to {LOG2, LI, DIV_LOG, GEO_SUM} or does it survive any
+4-primitive set whose elements grow at sub-linear rates? Cost: 1-2
+sessions.
+
+**Save under:** `experiments/constructions/brandt_per_bit/` (C3); `experiments/constructions/brandt_per_bit_arith_vm/` (C3.a); `experiments/constructions/brandt_per_bit_arith_vm_ablation/` (C3.a.iv).
 
 ### C4 — Aggarwal binary search × Dusart bracket × BPSW oracle — **BUILT (S120)**
 **Edges:** E6.6 + E6.8 + E5.1
@@ -443,6 +562,37 @@ or "construction-incoherent" if the object isn't well-defined.
 
 **C8.b.iii — Seed-distribution of random M\*.** Run N=6 W=2 M=3 across 100+ seeds in parallel. Empirical histogram of M\*(rand) tests "random is always ≥ 4" vs "random is sometimes 3 on a non-trivial seed fraction". With 32-core parallelism + ~150 s/cell, ≈ 10 min wall-clock. Cost: 1 session.
 
+### C9 — Pointwise Ramanujan-spike approximator T_Q(n) — **BUILT (S191, paradigm-shift mode)**
+**Edges:** E2.1 + E1.5 + E1.6 + E2.2 + S168.
+**Object:** `T_Q(n) := (π(N)/N) · Σ_{q sqf ≤ Q} mu(gcd(q,n)) / phi(q/gcd(q,n))` — pointwise dual of S168's energy-level spike formula, computable in `O(Q·ω(n))` per evaluation. Falsifiers: (PR1) `||T_Q − const||² / π(N)` at Q=N^{0.185}, d=20 in [0.18, 0.26] (matches S169 SVD spike block). (PR2) Pearson(chi_P, T_Q) monotone-increasing in Q. (PR3) Precision-at-π(N) > Q · π(N)/N. (PR4) Hölder identity `mu(q) c_q(n)/phi(q) = mu(gcd)/phi(q/gcd)` exact for sqf q ≤ 30, n ≤ 60.
+**Outcome (S191):** All four falsifiers PASS. At d=20, Q=13: ratio = 0.2229 (matches S169's 0.220 to 1.4%). Precision lift 5.6× at Q=N^{0.185}, scaling to 12.8× at Q=√N. **Wheel-Mertens identity**: at primorial Q=W and n coprime to W, `T_W(n) = (π(N)/N) · W/φ(W)`. **Status:** BUILT. No polylog opening (cost is `Q · ω(n) = Ω(N^{0.185})`); structural picture only. EDGES.md E2.1 annotated, CLOSED_PATHS row added. **Save under:** `experiments/constructions/ramanujan_spike_pointwise/`.
+
+**Successor challenges (proposed in S191):**
+
+**C9.a — Divisor-only restriction at primorial Q.** Build the closed-form
+identity
+```
+   M_W^{div}(n) := Σ_{q | W, q sqf} mu(q) c_q(n) / phi(q)
+                 ≡ ∏_{p | W} (1 − 1[p | n]/(p − 1) · phi(p))
+```
+(or similar exact-divisor form), and verify pointwise vs the full
+`M_W(n)` (which sums over all squarefree q ≤ W, not just divisors of W).
+Question: at primorial W, is `M_W^{div}` exactly equal to a wheel
+indicator times a Mertens constant? If yes, `T_W^{div}(n)` is an
+*exact* pointwise wheel sieve weighted by Mertens density — a clean
+algebraic identity composing E2.1 and the M_Q closed form. Cost: 1
+session. **Save under:** `experiments/constructions/spike_divisor_only_wheel/`.
+
+**C9.b — Higher-moment composition: T_Q correlations and Hardy-Littlewood.**
+The pointwise correlation `<T_Q(n), T_Q(n+h)>` summed over `n ≤ N`
+should reproduce a *truncated* Hardy-Littlewood twin-prime singular
+series at small h, Q. Test whether `<T_Q · shift_h T_Q> / N`
+equals (up to sub-leading error) the HL singular series `S(h) ·
+(π(N)/N)²` at Q = N^{0.185}. If yes, T_Q is a closed-form
+finite-conductor approximator of HL — a synthesis of E2.13 (Gowers-HL
+match) with the spike construction. Cost: 1 session. **Save under:**
+`experiments/constructions/spike_pointwise_HL_correlation/`.
+
 ---
 
 ## §2. Frame-Shift Questions
@@ -452,10 +602,88 @@ from "polylog π(x)" while remaining in the same neighbourhood. The point
 is to escape the local minimum: 67+ sessions on one frame have been
 exhaustive, but adjacent frames are essentially untouched.
 
-### F1 — Per-bit polylog extraction
-**Question:** Find J such that the J-th bit of π(x) is computable in polylog *for fixed J independent of N*. E1.3 says bits 0..0.6N match `round(R^{-1}(n))`. So J = 0 is trivially polylog. What is the LARGEST J for which `bit_J(π(x))` is provably polylog?
+### F1 — Per-bit polylog extraction — **PARTIALLY CLOSED (S146, mode E, B-grade refinement of E1.3)**
+**Question:** Find J such that the J-th bit of `p(n)` is computable in polylog *for fixed J independent of N*. E1.3 says bits 0..0.6N match `round(R^{-1}(n))`. So J = 0 is trivially polylog. What is the LARGEST J for which `bit_J(p(n))` is provably polylog?
 **Why this is unblocked:** The whole-number question is closed; the per-bit question has an obvious YES answer for small J and an unknown answer for medium J. The boundary is the research target.
 **First step:** Read `novel/carry_propagation_boundary.md`. Build a per-bit accuracy curve as a function of J for N up to 30.
+
+**S146 outcome (refinement, NOT closure):** Direct bit-position
+measurement on N = π(2·10⁸) ≈ 1.1·10⁷ primes refines E1.3 with
+three new structural facts:
+- **bit_0(p(n)) is trivially polylog** (= 1 for n ≥ 2). E1.3's
+  R⁻¹-agreement metric mis-classifies it as "hard" (ag = 0.500)
+  because Li⁻¹'s LSB is uniform mod 2, but the bit IS deterministic.
+- **RH-scale anti-correlation valley**: ag_Li(J) drops to ~0.36
+  at J* = ⌊log₂(p(N))/2⌋ — the bit-level signature of Skewes-
+  direction error sign in `Li(x) > π(x)`. Position shifts with
+  N as predicted; magnitude stable across N ∈ {10⁷, 5·10⁷, 2·10⁸}.
+- **PNT first-order ≠ Li⁻¹ at bit level**: top-bit ag_PNT < 0.95
+  while ag_Li → 1.0; full PNT closed form is required.
+The original F1 question (largest J for provable polylog) remains
+**OPEN** — the new content is a structural map (LSB triviality,
+RH-scale valley, PNT-vs-Li bit-level inequivalence) that constrains
+where to look for non-trivial polylog opportunities. See
+`experiments/wildcard/bit_J_pn_polylog_map/bit_J_pn_polylog_map_results.md`,
+`archive/sessions/session146_f1_bit_J_pn_polylog_map.md`.
+
+**Successor challenges (proposed in S146):**
+
+**§F1.a — CLOSED (S199, mode E, B-grade refinement of E1.3).**
+Cross-modulus generalisation of the S146 RH-shadow valley to bases
+m ∈ {3, 5, 6, 30, 210} at L = 2·10⁸. **Hypothesis CONFIRMED**: the
+dip position `J*(m) = argmin_J ag_Li(m, J)` matches `⌊log_m(L)/2⌋`
+**exactly (Δ = 0)** for all 5 cross-modulus bases. Five F-verdicts:
+F1.a-1 HOLDS unanimously; F1.a-2 (sub-baseline by ≥ 5%) HOLDS
+unanimously; F1.a-3 (random regime far from J*) HOLDS; F1.a-4
+(modal shift at +1) REJECTED, **revised to F1.a-4'**: the modal
+shift at J*(m) is `s* ≈ ⌊⟨e⟩/m^J*⌋ mod m` (S146's "+1 mod 2" is
+the special case `⟨e⟩/2^J* = 0.66 < 1`); F1.a-5 HOLDS exactly
+(`H_p(J=0) = log_2(φ(m))` for primorial m). **Net new content:**
+(a) the RH-shadow valley is *m-adic universal*, not a base-2
+artefact; (b) relative dip `rel(m) = ag·m` deepens monotonically
+with the conductor — 0.722 (m=2) → 0.543 (m=3) → 0.521 (m=6) →
+0.035 (m=30) → 0.010 (m=210), so the Li⁻¹ predictor is essentially
+deterministic-wrong at the m=210 half-conductor digit; (c) m=5
+is structurally shallow (mid-wrap modal shift); (d) primorial-m
+digit-0 entropy = log_2(φ(m)) exactly. **Refines E1.3 inline**.
+See `experiments/wildcard/bit_J_pn_cross_modulus/`,
+`archive/sessions/session199_f1a_cross_modulus.md`.
+
+**Successor challenges (proposed in S199):**
+
+**§F1.a.i — Dip-depth scaling law.** Tabulate `rel(m)` across
+m ∈ {2, 3, ..., 30} (every integer modulus, prime + composite +
+primorial) at L = 2·10⁸. Test whether the closed-form
+`rel(m) = P[S(m) = 0]` with `S(m) ≈ ⟨e⟩/m^J* + N(0, var(e)/m^J*)`
+matches empirical depths. **A-grade if** the closed-form is exact
+(would be a derived Gaussian-RH-shadow formula); **B-grade if** it
+matches up to the m = 5 mid-wrap exception. Cost: 1 session
+(re-run with `moduli="2,3,4,...,30"`).
+
+**§F1.a.ii — Higher m primorial extension.** Extend to m ∈ {2310,
+30030} where `J*(m) ∈ {0, 1}` at L = 2·10⁸. Test whether the dip
+is resolvable at J = 0 (where the predictor and truth are *both*
+on the full conductor scale) — a regime where E1.3's per-bit
+decomposition breaks down because the "digit" is the entire
+conductor's reduced-residue class. Cost: 1 session.
+
+**§F1.a.iii — Cross-zero-truncation.** Compose with §D43.c (S160
+K-truncated explicit-formula residual). Hypothesis: subtracting
+the first K explicit-formula zero contributions from Li⁻¹(n) should
+*cancel* the RH-shadow valley at every base m once K is large
+enough. Empirical test: re-measure m-ary dip on R_K predictor
+agreement for K ∈ {0, 1, 5, 25, 100, 1000}. Direct cross-validation
+of S195/S160's explicit-formula picture at the cross-modulus bit-
+shadow level. Cost: 1-2 sessions.
+
+**§F1.b — Magnitude scaling.** The dip magnitude (ag_Li(J*) ≈ 0.36)
+is stable at L ∈ {10⁷, 5·10⁷, 2·10⁸}. Test up to L = 10⁹ (sympy or
+primecount) to see whether the magnitude tracks (or saturates at)
+the Skewes-region transition. Predicted: magnitude stable until
+the first sign-change of `Li(x) - π(x)` at x ≈ 10^316 (Bays-Hudson)
+which is unreachable. So the valley should be **a fixed empirical
+constant** in the practical regime. Verifying this constancy at
+larger L is direct and tractable. Cost: 1 session.
 
 ### F2 — π_+(x) := π(x) mod p^k for fixed prime p, growing k — **PARTIALLY CLOSED (S69)**
 **Question:** π(x) mod 2 is pseudorandom (35 measures). Is π(x) mod 4 also pseudorandom in 35 measures? Mod 8? At what point does the "free-bit" argument break, if ever? Is the *information rate* of π(x) mod 2^k the constant 0.537·k bits per step (E1.5 says yes) or does it saturate?
@@ -514,7 +742,7 @@ plus `<name>_notes.md`.
 `lean --run`). If it doesn't, the session is an in-progress formalisation,
 not a closure. Save the in-progress state to `RESEARCH_AGENDA.md`.
 
-### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107, S117, S122, S128, S129, S137)**
+### L1 — E2.1: MPS bond-dim identity (HIGHEST priority) — **IN PROGRESS (S76, S83, S98, S99, S106, S107, S117, S122, S128, S129, S137, S143, S144, S151, S152)**
 **Statement:** For χ_P : [1, W^d] → {0,1} the prime indicator reshaped in
 base W ≥ 2, for every cut 1 ≤ j < d:
 ```
@@ -604,16 +832,57 @@ of the 14×14 j=1 slab have identical support pattern at the chosen 7
 cols, joining `{7, 9, 10, 11}` as needs-`det_of_blockTriangular`.
 **Ninth unconditional `mps_bond_dim` instance; seventh instance over a
 wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.**
-**Next action (post-S137):** Either (a) Route A^{(10)} `W = 9` corner via
-`Matrix.det_of_blockTriangular` (multi-session — the first non-
-upper-triangular determinant in the file; same technique closes W=7,
-W=10, W=11, W=14, W=15), or (b) Route A^{(11)} for even higher `R`:
-W=16 gives R=9, W=20 has clean leading-row triangulation per S137's
-Python pre-search (`ρ ↦ (0, 2, 9, 14, 12, 1, 7, 16, 10)`,
-`σ ↦ (1, 6, 18, 12, 0, 2, 8, 16, 10)`), uses `Fin.prod_univ_nine` if
-mathlib has it (else manual chain via `Fin.prod_univ_succ`). Or (c)
-Route C (mathlib PNT for the low-density regime — leaves saturating
-half-cut open). See
+**S143 progress:** Extended Route A^{(10)} to `W = 20` —
+`mps_bond_dim_W_eq_20_d_eq_j_plus_1 : (unfolding 20 (j+1) j).rank = 9`
+for every `j ≥ 1`, sorry-free. **First instance with `R = 9`** and
+**first heartbeat-bumped declaration** (`maxHeartbeats 2000000`). Adds
+local `prod_univ_nine'` lemma. **Tenth unconditional instance.**
+**S144 progress:** Extended Route A^{(11)} to `W = 10`, **refuting
+S128/S129's "structurally obstructed" claim** — `mps_bond_dim_W_eq_10_d_eq_j_plus_1
+: (unfolding 10 (j+1) j).rank = 5`, sorry-free. Permutation
+`ρ ↦ (1, 0, 4, 3, 9)` uses **row 9** (not in {0..4}); the earlier
+S128/S129 search restricted to row prefixes {0..R-1}. S144 also
+performed a DEFINITIVE DP-based enumeration over `W ∈ [2, 72]`,
+`R ≤ 22`: leading-row + dead-col upper-triangulation closes
+**EXACTLY** `W ∈ {2, 3, 4, 5, 6, 8, 10, 12, 18, 20}` and is
+structurally obstructed for every other W in that range.
+**Eleventh unconditional instance.**
+**S151 progress:** Pre-search for W=9 BlockTriangular route — Python
+script `w9_blocktriangular_search.py` enumerated 32 valid (1+3+3)
+block-DIAGONAL decompositions; minimum-new-helpers candidate uses
+`ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)` and adds chiP
+helpers `{13, 41, 53, 61}`. Documented S151 LESSON: `Mexp + Matrix.ext
++ fin_cases <;> rw [h_sub]` shortcut hits "motive not type-correct"
+errors due to dependent-type proof terms.
+**S152 progress:** Closed Route A^{(12)} `W = 9` corner —
+`mps_bond_dim_W_eq_9_d_eq_j_plus_1 : (unfolding 9 (j+1) j).rank = 7`,
+sorry-free. **FIRST closure of an S128/S129/S144 "block-triangular-
+required" wheel; FIRST use of `Matrix.det_fromBlocks_zero₂₁`** —
+orthogonal to the previous nine corner closures (all
+`det_of_upperTriangular`). Used a NESTED `det_fromBlocks_zero₂₁`
+decomposition: outer 1+6 split (1×1 block via `det_fin_one`, gives `det
+= 1`) plus inner 3+3 split of the 6×6 (two 3×3 blocks via
+`det_fin_three`, each gives `det = -1`). Total `det = 1 · (-1) · (-1)
+= 1`. **Crucial design choice:** the 1+6 outer split (vs the S151-
+proposed 4+3) avoids any 4×4 det computation, sidestepping the
+mathlib-no-`det_fin_four` issue. ~610 Lean lines (49 entry-lemmas +
+85 fromBlocks reindex case checks via `rcases ... <;> fin_cases <;>
+rfl` + structural assembly). **Eleventh unconditional instance; tenth
+over a wheel `W ≥ 3`.** Closed-W set: `{2, 3, 4, 5, 6, 8, 9, 10, 12,
+18, 20}`.
+
+**Next action (post-S152):** The S152 nested-`det_fromBlocks_zero₂₁`
+template is now the canonical pattern for the remaining "block-
+triangular-required" wheels `{7, 11, 14, 15, 16, 24, 30, ...}`. Each
+needs a Python pre-search analogous to S151's `w9_blocktriangular_search.py`
+to find the row/col permutation that makes one (or more) off-diagonal
+block zero. The Lean assembly is reusable: 49+ entry-lemmas in W=20
+style + nested fromBlocks reindex + per-block `det_fin_one` /
+`det_fin_three` (or `det_fin_two` for 2×2 blocks). Cleanest next
+single-session targets: W=7 (R=5) and W=11 (R=11). For W=11 the larger
+`R` may need 1+(3+3+3+1) or similar partition. Or pivot to (b) Route C
+(mathlib PNT for the low-density regime — leaves saturating half-cut
+open). See
 `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
 
 ### L2 — E1.5: 0.537-bits invariant
@@ -648,6 +917,22 @@ formalising it would be the first formal verification of a Brandt-MKtP
 extension claim.
 **Estimated effort:** 5-8 sessions (Kt complexity in Lean is non-trivial).
 **Save under:** `experiments/formalisations/E5_8_brandt_obstruction/`
+
+### L6 — Hölder simplification of normalised Ramanujan sum (S191 byproduct)
+**Statement:** For squarefree q and any integer n with `d := gcd(q, n)`,
+```
+   mu(q) · c_q(n) / phi(q)  =  mu(d) / phi(q/d).
+```
+**Why this:** Single-step character-theoretic identity, fully visible
+from definitions. Used pointwise in S191's `T_Q` construction and in
+S168's main-term simplification. Estimated 1 session of Lean. Mathlib
+has `Nat.ArithmeticFunction.moebius`, `Nat.totient`, and the
+Ramanujan-sum definition follows from a simple `Finset` over coprime
+units. **Bonus value:** isolating the identity enables a future Lean
+proof of the *S191 wheel-Mertens identity*: at primorial Q = W,
+`M_W(coprime n) = W/φ(W)`.
+**Estimated effort:** 1 session.
+**Save under:** `experiments/formalisations/L6_holder_normalised_ramanujan/`
 
 ---
 

@@ -1,0 +1,2160 @@
+=== Run #141 — Mode: lean — Mon Apr 27 19:24:09 UTC 2026 ===
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/
+    E2_1_mps_bond_dim
+    README.md
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    total 60
+    drwxr-xr-x 3 root root  4096 Apr 27 19:21 .
+    drwxr-xr-x 3 root root  4096 Apr 26 16:11 ..
+    drwxr-xr-x 5 root root  4096 Apr 27 19:18 MPSBondDim
+    -rw-r--r-- 1 root root 47984 Apr 27 19:21 mps_bond_dim_notes.md
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/
+    total 48
+    drwxr-xr-x 5 root root 4096 Apr 27 19:18 .
+    drwxr-xr-x 3 root root 4096 Apr 27 19:21 ..
+    drwxr-xr-x 3 root root 4096 Apr 26 16:12 .github
+    -rw-r--r-- 1 root root    7 Apr 26 16:12 .gitignore
+    drwxr-xr-x 5 root root 4096 Apr 26 16:15 .lake
+    -rw-r--r-- 1 root root  929 Apr 27 19:18 CheckAxioms.lean
+    drwxr-xr-x 2 root root 4096 Apr 27 19:16 MPSBondDim
+    -rw-r--r-- 1 root root   24 Apr 26 16:12 MPSBondDim.lean
+    -rw-r--r-- 1 root root  487 Apr 26 16:12 README.md
+    -rw-r--r-- 1 root root 3172 Apr 26 16:13 lake-manifest.json
+    -rw-r--r-- 1 root root  481 Apr 26 16:12 lakefile.lean
+    -rw-r--r-- 1 root root   29 Apr 26 16:12 lean-toolchain
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/
+    Basic.lean
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    File content (100824 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3510 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    1	/-
+    2	# E2.1: MPS bond dimension of the prime indicator (statement-only)
+    3	
+    4	Formalisation of the theorem in `novel/mps_bond_dimension.md`:
+    5	
+    6	  For chi_P : [1, W^d] -> {0,1} the prime indicator, viewed as a tensor of
+    7	  shape (W, W, ..., W) (d copies) by base-W reshape, for every cut
+    8	  1 <= j < d and every integer W >= 2:
+    9	
+    10	      rank M^(j) = min ( W^j ,  phi(W) * W^(d-j-1) + 1 )
+    11	
+    12	  where phi is Euler's totient and M^(j) is the (W^j x W^(d-j)) unfolding.
+    13	
+    14	Stage 1: theorem statement only. The proof is a `sorry`. The next stage
+    15	splits the proof into upper and lower bounds, each via separate lemmas.
+    16	-/
+    17	
+    18	import Mathlib
+    19	
+    20	open Matrix Nat
+    21	
+    22	namespace E2_1
+    23	
+    24	/--
+    25	The prime indicator, embedded in `ℚ`. We use `ℚ` (a field) because matrix
+    26	`rank` is most informative over a field.
+    27	-/
+    28	noncomputable def chiP (n : ℕ) : ℚ := if Nat.Prime n then 1 else 0
+    29	
+    30	/--
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3300	    simp [chiP, h_not_prime_339]
+    3301	  -- (7,3): unfolding(16, 12) = chiP 333 = 0
+    3302	  have hL73 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨12, h_twelve_lt_pow_dj⟩ = 0 := by
+    3303	    change chiP (16 * 20 ^ ((j + 1) - j) + 12 + 1) = 0
+    3304	    rw [h_sub]
+    3305	    have h_eq : (16 * 20 ^ 1 + 12 + 1 : ℕ) = 333 := by norm_num
+    3306	    rw [h_eq]
+    3307	    simp [chiP, h_not_prime_333]
+    3308	  -- (7,4): unfolding(16, 2) = chiP 323 = 0
+    3309	  have hL74 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨2, h_two_lt_pow_dj⟩ = 0 := by
+    3310	    change chiP (16 * 20 ^ ((j + 1) - j) + 2 + 1) = 0
+    3311	    rw [h_sub]
+    3312	    have h_eq : (16 * 20 ^ 1 + 2 + 1 : ℕ) = 323 := by norm_num
+    3313	    rw [h_eq]
+    3314	    simp [chiP, h_not_prime_323]
+    3315	  -- (7,5): unfolding(16, 8) = chiP 329 = 0
+    3316	  have hL75 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨8, h_eight_lt_pow_dj⟩ = 0 := by
+    3317	    change chiP (16 * 20 ^ ((j + 1) - j) + 8 + 1) = 0
+    3318	    rw [h_sub]
+    3319	    have h_eq : (16 * 20 ^ 1 + 8 + 1 : ℕ) = 329 := by norm_num
+    3320	    rw [h_eq]
+    3321	    simp [chiP, h_not_prime_329]
+    3322	  -- (7,6): unfolding(16, 0) = chiP 321 = 0
+    3323	  have hL76 : unfolding 20 (j + 1) j ⟨16, h_sixteen_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    3324	    change chiP (16 * 20 ^ ((j + 1) - j) + 0 + 1) = 0
+    3325	    rw [h_sub]
+    3326	    have h_eq : (16 * 20 ^ 1 + 0 + 1 : ℕ) = 321 := by norm_num
+    3327	    rw [h_eq]
+    3328	    simp [chiP, h_not_prime_321]
+    3329	  -- (8,0): unfolding(10, 1) = chiP 202 = 0
+    ... (180 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean
+    1	import MPSBondDim.Basic
+    2	
+    3	#print axioms E2_1.chiP_seventeen_eq_one
+    4	#print axioms E2_1.chiP_thirty_seven_eq_one
+    5	#print axioms E2_1.exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1
+    6	#print axioms E2_1.mps_bond_dim_W_eq_8_d_eq_j_plus_1
+    7	#print axioms E2_1.chiP_fifty_nine_eq_one
+    8	#print axioms E2_1.chiP_eighty_nine_eq_one
+    9	#print axioms E2_1.chiP_one_hundred_nine_eq_one
+    10	#print axioms E2_1.chiP_one_hundred_twenty_seven_eq_one
+    11	#print axioms E2_1.exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1
+    12	#print axioms E2_1.mps_bond_dim_W_eq_12_d_eq_j_plus_1
+    13	#print axioms E2_1.chiP_forty_seven_eq_one
+    14	#print axioms E2_1.chiP_one_hundred_forty_nine_eq_one
+    15	#print axioms E2_1.chiP_one_hundred_ninety_nine_eq_one
+    16	#print axioms E2_1.chiP_two_hundred_forty_one_eq_one
+    17	#print axioms E2_1.chiP_three_hundred_thirty_seven_eq_one
+    18	#print axioms E2_1.exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1
+    19	#print axioms E2_1.mps_bond_dim_W_eq_20_d_eq_j_plus_1
+    20	
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    1	# L1 — E2.1 MPS bond-dim identity (Lean 4 formalisation, in progress)
+    2	
+    3	**Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
+    4	**Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
+    5	**Build status (S143):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
+    6	**No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
+    7	
+    8	## What this file formalises
+    9	
+    10	The identity from `novel/mps_bond_dimension.md`:
+    11	
+    12	> For `chiP : [1, W^d] → {0,1}` the prime indicator and `M^(j)` the
+    13	> `(W^j × W^(d-j))` unfolding via base-`W` reshape, for every `W ≥ 2`
+    14	> and every cut `1 ≤ j < d`:
+    15	>
+    16	>     rank M^(j)  =  min ( W^j ,  φ(W) · W^(d-j-1) + 1 ).
+    17	
+    18	EDGES.md edge: **E2.1**. Empirically saturated in `novel/mps_bond_dimension.md`
+    19	for `W ∈ {2, 6, 30, 210}` and `d` up to 20.
+    20	
+    21	## Lean layout
+    22	
+    23	The proof is decomposed into 8 declarations:
+    24	
+    25	| name                            | role                                           | status   |
+    26	|---------------------------------|------------------------------------------------|----------|
+    27	| `chiP`                          | prime indicator `ℕ → ℚ`                        | def      |
+    28	| `unfolding`                     | the `(W^j × W^(d-j))` matrix over `ℚ`          | def      |
+    29	| `rank_le_min_dim`               | trivial ceiling `rank ≤ W^j`                   | **done** |
+    30	| `row_support_coprime`           | nonzero entries imply `gcd(k+1, W) = 1`        | **done** |
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    200	  (the prime exhibit) and `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2`
+    201	  (the unconditional rank statement). Both are sorry-free. The
+    202	  construction picks σ as `(column 1, column p − 2^(d−1) − 1)` for the
+    203	  Bertrand prime `p ∈ (2^(d−1), 2 · 2^(d−1)]`; the resulting `2 × 2`
+    204	  submatrix is upper-triangular `[[1, ?], [0, 1]]` with `det = 1`,
+    205	  because `2^(d−1) + 2` is even and `> 2`, hence not prime. ~70 Lean
+    206	  lines. The general case (the original `exists_invertible_submatrix`)
+    207	  remains the only `sorry` in the file.
+    208	
+    209	* **Route A'' (orthogonal corner, even simpler than A'). DONE S99.**
+    210	  Closed `exists_invertible_submatrix` for the orthogonal corner case
+    211	  `(W = 2, d = j + 1)` (i.e. `d - j = 1`) via two new theorems:
+    212	  `exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1` (the prime
+    213	  exhibit) and `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2`
+    214	  for every `j ≥ 1`. Both sorry-free. **No Bertrand required**: the
+    215	  matrix has only `2^(d-j) = 2^1 = 2` columns, so we take *both*; rows
+    216	  `{0, 1}` (available since `2^j ≥ 2` for `j ≥ 1`) plus the column-swap
+    217	  `σ = (col 1, col 0)` give the `2 × 2` submatrix
+    218	  ```
+    219	     ⎡ unfolding(0, 1),  unfolding(0, 0) ⎤   ⎡ chiP 2, chiP 1 ⎤   ⎡ 1, 0 ⎤
+    220	     ⎣ unfolding(1, 1),  unfolding(1, 0) ⎦ = ⎣ chiP 4, chiP 3 ⎦ = ⎣ 0, 1 ⎦
+    221	  ```
+    222	  of determinant `1`. Only `Nat.prime_two`, `Nat.prime_three`,
+    223	  `Nat.not_prime_one`, and decidability of `¬ Nat.Prime 4` are used.
+    224	  ~110 Lean lines (counting docstrings + the helper `chiP_three_eq_one`).
+    225	  Together with Route A', the file now has unconditional Lean proofs of
+    226	  `mps_bond_dim` whenever **either** `j = 1` **or** `d - j = 1` —
+    227	  i.e. on the entire boundary of the `(j, d − j)` integer grid. The
+    228	  case `(j = 1, d = 2)` is the unique overlap; `j ≥ 2` (with `d = j + 1`)
+    229	  is genuinely new content.
+    ... (370 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    600	  not the sharp `rank ≤ 9 = φ(20) + 1`. We cite the general
+    601	  `upper_bound`, which evaluates to `φ(20) · 20^0 + 1 = 8 · 1 + 1 = 9`.
+    602	
+    603	  Uses `Nat.prime_two`, `chiP_twenty_three_eq_one` (existing from S117),
+    604	  `chiP_two_hundred_eleven_eq_one` (existing from S137),
+    605	  `chiP_two_hundred_ninety_three_eq_one` (existing from S137), and five
+    606	  new helpers for `{47, 149, 199, 241, 337}` (all `norm_num`-checkable).
+    607	  ~570 Lean lines (the largest single-corner block in the file, beating
+    608	  W=18's 520). **Tenth unconditional `mps_bond_dim` instance; eighth
+    609	  instance over a wheel `W ≥ 3`; fifth instance using
+    610	  `det_of_upperTriangular`.** **First instance with `R = 9`** and
+    611	  **first heartbeat-bumped declaration in the file**.
+    612	
+    613	  **Why W ∈ {15, 16, 24, 30} are structurally obstructed (S143
+    614	  pre-search).** All four of these prime-power-free wheels with
+    615	  `R = φ(W) + 1 = 9` admit zero leading-row+dead-col upper-
+    616	  triangulations within rows `[0, W)`. They join `W ∈ {7, 9, 10, 11,
+    617	  14}` in the "`det_of_blockTriangular`-required" set. Concretely:
+    618	  - W=15: live = `{0, 1, 3, 6, 7, 10, 12, 13}`, dead candidates =
+    619	    `{2, 4}`; both column sets fail.
+    620	  - W=16: live = `{0, 2, 4, 6, 8, 10, 12, 14}`, dead = `{1}`; fails.
+    621	  - W=24: live = `{0, 4, 6, 10, 12, 16, 18, 22}`, dead = `{1, 2}`; both fail.
+    622	  - W=30: live = `{0, 6, 10, 12, 16, 18, 22, 28}`, dead = `{1, 2, 4}`; all three fail.
+    623	
+    624	  The closed-W set is now `{2, 3, 4, 5, 6, 8, 12, 18, 20}`; the
+    625	  block-triangular-required set is `{7, 9, 10, 11, 14, 15, 16, 24, 30}`.
+    626	  The next single-session leading-row candidates are W ∈ {21, 22, 25,
+    627	  26, 27, 28, 33, 35, 36, ...} (untested). At W=21, R = 13 — substantially
+    628	  more work; at W=22, R = 11; at W=25 (= 5²), R = 21. Cleanest next
+    629	  candidates are W ∈ {21, 22, 28} where R ∈ {11, 12, 13}; ambitious
+    ... (76 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -20
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session1[0-9]" | sort
+    session100_g1_liouville_anderson_lyapunov.md
+    session101_d6c_mu_weighted_chi_p.md
+    session102_critique.md
+    session103_frontier_gen.md
+    session104_d13_subword_complexity.md
+    session105_c3_brandt_per_bit.md
+    session106_l1_lean_w3_corner.md
+    session107_l1_lean_w4_corner.md
+    session108_c5_stein_wasserstein_pi.md
+    session109_verify_c5_stein.md
+    session110_verify_c5_stein.md
+    session111_verify_c5_stein.md
+    session112_verify_c5_stein.md
+    session113_verify_c5_stein.md
+    session114_verify_c5_stein.md
+    session115_verify_c5_stein.md
+    session116_a5_maynard_sieve_pointwise.md
+    session117_d2a_ph_w_trick.md
+    session118_b2_automorphic_l_function.md
+    session118_critique.md
+    session119_frontier_gen.md
+    session11_summary.md
+    session120_c4_aggarwal_dusart_bpsw.md
+    session121_frontier_gen.md
+    session121_l1_lean_w5_corner.md
+    session122_l1_lean_w6_corner.md
+    session123_c2_higher_order_zero_correlations.md
+    session124_d2a1_ph_marginal_b3.md
+    session125_d20_friedman_ramanujan_prime_cayley.md
+    session126_d22_hodge_coprimality_flag.md
+    ... (24 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session143_l1_lean_w20_corner.md
+    1	# Session 143 — Arc 2 Lean Formalisation: W=20 corner case (Route A^{(10)})
+    2	
+    3	**Mode:** arc continuation (Arc 2 — Lean Formalisation Track).
+    4	**Date:** 2026-04-27.
+    5	**Self-grade:** **B-grade** (substantive arc step, single-corner closure
+    6	extending the leading-row triangulation family one wheel further; first
+    7	`R = 9` instance and first heartbeat-bumped declaration in the file).
+    8	
+    9	## What was produced that wasn't in the project before
+    10	
+    11	1. **Eight new theorems in `experiments/formalisations/E2_1_mps_bond_dim/`:**
+    12	   - `chiP_forty_seven_eq_one : chiP 47 = 1`
+    13	   - `chiP_one_hundred_forty_nine_eq_one : chiP 149 = 1`
+    14	   - `chiP_one_hundred_ninety_nine_eq_one : chiP 199 = 1`
+    15	   - `chiP_two_hundred_forty_one_eq_one : chiP 241 = 1`
+    16	   - `chiP_three_hundred_thirty_seven_eq_one : chiP 337 = 1`
+    17	   - `prod_univ_nine'` (private; local `Fin 9` product expansion)
+    18	   - `exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1`
+    19	   - `mps_bond_dim_W_eq_20_d_eq_j_plus_1 : (unfolding 20 (j+1) j).rank = 9`
+    20	     for every `j ≥ 1`.
+    21	   All sorry-free; `#print axioms` confirms only
+    22	   `[propext, Classical.choice, Quot.sound]`.
+    23	
+    24	2. **Tenth unconditional `mps_bond_dim` instance.** Closed W's are now
+    25	   `{2, 3, 4, 5, 6, 8, 12, 18, 20}`. The W=20 closure is the **first
+    26	   instance with `R = 9`** and the **first heartbeat-bumped declaration
+    27	   in the file** (`set_option maxHeartbeats 2000000 in`).
+    28	
+    29	3. **Negative shape extension.** Python pre-search at S143 confirmed
+    30	   that **W ∈ {15, 16, 24, 30}** all hit the structural row-pattern-
+    ... (70 more lines)
+  [Bash] grep -n "Arc 2" /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md | head -20
+    67:### Arc 2 — Lean Formalisation Track
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    67	### Arc 2 — Lean Formalisation Track
+    68	**Status:** IN PROGRESS — Run #141 / Session 143 (Route A^{(10)} W=20 corner CLOSED). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
+    69	**Owner:** any agent who picks it up
+    70	**Goal:** Permanent verifiable artifacts for the project's main results.
+    71	See `NOVELTY_CHALLENGES.md` §3.
+    72	
+    73	**Milestones:**
+    74	- [x] Set up `experiments/formalisations/` with a Lean 4 toolchain
+    75	  (lakefile.lean, mathlib4 dependency). **Done** — toolchain
+    76	  `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` under
+    77	  `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/`.
+    78	  `lake build` succeeds (8315 jobs, ~7s incremental).
+    79	- [x] Pick L1 (E2.1 MPS bond-dim) as first formalisation.
+    80	- [x] Statement-only Lean file (theorem statement, no proof). **Done**
+    81	  in `MPSBondDim/Basic.lean`: `mps_bond_dim`, `upper_bound`,
+    82	  `lower_bound`, `rank_le_min_dim`, `row_support_coprime`,
+    83	  `live_columns_count` (8 declarations total including `chiP` and
+    84	  `unfolding`).
+    85	- [x] Proof skeleton with `sorry` placeholders. **Done** — skeleton
+    86	  reduced to **1 remaining `sorry`** (only `lower_bound`) and 0 `axiom`
+    87	  introductions.
+    88	- [x] Auxiliary closed: `rank_le_min_dim` (one-liner cite of
+    89	  `Matrix.rank_le_height`).
+    90	- [x] Auxiliary closed: `row_support_coprime` — 30-line
+    91	  number-theoretic proof: nonzero entry ⇒ `n` prime ⇒ `gcd(n, W) = 1`
+    92	  (via `coprime_or_dvd_of_prime` plus `n > W`); then mod-`W` reduction
+    93	  via `gcd_add_mul_right_left` after rewriting `W^(d-j) = W^(d-j-1) · W`.
+    94	- [x] Auxiliary closed: `live_columns_count` (S75) — ~110-line CRT
+    95	  count: `Fin → range` value-projection bijection + induction on
+    96	  `W`-blocks reducing to `Nat.filter_coprime_Ico_eq_totient W 1`.
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    265	  `chiP_two_hundred_ninety_three_eq_one`,
+    266	  `exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    267	  and `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 18 (j+1) j).rank = 7`,
+    268	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    269	  Quot.sound`). Route A^{(9)} from `mps_bond_dim_notes.md`. The matrix is
+    270	  `18^j × 18`; live columns `{0, 4, 6, 10, 12, 16}` (residues
+    271	  `1, 5, 7, 11, 13, 17 (mod 18)`) plus dead column `1` (`chiP 2 = 1`)
+    272	  give `R = φ(18) + 1 = 7`. Triangulation via mixed leading/non-leading
+    273	  rows: `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)`
+    274	  triangularises the `7 × 7` submatrix to upper triangular with diagonal
+    275	  primes `{2, 43, 179, 29, 211, 109, 293}` and 21 below-diagonal
+    276	  composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200,
+    277	  205, 209, 215, 289, 290, 295, 299, 301, 305}`. Determinant via
+    278	  `Matrix.det_of_upperTriangular`, expansion via `Fin.prod_univ_seven`.
+    279	  Upper-bound subtlety: `rank_le_width` gives only `rank ≤ 18`; we cite
+    280	  the general `upper_bound`, which evaluates to `φ(18) · 18^0 + 1 = 7`.
+    281	  Uses `Nat.prime_two` and five new helpers via `norm_num` (rather than
+    282	  `decide`, which hits `maxRecDepth` for primes ≥ 150). ~520 Lean lines
+    283	  (the largest single-corner block). **Ninth unconditional `mps_bond_dim`
+    284	  instance; seventh instance over a wheel `W ≥ 3`; fourth instance using
+    285	  `det_of_upperTriangular`.** **First instance with `R = 7`.** Pre-search
+    286	  excluded W=14 (structurally obstructed by row-2/row-5 support pattern
+    287	  identity, like W ∈ {7, 9, 10, 11}).
+    288	- [x] **Orthogonal corner case `(W = 20, d = j + 1)` closed unconditionally (S143).**
+    289	  Six new declarations: `chiP_forty_seven_eq_one`,
+    290	  `chiP_one_hundred_forty_nine_eq_one`,
+    291	  `chiP_one_hundred_ninety_nine_eq_one`,
+    292	  `chiP_two_hundred_forty_one_eq_one`,
+    293	  `chiP_three_hundred_thirty_seven_eq_one`,
+    294	  `exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    ... (170 more lines)
+Let me check the size of the file's recent W=20 corner section to understand the pattern:
+  [Bash] grep -n "^theorem\|^private theorem\|^def\|^noncomputable def\|^/--\|set_option" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean | head -80
+    24:/--
+    28:noncomputable def chiP (n : ℕ) : ℚ := if Nat.Prime n then 1 else 0
+    30:/--
+    38:noncomputable def unfolding (W d j : ℕ) :
+    71:/--
+    82:theorem row_support_coprime
+    135:/--
+    143:theorem live_columns_count
+    264:/--
+    270:theorem upper_bound
+    380:/--
+    384:theorem chiP_two_eq_one : chiP 2 = 1 := by
+    387:/--
+    396:theorem entry_zero_one_eq_one
+    402:/--
+    413:theorem one_le_rank_unfolding
+    442:/--
+    467:theorem exists_invertible_submatrix
+    474:/--
+    482:theorem lower_bound
+    501:/--
+    509:theorem rank_le_min_dim
+    514:/--
+    528:theorem mps_bond_dim
+    550:/--
+    572:theorem exists_invertible_submatrix_W_eq_2_j_eq_1
+    636:/--
+    647:theorem mps_bond_dim_W_eq_2_j_eq_1
+    680:/--
+    683:theorem chiP_three_eq_one : chiP 3 = 1 := by
+    ... (50 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/ && ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/ 2>/dev/null | head -20
+    E2_1_mps_bond_dim
+    README.md
+    build
+    config
+    packages
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && cat lean-toolchain && cat lakefile.lean
+    leanprover/lean4:v4.30.0-rc2
+    import Lake
+    open Lake DSL
+    
+    package "MPSBondDim" where
+      version := v!"0.1.0"
+      keywords := #["math"]
+      leanOptions := #[
+        ⟨`pp.unicode.fun, true⟩, -- pretty-prints `fun a ↦ b`
+        ⟨`relaxedAutoImplicit, false⟩,
+        ⟨`maxSynthPendingDepth, .ofNat 3⟩,
+        ⟨`weak.linter.mathlibStandardSet, true⟩,
+      ]
+    
+    require "leanprover-community" / "mathlib" @ git "v4.30.0-rc2"
+    
+    @[default_target]
+    lean_lib «MPSBondDim» where
+      -- add any library configuration options here
+  [Bash] which lake && lake --version 2>/dev/null || echo "no lake"
+    no lake
+  [Bash] ls $HOME/.elan/bin/ 2>/dev/null && export PATH=$HOME/.elan/bin:$PATH && lake --version 2>/dev/null
+    elan
+    lake
+    lean
+    leanc
+    leanchecker
+    leanmake
+    leanpkg
+    Lake version 5.0.0-src+3dc1a08 (Lean version 4.30.0-rc2)
+Good, lake is installed under elan. Let me first verify the current build state, then run a Python pre-search for W=22.
+  [Bash] cat <<'PY' > /tmp/w22_search.py
+from itertools import permutations, combinations
+from sympy import isprime
+
+W = 22
+# columns
+live_cols = [k for k in range(W) if not isprime  and gcd(k+1, W) == 1] if False else None
+from math import gcd
+live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+# dead candidates that yield 1 at row 0 (i.e., k+1 prime)
+dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+print("live cols:", live_cols, "len", len(live_cols))
+print("dead candidates:", dead_candidates)
+
+# R = phi(W)+1 = 11
+phi = sum(1 for k in range(1, W+1) if gcd(k, W)==1)
+R = phi + 1
+print("R =", R)
+
+# entry at (i, k) is chiP(i*W + k + 1)
+# We want to find rho: R rows in [0, W) (the "leading" attempt — extended pool)
+# and sigma: R columns total = (live_cols ∪ {dead_choice})
+# such that submatrix is upper-triangular (after reorder), with 1's on diagonal,
+# 0's below the diagonal.
+
+def ut_check(rows, cols):
+    # rows and cols are sequences of length R; we treat them as rho, sigma
+    # Construct R x R matrix
+    M = [[1 if isprime(rows[i]*W + cols[k] + 1) else 0 for k in range(R)] for i in range(R)]
+    # Diagonal must all be 1, below-diagonal must all be 0 (above diagonal anything)
+    for i in range(R):
+        if M[i][i] != 1: return False
+        for k in range(i):
+            if M[i][k] != 0: return False
+    return True
+
+# Strategy: greedy. For each dead choice, try all R-row selections from [0, W) and
+# all R-col permutations of (live ∪ {dead}). Too many for brute force (C(22,11)*11!).
+# Instead, use diagonal-search: pick any R rows (combos), then for each one search
+# a permutation of cols that gives upper triangular with 1's on diag.
+
+def find(rows_pool_size_max=None):
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        # Enumerate row subsets
+        from itertools import combinations as comb
+        # Allow rows from [0, W) — keep small
+        row_pool = list(range(W))
+        for rows in comb(row_pool, R):
+            # We need a column permutation of cols_set such that:
+            # for each i, primality(rows[?]*W + cols[i]+1) and below-diag zeros
+            # Try via rho permutations too — pick ordering of rows
+            # Compute boolean R x R matrix M[i][k] for rows in chosen ordering and cols in canonical order
+            R_arr = list(rows)
+            # full primality matrix for these rows with cols_set
+            P = [[1 if isprime(r*W + c + 1) else 0 for c in cols_set] for r in R_arr]
+            # Try each row permutation (rho) and column permutation (sigma)
+            # That's R! * R! ~ 1.6e15. Too much. So instead:
+            # Use the fact: for each i, we need rows[rho_inv[i]]*W + cols[sigma_inv[i]]+1 to be prime (diagonal)
+            # And for j < i: rows[rho_inv[i]]*W + cols[sigma_inv[j]]+1 must be NOT prime
+            # ⇒ pick a perfect matching between rows and cols where row i is matched to col k(i) iff entry is prime,
+            # then find a topological ordering on the digraph: i < j if (row i has a prime at col k(j))?
+            # Equivalent to: assign permutations rho, sigma so that the chosen R diagonal entries are primes,
+            # and for the resulting reordered matrix, all below-diagonal entries are 0.
+            # Easier: recursive selection.
+            # Step 1: find a matching M of rows to cols where (r, c) ∈ M iff entry = 1 (prime).
+            # Then order them such that triangulation holds.
+            # For triangulation: there must exist a row permutation rho and col permutation sigma such that
+            # diagonal = chosen matching entries (all 1), and for each i < j in the order, 
+            # the entry (rho^{-1}(j), sigma^{-1}(i)) is 0 (i.e., row r_j at col c_i is composite).
+            # 
+            # This is the question: given a 0-1 matrix, can we permute rows AND cols so that it's upper triangular with 1's on diagonal?
+            # Equivalent to: find a perfect matching of 1's; let order of (r_t, c_t) pairs satisfy that for s < t,
+            # entry P[r_t][c_s] = 0.
+            # 
+            # Greedy: build the matching iteratively, last to first. The "last" diagonal element (r, c)
+            # must have ALL entries P[r][c'] = 0 for c' != c, c' in remaining cols. (That's the bottom row condition.)
+            # Then remove r and c, recurse on the smaller submatrix.
+            # 
+            # Wait — actually for upper triangular, the bottom row (i = R-1) has only the diagonal element nonzero.
+            # No: diagonal at column R-1, columns 0..R-2 must be 0. So entries P[r_{R-1}][c_0..c_{R-2}] = 0.
+            # That means r_{R-1} has 1 in only one column among the chosen R columns.
+            # 
+            # So the greedy peel-off: find any row that has exactly one 1 in the chosen R columns.
+            # That row is r_{R-1}, the column where the 1 is is c_{R-1}.
+            # Remove r_{R-1} and c_{R-1}, recurse.
+            # 
+            # If no row has exactly one 1 → fail.
+            
+            P_arr = [row[:] for row in P]
+            cols_remaining = list(range(R))
+            rows_remaining = list(range(R))
+            row_order = []
+            col_order = []
+            ok = True
+            for step in range(R):
+                # find a row with exactly one 1 in remaining cols
+                found = -1
+                for ri in rows_remaining:
+                    ones = [ci for ci in cols_remaining if P_arr[ri][ci] == 1]
+                    if len(ones) == 1:
+                        found = ri
+                        c_found = ones[0]
+                        break
+                if found == -1:
+                    ok = False
+                    break
+                row_order.append(found)
+                col_order.append(c_found)
+                rows_remaining.remove(found)
+                cols_remaining.remove(c_found)
+            if ok:
+                # row_order is in order (R-1), (R-2), ..., 0 (bottom-up); reverse to get rho order
+                row_order = row_order[::-1]
+                col_order = col_order[::-1]
+                # Map back to original row indices (R_arr) and original col indices (cols_set)
+                rho = [R_arr[i] for i in row_order]
+                sigma = [cols_set[k] for k in col_order]
+                return dead, rho, sigma
+    return None
+
+import sys
+sys.setrecursionlimit(10**5)
+result = find()
+if result is None:
+    print("no triangulation found")
+else:
+    dead, rho, sigma = result
+    print(f"FOUND!  dead={dead}")
+    print(f"rho = {rho}")
+    print(f"sigma = {sigma}")
+    # Print the resulting triangular submatrix
+    from sympy import isprime as ip
+    diagonal_primes = []
+    below_diag = []
+    print("Submatrix:")
+    for i in range(R):
+        row_str = []
+        for k in range(R):
+            n = rho[i]*W + sigma[k] + 1
+            row_str.append(f"{1 if ip(n) else 0}")
+            if i == k:
+                diagonal_primes.append(n)
+            if k < i and ip(n):
+                print(f"BUG: below-diagonal entry not zero at ({i},{k}): chiP {n} is prime")
+            if k < i and not ip(n):
+                below_diag.append(n)
+        print(f"  i={i}: " + ", ".join(row_str))
+    print(f"diagonal n-values: {[rho[i]*W + sigma[i] + 1 for i in range(R)]}")
+    print(f"diagonal primes: {diagonal_primes}")
+    print(f"below-diagonal n-values: {sorted(below_diag)}")
+PY
+python3 /tmp/w22_search.py
+    live cols: [0, 2, 4, 6, 8, 12, 14, 16, 18, 20] len 10
+    dead candidates: [1, 10]
+    R = 11
+    no triangulation found
+W=22 has no leading-row triangulation. Let me try other untested wheels.
+  [Bash] cat <<'PY' > /tmp/w_search.py
+from math import gcd
+from sympy import isprime, totient
+
+def find_triangulation(W):
+    """Try to find a triangulation of the WxW slab (j=1) with rows in [0, W).
+    Returns (dead, rho, sigma) or None."""
+    live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+    dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+    phi = int(totient(W))
+    R = phi + 1
+    if not dead_candidates:
+        return None  # cannot exhibit dead column with chiP=1 at row 0
+    
+    from itertools import combinations as comb
+    
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        row_pool = list(range(W))
+        # Enumerate row subsets — bound size by combinatorial limit
+        n_combs = 1
+        from math import comb as binom
+        n_combs = binom(W, R)
+        if n_combs > 5_000_000:
+            return f"too-large (W={W}, R={R}, combos={n_combs})"
+        
+        for rows in comb(row_pool, R):
+            R_arr = list(rows)
+            P = [[1 if isprime(r*W + c + 1) else 0 for c in cols_set] for r in R_arr]
+            
+            # Greedy peel: find a sequence such that at each step, some remaining row
+            # has exactly one 1 in remaining cols
+            P_arr = [row[:] for row in P]
+            cols_remaining = list(range(R))
+            rows_remaining = list(range(R))
+            row_order = []
+            col_order = []
+            ok = True
+            for step in range(R):
+                found = -1
+                for ri in rows_remaining:
+                    ones = [ci for ci in cols_remaining if P_arr[ri][ci] == 1]
+                    if len(ones) == 1:
+                        found = ri
+                        c_found = ones[0]
+                        break
+                if found == -1:
+                    ok = False
+                    break
+                row_order.append(found)
+                col_order.append(c_found)
+                rows_remaining.remove(found)
+                cols_remaining.remove(c_found)
+            if ok:
+                row_order = row_order[::-1]
+                col_order = col_order[::-1]
+                rho = [R_arr[i] for i in row_order]
+                sigma = [cols_set[k] for k in col_order]
+                return (dead, rho, sigma)
+    return None
+
+# Test each W
+test_Ws = [21, 22, 25, 26, 27, 28, 33, 35, 36]
+done_set = {2, 3, 4, 5, 6, 8, 12, 18, 20}
+
+for W in test_Ws:
+    if W in done_set:
+        continue
+    R = int(totient(W)) + 1
+    print(f"W={W}, phi={int(totient(W))}, R={R} ...", end=" ", flush=True)
+    result = find_triangulation(W)
+    if result is None:
+        print("NO TRIANGULATION (structurally obstructed)")
+    elif isinstance(result, str):
+        print(result)
+    else:
+        dead, rho, sigma = result
+        print(f"FOUND! dead={dead}")
+        print(f"  rho = {rho}")
+        print(f"  sigma = {sigma}")
+        diag_primes = [rho[i]*W + sigma[i] + 1 for i in range(R)]
+        print(f"  diag primes: {diag_primes}")
+        max_diag = max(diag_primes)
+        print(f"  max_diag = {max_diag}")
+PY
+python3 /tmp/w_search.py
+    Command running in background with ID: btnbcejuo. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output
+  [ToolSearch] 
+  [Bash] tail -f /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output 2>&1 | head -30
+    Command running in background with ID: bifytautj. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/bifytautj.output
+  [Bash] sleep 60 && cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output
+    <tool_use_error>Blocked: sleep 60 followed by: cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output
+    W=21, phi=12, R=13 ... NO TRIANGULATION (structurally obstructed)
+    W=22, phi=10, R=11 ... NO TRIANGULATION (structurally obstructed)
+    W=25, phi=20, R=21 ... NO TRIANGULATION (structurally obstructed)
+    W=26, phi=12, R=13 ... too-large (W=26, R=13, combos=10400600)
+    W=27, phi=18, R=19 ...
+  [Bash] until [ -z "$(pgrep -f w_search.py)" ]; do sleep 2; done; cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/btnbcejuo.output
+    Command running in background with ID: bwak810bh. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/bwak810bh.output
+Most leading-row triangulations are obstructed. Let me try a smarter DP-based search for the larger W's:
+  [Bash] cat <<'PY' > /tmp/w_search2.py
+from math import gcd
+from sympy import isprime, totient
+
+def find_triangulation_dp(W):
+    """DP-based search. For each dead col candidate, try to find sigma (col ordering)
+    via DP over subsets of R cols, then assign rows."""
+    live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+    dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+    R = int(totient(W)) + 1
+    
+    if not dead_candidates:
+        return None
+    if R > 20:
+        return f"R={R} too large"
+    
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        # signature for each row r in [0, W): bitmask over R cols
+        sig = []
+        for r in range(W):
+            s = 0
+            for k, c in enumerate(cols_set):
+                if isprime(r*W + c + 1):
+                    s |= (1 << k)
+            sig.append(s)
+        
+        full = (1 << R) - 1
+        reach = [False] * (1 << R)
+        pred = [-1] * (1 << R)
+        reach[0] = True
+        
+        # Bottom-up: for each T in increasing popcount
+        for T in range(1, 1 << R):
+            for c in range(R):
+                if not (T & (1 << c)):
+                    continue
+                T_prev = T & ~(1 << c)
+                if not reach[T_prev]:
+                    continue
+                # ∃ r with sig[r] & T_prev == 0 and sig[r] & (1<<c) != 0
+                found = False
+                for r in range(W):
+                    if (sig[r] & T_prev) == 0 and (sig[r] & (1 << c)):
+                        found = True
+                        break
+                if found:
+                    reach[T] = True
+                    pred[T] = c
+                    break
+        
+        if not reach[full]:
+            continue  # try next dead col
+        
+        # Recover sigma_order
+        sigma_order = []
+        T = full
+        while T != 0:
+            c = pred[T]
+            sigma_order.append(c)
+            T &= ~(1 << c)
+        sigma_order.reverse()
+        
+        # Recover rho rows: distinct rows with first-σ-position matching each step
+        rho_rows = []
+        placed = 0
+        used = set()
+        for c_idx in sigma_order:
+            picked = -1
+            for r in range(W):
+                if r in used:
+                    continue
+                if (sig[r] & placed) == 0 and (sig[r] & (1 << c_idx)):
+                    picked = r
+                    break
+            if picked < 0:
+                # Should not happen given DP existence, but check
+                rho_rows = None
+                break
+            rho_rows.append(picked)
+            used.add(picked)
+            placed |= (1 << c_idx)
+        
+        if rho_rows is None:
+            continue
+        
+        sigma = [cols_set[c_idx] for c_idx in sigma_order]
+        return (dead, rho_rows, sigma)
+    
+    return None
+
+test_Ws = [26, 28, 33, 35, 36]
+
+for W in test_Ws:
+    R = int(totient(W)) + 1
+    print(f"W={W}, phi={int(totient(W))}, R={R} ...", flush=True)
+    result = find_triangulation_dp(W)
+    if result is None:
+        print("  NO TRIANGULATION (structurally obstructed)")
+    elif isinstance(result, str):
+        print(f"  {result}")
+    else:
+        dead, rho, sigma = result
+        diag_primes = [rho[i]*W + sigma[i] + 1 for i in range(R)]
+        max_diag = max(diag_primes)
+        print(f"  FOUND! dead={dead}, max_diag={max_diag}")
+        print(f"  rho = {rho}")
+        print(f"  sigma = {sigma}")
+        print(f"  diag primes: {diag_primes}")
+        # verify below-diag composites
+        composites = []
+        for i in range(R):
+            for k in range(i):
+                n = rho[i]*W + sigma[k] + 1
+                if isprime(n):
+                    print(f"  BUG: ({i},{k}) is prime n={n}")
+                else:
+                    composites.append(n)
+        print(f"  below-diag composites: {sorted(set(composites))}")
+PY
+python3 /tmp/w_search2.py
+    W=26, phi=12, R=13 ...
+      NO TRIANGULATION (structurally obstructed)
+    W=28, phi=12, R=13 ...
+      NO TRIANGULATION (structurally obstructed)
+    W=33, phi=20, R=21 ...
+      R=21 too large
+    W=35, phi=24, R=25 ...
+      R=25 too large
+    W=36, phi=12, R=13 ...
+      NO TRIANGULATION (structurally obstructed)
+Let me verify the DP works on W=20 (known to succeed):
+  [Bash] cat <<'PY' > /tmp/w_verify.py
+from math import gcd
+from sympy import isprime, totient
+
+def find_triangulation_dp(W, debug=False):
+    live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+    dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+    R = int(totient(W)) + 1
+    
+    if not dead_candidates:
+        return None
+    if R > 20:
+        return f"R={R} too large"
+    
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        sig = []
+        for r in range(W):
+            s = 0
+            for k, c in enumerate(cols_set):
+                if isprime(r*W + c + 1):
+                    s |= (1 << k)
+            sig.append(s)
+        
+        full = (1 << R) - 1
+        reach = [False] * (1 << R)
+        pred = [-1] * (1 << R)
+        reach[0] = True
+        
+        for T in range(1, 1 << R):
+            for c in range(R):
+                if not (T & (1 << c)):
+                    continue
+                T_prev = T & ~(1 << c)
+                if not reach[T_prev]:
+                    continue
+                found = False
+                for r in range(W):
+                    if (sig[r] & T_prev) == 0 and (sig[r] & (1 << c)):
+                        found = True
+                        break
+                if found:
+                    reach[T] = True
+                    pred[T] = c
+                    break
+        
+        if debug:
+            print(f"  dead={dead}, reach[full]={reach[full]}")
+        if not reach[full]:
+            continue
+        
+        sigma_order = []
+        T = full
+        while T != 0:
+            c = pred[T]
+            sigma_order.append(c)
+            T &= ~(1 << c)
+        sigma_order.reverse()
+        
+        rho_rows = []
+        placed = 0
+        used = set()
+        for c_idx in sigma_order:
+            picked = -1
+            for r in range(W):
+                if r in used:
+                    continue
+                if (sig[r] & placed) == 0 and (sig[r] & (1 << c_idx)):
+                    picked = r
+                    break
+            if picked < 0:
+                rho_rows = None
+                break
+            rho_rows.append(picked)
+            used.add(picked)
+            placed |= (1 << c_idx)
+        
+        if rho_rows is None:
+            continue
+        
+        sigma = [cols_set[c_idx] for c_idx in sigma_order]
+        return (dead, rho_rows, sigma)
+    return None
+
+# W=20 known to succeed
+print("=" * 50)
+print("W=20 verification (known good)")
+result = find_triangulation_dp(20, debug=True)
+if result:
+    dead, rho, sigma = result
+    print(f"FOUND for W=20: dead={dead}")
+    print(f"  rho = {rho}")
+    print(f"  sigma = {sigma}")
+    R = len(rho)
+    diag_primes = [rho[i]*20 + sigma[i] + 1 for i in range(R)]
+    print(f"  diag primes: {diag_primes}")
+    print(f"  max_diag: {max(diag_primes)}")
+else:
+    print("FAILED for W=20!")
+PY
+python3 /tmp/w_verify.py
+    ==================================================
+    W=20 verification (known good)
+      dead=1, reach[full]=True
+    FOUND for W=20: dead=1
+      rho = [0, 2, 5, 14, 1, 7, 12, 16, 10]
+      sigma = [1, 18, 6, 12, 2, 8, 0, 16, 10]
+      diag primes: [2, 59, 107, 293, 23, 149, 241, 337, 211]
+      max_diag: 337
+DP confirms my obstruction findings are real. Let me extend the search to higher W values to find any remaining single-session candidate:
+  [Bash] cat <<'PY' > /tmp/w_extended.py
+from math import gcd
+from sympy import isprime, totient
+
+def find_triangulation_dp(W):
+    live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+    dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+    R = int(totient(W)) + 1
+    
+    if not dead_candidates or R > 18:
+        return f"R={R} too large or no dead" if R > 18 else None
+    
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        sig = []
+        for r in range(W):
+            s = 0
+            for k, c in enumerate(cols_set):
+                if isprime(r*W + c + 1):
+                    s |= (1 << k)
+            sig.append(s)
+        
+        full = (1 << R) - 1
+        reach = [False] * (1 << R)
+        pred = [-1] * (1 << R)
+        reach[0] = True
+        
+        for T in range(1, 1 << R):
+            for c in range(R):
+                if not (T & (1 << c)):
+                    continue
+                T_prev = T & ~(1 << c)
+                if not reach[T_prev]:
+                    continue
+                found = False
+                for r in range(W):
+                    if (sig[r] & T_prev) == 0 and (sig[r] & (1 << c)):
+                        found = True
+                        break
+                if found:
+                    reach[T] = True
+                    pred[T] = c
+                    break
+        
+        if not reach[full]:
+            continue
+        
+        sigma_order = []
+        T = full
+        while T != 0:
+            c = pred[T]
+            sigma_order.append(c)
+            T &= ~(1 << c)
+        sigma_order.reverse()
+        
+        rho_rows = []
+        placed = 0
+        used = set()
+        for c_idx in sigma_order:
+            picked = -1
+            for r in range(W):
+                if r in used:
+                    continue
+                if (sig[r] & placed) == 0 and (sig[r] & (1 << c_idx)):
+                    picked = r
+                    break
+            if picked < 0:
+                rho_rows = None
+                break
+            rho_rows.append(picked)
+            used.add(picked)
+            placed |= (1 << c_idx)
+        
+        if rho_rows is None:
+            continue
+        
+        sigma = [cols_set[c_idx] for c_idx in sigma_order]
+        return (dead, rho_rows, sigma)
+    return None
+
+# Try a large range
+test_Ws = sorted(set(list(range(31, 51))) - {32})  # skip primes
+done_set = {2, 3, 4, 5, 6, 8, 12, 18, 20}
+obstructed = {7, 9, 10, 11, 14, 15, 16, 21, 22, 24, 25, 26, 27, 28, 30, 36}
+
+print("W | phi | R | result")
+for W in test_Ws:
+    if W in done_set or W in obstructed:
+        continue
+    R = int(totient(W)) + 1
+    if R > 16:
+        print(f"{W} | {int(totient(W))} | {R} | SKIP (R too large)")
+        continue
+    result = find_triangulation_dp(W)
+    if result is None:
+        print(f"{W} | {int(totient(W))} | {R} | obstructed")
+    elif isinstance(result, str):
+        print(f"{W} | {int(totient(W))} | {R} | {result}")
+    else:
+        dead, rho, sigma = result
+        diag = [rho[i]*W + sigma[i] + 1 for i in range(R)]
+        print(f"{W} | {int(totient(W))} | {R} | FOUND  dead={dead} max_diag={max(diag)}")
+PY
+python3 /tmp/w_extended.py
+    W | phi | R | result
+    31 | 30 | 31 | SKIP (R too large)
+    33 | 20 | 21 | SKIP (R too large)
+    34 | 16 | 17 | SKIP (R too large)
+    35 | 24 | 25 | SKIP (R too large)
+    37 | 36 | 37 | SKIP (R too large)
+    38 | 18 | 19 | SKIP (R too large)
+    39 | 24 | 25 | SKIP (R too large)
+    40 | 16 | 17 | SKIP (R too large)
+    41 | 40 | 41 | SKIP (R too large)
+    42 | 12 | 13 | obstructed
+    43 | 42 | 43 | SKIP (R too large)
+    44 | 20 | 21 | SKIP (R too large)
+    45 | 24 | 25 | SKIP (R too large)
+    46 | 22 | 23 | SKIP (R too large)
+    47 | 46 | 47 | SKIP (R too large)
+    48 | 16 | 17 | SKIP (R too large)
+    49 | 42 | 43 | SKIP (R too large)
+    50 | 20 | 21 | SKIP (R too large)
+  [Bash] cat <<'PY' > /tmp/w_extended2.py
+from math import gcd
+from sympy import isprime, totient
+
+def find_triangulation_dp(W):
+    live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+    dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+    R = int(totient(W)) + 1
+    
+    if not dead_candidates or R > 22:
+        return f"R={R}"
+    
+    for dead in dead_candidates:
+        cols_set = sorted(live_cols + [dead])
+        sig = []
+        for r in range(W):
+            s = 0
+            for k, c in enumerate(cols_set):
+                if isprime(r*W + c + 1):
+                    s |= (1 << k)
+            sig.append(s)
+        
+        full = (1 << R) - 1
+        reach = [False] * (1 << R)
+        pred = [-1] * (1 << R)
+        reach[0] = True
+        
+        for T in range(1, 1 << R):
+            for c in range(R):
+                if not (T & (1 << c)):
+                    continue
+                T_prev = T & ~(1 << c)
+                if not reach[T_prev]:
+                    continue
+                found = False
+                for r in range(W):
+                    if (sig[r] & T_prev) == 0 and (sig[r] & (1 << c)):
+                        found = True
+                        break
+                if found:
+                    reach[T] = True
+                    pred[T] = c
+                    break
+        
+        if not reach[full]:
+            continue
+        
+        sigma_order = []
+        T = full
+        while T != 0:
+            c = pred[T]
+            sigma_order.append(c)
+            T &= ~(1 << c)
+        sigma_order.reverse()
+        
+        rho_rows = []
+        placed = 0
+        used = set()
+        for c_idx in sigma_order:
+            picked = -1
+            for r in range(W):
+                if r in used:
+                    continue
+                if (sig[r] & placed) == 0 and (sig[r] & (1 << c_idx)):
+                    picked = r
+                    break
+            if picked < 0:
+                rho_rows = None
+                break
+            rho_rows.append(picked)
+            used.add(picked)
+            placed |= (1 << c_idx)
+        
+        if rho_rows is None:
+            continue
+        
+        sigma = [cols_set[c_idx] for c_idx in sigma_order]
+        return (dead, rho_rows, sigma)
+    return None
+
+# Up to R = 22 covering W in 32..72
+test_Ws = list(range(31, 73))
+done_set = {2, 3, 4, 5, 6, 8, 12, 18, 20}
+obstructed = {7, 9, 10, 11, 14, 15, 16, 21, 22, 24, 25, 26, 27, 28, 30, 36, 42}
+
+print("W | phi | R | result | (max_diag if found)")
+for W in test_Ws:
+    if W in done_set or W in obstructed:
+        continue
+    R = int(totient(W)) + 1
+    if R > 22:
+        print(f"{W} | {int(totient(W))} | {R} | SKIP (R too large)")
+        continue
+    result = find_triangulation_dp(W)
+    if result is None:
+        print(f"{W} | {int(totient(W))} | {R} | obstructed")
+    elif isinstance(result, str):
+        print(f"{W} | {int(totient(W))} | {R} | {result}")
+    else:
+        dead, rho, sigma = result
+        diag = [rho[i]*W + sigma[i] + 1 for i in range(R)]
+        print(f"{W} | {int(totient(W))} | {R} | FOUND  dead={dead} max_diag={max(diag)}")
+PY
+timeout 600 python3 /tmp/w_extended2.py
+    Command running in background with ID: b5cy5d05i. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/b5cy5d05i.output
+  [Bash] until ! pgrep -f w_extended2.py > /dev/null; do sleep 2; done; cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/b5cy5d05i.output
+    Command running in background with ID: bdh4jz2tx. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/bdh4jz2tx.output
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/1d1e1b83-d437-4a01-85c1-0ddcbb129f1a/tasks/b5cy5d05i.output
+    W | phi | R | result | (max_diag if found)
+    31 | 30 | 31 | SKIP (R too large)
+    32 | 16 | 17 | obstructed
+    33 | 20 | 21 | obstructed
+    34 | 16 | 17 | obstructed
+    35 | 24 | 25 | SKIP (R too large)
+    37 | 36 | 37 | SKIP (R too large)
+    38 | 18 | 19 | obstructed
+    39 | 24 | 25 | SKIP (R too large)
+    40 | 16 | 17 | obstructed
+    41 | 40 | 41 | SKIP (R too large)
+    43 | 42 | 43 | SKIP (R too large)
+    44 | 20 | 21 | obstructed
+    45 | 24 | 25 | SKIP (R too large)
+    46 | 22 | 23 | SKIP (R too large)
+    47 | 46 | 47 | SKIP (R too large)
+    48 | 16 | 17 | obstructed
+    49 | 42 | 43 | SKIP (R too large)
+    50 | 20 | 21 | obstructed
+    51 | 32 | 33 | SKIP (R too large)
+    52 | 24 | 25 | SKIP (R too large)
+    53 | 52 | 53 | SKIP (R too large)
+    54 | 18 | 19 | obstructed
+    55 | 40 | 41 | SKIP (R too large)
+    56 | 24 | 25 | SKIP (R too large)
+    57 | 36 | 37 | SKIP (R too large)
+    58 | 28 | 29 | SKIP (R too large)
+    59 | 58 | 59 | SKIP (R too large)
+    60 | 16 | 17 | obstructed
+    61 | 60 | 61 | SKIP (R too large)
+    ... (11 more lines)
+The leading-row triangulation family is fully exhausted (W ≤ 72). Let me investigate W=9 with the block-triangular technique that the notes flagged as multi-session:
+  [Bash] cat <<'PY' > /tmp/w9_analysis.py
+from math import gcd
+from sympy import isprime, totient
+import numpy as np
+from itertools import combinations as comb, permutations
+
+W = 9
+live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+dead_candidates = [k for k in range(W) if gcd(k+1, W) != 1 and isprime(k+1)]
+R = int(totient(W)) + 1
+print(f"W=9: phi=6, R={R}, live={live_cols}, dead_cands={dead_candidates}")
+
+# Only viable dead is k=2 (chiP(3) = 1)
+dead = 2
+cols_set = sorted(live_cols + [dead])
+print(f"cols_set = {cols_set}")
+
+# Compute the W x R matrix
+M = np.zeros((W, R), dtype=int)
+for r in range(W):
+    for k_idx, c in enumerate(cols_set):
+        n = r*W + c + 1
+        M[r, k_idx] = 1 if isprime(n) else 0
+print("\nW=9 j=1 slab restricted to chosen R cols, full 9 rows:")
+print(M)
+print("Cols are mapped: idx 0->0, 1->1, 2->2(dead), 3->3, 4->4, 5->6, 6->7")
+
+# Try all C(9, 7) = 36 row subsets and check if det != 0
+print("\nLooking for any 7-row subset with nonzero determinant:")
+found_invertibles = []
+for rows in comb(range(W), R):
+    sub = M[list(rows), :]
+    d = round(np.linalg.det(sub.astype(float)))
+    if d != 0:
+        found_invertibles.append((rows, d))
+
+print(f"Found {len(found_invertibles)} invertible 7-row subsets:")
+for rows, d in found_invertibles[:5]:
+    print(f"  rows={rows}, det={d}")
+
+# Also try block structure detection
+print("\nBlock structure detection for the FULL 9 rows (for whichever rho works):")
+# Can we permute to block diagonal? Check if there's a way to split rows + cols into blocks
+# such that the matrix is block-diagonal.
+# Equivalent to bipartite graph G(rows, cols) with edge iff entry != 0,
+# and finding the connected components.
+# 
+# But block-DIAGONAL is too strict; block-TRIANGULAR is more permissive.
+
+# Let's pick rows = all 9 (or first 7 with nonzero det)
+if found_invertibles:
+    best_rows = list(found_invertibles[0][0])
+    print(f"\nUsing rows={best_rows}:")
+    sub = M[best_rows, :]
+    print(sub)
+    print("Det =", round(np.linalg.det(sub.astype(float))))
+    
+    # Try to find block-triangular permutation
+    # Build bipartite incidence graph: rows, cols
+    # Find row/col blocks: connected components when treating it as a bipartite graph
+    # restricted to nonzero entries
+    
+    nrows, ncols = sub.shape
+    parent = list(range(nrows + ncols))
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb: parent[ra] = rb
+    for i in range(nrows):
+        for j in range(ncols):
+            if sub[i, j] != 0:
+                union(i, nrows + j)
+    
+    components = {}
+    for i in range(nrows):
+        components.setdefault(find(i), {'rows': [], 'cols': []})['rows'].append(i)
+    for j in range(ncols):
+        components.setdefault(find(nrows + j), {'rows': [], 'cols': []})['cols'].append(j)
+    
+    print(f"\nConnected components ({len(components)}):")
+    for cid, comp in components.items():
+        print(f"  comp {cid}: rows={comp['rows']}, cols={comp['cols']}")
+        if comp['rows'] and comp['cols']:
+            block = sub[np.ix_(comp['rows'], comp['cols'])]
+            print(f"  block:\n{block}")
+            if len(comp['rows']) == len(comp['cols']):
+                bd = round(np.linalg.det(block.astype(float)))
+                print(f"  block det = {bd}")
+PY
+python3 /tmp/w9_analysis.py
+    W=9: phi=6, R=7, live=[0, 1, 3, 4, 6, 7], dead_cands=[2]
+    cols_set = [0, 1, 2, 3, 4, 6, 7]
+    
+    W=9 j=1 slab restricted to chosen R cols, full 9 rows:
+    [[0 1 1 0 1 1 0]
+     [0 1 0 1 0 0 1]
+     [1 0 0 0 1 0 0]
+     [0 1 0 1 0 0 0]
+     [1 0 0 0 1 1 0]
+     [0 1 0 0 0 0 1]
+     [0 0 0 0 1 1 0]
+     [0 0 0 1 0 0 1]
+     [1 0 0 0 0 1 0]]
+    Cols are mapped: idx 0->0, 1->1, 2->2(dead), 3->3, 4->4, 5->6, 6->7
+    
+    Looking for any 7-row subset with nonzero determinant:
+    Found 16 invertible 7-row subsets:
+      rows=(0, 1, 2, 3, 4, 5, 6), det=1
+      rows=(0, 1, 2, 3, 4, 5, 8), det=-1
+      rows=(0, 1, 2, 3, 4, 6, 7), det=1
+      rows=(0, 1, 2, 3, 4, 7, 8), det=1
+      rows=(0, 1, 2, 3, 5, 6, 8), det=2
+    
+    Block structure detection for the FULL 9 rows (for whichever rho works):
+    
+    Using rows=[0, 1, 2, 3, 4, 5, 6]:
+    [[0 1 1 0 1 1 0]
+     [0 1 0 1 0 0 1]
+     [1 0 0 0 1 0 0]
+     [0 1 0 1 0 0 0]
+    ... (16 more lines)
+  [Bash] cat <<'PY' > /tmp/w9_dp.py
+from math import gcd
+from sympy import isprime, totient
+
+W = 9
+live_cols = [k for k in range(W) if gcd(k+1, W) == 1]
+R = int(totient(W)) + 1
+dead = 2  # the unique viable dead
+
+cols_set = sorted(live_cols + [dead])
+sig = []
+for r in range(W):
+    s = 0
+    for k, c in enumerate(cols_set):
+        if isprime(r*W + c + 1):
+            s |= (1 << k)
+    sig.append(s)
+
+# Print sig binary to understand
+print("Row signatures (R=7 bits, MSB to LSB indexed by cols [0,1,2,3,4,6,7]):")
+for r in range(W):
+    print(f"  r={r}: {bin(sig[r])[2:].zfill(R)}")
+
+full = (1 << R) - 1
+reach = [False] * (1 << R)
+reach[0] = True
+
+for T in range(1, 1 << R):
+    for c in range(R):
+        if not (T & (1 << c)):
+            continue
+        T_prev = T & ~(1 << c)
+        if not reach[T_prev]:
+            continue
+        found = any((sig[r] & T_prev) == 0 and (sig[r] & (1 << c)) for r in range(W))
+        if found:
+            reach[T] = True
+            break
+
+print(f"\nDP reach[full] = {reach[full]}")
+print(f"Reach popcount distribution:")
+from collections import Counter
+counts = Counter(bin(t).count('1') for t in range(1 << R) if reach[t])
+for popcount in sorted(counts.keys()):
+    print(f"  popcount {popcount}: {counts[popcount]} reachable subsets")
+
+# Largest reachable popcount
+max_reach = max((bin(t).count('1'), t) for t in range(1 << R) if reach[t])
+print(f"  max reachable: popcount={max_reach[0]}, T={bin(max_reach[1])[2:].zfill(R)}")
+PY
+python3 /tmp/w9_dp.py
+    Row signatures (R=7 bits, MSB to LSB indexed by cols [0,1,2,3,4,6,7]):
+      r=0: 0110110
+      r=1: 1001010
+      r=2: 0010001
+      r=3: 0001010
+      r=4: 0110001
+      r=5: 1000010
+      r=6: 0110000
+      r=7: 1001000
+      r=8: 0100001
+    
+    DP reach[full] = False
+    Reach popcount distribution:
+      popcount 0: 1 reachable subsets
+      popcount 1: 7 reachable subsets
+      popcount 2: 21 reachable subsets
+      popcount 3: 34 reachable subsets
+      popcount 4: 30 reachable subsets
+      popcount 5: 12 reachable subsets
+      max reachable: popcount=5, T=1111100
+  [Bash] cat <<'PY' > /tmp/w9_cofactor.py
+from math import gcd
+from sympy import isprime, totient
+import numpy as np
+from itertools import permutations
+
+W = 9
+R = 7
+live_cols = [0, 1, 3, 4, 6, 7]
+dead = 2
+cols_set = sorted(live_cols + [dead])  # [0, 1, 2, 3, 4, 6, 7]
+
+# Use rows {0, 1, 2, 3, 4, 5, 6}
+rows = list(range(R))
+M = np.zeros((R, R), dtype=int)
+for i, r in enumerate(rows):
+    for k, c in enumerate(cols_set):
+        n = r*W + c + 1
+        M[i, k] = 1 if isprime(n) else 0
+print("M (7x7):")
+print(M)
+print(f"det(M) = {round(np.linalg.det(M.astype(float)))}")
+
+# DP-triangulate function
+def can_triangulate(MM, debug=False):
+    """Check if the matrix MM (NxN, 0/1) can be permuted to upper triangular with 1 on diag."""
+    N = MM.shape[0]
+    sig = []
+    for i in range(N):
+        s = 0
+        for j in range(N):
+            if MM[i, j] == 1:
+                s |= (1 << j)
+        sig.append(s)
+    full = (1 << N) - 1
+    reach = [False] * (1 << N)
+    pred = [-1] * (1 << N)
+    reach[0] = True
+    for T in range(1, 1 << N):
+        for c in range(N):
+            if not (T & (1 << c)):
+                continue
+            T_prev = T & ~(1 << c)
+            if not reach[T_prev]:
+                continue
+            for r in range(N):
+                if (sig[r] & T_prev) == 0 and (sig[r] & (1 << c)):
+                    reach[T] = True
+                    pred[T] = c
+                    break
+            if reach[T]:
+                break
+    return reach[full], pred if reach[full] else None
+
+# col 0 has nonzero at rows 2, 4 (using row indices in [0..6])
+# Wait, M[2,0]=1 and M[4,0]=1; check
+print(f"\nCol 0: {M[:, 0]}")  # row indices 0..6 within M
+# So cofactor along col 0:
+# det(M) = sum over rows i of (-1)^(i+0) * M[i, 0] * det(M with row i and col 0 removed)
+# = M[2,0] * (+1) * det(minor 2,0) + M[4,0] * (+1) * det(minor 4,0)
+# Why +1? (-1)^(2+0) = 1, (-1)^(4+0) = 1.
+
+# Compute the two 6x6 minors
+def remove_row_col(M, i, j):
+    keep_rows = [r for r in range(M.shape[0]) if r != i]
+    keep_cols = [c for c in range(M.shape[1]) if c != j]
+    return M[np.ix_(keep_rows, keep_cols)]
+
+minor_20 = remove_row_col(M, 2, 0)
+minor_40 = remove_row_col(M, 4, 0)
+print(f"\nminor (row 2, col 0):\n{minor_20}")
+print(f"det(minor_20) = {round(np.linalg.det(minor_20.astype(float)))}")
+print(f"\nminor (row 4, col 0):\n{minor_40}")
+print(f"det(minor_40) = {round(np.linalg.det(minor_40.astype(float)))}")
+
+# Check triangulation for each
+print(f"\nminor_20 triangulizable: {can_triangulate(minor_20)[0]}")
+print(f"minor_40 triangulizable: {can_triangulate(minor_40)[0]}")
+PY
+python3 /tmp/w9_cofactor.py
+    M (7x7):
+    [[0 1 1 0 1 1 0]
+     [0 1 0 1 0 0 1]
+     [1 0 0 0 1 0 0]
+     [0 1 0 1 0 0 0]
+     [1 0 0 0 1 1 0]
+     [0 1 0 0 0 0 1]
+     [0 0 0 0 1 1 0]]
+    det(M) = 1
+    
+    Col 0: [0 0 1 0 1 0 0]
+    
+    minor (row 2, col 0):
+    [[1 1 0 1 1 0]
+     [1 0 1 0 0 1]
+     [1 0 1 0 0 0]
+     [0 0 0 1 1 0]
+     [1 0 0 0 0 1]
+     [0 0 0 1 1 0]]
+    det(minor_20) = 0
+    
+    minor (row 4, col 0):
+    [[1 1 0 1 1 0]
+     [1 0 1 0 0 1]
+     [0 0 0 1 0 0]
+     [1 0 1 0 0 0]
+     [1 0 0 0 0 1]
+     [0 0 0 1 1 0]]
+    det(minor_40) = 1
+    
+    ... (2 more lines)
+The leading-row triangulation route is exhausted across W ≤ 72 with R ≤ 22 — every untested wheel is obstructed. This is the substantive finding of the session. Let me verify the build still passes and document this rigorously.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | tail -30
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2417:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2418:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2419:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2420:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2936:0: Please, add a comment explaining the need for modifying the maxHeartbeat limit, as in
+    set_option maxHeartbeats 2000000 in
+    -- reason for change
+    ...
+    
+    Note: This linter can be disabled with `set_option linter.style.maxHeartbeats false`
+    warning: MPSBondDim/Basic.lean:3461:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3462:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3467:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    Build completed successfully (8315 jobs).
+Good, the build still succeeds. Now let me address the linter warning and capture the search results in the project. First, look at the W=20 maxHeartbeats line:
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2930	-/
+    2931	private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    2932	    ∏ i, f i = f 0 * f 1 * f 2 * f 3 * f 4 * f 5 * f 6 * f 7 * f 8 := by
+    2933	  rw [Fin.prod_univ_castSucc, Fin.prod_univ_eight]
+    2934	  rfl
+    2935	
+    2936	set_option maxHeartbeats 2000000 in
+    2937	/--
+    2938	**Corner-case prime exhibit (W = 20, d = j + 1).**
+    2939	
+    2940	Specialisation of `exists_invertible_submatrix` to the corner case
+    2941	`W = 20`, `d = j + 1`, where `R = min(20^j, φ(20)·1 + 1) = 9` for every `j ≥ 1`.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | grep -E "warning|error|Build completed" | tail -20
+    warning: MPSBondDim/Basic.lean:271:30: unused variable `hj_lo`
+    warning: MPSBondDim/Basic.lean:414:30: unused variable `hj_lo`
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+    warning: MPSBondDim/Basic.lean:2414:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2415:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2416:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2417:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2418:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2419:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2420:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:2939:0: Please, add a comment explaining the need for modifying the maxHeartbeat limit, as in
+    warning: MPSBondDim/Basic.lean:3464:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:3465:100: This line exceeds the 100 character limit, please shorten it!
+    warning: MPSBondDim/Basic.lean:3470:100: This line exceeds the 100 character limit, please shorten it!
+    Build completed successfully (8315 jobs).
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | grep -E "warning|error|Build completed" | grep -E "maxHeart|Build completed|error" | head -10
+    Build completed successfully (8315 jobs).
+The maxHeartbeat warning is gone. Now let me save the search script and document the negative shape edge.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MPSBondDim
+    mps_bond_dim_notes.md
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && python3 leading_row_search.py 2>&1 | tee leading_row_search_results.txt
+    Leading-row triangulation enumeration for E2.1 orthogonal corner
+    Range scanned: W in [2, 72]; R_cap = 22
+    
+      W |  phi |   R | result
+    --------------------------------------------------
+      2 |    1 |   2 | FOUND (dead=1, max_diag=3) *
+      3 |    2 |   3 | FOUND (dead=2, max_diag=7) *
+      4 |    2 |   3 | FOUND (dead=1, max_diag=13) *
+      5 |    4 |   5 | FOUND (dead=4, max_diag=23) *
+      6 |    2 |   3 | FOUND (dead=1, max_diag=31) *
+      7 |    6 |   7 | OBSTRUCTED
+      8 |    4 |   5 | FOUND (dead=1, max_diag=37) *
+      9 |    6 |   7 | OBSTRUCTED
+     10 |    4 |   5 | FOUND (dead=1, max_diag=97)
+     11 |   10 |  11 | OBSTRUCTED
+     12 |    4 |   5 | FOUND (dead=1, max_diag=109) *
+     13 |   12 |  13 | OBSTRUCTED
+     14 |    6 |   7 | OBSTRUCTED
+     15 |    8 |   9 | OBSTRUCTED
+     16 |    8 |   9 | OBSTRUCTED
+     17 |   16 |  17 | OBSTRUCTED
+     18 |    6 |   7 | FOUND (dead=1, max_diag=293) *
+     19 |   18 |  19 | OBSTRUCTED
+     20 |    8 |   9 | FOUND (dead=1, max_diag=337) *
+     21 |   12 |  13 | OBSTRUCTED
+     22 |   10 |  11 | OBSTRUCTED
+     23 |   22 |  23 | SKIP (R > 22)
+     24 |    8 |   9 | OBSTRUCTED
+     25 |   20 |  21 | OBSTRUCTED
+     26 |   12 |  13 | OBSTRUCTED
+    ... (53 more lines)
+W=10 shows as algorithmically reachable! But the agenda claims it was obstructed (S129). Let me verify:
+  [Bash] cat <<'PY' > /tmp/w10_verify.py
+from math import gcd
+from sympy import isprime, totient
+import numpy as np
+
+import sys
+sys.path.insert(0, '/apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim')
+from leading_row_search import find_triangulation_dp
+
+W = 10
+result = find_triangulation_dp(W)
+if result:
+    dead, rho, sigma = result
+    R = len(rho)
+    print(f"W=10 triangulation:")
+    print(f"  dead = {dead}")
+    print(f"  rho = {rho}")
+    print(f"  sigma = {sigma}")
+    
+    # Construct the submatrix and verify
+    M = np.zeros((R, R), dtype=int)
+    for i in range(R):
+        for k in range(R):
+            n = rho[i] * W + sigma[k] + 1
+            M[i, k] = 1 if isprime(n) else 0
+    print(f"\nSubmatrix (rows by rho, cols by sigma):")
+    print(M)
+    
+    # Diagonal n-values
+    diag_n = [rho[i]*W + sigma[i] + 1 for i in range(R)]
+    print(f"\nDiagonal n-values: {diag_n}")
+    print(f"All prime? {all(isprime(n) for n in diag_n)}")
+    
+    # Check upper-triangular
+    print(f"\nBelow-diagonal:")
+    issues = []
+    for i in range(R):
+        for k in range(i):
+            n = rho[i]*W + sigma[k] + 1
+            if isprime(n):
+                issues.append(f"  i={i}, k={k}: n={n} is PRIME (BUG!)")
+    if not issues:
+        print(f"  All below-diagonal entries are 0 (composite). ✓")
+    else:
+        for x in issues: print(x)
+    
+    print(f"\ndet(M) = {round(np.linalg.det(M.astype(float)))}")
+    
+    # Print below-diagonal n-values
+    below_diag = []
+    for i in range(R):
+        for k in range(i):
+            below_diag.append(rho[i]*W + sigma[k] + 1)
+    print(f"\nBelow-diagonal n-values (composites): {sorted(below_diag)}")
+PY
+python3 /tmp/w10_verify.py
+    W=10 triangulation:
+      dead = 1
+      rho = [1, 0, 4, 3, 9]
+      sigma = [8, 1, 2, 0, 6]
+    
+    Submatrix (rows by rho, cols by sigma):
+    [[1 0 1 1 1]
+     [0 1 1 0 1]
+     [0 0 1 1 1]
+     [0 0 0 1 1]
+     [0 0 0 0 1]]
+    
+    Diagonal n-values: [19, 2, 43, 31, 97]
+    All prime? True
+    
+    Below-diagonal:
+      All below-diagonal entries are 0 (composite). ✓
+    
+    det(M) = 1
+    
+    Below-diagonal n-values (composites): [9, 32, 33, 39, 42, 49, 91, 92, 93, 99]
+W=10 is genuinely closable! This is a real single-session corner. Let me close it.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me look at the existing W=8 corner as a template (similar R=5 structure):
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    1763	/--
+    1764	`chiP 17 = 1` since `17` is prime.
+    1765	-/
+    1766	theorem chiP_seventeen_eq_one : chiP 17 = 1 := by
+    1767	  have h_prime_17 : Nat.Prime 17 := by decide
+    1768	  simp [chiP, h_prime_17]
+    1769	
+    1770	/--
+    1771	`chiP 37 = 1` since `37` is prime.
+    1772	-/
+    1773	theorem chiP_thirty_seven_eq_one : chiP 37 = 1 := by
+    1774	  have h_prime_37 : Nat.Prime 37 := by decide
+    1775	  simp [chiP, h_prime_37]
+    1776	
+    1777	/--
+    1778	**Corner-case prime exhibit (W = 8, d = j + 1).**
+    1779	
+    1780	Specialisation of `exists_invertible_submatrix` to the corner case
+    1781	`W = 8`, `d = j + 1`, where `R = min(8^j, 5) = 5` for every `j ≥ 1`.
+    1782	Closed unconditionally using `chiP_two_eq_one`, `chiP_eleven_eq_one`,
+    1783	`chiP_thirty_one_eq_one`, `chiP_seventeen_eq_one`, and
+    1784	`chiP_thirty_seven_eq_one`.
+    1785	
+    1786	The construction uses `ρ : Fin 5 → Fin (8^j)` mapping
+    1787	`(0, 1, 2, 3, 4) ↦ (2, 0, 1, 3, 4)` and `σ : Fin 5 → Fin (8^((j+1)-j))`
+    1788	mapping `(0, 1, 2, 3, 4) ↦ (0, 1, 2, 6, 4)`. The `5 × 5` submatrix is
+    1789	upper triangular with `1` on the diagonal, hence `IsUnit` over `ℚ`.
+    1790	-/
+    1791	theorem exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1
+    1792	    (j : ℕ) (hj : 1 ≤ j) :
+    ... (310 more lines)
+  [Grep] ^theorem chiP_(nineteen|thirty_one|forty_three|ninety_seven|ninety|seven|seventeen|nine)_eq_one
+    820:theorem chiP_seven_eq_one : chiP 7 = 1 := by
+    1220:theorem chiP_nineteen_eq_one : chiP 19 = 1 := by
+    1548:theorem chiP_thirty_one_eq_one : chiP 31 = 1 := by
+    1766:theorem chiP_seventeen_eq_one : chiP 17 = 1 := by
+    2463:theorem chiP_forty_three_eq_one : chiP 43 = 1 := by
+  [Grep] chiP_(ninety_seven|97)
+    No matches found
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3480	**Upper-bound subtlety:** the matrix has `20^((j+1)-j) = 20` columns, so
+    3481	`rank_le_width` only gives `rank ≤ 20`. We instead cite the general
+    3482	`upper_bound` lemma, which evaluates to `φ(20) · 20^0 + 1 = 8 · 1 + 1 = 9`
+    3483	in this corner.
+    3484	
+    3485	Together with the `W ∈ {2, 3, 4, 5, 6, 8, 12, 18}` corners, this is the
+    3486	**tenth** unconditional instance of `mps_bond_dim` and the **eighth**
+    3487	instance over a wheel `W ≥ 3`. **First instance with `R = 9`.** The general
+    3488	`mps_bond_dim` still requires `exists_invertible_submatrix` whose proof
+    3489	is the only remaining `sorry` in this file.
+    3490	-/
+    3491	theorem mps_bond_dim_W_eq_20_d_eq_j_plus_1
+    3492	    (j : ℕ) (hj : 1 ≤ j) :
+    3493	    (unfolding 20 (j + 1) j).rank = 9 := by
+    3494	  apply Nat.le_antisymm
+    3495	  · -- `≤ 9`: from `upper_bound`. (`rank_le_width` only gives `≤ 20`.)
+    3496	    have hW : (2 : ℕ) ≤ 20 := by norm_num
+    3497	    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    3498	    have h := upper_bound 20 (j + 1) j hW hj hj_hi
+    3499	    have h_eq : Nat.totient 20 * 20 ^ ((j + 1 : ℕ) - j - 1) + 1 = 9 := by
+    3500	      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+    3501	      rw [h_sub]
+    3502	      decide
+    3503	    linarith
+    3504	  · -- `9 ≤ rank`: from the corner-case prime exhibit.
+    3505	    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 j hj
+    3506	    have h_eq : ((unfolding 20 (j + 1) j).submatrix ρ σ).rank = 9 := by
+    3507	      have h := Matrix.rank_of_isUnit ((unfolding 20 (j + 1) j).submatrix ρ σ) hUnit
+    3508	      simpa using h
+    3509	    calc (9 : ℕ) = ((unfolding 20 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    ... (5 more lines)
+Now let me append the W=10 corner before `end E2_1`:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | tail -40
+    error: [root]: no configuration file with a supported extension:
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/lakefile.lean
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/lakefile.toml
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | tail -40
+    ⚠ [8313/8315] Built MPSBondDim.Basic (64s)
+    warning: MPSBondDim/Basic.lean:271:30: unused variable `hj_lo`
+    
+    Note: This linter can be disabled with `set_option linter.unusedVariables false`
+    warning: MPSBondDim/Basic.lean:414:30: unused variable `hj_lo`
+    
+    Note: This linter can be disabled with `set_option linter.unusedVariables false`
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+    warning: MPSBondDim/Basic.lean:2414:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2415:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2416:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2417:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2418:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2419:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:2420:100: This line exceeds the 100 character limit, please shorten it!
+    
+    Note: This linter can be disabled with `set_option linter.style.longLine false`
+    warning: MPSBondDim/Basic.lean:3464:100: This line exceeds the 100 character limit, please shorten it!
+    ... (10 more lines)
+Build succeeded. Let me update CheckAxioms.lean and verify no axioms are introduced:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake env lean CheckAxioms.lean 2>&1 | tail -30
+    'E2_1.chiP_seventeen_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_thirty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_8_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_8_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_fifty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_eighty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_twenty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_12_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_forty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_forty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_ninety_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_two_hundred_forty_one_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_three_hundred_thirty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_ninety_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+W=10 closes with no axioms. Now let me update the documentation. First, the notes file:
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    600	  not the sharp `rank ≤ 9 = φ(20) + 1`. We cite the general
+    601	  `upper_bound`, which evaluates to `φ(20) · 20^0 + 1 = 8 · 1 + 1 = 9`.
+    602	
+    603	  Uses `Nat.prime_two`, `chiP_twenty_three_eq_one` (existing from S117),
+    604	  `chiP_two_hundred_eleven_eq_one` (existing from S137),
+    605	  `chiP_two_hundred_ninety_three_eq_one` (existing from S137), and five
+    606	  new helpers for `{47, 149, 199, 241, 337}` (all `norm_num`-checkable).
+    607	  ~570 Lean lines (the largest single-corner block in the file, beating
+    608	  W=18's 520). **Tenth unconditional `mps_bond_dim` instance; eighth
+    609	  instance over a wheel `W ≥ 3`; fifth instance using
+    610	  `det_of_upperTriangular`.** **First instance with `R = 9`** and
+    611	  **first heartbeat-bumped declaration in the file**.
+    612	
+    613	  **Why W ∈ {15, 16, 24, 30} are structurally obstructed (S143
+    614	  pre-search).** All four of these prime-power-free wheels with
+    615	  `R = φ(W) + 1 = 9` admit zero leading-row+dead-col upper-
+    616	  triangulations within rows `[0, W)`. They join `W ∈ {7, 9, 10, 11,
+    617	  14}` in the "`det_of_blockTriangular`-required" set. Concretely:
+    618	  - W=15: live = `{0, 1, 3, 6, 7, 10, 12, 13}`, dead candidates =
+    619	    `{2, 4}`; both column sets fail.
+    620	  - W=16: live = `{0, 2, 4, 6, 8, 10, 12, 14}`, dead = `{1}`; fails.
+    621	  - W=24: live = `{0, 4, 6, 10, 12, 16, 18, 22}`, dead = `{1, 2}`; both fail.
+    622	  - W=30: live = `{0, 6, 10, 12, 16, 18, 22, 28}`, dead = `{1, 2, 4}`; all three fail.
+    623	
+    624	  The closed-W set is now `{2, 3, 4, 5, 6, 8, 12, 18, 20}`; the
+    625	  block-triangular-required set is `{7, 9, 10, 11, 14, 15, 16, 24, 30}`.
+    626	  The next single-session leading-row candidates are W ∈ {21, 22, 25,
+    627	  26, 27, 28, 33, 35, 36, ...} (untested). At W=21, R = 13 — substantially
+    628	  more work; at W=22, R = 11; at W=25 (= 5²), R = 21. Cleanest next
+    629	  candidates are W ∈ {21, 22, 28} where R ∈ {11, 12, 13}; ambitious
+    ... (76 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now let me update the table at the top of the notes file with the W=10 row:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now let me also update the Build status line at the top of the notes:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now update RESEARCH_AGENDA.md Arc 2:
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    435	several sessions plus possibly a separate Hoheisel-formalisation arc.
+    436	**Next action (post-S144):** Routes A', A'', A''', A'''', A''''', A'''''',
+    437	A''''''', A^{(8)}, A^{(9)}, A^{(10)} and A^{(11)} (the orthogonal-corner
+    438	family `d = j + 1`) are closed for `W ∈ {2, 3, 4, 5, 6, 8, 10, 12, 18, 20}`.
+    439	S144 DP-search confirms this is the COMPLETE set of W ≤ 72 with R ≤ 22 that
+    440	the leading-row + dead-col upper-triangulation route can close.
+    441	**S143 found via Python pre-search that W ∈ {15, 16, 24, 30} all hit the
+    442	structural row-pattern-identity obstruction** (zero upper-triangulations
+    443	with rows in `[0, W)`), joining `W ∈ {7, 9, 10, 11, 14}` in the
+    444	"`det_of_blockTriangular`-required" set. The next single-session leading-
+    445	row candidates are W ∈ {21, 22, 26, 28, ...} (still untested) and the
+    446	multi-section "`det_of_blockTriangular` API" sub-arc (Route A^{(9-block)})
+    447	which would unlock `W ∈ {7, 9, 10, 11, 14, 15, 16, 24, 30}` collectively.
+    448	The remaining **single-session** paths into the general
+    449	`exists_invertible_submatrix` `sorry` are:
+    450	
+    451	* **Route A^{(9)} (W = 9 corner via `Matrix.det_of_blockTriangular`).**
+    452	  The 7×7 sub-matrix has a clean 1+3+3 BlockTriangular structure
+    453	  (with `b : Fin 7 → ℕ` valued `{0, 1, 2}`) where each block has nonzero
+    454	  determinant computable by `Matrix.det_fin_three`. **First non-upper-
+    455	  triangular determinant in the file** — introduces a new technique
+    456	  (block-diagonal det via `det_of_blockTriangular`) that extends the
+    457	  closure beyond the leading-row family. Multi-session: 1 session to
+    458	  develop the block-triangular API + ~1 session to apply at W=9. Once
+    459	  developed, the same template should close W=7, W=10, W=11, W=15,
+    460	  W=18 etc.
+    461	* **Route A^{(10)} (higher-W corner via leading-row triangulation).**
+    462	  Continue the S129 pattern at higher W. Pre-search candidates by
+    463	  Python: for `W ∈ {14, 15, 16, 18, 20, 21, 24, 30}`, check if a
+    464	  leading-row + dead-col triangulation exists. `W = 14` has `R = φ(14)
+    ... (10 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    444	**structurally exhausted** for every `W ∈ [2, 72]` with `R ≤ 22` outside
+    445	the closed set `{2, 3, 4, 5, 6, 8, 10, 12, 18, 20}`. The structurally
+    446	obstructed set in this parameter range is `{7, 9, 11, 13, 14, 15, 16,
+    447	17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 36, 38, 40, 42, 44,
+    448	48, 50, 54, 60, 66}` — note S144 also CORRECTED W=10's status (originally
+    449	listed obstructed in S128/S129; S144 found triangulation `ρ ↦ (1, 0, 4,
+    450	3, 9)`). The "`det_of_blockTriangular`-required" set becomes
+    451	`{7, 9, 11, 13, ..., 66}` (excluding the now-closed 10).
+    452	The remaining single-session paths into the general
+    453	`exists_invertible_submatrix` `sorry` reduce to the multi-session
+    454	"`det_of_blockTriangular` API" sub-arc (Route A^{(9-block)})
+    455	The remaining **single-session** paths into the general
+    456	`exists_invertible_submatrix` `sorry` are:
+    457	
+    458	* **Route A^{(9)} (W = 9 corner via `Matrix.det_of_blockTriangular`).**
+    459	  The 7×7 sub-matrix has a clean 1+3+3 BlockTriangular structure
+    460	  (with `b : Fin 7 → ℕ` valued `{0, 1, 2}`) where each block has nonzero
+    461	  determinant computable by `Matrix.det_fin_three`. **First non-upper-
+    462	  triangular determinant in the file** — introduces a new technique
+    463	  (block-diagonal det via `det_of_blockTriangular`) that extends the
+    464	  closure beyond the leading-row family. Multi-session: 1 session to
+    465	  develop the block-triangular API + ~1 session to apply at W=9. Once
+    466	  developed, the same template should close W=7, W=10, W=11, W=15,
+    467	  W=18 etc.
+    468	* **Route A^{(10)} (higher-W corner via leading-row triangulation).**
+    469	  Continue the S129 pattern at higher W. Pre-search candidates by
+    470	  Python: for `W ∈ {14, 15, 16, 18, 20, 21, 24, 30}`, check if a
+    471	  leading-row + dead-col triangulation exists. `W = 14` has `R = φ(14)
+    472	  + 1 = 7`; `W = 15` has `R = 9`; `W = 16` has `R = 9`; `W = 18` has
+    473	  `R = 7`; `W = 30` has `R = 9`. Single-session if a clean
+    ... (10 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me also ensure the W=10 line in the closed list at the top of the agenda mentions that W=10 was not in the original obstructed set after S144:
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    325	  "`det_of_blockTriangular`-required" set). The set of W's closed by Route
+    326	  A^{(N)} is now `{2, 3, 4, 5, 6, 8, 12, 18, 20}`; the structurally
+    327	  obstructed set is `{7, 9, 10, 11, 14, 15, 16, 24, 30}`.
+    328	- [x] **Orthogonal corner case `(W = 12, d = j + 1)` closed unconditionally (S129).**
+    329	  Six new declarations: `chiP_fifty_nine_eq_one`,
+    330	  `chiP_eighty_nine_eq_one`, `chiP_one_hundred_nine_eq_one`,
+    331	  `chiP_one_hundred_twenty_seven_eq_one`,
+    332	  `exists_invertible_submatrix_W_eq_12_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    333	  and `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 12 (j+1) j).rank = 5`,
+    334	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    335	  Quot.sound`). Route A^{(8)} from `mps_bond_dim_notes.md`. The matrix is
+    336	  `12^j × 12`; live columns `{0, 4, 6, 10}` (residues `1, 5, 7, 11 (mod 12)`)
+    337	  plus dead column `1` (`chiP 2 = 1` at row 0; the alternative dead col
+    338	  `2` with `chiP 3 = 1` is equivalent) give `R = φ(12) + 1 = 5`.
+    339	  **Triangulation via FOUR non-leading rows.** Leading rows `{0..4}` admit
+    340	  no triangulation (rows 1 and 3 have identical support pattern at the
+    341	  chosen 5 cols). Non-leading rows `{4, 7, 9, 10}` each contribute a
+    342	  distinct prime: `chiP 59` (row 4 col `k=10`), `chiP 89` (row 7 col `k=4`),
+    343	  `chiP 109` (row 9 col `k=0`), `chiP 127` (row 10 col `k=6`). Permutation
+    344	  `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` triangularises the
+    345	  `5 × 5` submatrix to upper triangular with diagonal primes
+    346	  `{2, 109, 127, 59, 89}` and below-diagonal composites
+    347	  `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. Determinant via
+    348	  `Matrix.det_of_upperTriangular`, expansion via `Fin.prod_univ_five`.
+    349	  **Upper-bound subtlety:** `rank_le_width` gives only `rank ≤ 12`; we
+    350	  cite the general `upper_bound`, which evaluates to `φ(12) · 12^0 + 1 = 5`.
+    351	  Uses `Nat.prime_two` (existing) and four new helpers for primes
+    352	  `{59, 89, 109, 127}`. ~370 Lean lines. **Eighth unconditional
+    353	  `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third
+    354	  instance using `det_of_upperTriangular`.** **First instance using FOUR
+    ... (5 more lines)
+Now let me update CLOSED_PATHS.md and write the session synthesis:
+  [Bash] tail -5 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md && echo "---" && wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | §D2.a.2 NOVELTY_CHALLENGES — PH W-scan over primorials W ∈ {2, 6, 30, 210, 2310}: does the PH serial-correlation deficit z(B2; T0) follow the Hardy-Littlewood twin-prime singular-series (1 - 2/p) per-prime decay rate? (parent S96 → S117 → S124 → S131; refines E2.17) | REFINEMENT | E | Successor in the E2.17 W-trick refinement chain. M=1000 main scan + M=500 finite-size controls at all five W, K=20 baseline replicates per cell, pooled over min(3, φ(W)) coprime residues. **Pre-stated falsifiers**: F1 monotone HL decay; F2 W=210 reproduces S117 (-1.99 ± 1.5σ); F3 W=2 ≥ 50% of S96 (z ≥ 4); F4 z(B1) preserved; F5 closed-form fit r(W) = ∏(1 - α/p) with α ∈ (0, 2]. **Outcome**: F2 ✓ (M=1000 W=210 z = -1.95 vs S117 -1.99); F3 ✓ (W=2 captures 90% of S96 deficit at M=1000, 66% at M=500); F4 ✓ (z(B1; W=2310) ≥ z(B1; W=2)); F1 partial at M=1000 (W=2310 rebound to -3.04) but ✓ at M=500 (clean monotone 4.89 → 1.52 → 0.93 → 0.99 → 0.30); F5 partial — α = 2.07 fits W = 6 → W = 30 cell-pair to 0.001 / 0.008 in r-units, but K = 20 noise floor (~0.045) prevents tight α-constraints at W ≥ 210. **Net new content**: (i) **Per-prime decay rate identified as the Hardy-Littlewood twin-prime local factor (1 - 2/p)**: α ≈ 2 = number of forbidden residues mod p in a coprime pair (HL 1923 §4). PH-side analogue of E2.13's Gowers W-scan with the same per-prime structure. (ii) **Saturation by W = 6**: serial-correlation component reaches K = 20 noise floor by W = 6 (p = 3 filter alone removes ~70% of W=2 deficit); W = 210 sat in saturation regime, not HL-active regime — quantitative correction to S117's narrative. (iii) **W = 2310 M = 1000 rebound diagnosed as finite-size window non-stationarity**: φ(2310) = 480 forces M = 1000 window to span 2.13 log-decades, Cramér normalisation `g/(φ(W) log q_n)` drifts ~15%; M = 500 control eliminates rebound (z(B2; W=2310) = +0.30). **Refines E2.17 inline** with the explicit per-prime decay rate `(1 - 2/p)` matching HL twin-prime constant, refined statement at line 1232–1275 of EDGES.md. **Cross-domain ingredient**: Hardy-Littlewood 1923 twin-prime singular series (already in CROSS_DOMAIN_TECHNIQUES); the new content is the PH-side identification of the per-prime local factor. **Successors proposed (S138)**: §D2.a.2.i K = 200 follow-up to tighten noise floor and constrain α ∈ {1.5, 2, 2.5} (1 session, 10× CPU); §D2.a.2.ii matched-physical-window protocol holding log q_n drift ≤ 1 across all W (1 session). **Diminishing-returns warning**: S138 is the **fifth refinement of E2.17** (S96 → S117 → S124 → S131 → S138). The K = 20 noise floor caps further refinement to ~1σ; chain is at terminus. Either close formally with K = 200 confirmation OR pivot to D2.b/D2.c (different PH constructions). Cites E2.13, E2.14, E2.15, E2.16, E2.17, E2.19, E2.20. See `experiments/topological/persistent_homology_w_scan/`, `archive/sessions/session138_d2a2_ph_w_scan.md`. | 138 |
+    | §D27 ATTACK_VECTORS — Newman / Erdős L^∞-flatness of χ_P-coefficient polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n: does R_N := ‖f_N‖_∞ / √π(N) saturate Erdős/Newman flat-polynomial bound? (cross-domain: Newman 1976 Proc. AMS 51 / Erdős 1957 Mich. Math. J. 4 / Salem-Zygmund / Bourgain Λ(p) — Kahane 1985 CUP §6) | FAIL | I | Frontier wild_swing S138 on the L^∞ endpoint (p=∞) of the Fourier-side characterisation of χ_P, complementary to D10/E2.20 (Mahler = log integral) and D25 (Stein-Tomas L^p, finite p). FFT-based ‖f_N‖_∞ = max_k |F[k]| via M = 16(N+1) oversampled DFT; major-arc decomposition exposes |F(e^{2πi a/q})|/√π(N) =: R(a/q) at every rational. Ensembles: 50 matched-density Bernoulli (uniform support), 50 matched-parity Bernoulli (odd support, single p=2 included), 50 signed-prime Littlewood, deterministic Liouville f_λ, Rudin-Shapiro at length π(N). Run at N ∈ {2^{10}, 2^{12}, 2^{14}, 2^{16}, 2^{18}}. **Pre-registered falsifiers**: (a) |R_N(prime) − R_B| ≤ 0.1 → B-grade Salem-Zygmund typical; (b) R_N(prime) → c < √2 → A-grade super-RudinShapiro flat; (c) R_N(prime) >> R_B → I-mode HL singular-series imprint. **Outcome: B-grade case (c) mode I — HL singular series is recovered EXACTLY at every rational point.** **Empirical identity (verified at all 5 N)**: R(a/q; primes) = √π(N) · μ(q)² / φ(q) + O(√(2 log N)) for every (a, q) = 1 with 1 ≤ q ≤ 64. Squarefree q: relative error 0.1–6% (median 1.5%) across 64 q values at N=2^{18}; non-squarefree q (μ(q)²=0): R ≈ 0.05–0.7 (vanishes within Salem-Zygmund noise). At N=2^{18} (π(N)=23000, √π(N)=151.66): R(q=1)=151.66 (HL=151.66 exact); R(q=2)=151.64 (HL=151.66, 99.99% match — parity peak); R(q=3)={75.60, 75.76} (HL=75.83); R(q=4)=0.36 (μ²=0); R(q=5)={37.71-38.10} (HL=37.91); R(q=8)=0.23 (μ²=0); ... full table in run_full.log covers q ≤ 64. **Bare ‖f_N‖_∞ = (1+o(1)) · √π(N)**, attained at z = -1 across all N, confirmed at both N=2^{16} and 2^{18}. Q_max scan at N=2^{18}: R(prime, minor) = {151.64, 75.76, 75.76, 38.09, 19.17, 12.83, 12.31} for Q_max = {1, 2, 4, 8, 16, 32, 64}; R(Bern, minor) ≈ 10.7 ± 0.6 across all Q_max. Z-scores progress {214, 80, 114, 53, 11, 3.1, 3.1}σ — primes converge to Bernoulli noise floor as Q_max → ∞, with persistent ~3σ residual reflecting cumulative O(Q²) HL peaks at q > Q_max. Scaling rule R(prime, minor; Q_max) ≈ √π(N) / φ(q*) where q* = smallest squarefree integer > Q_max verified to ~10% across all (N, Q_max) cells. **Mechanism for closure mode I (partial closure with HL fingerprint as new content)**: the L^∞ structure decomposes EXACTLY into the Hardy-Littlewood circle-method singular series. Major-arc R(a/q) = √π(N)·μ²(q)/φ(q) is the exponential-sum identity Σ_{p≤N} e^{2πi p a/q} ≈ μ(q)/φ(q)·π(N) (classical Vinogradov / Hardy-Littlewood); the bare ‖f‖_∞ is dominated by q=2 parity. **Erdős-extremal flatness DECISIVELY REFUTED**: R_N → ∞ as √π(N), the OPPOSITE extreme; primes are one of the LEAST flat 0/1 supports possible (saturating the trivial upper bound from above via parity). **Distinct from**: D10/E2.20 (Mahler = log integral, geometric mean) — D27 makes the parity major-arc contribution to the Jensen integral explicit at z=-1; D25 (Stein-Tomas L^p, finite p) — D27 covers the p=∞ endpoint; CLOSED_PATHS line 778/E7.16 (Friedman/Ramanujan prime-Cayley spectral gap) — that uses the prime SET as Cayley generators on Z/NZ, this uses χ_P as polynomial coefficients. **Adds EDGE E2.21**: R(a/q; primes) = √π(N)·μ²(q)/φ(q) + O(√log N) at every rational; ‖f_N‖_∞ = (1+o(1))√π(N) attained at z=-1; provides the L^∞-norm endpoint of the L^p Fourier-side category. **Negative-shape consequence**: any L^∞-Chebyshev-style compression of f_N cannot beat √π(N) storage — parity peak forces this lower bound; rules out "flat-polynomial" representation of χ_P as polylog primality witness. **Cross-domain ingredient (Newman / Erdős / Littlewood / Bourgain Λ(p) extremal-polynomial L^∞ harmonic analysis) performed real work**: first project quantitative use; CROSS_DOMAIN_TECHNIQUES.md §2 row "Newman / Erdős polynomial flatness" promoted PROPOSED (D27) → USED I with edge E2.21. **Channelled mathematician**: Vinogradov (major-arc / minor-arc decomposition for prime exponential sums; HL circle method). **Successors proposed (S138)**: D27.a Vinogradov minor-arc supremum at N=2^{18}, 10⁴ random rationals a/q with q ∈ (N^{2/5}, N^{3/5}); does empirical max R(a/q) match `C·N^{1/4}(log N)^A` Vinogradov bound? D27.b Liouville L^∞ at major arcs — Möbius/nilsequence orthogonality predicts R^λ(a/q) = o(1) for ALL q including q=2, screening data already shows ‖f_λ‖_∞/√N = 3.16 with argmax NOT at q=2; quantitative single-session test. D27.c twin-prime Newman polynomial L^∞ uses HL twin-prime singular series ∝ ∏(p-2)/(p-1) — different q-pattern. Cites E1.5, E1.10, E2.13, E2.20. Cross-domain refs: Erdős 1957 *Mich. Math. J.* 4; Newman 1976 *Proc. AMS* 51; Kahane 1985 *Some Random Series of Functions* CUP §6 (Salem-Zygmund); Bourgain 1988 *Acta Math.* 161 (Λ(p) sets); Balister-Bollobás-Morris-Sahasrabudhe 2020 *Annals* 192, 977 (resolution of Erdős for ±1). See experiments/analytic/newman_linfty_chi_p/. | 138 |
+    | §D30 ATTACK_VECTORS — Pollicott-Ruelle resonances of χ_P-weighted Gauss-map transfer operator: does L_{χ_P} f(x) = Σ_n χ_P(n) f(1/(x+n))/(x+n)² have an isolated arithmetic resonance encoding π(x), à la Mayer 1991 dynamical-determinant representation of ζ via the unweighted Gauss map? (cross-domain: Pollicott 1985 Inventiones 81 / Ruelle 1976 Inventiones 34 / Mayer 1991 Bull. AMS 25 transfer operator spectral theory; Baladi 2018 *Dynamical Zeta Functions* Springer Ergeb. 68) | FAIL | E | Frontier wild_swing S140 on the FIRST dynamical-spectral / transfer-operator measurement on χ_P, recommended next pick per S139 critique single-pick annotation. Chebyshev-Lobatto barycentric collocation on [0,1], (M_grid+1)-dim matrix; cylinder truncation n_max sweeping {100, 200, 400, 800}; 200 controls per ensemble at M=80, n=400; 5 baselines (B_naive=Bernoulli ρ, B_supp=cardinality-matched random subset of [2..n_max], B_par=parity-matched, B_cra=Cramér 1/log n, B_crao=Cramér+odd-parity most stringent); plus Rademacher controls for Liouville. **Pre-registered falsifiers**: F-A unweighted h=1 reproduces Mayer/GKW spectrum within 1e-3 (sanity); F-B B_crao closure within ±2σ (mode E); F-C ≥3σ deviation persisting under refinement (mode I); F-D closed-form polylog identity (A-grade). **Outcome: B-grade case (i) mode E — F-A passes, F-B holds, F-C/F-D fail.** F-A: top-3 unweighted eigenvalues at M=160, n=800 = (0.99820, -0.30293, +0.10064) vs published GKW (1.0000, -0.30366300289, +0.10088637) — agreement < 0.2% on top-3, sanity ✓. **χ_P spectrum (M=120, n=400)**: |λ_0|=0.35961, |λ_1|=0.05103, |λ_2|=0.00792, |λ_3|=0.00128, |λ_4|=0.00021 — alternating signs, geometric decay (gap |λ_1|/|λ_0|=0.142), parallel to GKW structure. **Refinement-stable**: top-5 eigenvalues vary by <1% CV across (M_grid, n_max) ∈ {30..160}×{100..800}, real Pollicott-Ruelle resonances (not spurious-discretisation). **Closed-form prediction**: leading eigenvector of L_h overlaps unweighted Gauss density g(x)=1/((1+x)log2) at cosine ≥0.9919 for h ∈ {χ_P, λ, Λ}; arithmetic content lives in eigenvalue, not eigenfunction. Rayleigh-quotient closed form λ_0^h ≈ Σ_n h(n)·a_n with a_n=T_n/||g||², T_n=∫₀¹dx/[(1+x)(x+n)(x+n+1)·log²2] explicit (partial fractions); for n≥2: T_n=(1/log²2)·[ln2/(n(n-1)) - ln((n+1)/n)/(n-1) + ln((n+2)/(n+1))/n], asymptotic a_n~2log2/n², Σa_n=1. **At n_max=400: Σ_p a_p = 0.36187 vs measured |λ_0|^{χ_P}=0.35961, +0.6% rel error; Σ_n Λ(n)·a_n = 0.5206 vs measured |λ_0|^Λ=0.4968, +4.8% rel error.** For signed λ Rayleigh fails by factor 2 (left eigenvector ≠ const for signed weights). **Cramér closure**: vs B_crao 200 seeds at M=80, n=400: |λ_0| z=-1.79, |λ_1| z=-1.60, gap z=+2.10 — all within ±2σ Bonferroni (3-feature ≈ 2.39σ); F-B holds. vs B_supp z=+3.58 (uniform random over-spreads to high indices, false depression); vs B_par z=+2.02 (parity matched but lacks log-density profile). **A-grade hypothesis falsified**: |λ_0|/(π(N)/N) = 0.3596/0.195 = 1.844 — NOT a closed-form constant; the closed form IS Σ_p a_p, which is cost-equivalent to enumerating primes ≤ N. **Mechanism for closure mode E**: arithmetic-weighted PR leading resonance is a DENSITY-ONLY invariant at first moment — captured exactly by Σ_n h(n)·a_n where {a_n} is independent of h. Cramér model 1/log n + odd parity reproduces this expectation within sample noise. **Mayer-style dynamical-determinant representation of π(x) NOT opened**: there is no isolated arithmetic resonance distinct from the density-Rayleigh prediction. **Connections**: STRUCTURALLY DISTINCT from E2.13 Gowers (S85 detected HL → W-trick erases), E2.14 Anderson Lyapunov (S88 detected HL → W-trick erases), E2.16 anti-DPP (S95), E2.17 PH (S96), E2.19 subword (S104), E2.20 Mahler (S134), E2.21 Newman (S138) — all DETECT HL deviations; E2.22 (this work) shows the dynamical-spectral leading resonance is a 1-summing density integral that the Cramér model captures by construction. STRUCTURALLY DISTINCT from CLOSED line 320, 425 (unweighted ergodic-theory: orbit count = ζ-zeros, Furstenberg-correspondence circular) — D30 is the spectral theory of a SPECIFIC arithmetic-weighted operator, not the abstract correspondence. STRUCTURALLY DISTINCT from CLOSED line 105 (constructive transfer-matrix sieve: state space lcm(primes ≤√x) exponentially large) — D30 is spectral, not constructive. STRUCTURALLY DISTINCT from CLOSED line 182 (FRACTRAN automaton). **Adds EDGE E2.22**: λ_0^{χ_P} = Σ_p a_p (1+O(N⁻¹)) with a_n explicit closed form, reduces to Cramér 1/log n + odd parity within ±2σ at 200 seeds. EVS L (closed form exists, but not polylog-evaluable). **Cross-domain ingredient (Pollicott-Ruelle / transfer-operator spectral theory) performed real work**: first project quantitative use; CROSS_DOMAIN_TECHNIQUES.md §5 row "Transfer operator spectrum (Pollicott-Ruelle resonances of arithmetic dynamical system)" promoted PROPOSED (D30) → USED E with edge E2.22. **Channelled mathematician**: Ruelle / Baladi (transfer-operator spectral theory) with Mayer 1991 (arithmetic transfer operators). **Successors proposed (S140)**: D30.a dynamical determinant det(I − z·L_{χ_P}) zero structure — does it factor like Mayer's `det(I − L_s) = ζ(2s)/etc.` for χ_P-weighted family? D30.b Mayer-style s-parameterised χ_P family L_{χ_P, s} f(z) = Σ_p (1/(z+p))^{2s} f(1/(z+p)); zeros of det(I − L_{χ_P, s}) define a NEW arithmetic Dirichlet-series-like function (2 sessions); D30.c Bowen-Series / doubling-map / β-shift analogues — does Cramér-typical χ_P leading-resonance persist on every hyperbolic dynamical system, or is it Gauss-specific (1 session). Cites E2.13, E2.14, E2.16, E2.17, E2.18, E2.19, E2.20, E2.21, E7.16 (Friedman-typical-once-support-and-parity-matched). Cross-domain refs: Pollicott 1985 *Inventiones* 81, 413; Ruelle 1976 *Inventiones* 34, 231; Mayer 1991 *Bull. AMS* 25, 55; Baladi 2018 *Dynamical Zeta Functions and Dynamical Determinants for Hyperbolic Maps* Springer Ergeb. 68; Liverani 2004 *Comm. Math. Phys.* 248; Wirsing 1974 *Acta Arith.* 24 (GKW constant). See `experiments/dynamical/pollicott_ruelle_chi_p/`, `archive/sessions/session140_d30_pollicott_ruelle_chi_p.md`. | 140 |
+    | §D5 ATTACK_VECTORS — Continuous-time quantum walk on the divisor / coprime graph: does U(t) = exp(−iH t) with seed `|1⟩` and target `v_p = (1/√π(x)) Σ_{p≤x} |p⟩` concentrate amplitude polylogarithmically on primes (Childs glued-tree analogue)? (cross-domain: Childs 2009 PRL 102 = arXiv:0806.1972 + Childs-Cleve-Deotto-Farhi-Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131) | FAIL | E | Frontier wild_swing S141 on the natural CTQW successor to D4 (S80, Szegedy closed E). H_G ∈ {A, L = D − A} on G ∈ {D_x, C_x}. Eigendecomposition U(t) = Σ_k e^{−iλ_k t} u_k u_k^T; amplitude `P(t) = |⟨v_p|U(t)|1⟩|²` swept on t ∈ [0, 500] at 5001 grid points. **Pre-registered falsifiers**: F-A classical equilibration baseline `π(x)/x` (sanity); F-B peak amplitude beats Cramér + odd-parity matched control by a factor that grows with x (A-grade); F-C isolated band-edge eigenvector with O(1) overlap with v_p (glued-tree A-grade signature); F-D closure mode confirmed across both Hamiltonian variants. **Outcome**: F-A passes, F-B fails (excess +4–5σ but BOUNDED and not scaling), F-C fails (top overlap decays as `x^{−0.20}`, no isolated cluster), F-D confirms across all 4 variants. **Scaling (divisor + H=A, x ∈ {32, 64, 96, 128, 192, 256, 384, 512, 768}, T=500)**: ratio_max(x) := max_t P(t) / (π(x)/x) ∈ {1.24, 1.34, 1.39, 1.30, 1.23, 1.29, 1.31, 1.13, 1.22}; OLS fit `1.151 + 0.609/log(x)` → x→∞ asymptote ≈ **1.151** (bounded constant). top_overlap(x) := max_k |⟨u_k|v_p⟩| ∈ {0.626, 0.532, 0.469, 0.455, 0.420, 0.393, 0.369, 0.352, 0.328}; OLS log-log fit `1.214 · x^{−0.200}` (slow polynomial decay, NOT constant). **C2 control (Cramér + odd parity, 100 seeds)**: z_peak = +5.4, +3.3, +5.1 at x = 64, 128, 256; z_mean = +4.6, +4.1, +4.0 — modest persistent excess (~+4σ residual) but does NOT scale. C1 (uniform random subset) z = +2.9, +3.9, +7.5, +10.2 grows but smaller than C3. C3 (random ER graph, same mean degree) z = +10.6, +22.1, +39.9, +65.8 — divisor graph IS structured, but structure is positional (vertex-1 hub), not prime-detection. **Hamiltonian / graph variants (F-D)**: divisor + H=L (Laplacian): ratio_max → 0 as x grows (zero-mode of L kills coupling, |1⟩ has nontrivial overlap with all-ones eigenvector orthogonal to centred v_p); coprime + H=A: ratio_max DECREASES as `x^{−1/2}` (primes anti-concentrated relative to equilibrium); coprime + H=L: ratio_max → 0. All 4 variants close mode E with no polylog opening. **Eigenvector inspection (x=128, divisor H=A, top-overlap k=1, λ_1=−6.03, overlap 0.455)**: dominant entries vertex 1 (−0.436), vertex 4 (+0.293), vertex 2 (+0.284), vertex 6 (+0.264), vertex 3 (+0.181) — "anti-hub vs first-shell" mode; mean |amp| ratio prime/composite = 1.42; the apparent overlap with v_p is positional artefact (primes 2, 3 are in the first shell of vertex 1) NOT primality detection. **Mechanism for closure mode E**: time-averaged amplitude `⟨P(t)⟩_t = Σ_k |⟨u_k|v_p⟩|² · |⟨u_k|1⟩|²` is dispersed across O(N) modes; no isolated band-edge cluster has constant overlap with v_p; peak amplitude over t is bounded by ~`max_k |⟨u_k|v_p⟩|² · |⟨u_k|1⟩|²` × (constructive interference factor O(1)), giving `max_t P(t) ≤ C · π(x)/x` with C ≈ 1.15 across x ∈ {32..768}. **Closure structurally distinct from D4 (Szegedy)**: D4 closed via discriminant-matrix spectral gap `δ = 1/poly(x)` blocking polylog mixing; D5 closes via eigenstate overlap dispersal, which is the *Childs spectral-density* closure language. The two arguments are independent — Szegedy could fail on gap while CTQW succeeds on band-edge cluster (as for glued trees), but here BOTH fail on the divisor / coprime graph families because the relevant spectral structure is dispersed. **Adds EDGE E7.20 (CTQW amplitude ceiling)**: for G ∈ {D_x, C_x}, `H ∈ {A_G, L_G}`, seed `|1⟩`: `max_t |⟨v_p|exp(−iHt)|1⟩|² ≤ C·π(x)/x` (C ≈ 1.151 asymptote on D_x H=A; → 0 on Laplacian / coprime H=A variants). Top eigenvector overlap with v_p decays as `x^{−0.20}`. EVS shape (forbids polylog primality extraction by CTQW on these graphs). **Distinct from**: CLOSED 105 (constructive transfer matrix), 182 (FRACTRAN), 474 (Goldreich-Levin Hadamard), and from E7.13 (Szegedy on same graphs, different mechanism). **Connection to E7.16 / E2.22**: time-averaged amplitude residual vs Cramér+odd-parity matched control is +4σ, same magnitude as E2.22's PR-resonance Cramér closure — primes are density-and-parity Cramér-typical at the time-averaged CTQW amplitude level. **Cross-domain ingredient (Childs continuous-time quantum walks) performed real work**: first project use of CTQW spectral-density framework (D4 Szegedy uses discriminant-matrix algebra, fundamentally different); CROSS_DOMAIN_TECHNIQUES.md §1 row "Continuous-time quantum walks (CTQW)" promoted PROPOSED (D5) → USED E with edge E7.20. **Channelled mathematician**: Childs (CTQW spectral-density framework). **Successors proposed (S141)**: D5.a CTQW on LPS Ramanujan Cayley graph `Cay(PSL_2(F_p), prime-indexed quaternion generators)` — non-abelian Cayley with explicit Ramanujan spectral gap; tests whether non-abelian Cayley admits isolated band-edge clusters that abelian divisor / coprime do not (composes with D28 PROPOSED, 1-2 sessions); D5.b multi-vertex seed `|v_s⟩ = (1/√k) Σ_{i ∈ S} |i⟩` for arithmetic-relevant S (powers of 2, smooth numbers, square-free integers) — does the right seed unlock polylog amplitude on primes? (1-session screening). Cites E7.13 (D4 Szegedy structural template), E7.16 (Friedman density+parity matching), E2.22 (PR resonance Cramér closure structurally analogous). Cross-domain refs: Childs 2009 *PRL* 102, 180501 = arXiv:0806.1972; Childs-Cleve-Deotto-Farhi-Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131. See `experiments/quantum/ctqw_chi_p/` and `archive/sessions/session141_d5_ctqw_chi_p.md`. | 141 |
+    ---
+    785 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    782	| §D2.a.2 NOVELTY_CHALLENGES — PH W-scan over primorials W ∈ {2, 6, 30, 210, 2310}: does the PH serial-correlation deficit z(B2; T0) follow the Hardy-Littlewood twin-prime singular-series (1 - 2/p) per-prime decay rate? (parent S96 → S117 → S124 → S131; refines E2.17) | REFINEMENT | E | Successor in the E2.17 W-trick refinement chain. M=1000 main scan + M=500 finite-size controls at all five W, K=20 baseline replicates per cell, pooled over min(3, φ(W)) coprime residues. **Pre-stated falsifiers**: F1 monotone HL decay; F2 W=210 reproduces S117 (-1.99 ± 1.5σ); F3 W=2 ≥ 50% of S96 (z ≥ 4); F4 z(B1) preserved; F5 closed-form fit r(W) = ∏(1 - α/p) with α ∈ (0, 2]. **Outcome**: F2 ✓ (M=1000 W=210 z = -1.95 vs S117 -1.99); F3 ✓ (W=2 captures 90% of S96 deficit at M=1000, 66% at M=500); F4 ✓ (z(B1; W=2310) ≥ z(B1; W=2)); F1 partial at M=1000 (W=2310 rebound to -3.04) but ✓ at M=500 (clean monotone 4.89 → 1.52 → 0.93 → 0.99 → 0.30); F5 partial — α = 2.07 fits W = 6 → W = 30 cell-pair to 0.001 / 0.008 in r-units, but K = 20 noise floor (~0.045) prevents tight α-constraints at W ≥ 210. **Net new content**: (i) **Per-prime decay rate identified as the Hardy-Littlewood twin-prime local factor (1 - 2/p)**: α ≈ 2 = number of forbidden residues mod p in a coprime pair (HL 1923 §4). PH-side analogue of E2.13's Gowers W-scan with the same per-prime structure. (ii) **Saturation by W = 6**: serial-correlation component reaches K = 20 noise floor by W = 6 (p = 3 filter alone removes ~70% of W=2 deficit); W = 210 sat in saturation regime, not HL-active regime — quantitative correction to S117's narrative. (iii) **W = 2310 M = 1000 rebound diagnosed as finite-size window non-stationarity**: φ(2310) = 480 forces M = 1000 window to span 2.13 log-decades, Cramér normalisation `g/(φ(W) log q_n)` drifts ~15%; M = 500 control eliminates rebound (z(B2; W=2310) = +0.30). **Refines E2.17 inline** with the explicit per-prime decay rate `(1 - 2/p)` matching HL twin-prime constant, refined statement at line 1232–1275 of EDGES.md. **Cross-domain ingredient**: Hardy-Littlewood 1923 twin-prime singular series (already in CROSS_DOMAIN_TECHNIQUES); the new content is the PH-side identification of the per-prime local factor. **Successors proposed (S138)**: §D2.a.2.i K = 200 follow-up to tighten noise floor and constrain α ∈ {1.5, 2, 2.5} (1 session, 10× CPU); §D2.a.2.ii matched-physical-window protocol holding log q_n drift ≤ 1 across all W (1 session). **Diminishing-returns warning**: S138 is the **fifth refinement of E2.17** (S96 → S117 → S124 → S131 → S138). The K = 20 noise floor caps further refinement to ~1σ; chain is at terminus. Either close formally with K = 200 confirmation OR pivot to D2.b/D2.c (different PH constructions). Cites E2.13, E2.14, E2.15, E2.16, E2.17, E2.19, E2.20. See `experiments/topological/persistent_homology_w_scan/`, `archive/sessions/session138_d2a2_ph_w_scan.md`. | 138 |
+    783	| §D27 ATTACK_VECTORS — Newman / Erdős L^∞-flatness of χ_P-coefficient polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n: does R_N := ‖f_N‖_∞ / √π(N) saturate Erdős/Newman flat-polynomial bound? (cross-domain: Newman 1976 Proc. AMS 51 / Erdős 1957 Mich. Math. J. 4 / Salem-Zygmund / Bourgain Λ(p) — Kahane 1985 CUP §6) | FAIL | I | Frontier wild_swing S138 on the L^∞ endpoint (p=∞) of the Fourier-side characterisation of χ_P, complementary to D10/E2.20 (Mahler = log integral) and D25 (Stein-Tomas L^p, finite p). FFT-based ‖f_N‖_∞ = max_k |F[k]| via M = 16(N+1) oversampled DFT; major-arc decomposition exposes |F(e^{2πi a/q})|/√π(N) =: R(a/q) at every rational. Ensembles: 50 matched-density Bernoulli (uniform support), 50 matched-parity Bernoulli (odd support, single p=2 included), 50 signed-prime Littlewood, deterministic Liouville f_λ, Rudin-Shapiro at length π(N). Run at N ∈ {2^{10}, 2^{12}, 2^{14}, 2^{16}, 2^{18}}. **Pre-registered falsifiers**: (a) |R_N(prime) − R_B| ≤ 0.1 → B-grade Salem-Zygmund typical; (b) R_N(prime) → c < √2 → A-grade super-RudinShapiro flat; (c) R_N(prime) >> R_B → I-mode HL singular-series imprint. **Outcome: B-grade case (c) mode I — HL singular series is recovered EXACTLY at every rational point.** **Empirical identity (verified at all 5 N)**: R(a/q; primes) = √π(N) · μ(q)² / φ(q) + O(√(2 log N)) for every (a, q) = 1 with 1 ≤ q ≤ 64. Squarefree q: relative error 0.1–6% (median 1.5%) across 64 q values at N=2^{18}; non-squarefree q (μ(q)²=0): R ≈ 0.05–0.7 (vanishes within Salem-Zygmund noise). At N=2^{18} (π(N)=23000, √π(N)=151.66): R(q=1)=151.66 (HL=151.66 exact); R(q=2)=151.64 (HL=151.66, 99.99% match — parity peak); R(q=3)={75.60, 75.76} (HL=75.83); R(q=4)=0.36 (μ²=0); R(q=5)={37.71-38.10} (HL=37.91); R(q=8)=0.23 (μ²=0); ... full table in run_full.log covers q ≤ 64. **Bare ‖f_N‖_∞ = (1+o(1)) · √π(N)**, attained at z = -1 across all N, confirmed at both N=2^{16} and 2^{18}. Q_max scan at N=2^{18}: R(prime, minor) = {151.64, 75.76, 75.76, 38.09, 19.17, 12.83, 12.31} for Q_max = {1, 2, 4, 8, 16, 32, 64}; R(Bern, minor) ≈ 10.7 ± 0.6 across all Q_max. Z-scores progress {214, 80, 114, 53, 11, 3.1, 3.1}σ — primes converge to Bernoulli noise floor as Q_max → ∞, with persistent ~3σ residual reflecting cumulative O(Q²) HL peaks at q > Q_max. Scaling rule R(prime, minor; Q_max) ≈ √π(N) / φ(q*) where q* = smallest squarefree integer > Q_max verified to ~10% across all (N, Q_max) cells. **Mechanism for closure mode I (partial closure with HL fingerprint as new content)**: the L^∞ structure decomposes EXACTLY into the Hardy-Littlewood circle-method singular series. Major-arc R(a/q) = √π(N)·μ²(q)/φ(q) is the exponential-sum identity Σ_{p≤N} e^{2πi p a/q} ≈ μ(q)/φ(q)·π(N) (classical Vinogradov / Hardy-Littlewood); the bare ‖f‖_∞ is dominated by q=2 parity. **Erdős-extremal flatness DECISIVELY REFUTED**: R_N → ∞ as √π(N), the OPPOSITE extreme; primes are one of the LEAST flat 0/1 supports possible (saturating the trivial upper bound from above via parity). **Distinct from**: D10/E2.20 (Mahler = log integral, geometric mean) — D27 makes the parity major-arc contribution to the Jensen integral explicit at z=-1; D25 (Stein-Tomas L^p, finite p) — D27 covers the p=∞ endpoint; CLOSED_PATHS line 778/E7.16 (Friedman/Ramanujan prime-Cayley spectral gap) — that uses the prime SET as Cayley generators on Z/NZ, this uses χ_P as polynomial coefficients. **Adds EDGE E2.21**: R(a/q; primes) = √π(N)·μ²(q)/φ(q) + O(√log N) at every rational; ‖f_N‖_∞ = (1+o(1))√π(N) attained at z=-1; provides the L^∞-norm endpoint of the L^p Fourier-side category. **Negative-shape consequence**: any L^∞-Chebyshev-style compression of f_N cannot beat √π(N) storage — parity peak forces this lower bound; rules out "flat-polynomial" representation of χ_P as polylog primality witness. **Cross-domain ingredient (Newman / Erdős / Littlewood / Bourgain Λ(p) extremal-polynomial L^∞ harmonic analysis) performed real work**: first project quantitative use; CROSS_DOMAIN_TECHNIQUES.md §2 row "Newman / Erdős polynomial flatness" promoted PROPOSED (D27) → USED I with edge E2.21. **Channelled mathematician**: Vinogradov (major-arc / minor-arc decomposition for prime exponential sums; HL circle method). **Successors proposed (S138)**: D27.a Vinogradov minor-arc supremum at N=2^{18}, 10⁴ random rationals a/q with q ∈ (N^{2/5}, N^{3/5}); does empirical max R(a/q) match `C·N^{1/4}(log N)^A` Vinogradov bound? D27.b Liouville L^∞ at major arcs — Möbius/nilsequence orthogonality predicts R^λ(a/q) = o(1) for ALL q including q=2, screening data already shows ‖f_λ‖_∞/√N = 3.16 with argmax NOT at q=2; quantitative single-session test. D27.c twin-prime Newman polynomial L^∞ uses HL twin-prime singular series ∝ ∏(p-2)/(p-1) — different q-pattern. Cites E1.5, E1.10, E2.13, E2.20. Cross-domain refs: Erdős 1957 *Mich. Math. J.* 4; Newman 1976 *Proc. AMS* 51; Kahane 1985 *Some Random Series of Functions* CUP §6 (Salem-Zygmund); Bourgain 1988 *Acta Math.* 161 (Λ(p) sets); Balister-Bollobás-Morris-Sahasrabudhe 2020 *Annals* 192, 977 (resolution of Erdős for ±1). See experiments/analytic/newman_linfty_chi_p/. | 138 |
+    784	| §D30 ATTACK_VECTORS — Pollicott-Ruelle resonances of χ_P-weighted Gauss-map transfer operator: does L_{χ_P} f(x) = Σ_n χ_P(n) f(1/(x+n))/(x+n)² have an isolated arithmetic resonance encoding π(x), à la Mayer 1991 dynamical-determinant representation of ζ via the unweighted Gauss map? (cross-domain: Pollicott 1985 Inventiones 81 / Ruelle 1976 Inventiones 34 / Mayer 1991 Bull. AMS 25 transfer operator spectral theory; Baladi 2018 *Dynamical Zeta Functions* Springer Ergeb. 68) | FAIL | E | Frontier wild_swing S140 on the FIRST dynamical-spectral / transfer-operator measurement on χ_P, recommended next pick per S139 critique single-pick annotation. Chebyshev-Lobatto barycentric collocation on [0,1], (M_grid+1)-dim matrix; cylinder truncation n_max sweeping {100, 200, 400, 800}; 200 controls per ensemble at M=80, n=400; 5 baselines (B_naive=Bernoulli ρ, B_supp=cardinality-matched random subset of [2..n_max], B_par=parity-matched, B_cra=Cramér 1/log n, B_crao=Cramér+odd-parity most stringent); plus Rademacher controls for Liouville. **Pre-registered falsifiers**: F-A unweighted h=1 reproduces Mayer/GKW spectrum within 1e-3 (sanity); F-B B_crao closure within ±2σ (mode E); F-C ≥3σ deviation persisting under refinement (mode I); F-D closed-form polylog identity (A-grade). **Outcome: B-grade case (i) mode E — F-A passes, F-B holds, F-C/F-D fail.** F-A: top-3 unweighted eigenvalues at M=160, n=800 = (0.99820, -0.30293, +0.10064) vs published GKW (1.0000, -0.30366300289, +0.10088637) — agreement < 0.2% on top-3, sanity ✓. **χ_P spectrum (M=120, n=400)**: |λ_0|=0.35961, |λ_1|=0.05103, |λ_2|=0.00792, |λ_3|=0.00128, |λ_4|=0.00021 — alternating signs, geometric decay (gap |λ_1|/|λ_0|=0.142), parallel to GKW structure. **Refinement-stable**: top-5 eigenvalues vary by <1% CV across (M_grid, n_max) ∈ {30..160}×{100..800}, real Pollicott-Ruelle resonances (not spurious-discretisation). **Closed-form prediction**: leading eigenvector of L_h overlaps unweighted Gauss density g(x)=1/((1+x)log2) at cosine ≥0.9919 for h ∈ {χ_P, λ, Λ}; arithmetic content lives in eigenvalue, not eigenfunction. Rayleigh-quotient closed form λ_0^h ≈ Σ_n h(n)·a_n with a_n=T_n/||g||², T_n=∫₀¹dx/[(1+x)(x+n)(x+n+1)·log²2] explicit (partial fractions); for n≥2: T_n=(1/log²2)·[ln2/(n(n-1)) - ln((n+1)/n)/(n-1) + ln((n+2)/(n+1))/n], asymptotic a_n~2log2/n², Σa_n=1. **At n_max=400: Σ_p a_p = 0.36187 vs measured |λ_0|^{χ_P}=0.35961, +0.6% rel error; Σ_n Λ(n)·a_n = 0.5206 vs measured |λ_0|^Λ=0.4968, +4.8% rel error.** For signed λ Rayleigh fails by factor 2 (left eigenvector ≠ const for signed weights). **Cramér closure**: vs B_crao 200 seeds at M=80, n=400: |λ_0| z=-1.79, |λ_1| z=-1.60, gap z=+2.10 — all within ±2σ Bonferroni (3-feature ≈ 2.39σ); F-B holds. vs B_supp z=+3.58 (uniform random over-spreads to high indices, false depression); vs B_par z=+2.02 (parity matched but lacks log-density profile). **A-grade hypothesis falsified**: |λ_0|/(π(N)/N) = 0.3596/0.195 = 1.844 — NOT a closed-form constant; the closed form IS Σ_p a_p, which is cost-equivalent to enumerating primes ≤ N. **Mechanism for closure mode E**: arithmetic-weighted PR leading resonance is a DENSITY-ONLY invariant at first moment — captured exactly by Σ_n h(n)·a_n where {a_n} is independent of h. Cramér model 1/log n + odd parity reproduces this expectation within sample noise. **Mayer-style dynamical-determinant representation of π(x) NOT opened**: there is no isolated arithmetic resonance distinct from the density-Rayleigh prediction. **Connections**: STRUCTURALLY DISTINCT from E2.13 Gowers (S85 detected HL → W-trick erases), E2.14 Anderson Lyapunov (S88 detected HL → W-trick erases), E2.16 anti-DPP (S95), E2.17 PH (S96), E2.19 subword (S104), E2.20 Mahler (S134), E2.21 Newman (S138) — all DETECT HL deviations; E2.22 (this work) shows the dynamical-spectral leading resonance is a 1-summing density integral that the Cramér model captures by construction. STRUCTURALLY DISTINCT from CLOSED line 320, 425 (unweighted ergodic-theory: orbit count = ζ-zeros, Furstenberg-correspondence circular) — D30 is the spectral theory of a SPECIFIC arithmetic-weighted operator, not the abstract correspondence. STRUCTURALLY DISTINCT from CLOSED line 105 (constructive transfer-matrix sieve: state space lcm(primes ≤√x) exponentially large) — D30 is spectral, not constructive. STRUCTURALLY DISTINCT from CLOSED line 182 (FRACTRAN automaton). **Adds EDGE E2.22**: λ_0^{χ_P} = Σ_p a_p (1+O(N⁻¹)) with a_n explicit closed form, reduces to Cramér 1/log n + odd parity within ±2σ at 200 seeds. EVS L (closed form exists, but not polylog-evaluable). **Cross-domain ingredient (Pollicott-Ruelle / transfer-operator spectral theory) performed real work**: first project quantitative use; CROSS_DOMAIN_TECHNIQUES.md §5 row "Transfer operator spectrum (Pollicott-Ruelle resonances of arithmetic dynamical system)" promoted PROPOSED (D30) → USED E with edge E2.22. **Channelled mathematician**: Ruelle / Baladi (transfer-operator spectral theory) with Mayer 1991 (arithmetic transfer operators). **Successors proposed (S140)**: D30.a dynamical determinant det(I − z·L_{χ_P}) zero structure — does it factor like Mayer's `det(I − L_s) = ζ(2s)/etc.` for χ_P-weighted family? D30.b Mayer-style s-parameterised χ_P family L_{χ_P, s} f(z) = Σ_p (1/(z+p))^{2s} f(1/(z+p)); zeros of det(I − L_{χ_P, s}) define a NEW arithmetic Dirichlet-series-like function (2 sessions); D30.c Bowen-Series / doubling-map / β-shift analogues — does Cramér-typical χ_P leading-resonance persist on every hyperbolic dynamical system, or is it Gauss-specific (1 session). Cites E2.13, E2.14, E2.16, E2.17, E2.18, E2.19, E2.20, E2.21, E7.16 (Friedman-typical-once-support-and-parity-matched). Cross-domain refs: Pollicott 1985 *Inventiones* 81, 413; Ruelle 1976 *Inventiones* 34, 231; Mayer 1991 *Bull. AMS* 25, 55; Baladi 2018 *Dynamical Zeta Functions and Dynamical Determinants for Hyperbolic Maps* Springer Ergeb. 68; Liverani 2004 *Comm. Math. Phys.* 248; Wirsing 1974 *Acta Arith.* 24 (GKW constant). See `experiments/dynamical/pollicott_ruelle_chi_p/`, `archive/sessions/session140_d30_pollicott_ruelle_chi_p.md`. | 140 |
+    785	| §D5 ATTACK_VECTORS — Continuous-time quantum walk on the divisor / coprime graph: does U(t) = exp(−iH t) with seed `|1⟩` and target `v_p = (1/√π(x)) Σ_{p≤x} |p⟩` concentrate amplitude polylogarithmically on primes (Childs glued-tree analogue)? (cross-domain: Childs 2009 PRL 102 = arXiv:0806.1972 + Childs-Cleve-Deotto-Farhi-Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131) | FAIL | E | Frontier wild_swing S141 on the natural CTQW successor to D4 (S80, Szegedy closed E). H_G ∈ {A, L = D − A} on G ∈ {D_x, C_x}. Eigendecomposition U(t) = Σ_k e^{−iλ_k t} u_k u_k^T; amplitude `P(t) = |⟨v_p|U(t)|1⟩|²` swept on t ∈ [0, 500] at 5001 grid points. **Pre-registered falsifiers**: F-A classical equilibration baseline `π(x)/x` (sanity); F-B peak amplitude beats Cramér + odd-parity matched control by a factor that grows with x (A-grade); F-C isolated band-edge eigenvector with O(1) overlap with v_p (glued-tree A-grade signature); F-D closure mode confirmed across both Hamiltonian variants. **Outcome**: F-A passes, F-B fails (excess +4–5σ but BOUNDED and not scaling), F-C fails (top overlap decays as `x^{−0.20}`, no isolated cluster), F-D confirms across all 4 variants. **Scaling (divisor + H=A, x ∈ {32, 64, 96, 128, 192, 256, 384, 512, 768}, T=500)**: ratio_max(x) := max_t P(t) / (π(x)/x) ∈ {1.24, 1.34, 1.39, 1.30, 1.23, 1.29, 1.31, 1.13, 1.22}; OLS fit `1.151 + 0.609/log(x)` → x→∞ asymptote ≈ **1.151** (bounded constant). top_overlap(x) := max_k |⟨u_k|v_p⟩| ∈ {0.626, 0.532, 0.469, 0.455, 0.420, 0.393, 0.369, 0.352, 0.328}; OLS log-log fit `1.214 · x^{−0.200}` (slow polynomial decay, NOT constant). **C2 control (Cramér + odd parity, 100 seeds)**: z_peak = +5.4, +3.3, +5.1 at x = 64, 128, 256; z_mean = +4.6, +4.1, +4.0 — modest persistent excess (~+4σ residual) but does NOT scale. C1 (uniform random subset) z = +2.9, +3.9, +7.5, +10.2 grows but smaller than C3. C3 (random ER graph, same mean degree) z = +10.6, +22.1, +39.9, +65.8 — divisor graph IS structured, but structure is positional (vertex-1 hub), not prime-detection. **Hamiltonian / graph variants (F-D)**: divisor + H=L (Laplacian): ratio_max → 0 as x grows (zero-mode of L kills coupling, |1⟩ has nontrivial overlap with all-ones eigenvector orthogonal to centred v_p); coprime + H=A: ratio_max DECREASES as `x^{−1/2}` (primes anti-concentrated relative to equilibrium); coprime + H=L: ratio_max → 0. All 4 variants close mode E with no polylog opening. **Eigenvector inspection (x=128, divisor H=A, top-overlap k=1, λ_1=−6.03, overlap 0.455)**: dominant entries vertex 1 (−0.436), vertex 4 (+0.293), vertex 2 (+0.284), vertex 6 (+0.264), vertex 3 (+0.181) — "anti-hub vs first-shell" mode; mean |amp| ratio prime/composite = 1.42; the apparent overlap with v_p is positional artefact (primes 2, 3 are in the first shell of vertex 1) NOT primality detection. **Mechanism for closure mode E**: time-averaged amplitude `⟨P(t)⟩_t = Σ_k |⟨u_k|v_p⟩|² · |⟨u_k|1⟩|²` is dispersed across O(N) modes; no isolated band-edge cluster has constant overlap with v_p; peak amplitude over t is bounded by ~`max_k |⟨u_k|v_p⟩|² · |⟨u_k|1⟩|²` × (constructive interference factor O(1)), giving `max_t P(t) ≤ C · π(x)/x` with C ≈ 1.15 across x ∈ {32..768}. **Closure structurally distinct from D4 (Szegedy)**: D4 closed via discriminant-matrix spectral gap `δ = 1/poly(x)` blocking polylog mixing; D5 closes via eigenstate overlap dispersal, which is the *Childs spectral-density* closure language. The two arguments are independent — Szegedy could fail on gap while CTQW succeeds on band-edge cluster (as for glued trees), but here BOTH fail on the divisor / coprime graph families because the relevant spectral structure is dispersed. **Adds EDGE E7.20 (CTQW amplitude ceiling)**: for G ∈ {D_x, C_x}, `H ∈ {A_G, L_G}`, seed `|1⟩`: `max_t |⟨v_p|exp(−iHt)|1⟩|² ≤ C·π(x)/x` (C ≈ 1.151 asymptote on D_x H=A; → 0 on Laplacian / coprime H=A variants). Top eigenvector overlap with v_p decays as `x^{−0.20}`. EVS shape (forbids polylog primality extraction by CTQW on these graphs). **Distinct from**: CLOSED 105 (constructive transfer matrix), 182 (FRACTRAN), 474 (Goldreich-Levin Hadamard), and from E7.13 (Szegedy on same graphs, different mechanism). **Connection to E7.16 / E2.22**: time-averaged amplitude residual vs Cramér+odd-parity matched control is +4σ, same magnitude as E2.22's PR-resonance Cramér closure — primes are density-and-parity Cramér-typical at the time-averaged CTQW amplitude level. **Cross-domain ingredient (Childs continuous-time quantum walks) performed real work**: first project use of CTQW spectral-density framework (D4 Szegedy uses discriminant-matrix algebra, fundamentally different); CROSS_DOMAIN_TECHNIQUES.md §1 row "Continuous-time quantum walks (CTQW)" promoted PROPOSED (D5) → USED E with edge E7.20. **Channelled mathematician**: Childs (CTQW spectral-density framework). **Successors proposed (S141)**: D5.a CTQW on LPS Ramanujan Cayley graph `Cay(PSL_2(F_p), prime-indexed quaternion generators)` — non-abelian Cayley with explicit Ramanujan spectral gap; tests whether non-abelian Cayley admits isolated band-edge clusters that abelian divisor / coprime do not (composes with D28 PROPOSED, 1-2 sessions); D5.b multi-vertex seed `|v_s⟩ = (1/√k) Σ_{i ∈ S} |i⟩` for arithmetic-relevant S (powers of 2, smooth numbers, square-free integers) — does the right seed unlock polylog amplitude on primes? (1-session screening). Cites E7.13 (D4 Szegedy structural template), E7.16 (Friedman density+parity matching), E2.22 (PR resonance Cramér closure structurally analogous). Cross-domain refs: Childs 2009 *PRL* 102, 180501 = arXiv:0806.1972; Childs-Cleve-Deotto-Farhi-Gutmann-Spielman 2003 STOC = arXiv:quant-ph/0209131. See `experiments/quantum/ctqw_chi_p/` and `archive/sessions/session141_d5_ctqw_chi_p.md`. | 141 |
+    786	
+  [Bash] tail -1 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | cut -c1-100
+    | §D5 ATTACK_VECTORS — Continuous-time quantum walk on the divisor / coprime graph: does U(t) = e
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now let me write the session synthesis:
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session144_l1_lean_w10_corner_and_search.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session144_l1_lean_w10_corner_and_search.md
+Now let me also update SESSION_INSIGHTS.md and verify the final lake build:
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    **Status post-S143:** the orthogonal-corner family is closed for
+    `W ∈ {2, 3, 4, 5, 6, 8, 12, 18, 20}`. Tenth unconditional `mps_bond_dim`
+    instance; eighth over a wheel `W ≥ 3`; fifth using
+    `det_of_upperTriangular`; first with `R = 9`; first heartbeat-bumped.
+    ~570 Lean lines added (largest single-corner block).
+    
+    **Self-grade: B.** Substantive refinement of the existing Route
+    A^{(9)} pattern, not a frontier breakthrough. The mathematical content
+    (W=20 rank = 9) was already verified empirically by E2.1. The novelty
+    is the Lean content — the `prod_univ_nine'` template, the heartbeat-
+    scaling lesson, the W ∈ {15, 16, 24, 30} negative-shape extension, and
+    one more sorry-free corner instance. Per CLAUDE.md "B-grade:
+    refinement of an existing edge with a precise new statement that
+    extends its scope".
+    
+    **Next-action:** Either Route A^{(11)} on a higher W (cleanest are
+    W = 22 with R=11 or W = 28 with R=13; both need fresh Python pre-
+    search to confirm a leading-row triangulation exists, plus a new
+    `prod_univ_X'` helper) or pivot to the multi-session
+    `Matrix.det_of_blockTriangular` API sub-arc to unlock the
+    nine-element obstructed set collectively.
+    
+    **Files:**
+    - `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+      — added ~570 lines (W=20 block, plus `prod_univ_nine'`).
+    - `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean`
+      — added 7 new `#print axioms` lines for the W=20 declarations.
+    - `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
+    - `RESEARCH_AGENDA.md` Arc 2.
+    - `archive/sessions/session143_l1_lean_w20_corner.md`.
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'EOF'
+
+## Session 144 — Arc 2: W=10 corner + leading-row exhaustion map
+
+**Mode:** arc continuation (Arc 2 — Lean Formalisation Track).
+
+**What changed.** Eleventh unconditional `mps_bond_dim` instance closed
+for `W = 10, d = j + 1` (rank = 5 for every `j ≥ 1`). The closure refutes
+S128/S129's claim that W=10 was structurally obstructed — a DP-based
+search over the row pool `[0, W)` (not just the leading prefix `{0..4}`)
+finds the triangulation `ρ ↦ (1, 0, 4, 3, 9)`, `σ ↦ (8, 1, 2, 0, 6)`
+with diagonal primes `{19, 2, 43, 31, 97}`. Single new primality helper
+`chiP_ninety_seven_eq_one` (decide-checkable). Closed W set is now
+`{2, 3, 4, 5, 6, 8, 10, 12, 18, 20}`.
+
+**Comprehensive enumeration**: a DP-based reachability check over
+column-subset bitmasks (script:
+`experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`)
+enumerates triangulations for every `W ∈ [2, 72]` with `R ≤ 22`. The
+leading-row + dead-col family closes **exactly** the 10-element set
+above — the rest of the parameter range is structurally obstructed,
+including `{7, 9, 11, 13, 14, 15, 16, 17, 19, 21, 22, 24, 25, 26, 27, 28,
+30, 32, 33, 34, 36, 38, 40, 42, 44, 48, 50, 54, 60, 66}`.
+
+**Status post-S144.** The leading-row triangulation route is
+**empirically exhausted** at the `R ≤ 22` parameter range. Future
+single-session corners require either (a) `Matrix.det_of_blockTriangular`
+for non-triangulizable matrices (multi-session API development), or
+(b) cofactor-expansion-based determinant proofs (e.g., W=9's 7×7 sub-
+matrix has det = 1 unconditionally).
+
+**Self-grade: B.** Substantive arc step that closes one more corner
+PLUS provides a definitive map of the route's coverage. The mathematical
+content (W=10 rank = 5) was already verified empirically by E2.1. The
+novelty is (i) the Lean closure, (ii) the comprehensive negative-shape
+edge documenting the route's exhaustion, and (iii) the correction of
+two prior sessions' obstruction claim.
+
+**Next-action.** Either pivot to `Matrix.det_of_blockTriangular` API
+development (multi-session) or attempt the W=9 corner via cofactor
+expansion of `Matrix.det_succ_row_zero` (single-session ambitious). The
+leading-row family no longer has untapped single-session corners.
+
+**Files:**
+- `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean`
+  — added ~310 lines (W=10 block, plus comment for the W=20 heartbeat
+  bump).
+- `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/CheckAxioms.lean`
+  — added 3 new `#print axioms` lines for the W=10 declarations.
+- `experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`
+  (new) and `leading_row_search_results.txt`.
+- `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md`.
+- `RESEARCH_AGENDA.md` Arc 2.
+- `status/CLOSED_PATHS.md` (new §L1 row).
+- `archive/sessions/session144_l1_lean_w10_corner_and_search.md`.
+EOF
+    (Bash completed with no output)
+Final verification — re-run lake build + axiom check:
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake build 2>&1 | grep -E "error|Build completed" | tail -10
+    Build completed successfully (8315 jobs).
+  [Bash] echo 142 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    142
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me also check for any orphaned Python files I created in /tmp that I should consider cleaning up — they are temp files and don't need to be kept:
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" 2>/dev/null | while read f; do r="${f%.py}_results.md"; t="${f%.py}_results.txt"; if [ ! -f "$r" ] && [ ! -f "$t" ]; then echo "MISSING: $r or $t"; fi; done; echo "---"; ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream_dashboard_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream_dashboard_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/yaml_check_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/yaml_check_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/topological_sort_results.md or /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/topological_sort_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/n6_robust_check_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/n6_robust_check_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_np_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_np_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp_results.txt
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery_results.md or /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery_results.txt
+    ... (9 more lines)
+  [Bash] rm -rf /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/__pycache__ && ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MPSBondDim
+    leading_row_search.py
+    leading_row_search_results.txt
+    mps_bond_dim_notes.md
+  [Bash] export PATH=$HOME/.elan/bin:$PATH && lake env lean CheckAxioms.lean 2>&1 | tail -10
+    'E2_1.chiP_forty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_forty_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_one_hundred_ninety_nine_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_two_hundred_forty_one_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_three_hundred_thirty_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_20_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.chiP_ninety_seven_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_10_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+All theorems including the new W=10 closure depend only on the standard `[propext, Classical.choice, Quot.sound]` axioms. Build succeeds, no new sorries, run state set to 142.
+
+**Session 144 summary**:
+- Closed the **W=10 corner of E2.1 in Lean** (rank = 5 for every j ≥ 1), refuting the S128/S129 obstruction claim. Eleventh unconditional `mps_bond_dim` instance; ninth over a wheel W ≥ 3.
+- Built a **DP-based leading-row enumeration script** (`experiments/formalisations/E2_1_mps_bond_dim/leading_row_search.py`) and ran it across W ∈ [2, 72] with R ≤ 22.
+- **Finding**: the leading-row + dead-col triangulation route closes **exactly** {2, 3, 4, 5, 6, 8, 10, 12, 18, 20} — every other tested wheel is structurally obstructed. The route is empirically exhausted at this parameter range.
+- Documented the negative shape edge in CLOSED_PATHS.md (§L1 EXHAUSTED).
+- Self-grade: **B** (closure of one new corner + comprehensive negative-shape map).
+
+Future single-session corners need either (a) a multi-session `Matrix.det_of_blockTriangular` API sub-arc, or (b) cofactor-expansion-based determinant proofs (e.g., W=9's 7×7 has det = 1 unconditionally).
+--- Session ended ---
+Sleeping 5 seconds before next run...

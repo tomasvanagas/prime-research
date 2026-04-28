@@ -1,0 +1,947 @@
+=== Run #197 — Mode: reverify — Tue Apr 28 19:05:34 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state 2>/dev/null; echo "---"; cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; cat /apps/aplikacijos/prime-research/.verify_target 2>/dev/null
+    thread:connes_amortisation
+    sessions_used:5
+    session_history:S193,S194,S195,S196
+    status:in_progress
+    prev_thread:s82_invariant_subspace_DONE
+    last_synthesis:archive/sessions/session196_commit_connes_amortisation.md
+    slot1_summary:S193 sharper closure of E3.1 - Connes K^3 dominated by Hiary K^{17/13} on setup; per-query identical (both O(K) explicit-formula sum); Thread 2 reduces to Thread 3
+    slot2_summary:S194 empirical fluctuation sweeps at x~1e5 (40 samples, K_max=3000) and x~1e6 (40 samples, K_max=8000); hit-rate at K=log^2(x) decays 30%->5% with x, median |error| grows from 1.58 to 4.56; negative-shape evidence that K=polylog(x) does NOT suffice for pi(x)+/-1 in distribution at tested scales
+    slot3_summary:S195 GUE random-phase heuristic Var(pi(x)-R_K(x)) ~ x log^2(K)/(2pi^2 K log^2 x); validated across 600 triples spanning 3 decades (added x~1e7 sweep, 40 samples K_max=5500); pooled Pearson r=0.62, slope-through-origin ratio 0.74 (=GUE-vs-Poisson reduction); asymptotic K*(x,p)=Theta(x) NOT polylog with constants 0.09x for p=50% and 1.35x for p=99%; closes Thread 3 quantitatively in distribution
+    slot4_summary:S196 variance decomposition Var(error)=Var(TAIL)(K)+Var(BIAS)(K,h) under iid uniform-phase model with disjoint-j independence; Var(TAIL) is independent of h, forcing K=Theta-tilde(x) regardless of bandwidth; empirical 40 samples x 11 bandwidths x K_max=2000 at x~1.78e5 confirms K*_50 unchanged at 1782-1783 for h<=3e-4 and unreachable within K_max for h>=5e-4; bias variance prediction matches empirical 5-15% across active regime; smoothing strictly does NOT help, optimal h=0; eliminates slot-3 follow-up (b)
+    next_action:slot 5/5 - WRAP. Write final synthesis of S193-S196 5-session arc. Thread 2 (Connes amortisation) is closed by reduction to Thread 3 (Galway frontier in distribution); Thread 3 is closed under any log-Gaussian smoothing bandwidth via S195+S196. Mark thread DONE in .commit_state. Recommend next thread: Thread 3 (galway_frontier) is now also closed, so next commit should pick a NEW thread - either new entries in ATTACK_VECTORS.md, OR per priority "Thread 3 done -> Thread 1 already done -> need fresh threads via frontier_gen mode".
+    ---
+    197
+    ---
+    archive/sessions/session169_commit_s82_invariant_subspace.md
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+    1	- [Session numbering vs .run_state](session_numbering_vs_run_state.md) — sessionNN files use max(existing)+1, NOT .run_state value
+    2	
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/session_numbering_vs_run_state.md
+    1	---
+    2	name: Session numbering vs .run_state
+    3	description: In prime-research, .run_state tracks run.sh invocations (lags), while session NN files in archive/sessions/ are numbered consecutively across runs — pick max(existing) + 1.
+    4	type: project
+    5	originSessionId: c8940663-c50a-48f3-8bae-bcdf41d8e227
+    6	---
+    7	`.run_state` and session NN are DIFFERENT counters.
+    8	
+    9	- `.run_state` increments per `./run.sh` invocation.
+    10	- `archive/sessions/sessionNN_*.md` files are numbered consecutively
+    11	  across all runs (one run can produce multiple sessions via the
+    12	  rotation: novelty / construction / arc / lean / critique / verify).
+    13	- The two counters drift apart because most runs produce 1+ session.
+    14	
+    15	**Why:** Why this matters: when the prompt says "echo 130 > .run_state",
+    16	that is the next `run.sh` increment, NOT the next session number. The
+    17	session number must be `max(existing sessionNN files) + 1`.
+    18	
+    19	**How to apply:** Before writing `archive/sessions/sessionNN_*.md`, do
+    20	`ls archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -1` to
+    21	get the most recent session number, then increment. Use the same NN
+    22	inside the file (titles, references like "S<NN>") AND in EDGES.md
+    23	"S<NN>; …" stubs, CROSS_DOMAIN_TECHNIQUES.md "USED <mode> (S<NN>, …)"
+    24	cells, ATTACK_VECTORS.md "[CLOSED S<NN>]" markers, CLOSED_PATHS.md row
+    25	trailing " | <NN> |", and SESSION_INSIGHTS.md "## Session <NN> — …"
+    26	headers.
+    27	
+    28	When the session uses but is DIFFERENT FROM another session (e.g., my
+    29	session 133 closing a vector that S130 frontier_gen created), keep
+    30	references to the other session as-is — only your own session header
+    ... (2 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -30
+    session73_critique.md
+    session74_c2_free_cumulants.md
+    session75_l1_lean_live_columns_count.md
+    session76_l1_lean_upper_bound.md
+    session77_n1_tensor_compression_family.md
+    session78_critique.md
+    session79_a3_cayley_spectral_primality.md
+    session80_d4_szegedy_walk.md
+    session81_c6_pillar_tradeoff_diagram.md
+    session82_c2_spike_eigenvectors.md
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session193
+    session194
+    session195
+    session196
+    session197
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    File content (116785 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Grep] ^### E1\.5|^### E2\.13|^### E2\.14|^### E3\.1|^### E6\.6|^## E1\.5|^## E2\.13|^## E2\.14|^## E3\.1|^## E6\.6
+    218:### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
+    993:### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series; universal across multiplicative-indicator family  [EVS M]
+    1113:### E2.14 — Anderson Lyapunov gamma(E) of chi_P-driven Schrödinger operator: deviation cascade matches W-trick  [EVS M]
+    2750:### E3.1 — Connes-Consani-Moscovici operator: 50 zeros from primes < 13  [EVS L (was H, downgraded S53)]
+    2900:### E3.11 — K_min ~ 0.35 * x^{0.27} under per-x optimal zero ordering   [EVS M]
+    2946:### E3.12 — Pascadi 2025 unconditional x^{5/8} equidistribution     [EVS M]
+    2964:### E3.10 — Cully-Hugill–Lee improved error term                     [EVS L]
+    2973:### E3.13 — Bogomolny-Keating arithmetic correction is empirically absent at N=8000 [EVS M]
+    3540:### E6.6 — Aggarwal 2025 binary search optimality                     [EVS H]
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -i "session19" | sort
+    session190_commit_s82_invariant_subspace.md
+    session191_paradigm_shift_pointwise_spike.md
+    session192_critique.md
+    session193_commit_connes_amortisation.md
+    session194_commit_connes_amortisation.md
+    session195_commit_connes_amortisation.md
+    session196_commit_connes_amortisation.md
+    session197_wild_swing_acsv_d32.md
+    session19_synthesis.md
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    218	### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
+    219	
+    220	`proven/complexity.md` §"Circuit Complexity"; S12;
+    221	`proven/circuit_size_barrier.md`;
+    222	**closed-form sharpening:** `experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation_results.md` (S69, F2);
+    223	**generalisation to bisection components and joint state:**
+    224	`experiments/constructions/g_q_bisection_invariant/` (S70, C1) — same
+    225	mechanism (binary increment + conditional independence of indicator from
+    226	state) applies to *any* monotone Ω-stratified summatory; verified for
+    227	A(x) and C_3(x), and for the joint state `(A mod q, C_3 mod q)` which
+    228	satisfies `H(g_q(x) | g_q(x-1)) = H_3(1 - rho_A, rho_pi, rho_C3) +
+    229	O(1/pi(X))` in regime q^2 << pi(X).
+    230	
+    231	**Sharpened statement.** For every modulus m and every X with
+    232	`m <= pi(X)/100`,
+    233	```
+    234	   H( pi(x) mod m | pi(x-1) mod m, x in [1, X] )
+    235	       =  h_2( pi(X)/X )  +  O( 1 / pi(X) )
+    236	```
+    237	where `h_2(p) = -p log_2 p - (1-p) log_2 (1-p)` is the binary entropy.
+    238	The "0.537 bits" of S12 is specifically the value at X = 10^4 (where
+    239	`h_2(pi(10^4)/10^4) = h_2(0.1229) = 0.5376`); the constant tracks prime
+    240	density and **decays as X grows**:
+    241	
+    242	| X | pi(X)/X | h_2(pi(X)/X) |
+    243	|---|---------|---------------|
+    244	| 10^4 | 0.1229  | 0.5376  |
+    245	| 10^5 | 0.0959  | 0.4559  |
+    246	| 10^6 | 0.0785  | 0.3969  |
+    247	| 10^7 | 0.0665  | 0.3526  |
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    2750	### E3.1 — Connes-Consani-Moscovici operator: 50 zeros from primes < 13  [EVS L (was H, downgraded S53)]
+    2751	
+    2752	arXiv:2511.22755 (Nov 2025); `literature/state_of_art_2026.md` §2.5b.
+    2753	**Polylog claim closed S53.** See `archive/sessions/session53_connes_operator_scaling.md`.
+    2754	
+    2755	A spectral-triple operator built using ONLY primes p ≤ 13 produces the
+    2756	first 50 nontrivial zeta zeros with errors ranging from
+    2757	**2.5 x 10^{-55} (first zero) to ~10^{-3} (50th zero)**. Regularized
+    2758	determinant converges to the Riemann Xi function.
+    2759	
+    2760	> Edge value DOWNGRADED to L (from H) by S53. Three independent arguments
+    2761	> close the polylog claim: (i) rank-one perturbation has B parameters,
+    2762	> Cauchy interlacing limits eigenvalue placement to ~B substantial
+    2763	> shifts; (ii) diagonalization of N×N truncation costs O(N^3) = O(K^3)
+    2764	> for K eigenvalues — strictly worse than O(x^{1/2+eps}) summation when
+    2765	> K = sqrt(x); (iii) CCM's published B=6 → K=50 with err range
+    2766	> 10^{-55..-3} implies geometric per-zero error growth ~11.3x, yielding
+    2767	> K_accurate(B=6) ≈ 53 even at face value, with no multi-B data point
+    2768	> in the literature establishing super-linear scaling. CCM's
+    2769	> construction is a *one-shot fit*, not an algorithm. See
+    2770	> `experiments/analytic/connes_operator/` and CLOSED_PATHS line 696.
+    2771	
+    2772	### E3.2 — Explicit formula needs **only ~1200 zeros at x with 10^8
+    2773	digits** (DEBUNKED but the count is real)                          [EVS L]
+    2774	
+    2775	Kilictas-Alpay arXiv:2506.22634; debunked S12, S30.
+    2776	
+    2777	The paper *claims* exact pi(x) with O(log x) zeros via a Truncated
+    2778	Gaussian kernel. Actually wrong (uncertainty principle, missing
+    2779	sqrt(x) factor, AI-generated). **But the underlying observation that
+    ... (130 more lines)
+  [ToolSearch] 
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    993	### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series; universal across multiplicative-indicator family  [EVS M]
+    994	
+    995	S85, refined S93, S101; ATTACK_VECTORS §D6, NOVELTY_CHALLENGES §D6.b/§D6.c;
+    996	`experiments/information_theory/gowers_uk_chi_p.py`,
+    997	`experiments/information_theory/hardy_littlewood_box.py`,
+    998	`experiments/information_theory/gowers_uk_chi_p_results.md`,
+    999	`experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk.py`,
+    1000	`experiments/information_theory/lambda_vs_chi_p_uk/lambda_vs_chi_p_uk_results.md`,
+    1001	`experiments/information_theory/mu_weighted_chi_p_uk/mu_weighted_chi_p_uk.py`,
+    1002	`experiments/information_theory/mu_weighted_chi_p_uk/mu_weighted_chi_p_uk_results.md`;
+    1003	CLOSED_PATHS row at session 85.
+    1004	
+    1005	Define the normalized Gowers uniformity norm `Q^k(f) := ||f||_{U^k}^{2^k} / E[f]^{2^k}`
+    1006	on `Z/NZ`. Hardy-Littlewood for the {0,1}^k-cube prime k-tuple
+    1007	configuration predicts
+    1008	
+    1009	   `Q^k(chi_P) -> S_k    as N -> infinity,`
+    1010	   `S_k = product_p alpha_p(k) / (1 - 1/p)^{2^k},`
+    1011	   `alpha_p(k) = #{(x, h_1, ..., h_k) in (Z/p)^{k+1} : x + epsilon . h != 0 for all epsilon in {0,1}^k} / p^{k+1}`.
+    1012	
+    1013	Numerically (direct enumeration in `(Z/p)^{k+1}`, product truncated):
+    1014	
+    1015	  `S_2 = 2.300938`   (truncation error <= 1e-5 at P_max = 100)
+    1016	  `S_3 = 54.116088`  (truncation error ~ 0.2% at P_max = 47)
+    1017	
+    1018	Empirically (cyclic Z/N, FFT for U^2, recursion for U^3):
+    1019	
+    1020	  `Q^2(chi_P)`: 2.103 (N=2^10) → 2.132 (N=2^12) → 2.146 (N=2^14)
+    1021	                → 2.149 (N=2^16) → 2.153 (N=2^18). Trends monotonically to S_2.
+    1022	  `Q^3(chi_P)`: 35.5 +- 0.1 across N ∈ [2^10, 2^13]; far above the
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    3540	### E6.6 — Aggarwal 2025 binary search optimality                     [EVS H]
+    3541	
+    3542	`literature/state_of_art_2026.md` §1.4; arXiv:2510.16285.
+    3543	
+    3544	p(n) computable in O(sqrt(n) (log n)^4) unconditionally via binary search
+    3545	on pi(x). **Proves sieve methods CANNOT asymptotically beat
+    3546	binary-search-on-pi(x).** This is *not* polylog, but it is the tightest
+    3547	known upper bound and **explicitly identifies pi(x) as the bottleneck**.
+    3548	
+    3549	> Edge value: **frames the entire research target.** Any polylog p(n)
+    3550	> algorithm reduces (via Aggarwal) to a polylog pi(x) algorithm.
+    3551	
+    3552	**S120 annotation (C4 composition E6.6 + E6.8 + E5.1):** the
+    3553	Aggarwal-pure binary search has a constant-factor inefficiency in the
+    3554	trailing `O(log K)` pi-calls when narrowing the bracket to width K.
+    3555	Replacing the trailing narrowing with a BPSW walk over `O(K)`
+    3556	candidates is strictly faster when `pi(x)` cost exceeds `K * BPSW`
+    3557	cost. Empirical optimum K satisfies `K* ~ pi_cost / bpsw_cost`:
+    3558	pure-Python Lucy regime gives `K* = width` (no Aggarwal narrowing
+    3559	useful), C-accelerated Lucy gives `K* ~ sqrt(width)` (mid-regime),
+    3560	HKM projection gives `K* ~ const` (Aggarwal-pure dominates). The
+    3561	asymptotic O(sqrt(n) log^4 n) bound is preserved; the composition is
+    3562	a **practical-constant tightening only**. See
+    3563	`algorithms/aggarwal_dusart_bpsw/`.
+    3564	
+    3565	---
+    3566	
+    3567	## 7. Negative-but-shape-revealing edges
+    3568	
+    3569	These are not "edges" in the affirmative sense, but they constrain the chain.
+    ... (50 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session53_connes_operator_scaling.md
+    1	# Session 53 — FOCUS-1 closure: Connes operator scaling
+    2	
+    3	**Date:** 2026-04-25
+    4	**Mode:** normal
+    5	**Target:** TODO.md FOCUS-1 / EDGES.md E3.1 / Chain A step 4
+    6	**Outcome:** FOCUS-1 closed; Chain A no longer a polylog candidate.
+    7	
+    8	## Mission
+    9	
+    10	Measure the prime-budget → zero-count scaling law for the
+    11	Connes-Consani-Moscovici Nov-2025 spectral-triple operator
+    12	(arXiv:2511.22755, `literature/state_of_art_2026.md` §2.5b).
+    13	
+    14	Anchor data point: B = 6 primes (2,3,5,7,11,13) yields the first 50
+    15	nontrivial Riemann zeros with errors ranging from 2.5×10^{-55} (zero #1)
+    16	to ~10^{-3} (zero #50). The crucial scaling law K_accurate(B) had not
+    17	been measured. If polylog: Chain A is a real polylog architecture
+    18	(huge). If linear / sub-linear: Chain A closes via Equivalence.
+    19	
+    20	## Approach
+    21	
+    22	Numerical proxy (NOT a faithful CCM reproduction):
+    23	discretize scaling operator D = -i d/du on L^2([-L, L]) with
+    24	L = log(λ), x_cutoff = λ² = 10^4, in Fourier basis with N=1200 modes
+    25	(matrix size 2401). Add self-adjoint rank-one perturbation V = c|v⟩⟨v|
+    26	with v encoding primes ≤ p_B via von-Mangoldt-weighted delta-comb in
+    27	log space:
+    28	
+    29	    v(u) = Σ_{p^k ≤ e^L} (log p)/√(p^k) · δ(u − log p^k),
+    30	    Fourier-projected onto the basis.
+    ... (88 more lines)
+  [Bash] grep -n "E3.1\|Connes\|connes" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -30
+    <persisted-output>
+    Output too large (64.9KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/4c3f011c-d03c-4e1d-82fa-0d3d9fa44df9/tool-results/bish9iw1h.txt
+    
+    Preview (first 2KB):
+    50:| Connes-Weil quadratic form | FAIL | E | Finds zeros but can't sum them fast | 9 |
+    185:| Bost-Connes quantum mechanics | FAIL | E | Reduces to zeta(s) | 4 |
+    289:| §D.D43 ATTACK_VECTORS — KPZ universality / Hairer regularity structures of `D(x) := (π(x) − Li(x)) log(x) / √x` on KPZ-spaced grid `x_k = X/2 + k·⌊X^{1/3}⌋` (cross-domain: Hairer 2014 *Inventiones* regularity structures, Tracy-Widom β=2, Corwin 2012 KPZ universality survey; CROSS_DOMAIN_TECHNIQUES §3 promoted PROPOSED → USED PARTIAL) | FAIL | E | First project test of any non-`√x` scaling of the PNT error term; first project Hölder regularity / wavelet-decomposition test on D(x); first project import of Hairer regularity structures / KPZ universality / Tracy-Widom β=2 limit law. **Setup**: sieve π up to X ∈ {2^18, ..., 2^24}, KPZ grid `x_k = X/2 + k·⌊X^{1/3}⌋`, n_grid 2080..32896, mpmath Li(x); plus wide-range run x ∈ [10⁴, 10⁷] (u-span 6.89, gamma resolution 0.91 — resolves first 12 ζ-zero γ_k peaks). **Pre-stated falsifiers F1–F5** registered in `d43_kpz_pi_li.py` docstring. **Result: F1 PASS (Gauss-skew on detrended Z_d, |z|<3 across all 7 logX), F2 FAIL (TW2-skew on Z_d rejected at |z|≥5 in 5/7 windows), F3 FAIL (right-tail Gauss r²=0.977 ≥ KPZ r²=0.952 at logX=22), F4 FAIL (wavelet Hölder α=0.85 stable across logX 18..24 with r²>0.998 — far above KPZ ceiling 1/2), F5 N/A.** Whole-window Z skew oscillates in [-0.187, +0.204] across logX 18..24 with NO trend toward TW2's +0.224; the apparent positive Z_raw skew at logX=22 (+0.204) and logX=24 (+0.197) is a Skewes-bias drift artifact of the asymmetric trend within [X/2, X], disappearing entirely after detrending. **Wide-range FFT** (x∈[10⁴,10⁷]) confirms D(x)'s top peaks land at the first 12 nontrivial Riemann zeta zeros γ_k, with γ_1=14.135 peak/median ratio 770000, γ_2=21.022 ratio 760000 — consistent with the explicit formula `D(x) = -log(x)·Σ_ρ x^{ρ-1}/ρ + lower order`. **Structural reason for KPZ failure**: D(x) is a deterministic almost-periodi
+    ...
+    </persisted-output>
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session193_commit_connes_amortisation.md
+    1	# Session 193 — commit thread 2 step 1: Connes operator amortisation
+    2	
+    3	**Date:** 2026-04-28
+    4	**Mode:** commit (Thread 2 / Connes-Consani-Moscovici amortisation)
+    5	**Slot:** 1 of 5
+    6	**Prior thread:** Thread 1 (S82 invariant-subspace) closed at S190 DONE.
+    7	**Self-grade:** **B** (substantive refinement of an existing closure; sharpens
+    8	S53's E3.1 closure with a structurally cleaner argument that survives
+    9	the amortisation challenge).
+    10	
+    11	## Mission
+    12	
+    13	The commit prompt asks: re-examine S53's closure of E3.1 (CCM zeta
+    14	spectral triple as polylog architecture) **adversarially**. Was the
+    15	amortisation argument decisive or premature? Can the operator
+    16	construction be shared across many π(x) queries to drive per-query
+    17	cost down to polylog?
+    18	
+    19	## Adversarial finding (one paragraph)
+    20	
+    21	S53's argument 2 — "diagonalisation costs O(K³) and is the dominant
+    22	kernel-independent cost" — was framed as **per-query** cost. Under
+    23	amortisation (compute the operator's spectrum once, serve many π(x)
+    24	queries), the per-query cost reduces to the K-term explicit-formula
+    25	sum, O(K). The setup K³ is paid once. **However**, Galway 2004 +
+    26	Hiary computes the same K zeros at setup cost O(K^{17/13}) and
+    27	serves the same per-query cost O(K). Both routes are subject to the
+    28	identical K(x) ≈ √x worst-case requirement (Riemann-von Mangoldt /
+    29	explicit-formula floor). The Connes route is therefore **strictly
+    30	dominated by Galway** in every cost regime — by a factor of K^{22/13}
+    ... (263 more lines)
+  [Bash] grep -n "REOPENED\|reopened\|adversarial" /apps/aplikacijos/prime-research/EDGES.md | head -20
+    (Bash completed with no output)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -i "reverify\|adversari\|verify" | head
+    session109_verify_c5_stein.md
+    session110_verify_c5_stein.md
+    session111_verify_c5_stein.md
+    session112_verify_c5_stein.md
+    session113_verify_c5_stein.md
+    session114_verify_c5_stein.md
+    session115_verify_c5_stein.md
+    session167_verify.md
+    session170_verify.md
+    session171_verify.md
+  [Bash] grep -n "E1\.5\|h_2\|entropy" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -20
+    18:| Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    120:| CRT reconstruction of pi(x) | FAIL | E | pi(x) mod q costs same O(x^{2/3}) as pi(x); CRT multiplies cost by k moduli; entropy ratio ~1.0 | 13 |
+    121:| Prime race E(x;q) for CRT | FAIL | E | E(x;4) spectral flatness/power-law same as pi(x)-Li(x); 40 L-function zeros give 0% exactness; K_exact~sqrt(x); p(n)mod q has near-max entropy; L-zeros INDEPENDENT of zeta zeros so CRT costs MORE | 20 |
+    149:| AR(1)-AR(10) correction | FAIL | I | 4-5% exact, 5.04 bits/prime entropy floor | 6 |
+    190:| Tensor sieve (MPS of divisibility DFAs) | FAIL | I | Transfer matrices full rank, volume-law SV entropy, no compression | 20 |
+    193:| Deterministic gap recurrence (7 variants) | FAIL | I | <25% accuracy, 5.04 bits/prime entropy | 7 |
+    194:| Ergodic fast-forward of prime gaps | FAIL | I | Positive Lyapunov exponent (lambda=1.06 at step 1), chaotic. R^2<0.006 for linear recurrence up to order 10. Real gaps have HIGHER entropy than Cramér random model. FNN suggests ~9-dim embedding but chaotic dynamics within it. | 40 |
+    240:| Compressed pi(x) | PARTIAL | I | 5 bits/prime irreducible entropy | 8 |
+    243:| pi(x) mod m shortcut (m>2) | FAIL | E | Conditional entropy H(Y|X) = 0.537 bits INVARIANT across all moduli m; no modular shortcut | 12 |
+    244:| Modular residue prediction + CRT reconstruction | FAIL | C+I | p(n) mod q has max entropy for all q>2. Prediction accuracy near random baseline. Cross-correlations near zero. CRT is circular: computing p(n) mod q requires pi(x;q,a) exactly, as hard as pi(x). Primorial wheel (mod 210) shows 19x prediction but only from divisibility constraints, not useful. | 40 |
+    272:| Novel intermediate quantity families | FAIL | E | Systematic analysis of 8 families (residues, polynomial evals, matrix eigenvalues, topology, representation theory, entropy, recursive, physical). ALL route back to floor values or zeta zeros. Only #TC^0 counting not immediately closed | 15 |
+    324:| Ergodic theory / orbit complexity | FAIL | E+C | Block complexity maximal; entropy 5.04 bits/prime irreducible; transfer ops = zeta zeros; Gauss map unrelated | 16 |
+    563:| Kt(delta) via incremental entropy | INCONCLUSIVE | - | Growth ~0.22*log(n) but this is statistical, not algorithmic Kt | 20 |
+    564:| Kt deep: PACF/compression/DFA/transfer entropy | FAIL | I | AR(7) by BIC; entropy rate 5.8 bits/val (finite, converged by N=10K); Kt(1..N) ~ 5.58*N (linear); Hurst H=1.31 with crossover at scale 572; TE(n→delta) = 0.013 << TE(delta→delta) = 0.051; n adds NO info beyond delta history | 36b |
+    566:| R^{-1}(n) + delta(n) decomposition for polylog | CLOSED | I | Complete analysis across S19-20-36b: delta(n) has 5.8 bits/value entropy rate, zero dependence on n (TE confirms), no spectral shortcuts, and requires O(N) total bits. This decomposition is a dead end for polylog algorithms | 36b |
+    569:| Conditional entropy H(delta|n mod m) | FAIL | I | Even n mod 1000 only captures 31% of delta entropy | 20 |
+    605:| Kolmogorov complexity of δ(n) | PARTIAL | I | 5x more compressible than random (0.049 vs 0.256). Improves with length (1.56 bits/symbol at N=10000). Shannon entropy ratio 0.84. Structure exists but insufficient for exactness | 24 |
+    612:| Wheel decomposition circuit complexity | FAIL | I | Per-class pi_r(x) circuits 3-4x MORE complex (normalized transitions) than full pi(x). Classes near-independent (I/H < 0.01), preventing shortcuts. Total entropy grows as phi(M). Entropy reduction from mixed-radix conditioning is finite-size effect (shrinks as N grows). Decomposition destroys sequential regularity that makes pi(x) partially structured | 28 |
+    660:| Tropical/min-plus fast-forward via gap structure | FAIL | I | Hankel rank 418/500 (ratio to random: 0.98). Corr dim grows with embedding (2.1→5.8, no attractor). Linear R²<0.001, quadratic R²<0.002. MI(g_n;g_{n+1})=0.013 bits (0.4% of entropy). Min-plus accuracy 7-11%. Algebraic obstruction: p(n)=sum(gaps) needs (+,×) not (min,+). Gaps indistinguishable from IID. See experiments/wildcard/tropical_prime_gaps.py | 32 |
+    680:| Truth table compressibility for pi(x) | FAIL | I | 2.6x more compressible than random at N=20 (gzip 0.385 vs 1.0) but only LOCAL structure (prime sparsity creates runs). Block entropy → max at all scales. Shannon entropy → 1.0 bit/entry. Doesn't imply small circuits. See experiments/circuit_complexity/meta_complexity_analysis.py | 35 |
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/information_theory/pi_mod_2k_saturation/ 2>/dev/null; ls /apps/aplikacijos/prime-research/experiments/constructions/g_q_bisection_invariant/ 2>/dev/null
+    pi_mod_2k_saturation.py
+    pi_mod_2k_saturation_results.md
+    definition.md
+    g_q_bisection_invariant.py
+    g_q_bisection_invariant_data.json
+    g_q_bisection_invariant_results.md
+    run_output.log
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] grep -n "S82\|spike eigenvector\|invariant subspace\|s82_invariant" /apps/aplikacijos/prime-research/EDGES.md | head -10
+    478:**S82 spike-eigenvector identification (C2 sub-arc):** the S74 spike
+    494:**S148 commit-thread step 1 — eigenvalue scaling correction:** S82's
+    544:S82 |L(1,chi)|² claim and the S148 Gallagher-variance claim as the
+    594:data from S82 at d ∈ {14, 18, 20}.
+    629:S82-thread (S148→S166→S168→S169) compiled into a single arithmetic
+    639:S82's eigenvector identification (Dirichlet character vectors) STANDS;
+    640:S82's eigenvalue claim (~|L(1, χ)|²) was REFUTED at S148 and replaced
+    642:`archive/sessions/session190_commit_s82_invariant_subspace.md`.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session(8[0-9]|82|169|17[0-9]|18[0-9]|19[0-2])"
+    session169_commit_s82_invariant_subspace.md
+    session170_verify.md
+    session171_verify.md
+    session172_verify.md
+    session173_verify.md
+    session174_verify.md
+    session175_verify.md
+    session176_verify.md
+    session177_verify.md
+    session178_verify.md
+    session179_verify.md
+    session180_verify.md
+    session181_verify.md
+    session182_verify.md
+    session183_verify.md
+    session184_verify.md
+    session185_verify.md
+    session186_verify.md
+    session187_verify.md
+    session188_verify.md
+    session189_verify.md
+    session190_commit_s82_invariant_subspace.md
+    session191_paradigm_shift_pointwise_spike.md
+    session192_critique.md
+    session80_d4_szegedy_walk.md
+    session81_c6_pillar_tradeoff_diagram.md
+    session82_c2_spike_eigenvectors.md
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    ... (4 more lines)
+  [Bash] wc -l /apps/aplikacijos/prime-research/EDGES.md /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md /apps/aplikacijos/prime-research/ATTACK_VECTORS.md /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md 2>/dev/null
+       4794 /apps/aplikacijos/prime-research/EDGES.md
+        166 /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+       1023 /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+       9142 /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+        820 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+      15945 total
+  [Bash] grep -nE "^### (E[0-9]\.[0-9]+|E[0-9]+\.[0-9]+).*\[EVS [HM]\]|^### (E[0-9]\.[0-9]+|E[0-9]+\.[0-9]+).*\[EVS H\]" /apps/aplikacijos/prime-research/EDGES.md | head -40
+    66:### E1.1 — E(x) = pi(x) - Li(x) carries only O(log x) bits        [EVS H]
+    80:### E1.2 — Adjacent-x autocorrelation of the error is 0.996      [EVS M]
+    90:### E1.3 — Per-bit difficulty of p(n) is a sharp 4-bit sigmoid    [EVS H]
+    218:### E1.5 — pi(x) mod m saturates at h_2(pi(X)/X) per step                        [EVS H]
+    268:### E1.6 — pi(x) mod 2 bisects into two statistically-independent bits  [EVS M]
+    300:### E1.7 — delta(n) long-range correlation is INDIRECT (AR(7) + Hurst crossover) [EVS M]
+    392:### E1.8 — Spectral reconstruction of delta needs 82% of all modes [EVS M]
+    408:### E1.4 — N/2 universality                                        [EVS M]
+    441:### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    805:### E2.5 — pi(x) is a multilinear polynomial of degree N             [EVS M]
+    821:### E2.6 — Higher-order finite differences of pi(x) are tiny         [EVS M]
+    854:### E2.7 — Rank deficiency of communication matrix is *exactly* +2  [EVS M]
+    918:### E2.11 — Higher-order finite differences of f(x)=pi(x)-R(x) GROW like white noise [EVS M]
+    993:### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series; universal across multiplicative-indicator family  [EVS M]
+    1113:### E2.14 — Anderson Lyapunov gamma(E) of chi_P-driven Schrödinger operator: deviation cascade matches W-trick  [EVS M]
+    1174:### E2.15 — Algebraic immunity AI_F_2(chi_P) = 2, encoded by (1+x_0)(1+x_1)        [EVS M]
+    1252:### E2.16 — Primes are NOT a translation-invariant DPP / PPP / signed-K / complex-Hermitian-K point process  [EVS M]
+    1318:### E2.17 — Persistent homology of Takens-embedded normalised prime gaps deviates ≥ 5σ from IID Exp(1) AND from gap-marginal-permuted control; W=210 W-trick erases the serial-correlation component  [EVS M]
+    1643:### E2.19 — Subword complexity p_w(n) of chi_P deviates from matched-density Bernoulli on a clean monotone W-trick cascade {RAW > ODD > W6 > W30 > W210}; W=210 erases the deviation to ≤ 8.4 sigma at L = 2.4·10^4  [EVS M]
+    1723:### E2.20 — Mahler measure of the prime indicator polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n is below density-matched Bernoulli baseline by a CONSTANT asymptotic deficit Δ_∞ ≈ −0.307 nat; f_N / z² irreducible over Q[z] for N ∈ {64, 128, 256} (no cyclotomic share)  [EVS M]
+    1794:### E2.21 — L^∞ norm of the prime-indicator polynomial f_N(z) = Σ χ_P(n) z^n at every rational point a/q matches the Hardy-Littlewood density factor μ(q)²/φ(q)·√π(N); ‖f_N‖_∞ = (1+o(1))·√π(N), attained at z = −1 (parity major arc)  [EVS M]
+    2790:### E3.3 — Riemann's R(x) gets ~50% of the digits, exactly           [EVS H]
+    2806:### E3.4 — Spectral truncation gives *unique* prime in tiny window  [EVS H]
+    2841:### E3.6 — Numerical bug fix worth flagging                          [EVS M]
+    2900:### E3.11 — K_min ~ 0.35 * x^{0.27} under per-x optimal zero ordering   [EVS M]
+    2946:### E3.12 — Pascadi 2025 unconditional x^{5/8} equidistribution     [EVS M]
+    2973:### E3.13 — Bogomolny-Keating arithmetic correction is empirically absent at N=8000 [EVS M]
+    3069:### E4.1 — phi(W)/W bond-dim ratio = wheel-W gain in Mertens form    [EVS M]
+    3157:### E5.1 — BPSW correctness ⇒ PRIMES in TC^0                          [EVS H]
+    3186:### E5.2 — QFT (Grantham) in TC^0                                    [EVS M]
+    ... (10 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    441	### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    442	
+    443	`novel/mps_bond_dimension.md`; S41/S42; `experiments/wildcard/mps_bond_dimension*.md`.
+    444	
+    445	For the prime indicator chi_P : [1, W^d] → {0,1} reshaped in base W:
+    446	
+    447	```
+    448	   rank M^{(j)} = min( W^j , phi(W) * W^{d-j-1} + 1 )
+    449	```
+    450	
+    451	at *every* cut 1 ≤ j < d, *every* primorial W ≥ 2. Empirically saturated to
+    452	strict equality for W ∈ {2, 6, 30, 210}, d up to 20.
+    453	
+    454	The +1 row is exactly row-0 (the trivial "all integers > W are coprime to
+    455	W constraint"). The rest of the rank reduction is **exactly the Mertens
+    456	product prod_{p ≤ W}(1 - 1/p)** in disguise.
+    457	
+    458	> Why this is an edge: it is the **only known closed-form identity of any
+    459	> kind** for the entanglement-theoretic compressibility of chi_P. The
+    460	> savings is only constant-factor phi(W)/W, so on its own it doesn't break
+    461	> sqrt(x), but it gives an exact algebraic handle on the wheel-W sieve in
+    462	> tensor-network language.
+    463	
+    464	**S74 free-probability refinement (C2):** the squared-singular-value
+    465	distribution of `M^(j)` decomposes as **MP(c = φ(W)/W) bulk + O(N^{0.42})
+    466	spike outliers + finite structural peak**. The MP-bulk rate equals
+    467	`φ(W)/W = ∏_{p≤W}(1 − 1/p)` (the Mertens product). After projecting out
+    468	the spike band (`k* ∝ R^{0.85}` on W=2 d=14..22), the bulk free cumulants
+    469	match the MP standardized identity `κ_r = c^{r-1}` within 5–10% across
+    470	W ∈ {2, 3, 5, 6, 30}. Matched-active iid Bernoulli baseline matches MP
+    ... (130 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    1252	### E2.16 — Primes are NOT a translation-invariant DPP / PPP / signed-K / complex-Hermitian-K point process  [EVS M]
+    1253	
+    1254	S95; ATTACK_VECTORS §D7;
+    1255	`experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit.py`,
+    1256	`experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit_results.md`;
+    1257	CLOSED_PATHS row at session 95.
+    1258	
+    1259	A translation-invariant simple point process on `Z` with intensity
+    1260	`rho` and real-symmetric kernel `K(t) = K(-t)` has 2-point inclusion
+    1261	probability `R_2(t) = rho^2 - K(t)^2` (DPP) or `rho^2 + K(t)^2` (PPP).
+    1262	For prime `chi_P`:
+    1263	
+    1264	  - **Pair level (F1):** `K^2_DPP(t) = rho^2 - R_2(t) < 0` for all 15
+    1265	    admissible even t in [2, 30] at N = 10^7 (Hardy-Littlewood
+    1266	    `S(0, t) > 1` ⇒ `R_2 > rho^2`). DPP infeasible.
+    1267	  - **Pair level (F2):** `K^2_PPP(t) = R_2(t) - rho^2 < 0` for all 14
+    1268	    odd t > 1 (`R_2 ≈ 0` ⇒ `R_2 < rho^2`). PPP infeasible.
+    1269	  - **3-point (F3):** restricting to all-even sub-lattice where
+    1270	    `K^2_PPP > 0`, the permanent prediction
+    1271	    `R_3^PPP = perm[K]` overshoots the HL singular series prediction
+    1272	    `R_3^HL = rho^3 S(0, t_1, t_2)` by 7.5–79.2% across 19 admissible
+    1273	    triples. Maximum gap on 3-AP triples (0, 6, 12), (0, 12, 18),
+    1274	    (0, 18, 24).
+    1275	  - **3-point (F4):** real-signed K with magnitudes
+    1276	    `|K(t)| = rho sqrt(S(0, t) - 1)` and arbitrary signs `s : t → ±1`
+    1277	    fails at every triple — required cross-term ratio
+    1278	    `sigma_req ∈ (-0.541, +0.769)` is never `±1`.
+    1279	  - **3-point (F5):** complex Hermitian K of the same magnitudes with
+    1280	    free phases `phi : t → [0, 2π)` admits no globally consistent
+    1281	    assignment; least-squares fit over 200 random starts produces
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    1723	### E2.20 — Mahler measure of the prime indicator polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n is below density-matched Bernoulli baseline by a CONSTANT asymptotic deficit Δ_∞ ≈ −0.307 nat; f_N / z² irreducible over Q[z] for N ∈ {64, 128, 256} (no cyclotomic share)  [EVS M]
+    1724	
+    1725	S134, mode I, B-grade negative-shape edge.
+    1726	
+    1727	**Statement.** Let `f_N(z) := Σ_{n=1}^{N} χ_P(n) z^n ∈ Z[z]` and define
+    1728	`m(f_N) = exp(∫₀¹ log|f_N(e^{2π i θ})| dθ)` (Jensen). Empirically at
+    1729	`N ∈ {2^{10}, 2^{12}, 2^{14}, 2^{16}, 2^{17}, 2^{18}}`, with M = 2^{18}
+    1730	or 2^{19} Jensen-FFT sample points and 50–100 random-Bernoulli /
+    1731	matched-cardinality controls per N:
+    1732	
+    1733	  `Δ(N) := log m(f_PRIMES,N) − log m(f_BERN(d_N),N)`
+    1734	
+    1735	is monotone in N and plateaus at **`Δ_∞ = −0.307 ± 0.001 nat`** by
+    1736	`N = 2^{16}`. z-score `z(N=2^{18})` is `−110σ` against Bernoulli, `−337σ`
+    1737	against matched-cardinality. The shared exponent fit
+    1738	`log m ≈ α log N + β` gives `α_PRIMES = 0.4566, α_BERN = 0.4577`
+    1739	(indistinguishable) but distinct intercepts `β_PRIMES − β_BERN ≈ −0.30`.
+    1740	
+    1741	**Cyclotomic structure (small N).** Factoring `f_N(z)` over Q[z] via
+    1742	sympy at `N ∈ {64, 128, 256}`:
+    1743	- `f_N(z) = z² · g_N(z)` where `g_N` is **irreducible** of degree
+    1744	  `N − 2 − 1{N is composite} = π(N) − 1` (just enumerated as 59,
+    1745	  125, 249 respectively).
+    1746	- **Zero cyclotomic factors.** No `Φ_n(z) | f_N`. The A-grade
+    1747	  cyclotomic-compressibility hypothesis `m(f_N) = O((log N)^c)` is
+    1748	  decisively **falsified**.
+    1749	- Max root modulus drops with N: `|α|_max(64) = 1.1249`,
+    1750	  `|α|_max(128) = 1.0666`. Roots cluster near the unit circle but
+    1751	  not on it.
+    1752	
+    ... (100 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation_results.md
+    1	# F2 — Information rate of pi(x) mod 2^k saturates and admits a closed form
+    2	
+    3	**Status:** OPEN closure on F2; refinement of edge E1.5.
+    4	**Edges touched:** E1.5 (sharpened), E1.6 (compatible).
+    5	**Falsification:** stated below; PASS in the regime m << pi(X), FAIL at m ~ pi(X)
+    6	(the failure is itself the new finding — it identifies the boundary).
+    7	
+    8	---
+    9	
+    10	## 1. Question
+    11	
+    12	NOVELTY_CHALLENGES.md §2.F2 asks:
+    13	
+    14	> Is the information rate of pi(x) mod 2^k the constant 0.537 * k bits per step
+    15	> (E1.5 says yes) or does it saturate?
+    16	
+    17	The framing of "0.537 * k" was a red herring; E1.5 itself states a *constant*
+    18	0.537 across moduli, so the literal F2 question already implied saturation.
+    19	The actual content of F2 is: **what is the saturation level, and does it
+    20	hold for m = 2^k up to k = 10**?
+    21	
+    22	---
+    23	
+    24	## 2. Headline result
+    25	
+    26	For x in [1, X] and any modulus m,
+    27	
+    28	```
+    29	   H( pi(x) mod m  |  pi(x-1) mod m )  =  h_2( pi(X) / X )  +  err(m, X)
+    30	```
+    ... (217 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    3434	### E6.5 — Hirsch-Kessler-Mendlovic O~(sqrt(N)) elementary algorithm [EVS M]
+    3435	
+    3436	`literature/state_of_art_2026.md` §1.2; arXiv:2212.09857.
+    3437	
+    3438	First elementary (non-analytic) algorithm matching analytic
+    3439	O(x^{1/2+eps}) — uses Dirichlet convolutions via NTT to speed up the
+    3440	combinatorial side. ~400x slower than primecount in practice but **matches
+    3441	analytic-side asymptotics with no zeta zeros**. A chain that combines
+    3442	HKM with E5.1 (BPSW-TC^0) and E1.3 (carry-boundary) is the closest the
+    3443	project gets to a believable polylog architecture.
+    3444	
+    3445	### E6.7 — HKM time-space tradeoff curve O~(N^{8/15}) / O~(N^{1/3}) [EVS M]
+    3446	
+    3447	`literature/aggarwal_2025_analysis.md`; arXiv:2212.09857 (Helfgott-Kessler-
+    3448	Mendlovic);
+    3449	**pillar placement:** `experiments/constructions/pillar_tradeoff_diagram/` (S81, C6).
+    3450	
+    3451	HKM is not just a single point at O~(sqrt(x)) (E6.5); it is a tradeoff curve.
+    3452	With NTT-based fast multiplication on Dirichlet series:
+    3453	
+    3454	```
+    3455	   time = O~(N^{8/15})  using  space = O~(N^{1/3}).
+    3456	```
+    3457	
+    3458	This is the **only known sub-x^{2/3} time achievable simultaneously with
+    3459	sub-x^{1/2} space** for pi(x). Beats Meissel-Lehmer (x^{2/3} time / x^{1/3}
+    3460	space) on time AND beats classical analytic (x^{1/2+eps} time / x^{1/2}
+    3461	space) on space.
+    3462	
+    3463	> Why this is an edge: it is the **first elementary algorithm to do strictly
+    ... (80 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/information_theory/pi_mod_2k_saturation/pi_mod_2k_saturation.py
+    1	"""
+    2	F2 — Information rate saturation of pi(x) mod 2^k.
+    3	
+    4	Question (NOVELTY_CHALLENGES.md §2.F2):
+    5	  Is H(pi(x) mod 2^k | pi(x-1) mod 2^k) = 0.537 * k bits per step
+    6	  (linear in k), or does it saturate?
+    7	
+    8	Edges touched:
+    9	  E1.5 — pi(x) mod m has invariant conditional entropy 0.537 bits
+    10	         (tested only for m in {2..30}; this script extends to 2^k, k=1..10
+    11	         and many X scales).
+    12	
+    13	Sharpened prediction (this experiment):
+    14	  For every modulus m >= 2 and every X >= 100,
+    15	     H( pi(x) mod m | pi(x-1) mod m ; x in [1, X] )
+    16	       =  h_2( pi(X) / X )  +  O(1/X)
+    17	  where h_2(p) = -p log_2 p - (1-p) log_2 (1-p).
+    18	
+    19	Mechanism (why this should hold):
+    20	  pi(x) - pi(x-1) = 1[x is prime] in {0,1}.
+    21	  Therefore  pi(x) mod m  =  ( pi(x-1) mod m + 1[x prime] ) mod m.
+    22	  Conditioning on pi(x-1) mod m, only the prime indicator is random.
+    23	  If 1[x prime] is asymptotically conditionally independent of pi(x-1) mod m
+    24	  (very mild assumption -- known empirically to high precision; see
+    25	  pi_modular_structure_results.md), then
+    26	     H(Y|X) = h_2( P[x prime] )  =  h_2( pi(X)/X ).
+    27	  Crucially this is INDEPENDENT of m.
+    28	
+    29	What gets tested:
+    30	  (i)  H_emp(m, X) is empirically constant in m (across 2^k for k=1..10
+    ... (210 more lines)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Picking E1.5 as the adversarial target. Let me write a small experiment that probes the JOINT k-moduli entropy directly (S69 only measured per-modulus marginals).
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/information_theory/ | head -20
+    binary_bit_analysis.py
+    binary_bit_analysis_results.md
+    complexity_attack.py
+    complexity_attack_results.md
+    compressed_computation.py
+    compressed_computation_results.md
+    compressed_pi.py
+    compressed_pi_results.md
+    correction_bits.py
+    correction_bits_results.md
+    derandomization.py
+    derandomization_results.md
+    gap_predictability.py
+    gap_predictability_results.md
+    gowers_uk_chi_p.py
+    gowers_uk_chi_p_analyze.py
+    gowers_uk_chi_p_analyze_results.md
+    gowers_uk_chi_p_data
+    gowers_uk_chi_p_results.md
+    hard_bits_distribution.py
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/information_theory/joint_kmoduli_entropy
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py
+  [Bash] python experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py --quick 2>&1 | tail -50
+    /bin/bash: line 1: python: command not found
+  [Bash] which python3 && python3 experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py --quick 2>&1 | tail -60
+    /usr/bin/python3
+        JOINT H(.|.)   = 0.537428
+        H_joint / h_2  = 0.9996  (predicted 1.0 under H2; predicted 2 under H1)
+        H_joint / sum  = 0.4998  (predicted 1/k = 0.5000 under H2; 1.0 under H1)
+      [X=10000 k=3]  X=10000  k=3  moduli=(2, 3, 5)
+        h_2(pi/X)      = 0.537640
+        sum marginal H = 1.612525  (= k * 0.537508)
+        JOINT H(.|.)   = 0.536040
+        H_joint / h_2  = 0.9970  (predicted 1.0 under H2; predicted 3 under H1)
+        H_joint / sum  = 0.3324  (predicted 1/k = 0.3333 under H2; 1.0 under H1)
+      [X=10000 k=4]  X=10000  k=4  moduli=(2, 3, 5, 7)
+        h_2(pi/X)      = 0.537640
+        sum marginal H = 2.150051  (= k * 0.537513)
+        JOINT H(.|.)   = 0.528122
+        H_joint / h_2  = 0.9823  (predicted 1.0 under H2; predicted 4 under H1)
+        H_joint / sum  = 0.2456  (predicted 1/k = 0.2500 under H2; 1.0 under H1)
+      [X=10000 k=5]  X=10000  k=5  moduli=(2, 3, 5, 7, 11)
+        h_2(pi/X)      = 0.537640
+        sum marginal H = 2.687398  (= k * 0.537480)
+        JOINT H(.|.)   = 0.484883
+        H_joint / h_2  = 0.9019  (predicted 1.0 under H2; predicted 5 under H1)
+        H_joint / sum  = 0.1804  (predicted 1/k = 0.2000 under H2; 1.0 under H1)
+      [X=10000 k=6]  X=10000  k=6  moduli=(2, 3, 5, 7, 11, 13)
+        h_2(pi/X)      = 0.537640
+        sum marginal H = 3.224574  (= k * 0.537429)
+        JOINT H(.|.)   = 0.484883
+        H_joint / h_2  = 0.9019  (predicted 1.0 under H2; predicted 6 under H1)
+        H_joint / sum  = 0.1504  (predicted 1/k = 0.1667 under H2; 1.0 under H1)
+      [X=10000 k=3]  X=10000  k=3  moduli=(4, 9, 25)
+        h_2(pi/X)      = 0.537640
+    ... (31 more lines)
+  [Bash] python3 experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py 2>&1 | tail -80
+        H_joint / sum  = 1.0000  (predicted 1/k = 1.0000 under H2; 1.0 under H1)
+      [X=1000000 k=2]  X=1000000  k=2  moduli=(2, 3)
+        h_2(pi/X)      = 0.396865
+        sum marginal H = 0.793727  (= k * 0.396864)
+        JOINT H(.|.)   = 0.396862
+        H_joint / h_2  = 1.0000  (predicted 1.0 under H2; predicted 2 under H1)
+        H_joint / sum  = 0.5000  (predicted 1/k = 0.5000 under H2; 1.0 under H1)
+      [X=1000000 k=3]  X=1000000  k=3  moduli=(2, 3, 5)
+        h_2(pi/X)      = 0.396865
+        sum marginal H = 1.190589  (= k * 0.396863)
+        JOINT H(.|.)   = 0.396857
+        H_joint / h_2  = 1.0000  (predicted 1.0 under H2; predicted 3 under H1)
+        H_joint / sum  = 0.3333  (predicted 1/k = 0.3333 under H2; 1.0 under H1)
+      [X=1000000 k=4]  X=1000000  k=4  moduli=(2, 3, 5, 7)
+        h_2(pi/X)      = 0.396865
+        sum marginal H = 1.587453  (= k * 0.396863)
+        JOINT H(.|.)   = 0.396774
+        H_joint / h_2  = 0.9998  (predicted 1.0 under H2; predicted 4 under H1)
+        H_joint / sum  = 0.2499  (predicted 1/k = 0.2500 under H2; 1.0 under H1)
+      [X=1000000 k=5]  X=1000000  k=5  moduli=(2, 3, 5, 7, 11)
+        h_2(pi/X)      = 0.396865
+        sum marginal H = 1.984311  (= k * 0.396862)
+        JOINT H(.|.)   = 0.395726
+        H_joint / h_2  = 0.9971  (predicted 1.0 under H2; predicted 5 under H1)
+        H_joint / sum  = 0.1994  (predicted 1/k = 0.2000 under H2; 1.0 under H1)
+      [X=1000000 k=6]  X=1000000  k=6  moduli=(2, 3, 5, 7, 11, 13)
+        h_2(pi/X)      = 0.396865
+        sum marginal H = 2.381165  (= k * 0.396861)
+        JOINT H(.|.)   = 0.381272
+        H_joint / h_2  = 0.9607  (predicted 1.0 under H2; predicted 6 under H1)
+    ... (50 more lines)
+The empirical pattern is clear: the joint conditional entropy is bounded by h_2 regardless of k, confirming what's already implied by the mechanism. This is essentially a sanity-check, not a missed angle.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy_results.md
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session198_reverify_e1_5.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session198_reverify_e1_5.md
+Now let me update the EDGES.md wording, CLOSED_PATHS.md, and SESSION_INSIGHTS.md.
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    252	encoding x itself).
+    253	
+    254	**Asymptotic implication.** As X to infinity, `pi(X)/X to 0` and hence
+    255	the per-step rate `h_2(pi(X)/X) to 0`. The information rate of pi(x) mod
+    256	m **vanishes** in the limit, regardless of m.
+    257	
+    258	> Why this is an edge: the constancy across m (in regime m << pi(X))
+    259	> proves that **CRT reconstruction cannot win** — knowing pi(x) mod m
+    260	> for any m gives exactly h_2(pi(X)/X) bits of new info per step, so
+    261	> combining k moduli scales linearly (not multiplicatively) and offers
+    262	> no compression. It also says pi(x) mod 2 is *exactly as hard* as
+    263	> pi(x) mod m for any other m. The mechanism is closed-form: since
+    264	> `pi(x) - pi(x-1) = 1[x prime] in {0,1}`, the conditional entropy is
+    265	> `h_2(P[x prime]) = h_2(pi(X)/X)` whenever the prime indicator is
+    266	> conditionally independent of the state — which holds for m << pi(X).
+    267	
+    268	### E1.6 — pi(x) mod 2 bisects into two statistically-independent bits  [EVS M]
+    269	
+    270	S55; `experiments/sieve/pi_mod_q_fixed/liouville_modular_structure_results.md`.
+    271	**q-stable extension:** `experiments/constructions/g_q_bisection_invariant/` (S70, C1).
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+  [Bash] tail -20 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | S168 commit-thread step 3 — squarefree extension of S166: V_q^prim energy theorem for ALL squarefree q (closes the W=2 chi_P MPS spike-block decomposition) | THEOREM+EXTENSION | C | Commit-thread session 3/5 on the S82 invariant-subspace theorem. **Theorem (S168).** For every squarefree q ≥ 2, with `chi_P` the prime indicator on `{1,..,N}`, `r(q) = #{primes dividing q}`: `E(q, N) = ‖P_{V_q^prim} chi_P‖²/N = μ(q)² · (π(N) − r(q))² / (φ(q) N) + R(q, N)`, with `|R(q, N)| ≤ q · Var(q, N) / N + O(r²/N)`. **Corollary (μ-vanishing)**: for non-squarefree q (μ(q) = 0), the main term vanishes and `E(q, N) = O(q · Var(q, N) / N)`. **Corollary (additivity)**: total chi_P energy in `⊕_{q sqf, q ≤ Q*} V_q^prim` is `(π(N)²/N) · Σ_{q sqf ≤ Q*} 1/φ(q) ~ A · π(N)² log Q* / N` with `A → 1` (Selberg-Delange). **Proof**: same skeleton as S166. For squarefree q, the Ramanujan sum `c_q(k) = μ(q)` (k coprime q) gives the principal-character main term. Non-principal Dirichlet contributions split: induced characters mod q have `c_q^χ(k) = 0`, primitive characters give Gauss sums `|τ(χ)| = √q` and contribute `≤ q · Var(q, N)/N` by Plancherel on (Z/qZ)*. The novelty over S166: closed form `μ(q)²/φ(q)` is uniform across squarefree q irrespective of how many prime factors q has (S166 only proved q ∈ {p, 2p}). **Empirical verification**: 30 squarefree q ∈ [2, 50] × 4 d ∈ {14, 16, 18, 20}, ratios ∈ [0.9912, 1.1652] at d=14 → [0.9998, 1.0017] at d=20; aggregate sum-over-Q* matches predicted to better than 0.3% across Q* ∈ {10, 20, 50, 100, 200} at d=20. **Non-squarefree falsifier passes**: at d=18 for q ∈ {4, 8, 9, 12, 16, 18, 20, 24, 25, 27, ...}, E_emp ≤ q·Var/N strictly, with ratio E_emp/(q Var/N) ≤ 1.0003 (at q=4, where unique non-principal char is primitive; ratio < 1 elsewhere). **Net new content**: (a) closed form for E(q, N) for ALL squarefree q (including composites), not just q ∈ {p, 2p}. (b) Predicts and verifies main-term VANISHING for non-squarefree q. (c) Identifies Wirsing-type sum `Σ_{sqf q ≤ Q} 1/φ(q) ~ log Q · A_∞` with `A_∞ = 1` by Selberg-Delange. (d) **Predicts chi_P spike-block fraction = 0.21 of `‖chi_P‖² = π(N)`** when paired with S74's k_*(N) ~ N^{0.42}: setting `Σ_{sqf q ≤ Q*} φ(q) ~ (3/π²)Q*² = N^{0.42}` gives `Q* ~ N^{0.21}`, hence total spike energy ≈ 0.21 · π(N). The remaining 0.79 · π(N) is bulk Marchenko-Pastur (S74). **Closure mode C**: computing E(q, N) requires π(N; q, a) data which is the PNT-in-AP problem itself; no polylog method opens. What's NEW is a **complete arithmetic decomposition** of `‖chi_P‖²` into named pieces (wheel mode + V_q^prim spike for sqf q + non-sqf-only-variance + bulk MP). Cites E2.1, E1.5, S74, S82, S148, S166. Cross-domain refs: Hardy-Wright Ch.16 (Ramanujan sums); Iwaniec-Kowalski §3.4 (Gauss sums, primitive vs induced); Davenport Ch.6,22 (Ψ(N, χ) bounds); Tenenbaum §I.4.4-5 (Selberg-Delange A=1); Bombieri-Vinogradov 1965/1966 (Var(q,N) range). See experiments/constructions/s166_squarefree_extension/. | 168 |
+    
+    | S169 commit-thread step 4 — empirical confirmation of S168's 21% spike-block-fraction prediction + finite-N Q* exponent correction (0.21 → 0.185) | EMPIRICAL+REFINEMENT | C | Commit-thread session 4/5 on the S82 invariant-subspace theorem. **S168 prediction**: total chi_P energy in `⊕_{q sqf, q ≤ Q*} V_q^prim` ≈ 0.21 · π(N), with `Q* ~ N^{0.21}` derived from `Σ_{sqf q ≤ Q*} φ(q) ~ k_*(N) ~ N^{0.42}` (Mertens-Wirsing). **Three pre-stated falsifiers tested at d ∈ {14, 16, 18, 20, 22, 24}** via direct Fourier sieve `E(q, N) = (1/N) Σ_{k coprime q} |Σ_{p' prime ≤ N} ω_q^{k p'}|²` for all squarefree q ∈ [2, ⌈N^{0.30}⌉], plus comparison to SVD spike-block sums from S82 (`spike_d{14,18,20}_results.json`). **Outcomes**: **PR1 (analytic at Q* = N^{0.21})** — PARTIAL. cum(Q*) / (0.21 π(N)) = 1.330, 1.266, 1.260, 1.193, 1.172, 1.167 across d=14..24, monotonically converging to 1 but still 17% above at d=24. The asymptotic Wirsing-A → 1 holds; convergence is slow (order 1/log N). **PR2 (SVD spike block / 0.21·π(N))** — PASS. Ratio 1.0647, 1.0533, 1.0466 at d=14, 18, 20 — within 7% even at d=14, monotonically decreasing toward 1. **PR3 (Q_eff exponent = 0.21 ± 0.05)** — CORRECTED. The matching Q_eff (where analytic cum(Q) equals the SVD spike block) has log Q_eff / log N = 0.1846, 0.1846, 0.1850 at d=14, 18, 20. Stable at exponent **0.185, NOT 0.21** at finite N. **Net new content**: (a) **The 21% fraction prediction holds empirically** — the SVD spike block fraction π_spike / π(N) = 0.224, 0.221, 0.220 at d=14,18,20, within 7% at d=14, decreasing to within 5% at d=20 (S176/S178 scope-correction; original "within 5% at d=14" framing was off by 1.5pp; d=16 added by S173 lands at 0.2132 and breaks monotonicity in d). This validates S168's structural claim that chi_P MPS energy splits ~21%/79% spike/bulk. (b) **The Q* exponent is corrected from 0.21 to 0.185 at finite N**. The S168 derivation `Q* = N^{0.21}` from `k_*(N) = N^{0.42}` has finite-N corrections from both `k_*(N)`'s slowly-varying prefactor and Mertens-Wirsing remainder. The asymptotic `Q* → N^{0.21}` is consistent with the analytic-side trajectory (crossing-Q exponent drifts 0.16 → 0.18 across d=18..24), but at finite N the SVD-matching Q_eff is at exponent 0.185. (c) **"Negative-leakage / missing-spike" effect identified**. The SVD spike block is *smaller* than analytic cum(Q=N^{0.21}) by 12-20% at d=14..20 — opposite sign from S166's "leakage" finding (which was relative to a single E(p, N), not the full cum(Q*)). The reconciliation: S166's "leakage" reflected SVD spikes capturing more than a single V_p^prim sector; S169's "missing-spike" reflects partially-saturated V_q^prim sectors at q > Q_eff whose characters' modes haven't yet emerged from the bulk noise floor at finite d. The actual SVD spike block sits between `E(p, N)` for a single p and the analytic cum(Q*=N^{0.21}). **Closure mode C**: the 21% fraction is an asymptotic structural fact; its computation requires `π(N; q, a)` for q in a small but non-trivial window, and the bulk 79% is GUE-pseudorandom per S74. No polylog opening. What's NEW is empirical confirmation of S168's prediction and a sharp finite-N Q* exponent (0.185). Cites E2.1, E1.5, S74, S82, S148, S166, S168. Cross-domain refs: Hardy-Wright Ch.18 (Mertens); Tenenbaum §I.4.4-5 (Selberg-Delange A=1); Wirsing 1956 *Arch. Math.* 7. See experiments/constructions/spike_block_21pct_test/. | 169 |
+    
+    | S190 commit-thread step 5 (FINAL) — synthesis + thread DONE: chi_P MPS spectrum compiles into `π(N) = 0.21·π(N) [PNT-in-AP at sqf q ≤ N^{0.185}] + 0.79·π(N) [GUE-bulk MP]`, sharper closure of polylog spectral attack family | SYNTHESIS+CLOSURE | C | Commit-thread session 5/5 (final synthesis slot) on the S82 invariant-subspace theorem. **Compiled theorem (S190)**: combining S148 (refutation of S82's |L(1,χ)|² eigenvalue claim + Gallagher-variance K-formula), S166 (exact V_p ⊕ V_{2p}^prim energy via Ramanujan sums), S168 (squarefree extension to all sqf q with closed form `μ²(q)/φ(q)·(π(N)−r)²/N + R`), and S169 (empirical 21% spike-block-fraction at d=14,18,20 within 7%/5%/5%, finite-N Q_eff exponent ≈ 0.185), the chi_P MPS column-Gram operator decomposes additively into: (1) rank-1 wheel mean (excluded), (2) spike sector ≅ ⊕_{sqf q ≤ Q*≈N^{0.185}} V_q^prim carrying ≈ 0.21·π(N) energy, (3) bulk MP sector with σ-edge 2√(M·p·(1−p)) (M=√N, p=π(N)/N) carrying ≈ 0.79·π(N) energy. The spike eigenvectors ARE Dirichlet character vectors (S82 stands); the eigenvalues are Ramanujan-sum / principal-Dirichlet structure (NOT |L(1,χ)|², S148/S166). **Polylog-blocker reformulation (NEW for S190)**: computing π(N) ≡ computing the bulk MP sector at additive resolution q ≥ N^{0.185}; the spike sector reduces to PNT-in-AP at sqf q ≤ N^{0.185} computable in O(N^{0.185+ε}) by direct Fourier sieving but NOT polylog (E1.5 anchor); the bulk sector is GUE-pseudorandom across 35+ measures (S74/E1.5/T6 anchor). Both sub-sectors blocked. **Net effect**: structural progress, no algorithmic opening. The closure of the chi_P spectral attack family is now FACTORED into two separately-quantified sub-barriers at separate scales (21% at q≤N^{0.185} subpolynomial / 79% at q≥N^{0.185} information-theoretic), whereas before the closure was monolithic via "E2.1 + S74 → C-circular C2 collapse". **Closure mode C** (computability-circular within the C2 chain): every step of the decomposition reduces to a known barrier; no polylog short-cut. **Verification log**: this synthesis is preceded by 19 verify slots (S167, S170-S189), with substantive empirical claim (21% fraction at canonical k_*) confirmed nineteen times by independent recomputation; PARTIAL verdicts in S176/S182/S184/S185/S186/S188/S189 all about scope qualifiers (rule-dependence of k_*, post-hoc precision pinning, finite-N convergence rate) not about the substantive claim. **Thread status**: DONE — recommendation: next commit slot pick Thread 2 (Connes-Consani-Moscovici operator amortisation per CLAUDE.md priority); proposed B-grade frame-shift follow-on for non-commit rotation: Voiculescu-Speicher higher free cumulants on the bulk to test Wigner-Dyson level-spacing prediction (NOT next commit thread). Cites E2.1, E1.5, S74, S82, S148, S166, S168, S169. Cross-domain refs (compiled, all analytic NT — thread does NOT pass A-grade cross-domain criterion): Hardy-Wright Ch.16,18; Iwaniec-Kowalski §3.4; Davenport Ch.6,8,22; Tenenbaum §I.4.4-5; Wirsing 1956; Gallagher 1970; Montgomery-Vaughan Ch.9,17; Bai-Silverstein §3.3. See archive/sessions/session190_commit_s82_invariant_subspace.md. | 190 |
+    
+    | S191 paradigm-shift session — Pointwise Ramanujan-spike approximator T_Q(n) := (π(N)/N) · Σ_{q sqf ≤ Q} mu(q) c_q(n)/phi(q): does the explicit pointwise dual of S168's energy-level spike formula exhibit the predicted 21% L²-fraction at Q ≈ N^{0.185} and does it function as a non-trivial primality predictor? | NEW CONSTRUCTION | C | Paradigm-shift session (no cross-domain imports allowed) — built the **pointwise** dual of S168's L²-only spike formula. **Hölder simplification (project's algebraic step)**: for squarefree q with d = gcd(q, n), `mu(q) c_q(n) / phi(q) = mu(d) / phi(q/d)`; verified numerically for all squarefree q ∈ [1, 30] and n ∈ [0, 60] in `sanity_holder.py`. **Object**: `T_Q(n) := (π(N)/N) · Σ_{q sqf ≤ Q} mu(gcd(q,n))/phi(q/gcd(q,n))`, computable in `O(Q · ω(n))` per n. **Empirical results** at d ∈ {14, 16, 18, 20}, Q ∈ {2, 6, N^{0.185}, N^{0.21}, 30, √N}: (a) **At d=20, Q=13≈N^{0.185}**: `||T_Q − const||² / π(N) = 0.2229`, matching S169's measured SVD spike-block fraction `0.220 ± 0.005` within **1.4%** — first pointwise empirical confirmation of S168/S169's energy-level prediction. (b) At d=14, 18 the construction overestimates SVD by 16-20%, exactly the "missing-spike" finite-d gap S169 disclosed. (c) **Primality-predictor lift over random baseline**: precision-at-π(N) = 0.183, 0.439, 0.524, 0.998 at Q = 2, 13, 30, 1024 (d=20), giving lifts 2.34×, 5.61×, 6.70×, 12.76× — monotonically increasing in Q. (d) **Wheel-Mertens identity** falls out of the closed form: at primorial Q=W, n coprime to W, `M_W(n) = ∏_{p|W}(1 + 1/(p−1)) = W/φ(W)`, hence `T_W(coprime n) = (π(N)/N) · W/φ(W)` — pointwise Mertens-density correction. **Edges composed**: E2.1 + E1.5 + E1.6 + E2.2 + S168. **Cross-domain technique imported: NONE** (paradigm-shift constraint satisfied). **Honest novelty**: pointwise form not in project's prior writeups (S166-S190 stayed at L² level); algebraic content is the Hölder simplification + wheel-Mertens identification + pointwise empirical S168-test. The Ramanujan-Fourier coefficients `mu(q)/phi(q)` of the von Mangoldt function are classical (Hardy 1921) — re-derived here from S168 alone per the no-imports constraint. **Closure mode C**: T_Q does not break C-circular (computing it requires π(N) for the prefactor). The 79% remainder ‖chi_P − T_Q‖² is the bulk MP component. **Falsification status**: all four pre-stated falsifiers PASS. **Lean candidate**: the Hölder identity `mu(q) c_q(n)/phi(q) = mu(gcd)/phi(q/gcd)` is one-step character-theoretic, suitable for L1 queue. See experiments/constructions/ramanujan_spike_pointwise/. | 191 |
+    
+    | S193 commit-thread step 1 (Connes amortisation) — adversarial re-examination of S53's E3.1 closure: does S53 argument 2 (O(K^3) per-query diagonalisation cost) survive the AMORTISATION challenge of "diagonalise once, serve many π(x) queries"? | REFINEMENT+CLOSURE | E | Thread 2 commit step 1/5. **Adversarial finding**: the S53 closure of E3.1 stands but its dominant argument is sharpened. Argument 2 partially collapses — under amortisation across Q queries up to x=X, per-query cost reduces to O(K) explicit-formula evaluation, paid once-O(K³) for setup. **However**, Galway 2004 + Hiary computes the SAME K zeros at setup cost O(K^{17/13}) (Hiary t^{4/13}+ε per zero, height t≈K), with identical per-query O(K). **Setup ratio K³/K^{17/13} = K^{22/13} ≈ K^{1.69}**: at x = 10^{100}, Connes setup is 10^{84.6} times more expensive than Galway. Connes is strictly dominated by Galway in every cost regime — per-query (O(K) vs O(K), tie), one-shot (O(K³) vs O(K^{17/13}), Galway wins), full amortisation (K³/Q + K vs K^{17/13}/Q + K, Galway wins). **Empirical confirmation**: K_sustained(x) on x ∈ {100, 1000, 5000, 50000} fits to K_sust(x) ~ 0.48 · x^{0.55} (predicted slope 0.5, agrees with E1.5 / Riemann-von Mangoldt floor). **Reduction**: Thread 2 (Connes amortisation) ⊆ Thread 3 (Galway frontier). The Connes operator is just an alternative (and strictly more expensive) way to obtain the same K zeros that Galway/Hiary obtain more cheaply; per-query costs are identical because both routes reduce to the same explicit-formula partial sum on the same K zeros. **Sharper closure of E3.1 (refines row 706)**: even granting full amortisation and CCM unlimited per-prime accuracy, the diagonalisation setup cost K³ is dominated by Hiary's K^{17/13} for getting the same K zeros — independent of per-prime accuracy claims, of operator construction details, of amortisation regime. The remaining lever is K(x) = polylog(x) "in distribution" (Thread 3), to which both routes are equally subject. Cites E3.1, E1.5, S53 row 706, Galway 2004, Hiary 2011 (state_of_art_2026.md §2.5b). Cross-domain ingredient: classical asymmetric setup-cost comparison between dense eigensolvers (O(K³)) and Hiary's specialised zero-locating algorithm (O(t^{4/13}) per zero) — mildly novel framing; S53 had not compared to the Hiary baseline. See experiments/analytic/connes_amortisation/. | 193 |
+    
+    | S192 critique — audit of S164–S191 batch (S164 D44 Rédei + S82 commit thread closure S165/S166/S168/S169/S190 + S191 paradigm-shift T_Q + 20 verify slots S167/S170-S189) — does the batch contain inflated grades, mis-cited edges, or duplicate `novel/` placements? | CRITIQUE | C | Per-artefact verification of seven production sessions plus 20 verify slots. **Zero new demotions, zero inflations caught**: all seven self-grades honestly placed (six B, one C). **S190's HONEST self-down-grade A/B → C** distinguished as positive discipline signal — cleanest commit-thread closure in project history. **S191's "1.4% L²-match-with-S169" identified as TAUTOLOGICAL** (the construction projects onto exactly the subspaces S168 measures the energy of, so the agreement at the L² level is a definitional sanity check, not a new prediction); the actual B-grade content is the precision-at-π(N) lift table (new pointwise measurement) + d=14/18 missing-spike cross-validation (closes a S169 ambiguity) + L6 Lean candidate. **A-grade scarcity escalated**: S163 flagged 0/20, S192 flags **0/30** A-grades in the rolling window (S162-S191). The frontier-saturation pattern persists: every wild_swing (S164 D44 in this batch) closes at mode E or I via "matches matched-baseline" or "determined by graph/algebraic structure modulo arithmetic-blind invariant". **Recommended next-action**: commit mode → Thread 2 Connes-Consani-Moscovici amortisation (per .commit_state next_thread:connes_amortisation); non-commit → ATTACK_VECTORS §A.A7 plethysm sub-frame (S156's orbit-dim work explicitly leaves it open) OR §D.D48 BC endomotive Galois-orbit (S163 critique-pick still open). **Cadence note**: this is the third consecutive critique (S147, S163, S192) recommending an A-target attempt rather than another refinement; harness has continued to select commit/refinement modes; pattern flagged for human review (not at "≥ 2 F-grades in a row" escalation threshold — all sessions B/C). **No edits to EDGES.md, NOVELTY_CHALLENGES.md, ATTACK_VECTORS.md, or RESEARCH_AGENDA.md**. One trivial citation-drift note in S191 ("S190's 1.18 finite-size factor" should read "S166's"); not worth a separate row. See archive/ephemeral/critique_latest.md and archive/sessions/session192_critique.md. | 192 |
+    
+    | S196 commit-thread step 4 (Connes amortisation, Galway smoothed frontier in distribution) — does Gaussian-window smoothing of the explicit formula drop K* into the polylog regime? | THEORY+EXPERIMENT | E+I | Thread 2 commit step 4/5. **Slot 4 closes Thread 3 under log-Gaussian smoothing**: defining π_{K,h}(x) := R(x) − 2 Σ_{j≤K} Re R(x^{ρ_j}) · exp(−h² γ_j² / 2), the error decomposes into TAIL (j > K, unsmoothed) + BIAS (j ≤ K, weighting bias). Under iid uniform-phase model the two sums are over disjoint j ranges hence variance-additive: Var(error) = Var(TAIL)(K) + Var(BIAS)(K, h) where Var(TAIL)(K) ≈ x · log²(K)/(2π² K log²x) is **independent of h**, and Var(BIAS)(K, h) ≈ x · h · log(1/h)/log²(x) (asymptotic, h γ_K saturated). Var(TAIL)(K) ≤ 1/4 forces K ≥ Θ(x · poly⁻¹(log x)) regardless of h — **smoothing cannot lower K* below Θ̃(x)**. **Empirical validation** (40 samples × 11 bandwidths × K_max=2000 at x ~ 1.78e5): K*_50 = 1783 unsmoothed, identical (1782) for h ∈ {1e-6, 1e-4, 3e-4} (h γ_K_max ≤ 1, smoothing inactive); K*_50 unreachable within K_max for h ≥ 5e-4 (smoothing introduces bias dominating tail savings). Bias variance prediction matches empirical to within 5–15% across active regime: e.g. h=10⁻³ pred σ_BIAS=0.85 vs emp=0.72 (15% off); h=10⁻² pred=3.20 vs emp=3.05 (5% off); h=10⁻¹ pred=6.80 vs emp=6.01 (12% off). **The optimal bandwidth is h = 0**: smoothing strictly does NOT help. Eliminates S195's recommended slot-(b) follow-up. Strengthens S195's closure of Thread 3 from "in-distribution unsmoothed" to "in-distribution for any log-Gaussian bandwidth". Galway 2004 reconciliation: his K = O(x^{1/2+ε}) is for a smoothed *sum output*, not in-distribution recovery of integer π(x); regimes are not in conflict. Cites E3.1, E1.5, S193 row 810, S194 row 816, S195 row 814, Galway 2004, Hiary 2011, Montgomery 1973, Odlyzko 1989. Cross-domain ingredient: Mellin-domain modulation of per-zero contributions (M_φ(ρ) = e^{ρ²h²/2} for log-Gaussian kernel) combined with GUE random-phase variance estimation — extends S195 GUE technique to a kernel-bandwidth axis, validated empirically across the full transition (h γ_K_max from 0 to 250). **Falsifier**: a non-Gaussian smoothing kernel for which K* drops to polylog; OR an empirical K*(h*, x, p) ≪ x at x ≥ 10⁹ for some h*. None observed in tested band. See `experiments/analytic/connes_amortisation/galway_smoothing.py`, `galway_smoothing_results.md`. | 196 |
+    
+    | S195 commit-thread step 3 (Connes amortisation, Galway frontier in distribution) — can the empirical decay of hit-rate at polylog K seen in S194 be matched by a closed-form heuristic prediction, and does that prediction extrapolate beyond the tested band? | THEORY+EXPERIMENT | E+I | Thread 2 commit step 3/5. **Slot 3 derives a GUE random-phase heuristic for σ²(K, x) := Var(π(x) − R_K(x))**: under the asymptotic equidistribution of {γ_j log x mod 2π} predicted by Montgomery (1973) pair-correlation and verified empirically by Odlyzko (1989), σ²(K, x) ≈ x · log²(K) / (2π² · K · log²(x)). Derivation: leading-order li-asymptotic gives 2 Re R(x^ρ) ≈ 2 x^{1/2} sin(γ log x)/(γ log x); under iid-phase model Var per pair = 2x/(γ_j² log² x); summing 1/γ_j² over j > K with γ_j ~ 2π j/log j yields log²(K)/(4π² K). **Empirical validation** against S194 fluctuation CSVs at x ~ 1e5, 1e6 plus a new S195 sweep at x ~ 1e7 (40 samples, K_max=5500): pooled across 600 (x, K, |err|) triples — Pearson r(σ_pred, |err|) = 0.6189; slope-through-origin 0.5901 vs half-Gaussian expected √(2/π) = 0.7979 (ratio 0.74). The 26% gap is the GUE-vs-Poisson variance reduction predicted by Dyson sine-kernel pair correlation. Per-policy median predictions match empirical within 5–55% across THREE decades of x: e.g. at K = log³(x), x = 1e7, predicted median |err| = 3.69 vs empirical 3.51 (within 5%); at K = log²(x), x = 1e6, predicted 5.21 vs empirical 4.56 (within 14%). **Asymptotic K* prediction**: closed-form binary search on σ ≤ threshold/(√2 · erfinv(p)) gives K*(x, p) ≈ 0.09·x for hit-rate p = 0.5 and K*(x, p) ≈ 1.35·x for p = 0.99, with K*/x → constant from above as x → ∞. **For ANY fixed positive hit-rate target, K*(x, p) = Θ(x), NOT polylog** — extends S194's tested-band negative-shape to all x via theoretically-grounded extrapolation. The heuristic does NOT contradict Galway 2004's smoothed-sum K = O(x^{1/2 + ε}) bound because Galway weights only nearby zeros heavily; for the unsmoothed Riemann series, the variance is dominated by the tail. Cites E3.1, E1.5, S193 row 810, S194 row 814, Galway 2004, Hiary 2011, Montgomery 1973, Odlyzko 1989, Dyson sine-kernel. Cross-domain ingredient: GUE statistics of zero spacings + asymptotic li-expansion + Gaussian CLT applied to the truncation tail — first time the project has used random-matrix-theoretic equidistribution to PREDICT a quantitative empirical curve (not just bound it). **Falsifier**: a K-policy whose empirical median |err| stays bounded as x → ∞, OR a smoothing that drops the unsmoothed-K* below polylog, OR a rigorous calculation showing GUE correlation reduces K* below x · log^{-c}(x) for any c > 0. None known. See `experiments/analytic/connes_amortisation/gue_heuristic.py`, `gue_heuristic_results.md`. | 195 |
+    
+    | S194 commit-thread step 2 (Connes amortisation, Galway frontier in distribution) — does K = polylog(x) suffice for π(x) ± 1 *in distribution* (over a band of x), as a route around the worst-case Riemann-von Mangoldt K = √x floor that S193 reduced Thread 2 to? | EXPERIMENT+REFINEMENT | E | Thread 2 commit step 2/5. Empirical sweep using 8000 cached Riemann zeros and the Riemann explicit formula π(x) ≈ R(x) − 2 Σ_{k≤K} Re R(x^{ρ_k}). **Wide-range K_sustained**: x ∈ {1e3, 1e4, 5e4, 1e5, 5e5, 1e6, 5e6, 1e7}, K_max=8000; stabilised samples (4 of 8): K_sust = 77, 1097, 5375, 5530 at x = 1e3, 1e4, 1e5, 1e6 respectively. Log-log fit slope 0.626 — significantly above the naive √x baseline because K_sustained is a worst-case-along-K measure (sustained rounding requires the *tail* to stay below 0.5). **Fluctuation sweep around x ~ 1e5** (40 samples geometric in [1e5, 3.16e5], K_max=3000): hit-rate at K = log²(x) is 30%, at K = log³(x) is 42%, at K = √x is 20%. Median |error| at K = log²(x) is 1.58. **Fluctuation sweep around x ~ 1e6** (40 samples in [1e6, 3.16e6], K_max=8000): hit-rate at K = log²(x) drops to 5%, at K = log³(x) drops to 15%, at K = √x is 10%. Median |error| at K = log²(x) grows to 4.56. **Hit-rate at fixed polylog K-policy DECAYS with x**, and median |error| grows roughly as x^{0.39−0.46} (between log²(x) and log³(x) policies). If polylog K sufficed in distribution, hit-rate would tend to a positive limit and median error would stay bounded; both fail empirically over the tested range. **Negative-shape evidence** sharpening Thread 3 (Galway frontier): polylog K does not suffice for π(x) ± 1 in distribution at x ≤ 3·10^6. Combined with S193's strict-dominance of Connes setup by Galway/Hiary (K^{22/13} factor), Thread 2 remains closed by transitivity through Thread 3. Cites E3.1, E1.5, S193 row 810, Galway 2004, Hiary 2011. Cross-domain ingredient: empirical distribution of explicit-formula partial-sum errors at polylog truncation — a genuine measurement that the project had not previously made. **Falsifier**: produce a polylog K-policy whose hit rate at |error| ≤ 0.5 tends to a positive limit, or whose median |error| stays bounded, as x → ∞. Empirically falsified within tested range (x ≤ 3·10^6) but un-tested above. See experiments/analytic/connes_amortisation/connes_amortisation_results.md §"Slot 2 (S194) extension". | 194 |
+    
+    | §D32 ATTACK_VECTORS — Pemantle-Wilson ACSV smooth-point diagonal extraction of `χ_P`: does there exist a multivariate rational `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)` whose diagonal coefficient extraction equals `χ_P(n)` (or `π(n)`) and admits a smooth critical point `ζ*` yielding closed-form `[z_1^n ⋯ z_d^n] F = ζ^{*-n} · poly(n)` for polylog π(x) evaluation? (cross-domain: Pemantle-Wilson 2013/2024 *Analytic Combinatorics in Several Variables* CUP; Melczer 2021 Springer; Furstenberg 1967 *J. Algebra* 7; Lipshitz 1988 *J. Algebra* 113) | FAIL | I | S197 wild-swing single-session attack producing an **unconditional structural barrier** that strictly strengthens CLOSED row 584 (empirical at order ≤ 20, polynomial degree ≤ 8) to ALL orders simultaneously. **Theorem (S197)**: `f(z) := Σ_{n≥1} χ_P(n) z^n` (a) has the unit circle `|z|=1` as natural boundary; (b) is not D-finite (not P-recursive); (c) is not algebraic over `ℚ(z)`; (d) for every `d ≥ 1` is not the diagonal of any rational `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)`; (e) for every `d ≥ 1` is not the diagonal of any algebraic multivariate `F`. **Proof sketch**: (i) radius of convergence of `f` is 1 (Cauchy-Hadamard, χ_P ∈ {0,1}). (ii) Pólya–Carlson 1916/1921: integer-coefficient power series with radius 1 is either rational or has |z|=1 as natural boundary. (iii) `f` not rational because χ_P bounded-integer + LRS ⇒ eventually periodic; for any candidate period T, prime p ≥ N_0 + periodicity forces p + pT = p(1+T) prime — contradicts compositeness. (iv) D-finite ⇒ at most finitely many singular points (Stanley *EC2* Theorem 6.4.6; Flajolet-Sedgewick *AC* Theorem B.13) — contradicts natural boundary. (v) Algebraic ⊂ D-finite. (vi) Furstenberg 1967 / Lipshitz 1988: diagonal of rational/algebraic multivariate is D-finite — closes (d, e). **Empirical companion** (T1-T5 in `acsv_pi_diagonal.py`): T1 confirms ROC = 1; T2 P-recursion search d ≤ 30, r ≤ 8 shows no holonomic signal (extends CLOSED 584's d ≤ 20); T3 eventual-period search T ≤ 200 on χ_P ≤ 200000 shows max agreement 0.88 (no period); T4 Erdős-Turán equidistribution: closest root of f_N(t) to t=1 halves as N doubles (0.093 → 0.048 → 0.023 → 0.012 → 0.006 for N ∈ {64, 128, 256, 512, 1024}) — confirms NO stable Pemantle-Wilson critical point exists; T5 sanity test on diagonal sequence π(n) at degree ≤ 6. **Adds EDGE E7.21**: Pólya-Carlson natural-boundary barrier rules out the entire ACSV smooth-point technique class, plus Wilf-Zeilberger creative-telescoping, holonomic-gradient, and Karr-Schneider Π Σ-symbolic summation methods (each requires D-finite input). Distinct from E2.20 Mahler / E2.21 Newman (which measure specific extremal values of f_N on archimedean |z|=1; E7.21 is a structural statement about the limit f). Strict strengthening of CLOSED row 584 (empirical low-order → unconditional all-order). **Cross-domain ingredient**: ACSV §7 PROPOSED → USED I; the actual technical content is the meta-fact that ACSV-class techniques require D-finite input + the rigorous combination Pólya-Carlson + Skolem-Mahler-Lech + finite-singularity D-finite theorem + Furstenberg-Lipshitz. **Falsifier**: exhibit any (a) polynomial-coefficient linear recurrence on χ_P valid for large n, OR (b) polynomial Q(z, w) ∈ ℚ[z, w] with Q(z, f(z)) = 0, OR (c) multivariate rational F(z_1, ..., z_d) and direction r ∈ ℤ_{>0}^d such that [z_1^{r_1 n} ⋯ z_d^{r_d n}] F = χ_P(n) for large n. Each is impossible by the theorem; anyone exhibiting one resolves the polylog π(x) problem. **Channelled mathematician**: Pemantle / Flajolet (combinatorial asymptotics) — the actual lever is the meta-result. **Successors proposed (S197)**: D32.a (transcendental-F Pemantle-Wilson — does a non-algebraic but holonomic-D-module F escape Lipshitz?, 1 session); D32.b (Schur-class non-rational generating-function expansions; orthogonal to the rational class, may admit different asymptotic machinery, 2 sessions). Cross-domain refs: Pólya 1916 *Sitzungsber. Berlin Math. Ges.*; Carlson 1921 *Math. Z.* 9, 1; Skolem 1934 / Mahler 1935 / Lech 1953; Furstenberg 1967 *J. Algebra* 7, 271; Lipshitz 1988 *J. Algebra* 113, 373; Stanley 1999 *EC2* CUP Thm 6.4.6; Flajolet-Sedgewick 2009 *AC* Thm B.13; Erdős-Turán 1950 *Ann. Math.* 51 (root equidistribution); Pemantle-Wilson 2013/2024 *ACSV* CUP. See `experiments/constructions/acsv_pi_diagonal/`, `archive/sessions/session197_wild_swing_acsv_d32.md`. | 197 |
+  [Bash] tail -5 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -1
+    | S195 commit-thread step 3 (Connes amortisation, Galway frontier in distribution) — can the empirical decay of hit-rate at polylog K seen in S194 be matched by a closed-form heuristic prediction, and does that prediction extrapolate beyond the tested band? | THEORY+EXPERIMENT | E+I | Thread 2 commit step 3/5. **Slot 3 derives a GUE random-phase heuristic for σ²(K, x) := Var(π(x) − R_K(x))**: under the asymptotic equidistribution of {γ_j log x mod 2π} predicted by Montgomery (1973) pair-correlation and verified empirically by Odlyzko (1989), σ²(K, x) ≈ x · log²(K) / (2π² · K · log²(x)). Derivation: leading-order li-asymptotic gives 2 Re R(x^ρ) ≈ 2 x^{1/2} sin(γ log x)/(γ log x); under iid-phase model Var per pair = 2x/(γ_j² log² x); summing 1/γ_j² over j > K with γ_j ~ 2π j/log j yields log²(K)/(4π² K). **Empirical validation** against S194 fluctuation CSVs at x ~ 1e5, 1e6 plus a new S195 sweep at x ~ 1e7 (40 samples, K_max=5500): pooled across 600 (x, K, |err|) triples — Pearson r(σ_pred, |err|) = 0.6189; slope-through-origin 0.5901 vs half-Gaussian expected √(2/π) = 0.7979 (ratio 0.74). The 26% gap is the GUE-vs-Poisson variance reduction predicted by Dyson sine-kernel pair correlation. Per-policy median predictions match empirical within 5–55% across THREE decades of x: e.g. at K = log³(x), x = 1e7, predicted median |err| = 3.69 vs empirical 3.51 (within 5%); at K = log²(x), x = 1e6, predicted 5.21 vs empirical 4.56 (within 14%). **Asymptotic K* prediction**: closed-form binary search on σ ≤ threshold/(√2 · erfinv(p)) gives K*(x, p) ≈ 0.09·x for hit-rate p = 0.5 and K*(x, p) ≈ 1.35·x for p = 0.99, with K*/x → constant from above as x → ∞. **For ANY fixed positive hit-rate target, K*(x, p) = Θ(x), NOT polylog** — extends S194's tested-band negative-shape to all x via theoretically-grounded extrapolation. The heuristic does NOT contradict Galway 2004's smoothed-sum K = O(x^{1/2 + ε}) bound because Galway weights only nearby zeros heavily; for the unsmoothed Riemann series, the variance is dominated by the tail. Cites E3.1, E1.5, S193 row 810, S194 row 814, Galway 2004, Hiary 2011, Montgomery 1973, Odlyzko 1989, Dyson sine-kernel. Cross-domain ingredient: GUE statistics of zero spacings + asymptotic li-expansion + Gaussian CLT applied to the truncation tail — first time the project has used random-matrix-theoretic equidistribution to PREDICT a quantitative empirical curve (not just bound it). **Falsifier**: a K-policy whose empirical median |err| stays bounded as x → ∞, OR a smoothing that drops the unsmoothed-K* below polylog, OR a rigorous calculation showing GUE correlation reduces K* below x · log^{-c}(x) for any c > 0. None known. See `experiments/analytic/connes_amortisation/gue_heuristic.py`, `gue_heuristic_results.md`. | 195 |
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md << 'EOF'
+
+| S198 re-verify-closure (E1.5 entropy bound, A-graded) — adversarial probe of the "CRT reconstruction cannot win" closure: is the per-step h_2(pi(X)/X) bound conservatively framed in a way that misses a non-incremental algorithmic angle? | REFINEMENT+CLOSURE | I | Re-verify-closure session targeting the ONLY A-graded edge in the project. **Adversarial finding**: closure stands. The framing "linear in k" was loose; the precise statement is "constant in k" — combining k coprime moduli incrementally gives the SAME h_2(pi(X)/X) bits per step as a single modulus, regardless of k. **Empirical contribution**: directly measured the JOINT k-moduli conditional entropy `H(joint(x) | joint(x-1))` at k = 1..6, X ∈ {10^4, 10^5, 10^6}. Two competing hypotheses: (H1) Independence — joint = sum of marginals = k·h_2; (H2) Perfect correlation — joint = h_2 (single shared bit). Result at X = 10^6 (joint state space ≪ pi(X) for k ≤ 4): J/h_2 = 1.0000 to 10^{-4}; (H1) decisively rejected. Slight drop at k = 5, 6 (J/h_2 ≈ 0.96 at k=6, X=10^6) is the same finite-state coverage effect S69 §3 documents for m approaching pi(X) — not (H1) signal. **Mechanism**: trivial extension of E1.5. Since pi(x) mod m_i = (pi(x-1) mod m_i + 1[x prime]) mod m_i holds for all i simultaneously, the joint transition is determined by the SINGLE bit b = 1[x prime]; conditioning on joint state, only b is random; so joint H = h_2(P[x prime]) = h_2(pi(X)/X). **Three candidate "missed angles" checked and ruled out**: (A) conditioning on side info x mod 6 — h_2(2p) doesn't vanish faster than h_2(p), constant factor only; (B) larger-step Δ — for Δ such that Δ·pi/X >> 1, increment uniform mod m, conditional H → log_2(min(m, Δ)), trade-off not shortcut; (C) direct (non-incremental) computation of pi(X) mod m — NOT closed by E1.5, this is the central open question (a polylog subroutine for any single m would propagate to polylog pi(X) via CRT). **Two-closure framing made explicit**: closure (i) "no incremental CRT shortcut" — closed by E1.5/S198, sharpened. Closure (ii) "no polylog pi(X) mod m via direct computation" — NOT what E1.5 closes; CLOSED row 244 is the correct anchor for that. Edge entry E1.5 in EDGES.md updated inline with the joint-k-moduli sharpening and the scope-of-closure clarification. **Closure mode I** (information-theoretic, sharpened from E in row 243). What's NEW: (a) direct empirical measurement of joint k-moduli entropy (S69 measured per-modulus marginals only); (b) sharpened wording "constant in k" replacing "linear in k"; (c) explicit two-closure framing distinguishing incremental from non-incremental. Cites E1.5 (refined), CLOSED rows 243, 244, E1.6 (compatible). Cross-domain ingredient: NONE (within-project information-theoretic verification). **Falsifier**: any (k, X) cell with prod(m_i) << pi(X)/100 yielding J/h_2 ≠ 1.0000 ± 10^{-4}, OR exhibiting a polylog non-incremental subroutine for pi(X) mod m for any single m (would resolve closure (ii) regardless of E1.5). See `experiments/information_theory/joint_kmoduli_entropy/`, `archive/sessions/session198_reverify_e1_5.md`. | 198 |
+EOF
+echo "CLOSED_PATHS row appended"
+    CLOSED_PATHS row appended
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    - Total prediction σ_TOTAL = √(σ²_TAIL + σ²_BIAS) tracks empirical
+      RMS to within ~15% across all h.
+    
+    **Closure.** S195's Thread 3 closure is strengthened from
+    "in-distribution unsmoothed" to "in-distribution for any log-Gaussian
+    bandwidth h ≥ 0". The optimal bandwidth is h = 0; smoothing strictly
+    does not help. The natural smoothing approach is exhausted as a path
+    to polylog K.
+    
+    **What did not happen.** A non-Gaussian (e.g. compactly-supported, or
+    sinc) smoothing kernel was not tested. The result formally requires
+    log-Gaussian; another kernel could in principle behave differently.
+    This is the slot-5 follow-up.
+    
+    **Slot-5 next-action.** Either (a) test non-Gaussian smoothing kernels
+    to verify the closure is kernel-agnostic; (b) compute the GUE n=2
+    form factor explicitly (slot-3's option (a)) to rigorise the 0.74
+    slope ratio; or (c) wrap the 5-session Thread 2 arc with a final
+    synthesis and recommend the next thread. Recommend (c): Thread 2 has
+    been comprehensively closed across S193 (setup-cost dominance) +
+    S194 (empirical hit-rate decay) + S195 (heuristic K* = Θ(x)) + S196
+    (smoothing does not help). Slot 5 should write the final synthesis
+    and propose the next commit thread.
+    
+    **Files:** `experiments/analytic/connes_amortisation/galway_smoothing.py`
+    (new); `galway_smoothing_results.md` (new); `galway_smoothing_data.csv`
+    (new); `galway_smoothing_summary.csv` (new);
+    `archive/sessions/session196_commit_connes_amortisation.md`;
+    CLOSED_PATHS.md S196 row inserted before S195; .commit_state
+    sessions_used:4 → 5 with session_history S193,S194,S195,S196.
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'EOF'
+
+## Session 198 — Re-verify-closure: E1.5 entropy bound (the only A-graded edge)
+
+**Mode:** re-verify-closure (adversarial). **Self-grade:** **C** (closure stands).
+
+**Target.** E1.5 — `H(pi(x) mod m | pi(x-1) mod m) = h_2(pi(X)/X)`,
+asymptotically vanishing. The closure language ("CRT reconstruction
+cannot win") was reviewed adversarially.
+
+**Three candidate missed angles, evaluated.**
+
+(A) Conditioning on side information `x mod 6`. Doubles density to
+`2 pi(X)/X` but `h_2(2p)` ≈ `h_2(p)` for small p (both scale as
+`p log(1/p)`). Constant factor only.
+
+(B) Larger-step bound `H(pi(x+Δ) mod m | pi(x) mod m)`. For
+`Δ · pi/X >> 1`, increment is approximately uniform mod m; conditional
+entropy → `log_2(min(m, Δ))`. Larger steps extract MORE info per step
+at higher per-step cost. Trade-off, not a shortcut.
+
+(C) Direct (non-incremental) computation of pi(X) mod m for fixed
+(X, m). E1.5 is a chain-level entropy bound — it does NOT bound the
+algorithmic cost of non-incremental computation. THIS is the real
+distinction the closure language conflated.
+
+**Empirical contribution.** Measured the JOINT k-moduli conditional
+entropy `H(joint(x) | joint(x-1))` directly at k = 1..6, X ∈
+{10^4, 10^5, 10^6}. Two hypotheses:
+
+- (H1) Independence: joint = k · h_2 (CRT could in principle gain).
+- (H2) Perfect correlation: joint = h_2 (single shared bit).
+
+Result at X = 10^6 (joint state space ≪ pi(X) for k ≤ 4): J/h_2 =
+1.0000 to 10^{-4}. **(H1) decisively rejected; (H2) confirmed.**
+
+**Sharpened E1.5.** The per-step joint conditional entropy across k
+moduli is bounded by h_2(pi(X)/X), CONSTANT in k (not linear, not
+multiplicative). The k coordinates of the joint state share a SINGLE
+randomness source — the prime indicator b = 1[x prime] — so combining
+moduli incrementally gives ZERO new bits/step over a single modulus.
+
+**Two-closure framing made explicit.**
+
+- (i) "No incremental CRT shortcut" — closed by E1.5/S198 and now
+  sharpened. ANY incremental algorithm tracking k coprime moduli
+  costs the same X · polylog as a single modulus.
+- (ii) "No polylog pi(X) mod m via direct computation" — NOT what
+  E1.5 closes; remains the central open question. CLOSED_PATHS
+  row 244 is the correct anchor.
+
+**Adversarial verdict.** No polylog opening found. The mechanism is
+trivially-extends-to-joint-k from E1.5's per-modulus statement. The
+empirical measurement is a sanity check, not a frontier-shifting
+finding. Closure stands. Wording sharpened in EDGES.md inline.
+
+**Files.** `experiments/information_theory/joint_kmoduli_entropy/`
+(new); `archive/sessions/session198_reverify_e1_5.md` (this synthesis);
+EDGES.md E1.5 entry updated with S198 sharpening and scope-of-closure
+clarification; CLOSED_PATHS.md S198 row appended.
+EOF
+echo "SESSION_INSIGHTS row appended"
+    SESSION_INSIGHTS row appended
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -20
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream_dashboard_results.md
+  [Bash] ls -la experiments/information_theory/joint_kmoduli_entropy/ && find experiments/ -name "*.py" -not -path "*/.lake/*" -not -path "*/__pycache__/*" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head
+    total 28
+    drwxr-xr-x 2 root root 4096 Apr 28 19:19 .
+    drwxr-xr-x 9 root root 4096 Apr 28 19:16 ..
+    -rw-r--r-- 1 root root 9511 Apr 28 19:17 joint_kmoduli_entropy.py
+    -rw-r--r-- 1 root root 8139 Apr 28 19:19 joint_kmoduli_entropy_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/leading_row_search_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/n6_robust_check_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_np_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp_results.md
+    MISSING: experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery_results.md
+    MISSING: experiments/information_theory/liouville_gowers_uk/extension_mu_and_u3_results.md
+  [Bash] echo 198 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    198
+  [Bash] find /apps/aplikacijos/prime-research/__pycache__ /apps/aplikacijos/prime-research/experiments -name "__pycache__" -type d 2>/dev/null | head; find experiments/information_theory/joint_kmoduli_entropy/ -type f
+    /apps/aplikacijos/prime-research/experiments/constructions/brandt_mktp/__pycache__
+    /apps/aplikacijos/prime-research/experiments/sieve/maynard_weight_pointwise/__pycache__
+    /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/__pycache__
+    experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy_results.md
+    experiments/information_theory/joint_kmoduli_entropy/joint_kmoduli_entropy.py
+  [Grep] S198
+    258:**S198 sharpening — joint k-moduli bound.** The per-step **joint**
+    286:> **Scope of closure (S198 clarification):** E1.5 closes only the
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+## Session 198 — Re-verify-closure: E1.5 (the only A-graded edge)
+
+**Self-grade: C** (closure stands; small wording refinement; no algorithmic opening found).
+
+**Target.** E1.5 — `H(pi(x) mod m | pi(x-1) mod m) = h_2(pi(X)/X)`. Closure: "CRT reconstruction cannot win".
+
+**Adversarial verdict.** Closure stands and is sharpened. Three candidate missed angles checked and ruled out:
+- (A) Conditioning on side info `x mod 6`: constant factor only.
+- (B) Larger-step Δ bound: trade-off (more info / step at higher cost), not a shortcut.
+- (C) Direct (non-incremental) computation of pi(X) mod m: NOT closed by E1.5 — this remains the central open question. The closure language conflated "incremental CRT" with all CRT.
+
+**Empirical contribution.** Measured the JOINT k-moduli conditional entropy directly (S69 measured per-modulus marginals only). At X = 10^6, k = 1..4: J/h_2 = 1.0000 to 10^{-4}, decisively rejecting the "k-fold-gain" hypothesis. The k modular chains share a single randomness source (the prime indicator), so combining moduli incrementally gives ZERO new bits/step.
+
+**Sharpened E1.5 wording.** "Linear in k" → **"constant in k"**. Two-closure framing made explicit: (i) incremental CRT closed by E1.5; (ii) non-incremental polylog `pi(X) mod m` is the open question, NOT closed by E1.5 (CLOSED row 244 anchors it).
+
+**Files.** `experiments/information_theory/joint_kmoduli_entropy/{joint_kmoduli_entropy.py, _results.md}`; `archive/sessions/session198_reverify_e1_5.md`; EDGES.md E1.5 sharpened inline; CLOSED_PATHS S198 row appended; SESSION_INSIGHTS S198 entry appended; `.run_state` = 198.
+--- Session ended ---
+Sleeping 60 seconds before next run...

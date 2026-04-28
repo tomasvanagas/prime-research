@@ -146,10 +146,15 @@ A new mathematical object, identity, or structural fact that:
       project, with proof or empirical verification at meaningful scale;
   (b) a working algorithm beating an existing benchmark on at least one
       concrete metric;
-  (c) a Lean 4 proof of a non-trivial theorem (≥ 50 lines of Lean
-      content, no `sorry`, no new `axiom`);
-  (d) a frontier attack from `ATTACK_VECTORS.md` that produced a
+  (c) a frontier attack from `ATTACK_VECTORS.md` that produced a
       *partial positive result* (not just "the technique didn't apply").
+
+**A Lean 4 formalisation alone is NOT A-grade** (was a previous criterion;
+demoted because in practice it became "the only reachable A" and
+distorted the rotation). A Lean proof of a previously-known theorem is
+B-grade rigor work. Lean A-grade requires the *theorem itself* to be
+new mathematical content (per criterion (a)) AND machine-verified.
+Otherwise it's B.
 
 Examples that WOULD qualify:
 - A circuit family computing PRIMES in TC⁰ unconditionally.
@@ -426,6 +431,51 @@ reporting beats inflated success any day at this stage.
   next session can continue, then halt.
 - DO NOT add session-by-session details to this file. Put them in
   `status/SESSION_INSIGHTS.md`.
+
+### Highest-EV mathematical threads (drive `commit` mode)
+
+**STATUS (S202, 2026-04-28):** All three originally-listed threads
+are now CLOSED. The list below is preserved for historical context;
+the next commit slot must NOT pick from it. The next commit thread
+must come from `frontier_gen` mode (auto-fire conditions met:
+A-grade drought S162–S201 ≥ 40 sessions; all three commit threads
+closed) or, failing that, from a direct A-grade attempt on an
+existing open ATTACK_VECTORS entry. Recommended fall-back targets:
+A7 plethysm sub-frame (S192 flagged) or D44 BC endomotive
+Galois-orbit (S163 flagged).
+
+**Thread 1 — S82 invariant-subspace theorem (highest EV). [CLOSED S190]**
+Statement: *the spike eigenvectors of `M^T M` (chi_P MPS-Gram) are
+Dirichlet-character vectors with eigenvalue `~|L(1,χ)|²`.*
+Resolution: closed at S190 (5-session arc, see
+`.commit_state` `prev_thread:s82_invariant_subspace_DONE`). See
+`archive/sessions/session82_c2_spike_eigenvectors.md` for the original
+statement and `session169_commit_s82_invariant_subspace.md` for the
+arc kickoff.
+
+**Thread 2 — Connes-Consani-Moscovici operator amortisation. [CLOSED S202]**
+E3.1 was DOWNGRADED at S53 on amortisation grounds; re-examined
+adversarially across S193–S196 + S202 wrap. Resolution: Connes route
+adds setup K^{22/13} cost over Hiary 2011 with identical per-query
+cost; reduces to Thread 3 (Galway frontier). See `archive/sessions/
+session193_commit_connes_amortisation.md` through
+`session202_commit_connes_amortisation.md`.
+
+**Thread 3 — Explicit-formula at fixed precision (Galway frontier). [CLOSED S195+S196]**
+*K = polylog(x) sufficient in distribution rather than worst-case?*
+Resolution: closed conditionally on Montgomery pair-correlation
+random-phase heuristic across five regimes (per-query, amortised,
+CCM-spectral, in-distribution, log-Gaussian-smoothed) by the S202
+unified theorem; K*(x, p, h) = Θ̃(x) for any p ∈ (0, 1). Open
+falsifiers acknowledged but not needed for closure: non-Gaussian
+kernels, x ≥ 10^9, rigorous GUE pair-correlation bound, cross-x
+amortisation. See S195 + S196 syntheses; unified in S202.
+
+`commit` mode still locks 5 consecutive sessions on ONE thread; the
+state is in `./.commit_state` (currently `status:DONE`). **Do NOT
+pivot threads mid-session.** When the next commit slot runs, fresh
+threads should already exist in `.commit_state` via `frontier_gen`
+mode; if not, escalate to user for manual thread selection.
 
 ### Autonomy invariants (NEW — required for unattended operation)
 

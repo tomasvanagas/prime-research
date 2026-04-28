@@ -672,6 +672,289 @@ ENDPROMPT
 
 
 # ============================================================
+# PROMPT: Commit Mode (5-session lock on one of three highest-EV
+# mathematical threads)
+# ============================================================
+PROMPT_COMMIT=$(cat << 'ENDPROMPT'
+# COMMIT SESSION — Multi-Session Lock on One Mathematical Thread
+
+The project has accumulated 60+ B-grade negative-shape closures and
+zero A-grades over 80+ sessions. The framework is producing motion
+without progress. **Commit mode breaks the pattern by forcing 5
+consecutive sessions on ONE of three threads with non-trivial
+breakthrough probability.**
+
+# THE THREE THREADS (priority order)
+
+## Thread 1 — S82 invariant-subspace theorem
+Statement (already written in S82): *"the spike eigenvectors of M^T M
+are Dirichlet character vectors with eigenvalue `~|L(1,χ)|²`."*
+
+If proved:
+- Bridges E2.1 (spectral) ↔ E1.5 (information-theoretic)
+- Identifies the spike sector with `L(1,χ)` values
+- Reduces polylog problem from "compute π(x)" to "compute the bulk"
+- 1-page character-theory proof, single session feasible
+
+Read `archive/sessions/session82_c2_spike_eigenvectors.md` for the
+exact theorem statement and the empirical data backing it. The first
+session attacks the proof; subsequent sessions verify, extend to
+larger d, or pursue the algorithmic implications.
+
+## Thread 2 — Connes-Consani-Moscovici operator amortisation
+E3.1 was DOWNGRADED at S53. The underlying observation — 50 Riemann
+zeros from primes < 13 — is empirically extraordinary compression.
+Re-examine S53's closure adversarially: was the amortisation argument
+decisive or premature? Can the operator construction be shared across
+many π(x) queries to drive per-query cost down?
+
+Read `archive/sessions/session53_connes_operator_scaling.md` and
+`literature/state_of_art_2026.md §2.5b`. First session re-verifies
+S53. If the closure has missed angles, subsequent sessions chase them.
+
+## Thread 3 — Explicit formula at fixed precision (Galway frontier)
+`π(x) = R(x) - Σ_ρ R(x^ρ) + lower order`. Folklore: K = Θ(x^{1/2})
+zeros suffice for π(x) ± 1 worst case. **What if K = polylog(x)
+suffices in distribution rather than worst-case?** Empirically measure:
+pick test x values, compute partial sums with K = log x, log² x, log³ x
+zeros, examine the error band.
+
+Cross-domain ingredient: Galway 2004 unconditional algorithm + GRH
+explicit formula. First session sets up the computation; subsequent
+sessions push to larger x and characterise the error distribution.
+
+# COMMITMENT DISCIPLINE (ENFORCED)
+
+`./.commit_state` is the canonical record. It contains:
+```
+thread:s82_invariant_subspace   (or connes_amortisation, or galway_frontier)
+sessions_used:N                  (incremented each commit session, 0..5)
+session_history:S<N1>,S<N2>,...
+```
+
+# YOUR JOB THIS SESSION
+
+1. Read `.commit_state`. If `sessions_used == 0` (fresh thread): read
+   the thread's reference materials, lay out the attack plan, do the
+   first concrete step. If `sessions_used > 0`: read the previous
+   commit-session syntheses (look for `sessionNN_commit_*.md`) and
+   continue the work from where it left off.
+2. **Do NOT pivot to a different thread mid-session.** If the thread
+   is genuinely blocked (proof step requires a fact you can't access,
+   experiment requires data you don't have), document the block and
+   stop — but do not switch threads. The block itself is information.
+3. Increment `sessions_used` in `.commit_state` BEFORE finishing.
+4. Save synthesis as `archive/sessions/sessionNN_commit_<thread>.md`.
+
+# WHAT QUALIFIES AS PROGRESS
+
+Per CLAUDE.md grading:
+- A-grade: thread-level positive result (theorem proved, algorithm
+  built and benchmarked, structural opening identified). The
+  three threads are specifically chosen so that A-grade output is
+  algorithmically meaningful.
+- B-grade: substantive progress (proof step closed, computational
+  experiment run, structural sub-claim verified or refuted).
+- C-grade: housekeeping or trivial extension.
+- F-grade: pivoted to another thread, or no work done.
+
+# IF SESSIONS_USED REACHES 5
+
+Last commit session must:
+- Synthesise the 5-session arc into a final result
+- Update `.commit_state` to mark thread as DONE (`sessions_used:5_final`)
+- Recommend the next thread (if breakthrough not achieved) OR declare
+  victory (if it was)
+- Next commit slot picks the next thread in priority order
+
+# RULES
+- DO NOT modify run.sh.
+- DO NOT pivot threads mid-session. Commit means commit.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Re-verify Closure Mode (adversarial review of previously-
+# closed edges that have positive structural content)
+# ============================================================
+PROMPT_REVERIFY=$(cat << 'ENDPROMPT'
+# RE-VERIFY-CLOSURE SESSION — Adversarial Review
+
+Many of the project's 60+ closures may have been conservative. Some
+edges that were filed as "closed" actually contain *positive*
+structural content (a non-trivial fact about π(x)) that the closing
+agent dismissed as algorithmically unusable. This mode picks one such
+closure and adversarially asks: *"the prior closure was conservative —
+find the angle that was missed."*
+
+# YOUR TARGET
+
+Pick ONE previously-closed edge that contains a positive structural
+fact, ranked by potential algorithmic content:
+
+1. **E3.1 — Connes-Consani-Moscovici operator** (downgraded S53):
+   50 zeros from primes < 13. S53 closed it on amortisation grounds.
+   Re-examine: is the amortisation argument decisive?
+2. **E1.5 — h_2(π(X)/X) entropy bound**: the only A-graded edge in
+   the project. Does the entropy bound have algorithmic content
+   beyond what's been extracted?
+3. **E2.13 — Gowers `U^k`(χ_P) = HL singular series**: the closure
+   says "no information beyond HL". But HL itself is computable in
+   polylog. Is there an algorithmic exploitation?
+4. **E2.14 — Anderson Lyapunov(χ_P) = HL spectral signature**: same
+   question as E2.13 in spectral form.
+5. **E6.6 — Aggarwal binary search**: makes O(log x) calls to a π(x)
+   sub-routine. What if the sub-routine is itself replaced by a
+   polylog approximation tolerating bounded error?
+6. Any other closed edge from EDGES.md you find a missed angle in.
+
+# PRE-WORK
+1. Read the closing session's synthesis carefully. Identify the
+   *specific* argument the closing agent used to mark it closed.
+2. Read the edge's empirical / theoretical content in EDGES.md.
+3. Read CLOSED_PATHS.md row for the closure. Note edge IDs cited.
+
+# THE ADVERSARIAL FRAME
+
+Your job is NOT to confirm the closure. Your job is to find the
+*missed angle*. Specific patterns to look for:
+- The closure used setup-cost as the killer. Can the setup be amortised
+  across queries?
+- The closure said "this requires knowing primes". Can it tolerate
+  bounded prime-knowledge error?
+- The closure said "no algorithmic content beyond HL". Can the
+  HL-derived structure be exploited algorithmically?
+- The closure was a B-grade refinement. Was the parent claim itself
+  premature?
+- The empirical data was at small N. Does the structural pattern
+  shift at larger N?
+
+# POSSIBLE OUTCOMES
+
+- **A-grade**: found a genuinely missed angle that opens an
+  algorithmic path. Edit the edge entry in EDGES.md with a
+  "REOPENED" note and pointer to the new route. Update CLOSED_PATHS
+  to remove or annotate the closure.
+- **B-grade**: examined the closure carefully, found it solid but
+  with an interesting refinement (a sharper version of the closure
+  argument, or a generalisation). Update the edge in place.
+- **C-grade**: closure stands, no missed angle. Document why the
+  adversarial probe failed.
+- **F-grade**: superficial review, didn't actually attack the closure.
+
+# CLOSE
+- If A-grade: write `archive/sessions/sessionNN_reverify_<edge>.md`
+  with the missed angle in detail. Tag the edge as REOPENED.
+- Otherwise: standard session synthesis with the verdict.
+
+# RULES
+- DO NOT modify run.sh.
+- The role is ADVERSARIAL. Confirmation must come from inability to
+  break the closure, not from agreement with the original session.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
+# PROMPT: Paradigm-Shift Mode (no cross-domain imports allowed)
+# ============================================================
+PROMPT_PARADIGM_SHIFT=$(cat << 'ENDPROMPT'
+# PARADIGM-SHIFT SESSION — No Cross-Domain Imports Permitted
+
+The project has imported 30+ cross-domain techniques (Gowers norms,
+Anderson localisation, DPP, persistent homology, Pollicott-Ruelle,
+CTQW, GCT, Hairer-KPZ, Newman flatness, Mahler measure, free probability,
+microlocal analysis, Berkovich spaces, ...). Each one collapsed to
+the same wall: HL singular series mod q + Möbius orthogonality.
+
+This mode is the inverse: **build a NEW mathematical object using
+ONLY existing project content**. No Wikipedia. No arXiv. No new
+named techniques. Just the project's accumulated edges + first
+principles.
+
+# RULES (HARD CONSTRAINTS)
+
+- **No WebFetch.** No reading Wikipedia, arXiv, papers, blog posts.
+- **No new named cross-domain techniques.** If you import a technique,
+  it must already appear as USED in `CROSS_DOMAIN_TECHNIQUES.md`.
+- **No new ATTACK_VECTORS entries.** Frontier generation is forbidden.
+- **No reading session syntheses outside this project.** Only EDGES.md,
+  CLOSED_PATHS.md, the project's own session syntheses, and code in
+  `experiments/`.
+
+If you find yourself wanting to look up a technique, that's the
+session failing. Stop and reason from the edges you already have.
+
+# YOUR JOB
+
+Read EDGES.md fully. Pick 2-3 edges that have *positive* structural
+content (they assert a fact about π(x), not a wall). Examples:
+- E1.5 (h_2 entropy of π(X)/X mod m)
+- E1.6 (A⊕C₃ bisection invariant 0.537 bits)
+- E2.1 (MPS bond-dim formula = phi(W)·W^{d-j-1}+1)
+- E3.1 (Connes operator: 50 zeros from primes < 13)
+- E6.5 (Galway zero-truncation)
+- E6.6 (Aggarwal binary search)
+- E6.7 (HKM at (8/15, 1/3))
+
+Now build a *new mathematical object* that exploits the chosen edges.
+Forms it might take:
+- A new explicit formula for π(x) using existing structural facts
+  (don't import a new technique — recombine what's known)
+- A new computable invariant of π(x) that depends on the edges in a
+  novel way
+- A new structural identity composing 2-3 edges via direct calculation
+- A new lower-bound argument that uses the edges' positive content
+  rather than their negative content
+
+The output must be:
+- A precise mathematical statement (not a vague concept)
+- Code that demonstrates / verifies the construction at small N
+- A pre-stated falsification criterion
+- An honest assessment of whether the construction is novel
+
+# WHY THIS MODE EXISTS
+
+70% of the project's recent sessions have been "import technique X,
+apply to χ_P, observe X reduces to HL, file as B." This mode bans the
+import-and-reduce pattern. The expected outcome is that you fail to
+build anything new — primes really are HL-then-pseudorandom and
+nothing else. **A failure here is informative**: it confirms the
+exhaustion of recombination.
+
+But the small chance that 2-3 edges interact in a way nobody has
+calculated would be A-grade content with no cross-domain bait.
+
+# OUTCOMES
+
+- **A-grade**: novel construction with provably new mathematical
+  content (not a renaming of an existing edge). Algorithmic content
+  is a bonus, not a requirement.
+- **B-grade**: construction collapses to an existing edge, but the
+  collapse argument is itself a structural insight (a unification of
+  two edges previously held separate).
+- **C-grade**: construction equals an existing edge by direct
+  identification. File as DUPLICATE-PLUS.
+- **F-grade**: didn't actually try (e.g. tried to import a technique).
+
+# CLOSE
+- `experiments/constructions/<name>/` with code, results.md, definition.md
+- Document: "no external technique imported" as part of the discipline
+- Self-grade A/B/C/F per the above
+
+# RULES
+- DO NOT modify run.sh.
+- DO NOT use WebFetch / WebSearch.
+- DO NOT add new ATTACK_VECTORS entries.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
 # INFRASTRUCTURE
 # ============================================================
 # Each run gets its own LOGFILE and JSONFILE — set inside the main
@@ -699,7 +982,21 @@ echo "Per-run logs: ./archive/CLAUDE_OUTPUTS/claude_output_<timestamp>_run<N>.{l
 # ATTACK_VECTORS.md. Two modes (construction, arc) target structured
 # B-grade work. One mode (lean) targets verification artefacts. One
 # mode (novelty) is the B-grade fallback for shorter sessions.
-MODES=("frontier" "cross_domain" "construction" "arc" "lean" "wild_swing" "novelty" "critique")
+# Rotation reweighted to push toward breakthrough threads:
+# - `commit` slot fires every 5 runs (forces multi-session commitment
+#   to one of three highest-EV mathematical threads)
+# - `reverify` slot fires every 10 runs (adversarial review of
+#   previously-closed positive-content edges)
+# - `paradigm_shift` slot fires every 10 runs (no-imports invention
+#   constraint)
+# - `lean` REMOVED from rotation (Lean L1 is rigor-A only and was
+#   eating sessions on corner cases without finishing the proof)
+# - `frontier_gen` REMOVED from autonomy override (it generated
+#   motion-without-progress; if the open-AV count drops genuinely
+#   low, frontier still fires from rotation)
+# Override layer (compute_override) supersedes this rotation when
+# .commit_state has sessions remaining or when verification fires.
+MODES=("commit" "frontier" "cross_domain" "construction" "arc" "wild_swing" "reverify" "novelty" "paradigm_shift" "critique")
 
 
 # ============================================================
@@ -824,9 +1121,30 @@ compute_override() {
     local breakthrough_count=0
     [ -f "$BREAKTHROUGH_FILE" ] && breakthrough_count=$(cat "$BREAKTHROUGH_FILE" 2>/dev/null || echo 0)
 
+    # Read commit state — if a thread is mid-commitment, it overrides
+    # nearly everything else (only verification beats commitment).
+    local commit_thread=""
+    local commit_used=0
+    if [ -f "./.commit_state" ]; then
+        commit_thread=$(grep -m1 "^thread:" ./.commit_state 2>/dev/null | cut -d: -f2)
+        commit_used=$(grep -m1 "^sessions_used:" ./.commit_state 2>/dev/null | cut -d: -f2)
+        # Strip "_final" suffix if present (thread completed)
+        case "$commit_used" in
+            *_final*) commit_used=5 ;;
+        esac
+        # Default to 0 if unparseable
+        case "$commit_used" in
+            ''|*[!0-9]*) commit_used=0 ;;
+        esac
+    fi
+    local commit_active=0
+    if [ -n "$commit_thread" ] && [ "$commit_used" -lt 5 ]; then
+        commit_active=1
+    fi
+
     # Decision tree (priority order)
     # Breakthrough verifications and routine A-grade verify always fire
-    # — these are ungated by cooldown because correctness > cooldown.
+    # — correctness > everything else.
     if [ "$breakthrough_count" -ge 1 ] && [ "$breakthrough_count" -lt 2 ]; then
         # Mid-verification: previous breakthrough claim awaiting 2nd verify
         override="verify"
@@ -840,23 +1158,20 @@ compute_override() {
         # Routine A-grade verification (not a breakthrough claim)
         override="verify"
         echo "$latest_session" > "$VERIFY_TARGET_FILE"
-    # frontier_gen triggers gated by cooldown to avoid flapping.
-    # If meta sessions (frontier_gen / verify) have fired in last 5,
-    # prefer to let production sessions attack the resulting state.
-    elif [ "$open_av" -lt 4 ]; then
-        # Frontier exhaustion (always fire — frontier truly bare)
-        override="frontier_gen"
-    elif [ "$f_cascade" = "1" ] && [ "$recent_meta" -eq 0 ]; then
-        # Two F's in a row, no recent meta intervention
-        override="frontier_gen"
-    elif [ "$a_count" -eq 0 ] && [ "$RUN" -gt 20 ] && [ "$recent_meta" -eq 0 ]; then
-        # 20-session A-grade scarcity, no recent intervention
-        override="frontier_gen"
+    elif [ "$commit_active" = "1" ]; then
+        # Active commit thread: force commit mode, no other override
+        override="commit"
     fi
+    # NOTE: frontier_gen scarcity / F-cascade triggers REMOVED.
+    # frontier_gen still appears in the rotation for default-cycle
+    # firing, but autonomy no longer forces it on A-grade scarcity —
+    # that just produces motion-without-progress. The commit thread
+    # mechanism replaces it.
 
     # Telemetry to stderr (won't pollute stdout return value)
     {
         echo "[autonomy] open_AV=$open_av  A_in_20=$a_count  last2=$last2  breakthrough_pending=$breakthrough_count  recent_meta=$recent_meta"
+        echo "[autonomy] commit_thread='$commit_thread'  sessions_used=$commit_used  commit_active=$commit_active"
         if [ -n "$override" ]; then
             echo "[autonomy] OVERRIDE → $override"
         fi
@@ -917,6 +1232,15 @@ while true; do
             ;;
         verify)
             CURRENT_PROMPT="$PROMPT_VERIFY"
+            ;;
+        commit)
+            CURRENT_PROMPT="$PROMPT_COMMIT"
+            ;;
+        reverify)
+            CURRENT_PROMPT="$PROMPT_REVERIFY"
+            ;;
+        paradigm_shift)
+            CURRENT_PROMPT="$PROMPT_PARADIGM_SHIFT"
             ;;
     esac
 
@@ -1080,6 +1404,6 @@ assist_f.close()
 
     RUN=$((RUN + 1))
     echo "$RUN" > "$STATE_FILE"
-    echo "Sleeping 5 seconds before next run..." | tee -a "$LOGFILE"
-    sleep 5
+    echo "Sleeping 60 seconds before next run..." | tee -a "$LOGFILE"
+    sleep 60
 done

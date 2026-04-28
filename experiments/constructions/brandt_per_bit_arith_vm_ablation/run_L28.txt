@@ -1,0 +1,205 @@
+==============================================================================
+C3.a.iv -- Arithmetic-primitive ABLATION of bounded-Kt VM
+==============================================================================
+
+L_MAX_EXT = 28 bits (7 nibbles), T_MAX = 4096, INT_CAP = 1000000000, INF = 41
+
+Targets: 18 per-bit cells over N = [3, 4, 5, 6]
+
+--- Ablation: baseline  forbidden = []
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+    L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+    L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   6.46 s)
+    L = 28 bits  (268,435,456 total, 137,124,626 simulated   t = 114.20 s)
+    145,569,062 sims in 121.0s
+
+--- Ablation: drop_LOG2  forbidden = ['LOG2']
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          54 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,       1,100 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      20,040 simulated   t =   0.01 s)
+    L = 20 bits  (  1,048,576 total,     344,432 simulated   t =   0.22 s)
+    L = 24 bits  ( 16,777,216 total,   5,719,584 simulated   t =   4.50 s)
+    L = 28 bits  (268,435,456 total,  92,941,760 simulated   t =  75.89 s)
+    99,026,972 sims in 80.6s
+
+--- Ablation: drop_LI  forbidden = ['LI']
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          54 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,       1,100 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      20,040 simulated   t =   0.01 s)
+    L = 20 bits  (  1,048,576 total,     344,432 simulated   t =   0.21 s)
+    L = 24 bits  ( 16,777,216 total,   5,719,584 simulated   t =   4.44 s)
+    L = 28 bits  (268,435,456 total,  92,941,760 simulated   t =  72.63 s)
+    99,026,972 sims in 77.3s
+
+--- Ablation: drop_DIV_LOG  forbidden = ['DIV_LOG']
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          54 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,       1,100 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      20,040 simulated   t =   0.01 s)
+    L = 20 bits  (  1,048,576 total,     344,432 simulated   t =   0.21 s)
+    L = 24 bits  ( 16,777,216 total,   5,719,584 simulated   t =   3.82 s)
+    L = 28 bits  (268,435,456 total,  92,941,760 simulated   t =  71.91 s)
+    99,026,972 sims in 76.0s
+
+--- Ablation: drop_GEO_SUM  forbidden = ['GEO_SUM']
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          54 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,       1,100 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      20,040 simulated   t =   0.02 s)
+    L = 20 bits  (  1,048,576 total,     344,432 simulated   t =   0.28 s)
+    L = 24 bits  ( 16,777,216 total,   5,719,584 simulated   t =   4.17 s)
+    L = 28 bits  (268,435,456 total,  92,941,760 simulated   t =  74.41 s)
+    99,026,972 sims in 78.9s
+
+--- Ablation: only_LI  forbidden = ['LOG2', 'DIV_LOG', 'GEO_SUM']
+    L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+    L =  8 bits  (        256 total,          46 simulated   t =   0.00 s)
+    L = 12 bits  (      4,096 total,         804 simulated   t =   0.00 s)
+    L = 16 bits  (     65,536 total,      12,680 simulated   t =   0.01 s)
+    L = 20 bits  (  1,048,576 total,     190,672 simulated   t =   0.14 s)
+    L = 24 bits  ( 16,777,216 total,   2,804,256 simulated   t =   1.85 s)
+    L = 28 bits  (268,435,456 total,  40,910,144 simulated   t =  27.68 s)
+    43,918,604 sims in 29.7s
+
+    N    J    zone    J*   id0      baseline     drop_LOG2       drop_LI  drop_DIV_LOG  drop_GEO_SUM       only_LI
+  ----------------------------------------------------------------------------------------------------------------
+    3    0    hard     3            24            24            24            24            27            27      
+    3    1    hard     3            29            29            29            29            29            29      
+    3    2    easy     3            23            23            23            23            23            23      
+    4    0    hard     3            36            36            41*           41*           36            41*     
+    4    1    hard     3            37            41*           41*           37            37            41*     
+    4    2    easy     3            33            33            33            33            33            33      
+    4    3    easy     3     Y      10            10            10            10            10            10      
+    5    0    hard     4            41*           41*           41*           41*           41*           41*     
+    5    1    hard     4            41*           41*           41*           41*           41*           41*     
+    5    2    hard     4            37            37            41*           41*           37            41*     
+    5    3    easy     4            33            33            33            33            33            33      
+    5    4    easy     4     Y      10            10            10            10            10            10      
+    6    0    hard     5            41*           41*           41*           41*           41*           41*     
+    6    1    hard     5            41*           41*           41*           41*           41*           41*     
+    6    2    hard     5            41*           41*           41*           41*           41*           41*     
+    6    3    easy     5            41*           41*           41*           41*           41*           41*     
+    6    4    easy     5            36            36            37            36            36            36      
+    6    5    easy     5     Y      10            10            10            10            10            10      
+
+PROGRAMS FOUND in each ablation (compressed cells):
+
+  >>> baseline
+    N=3, J=0 (hard)           Kt =  24  L = 16 bits, steps =   255   prog: GEO_SUM, SHR1, EMIT_S, PUSH_N
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   317   prog: DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+    N=4, J=0 (hard)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, PUSH0, DIV_LOG, DUP, LI, EMIT_S
+    N=4, J=1 (hard)           Kt =  37  L = 28 bits, steps =   447   prog: LOG2, ADD, DUP, LI, LOG2, EMIT_S, PUSH_N
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=2 (hard)           Kt =  37  L = 28 bits, steps =   446   prog: DIV_LOG, LI, SHR1, SHR1, EMIT_S, PUSH_N, PUSH0
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+  >>> drop_LOG2
+    N=3, J=0 (hard)           Kt =  24  L = 16 bits, steps =   255   prog: GEO_SUM, SHR1, EMIT_S, PUSH_N
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   317   prog: DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+    N=4, J=0 (hard)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, PUSH0, DIV_LOG, DUP, LI, EMIT_S
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=2 (hard)           Kt =  37  L = 28 bits, steps =   446   prog: DIV_LOG, LI, SHR1, SHR1, EMIT_S, PUSH_N, PUSH0
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+  >>> drop_LI
+    N=3, J=0 (hard)           Kt =  24  L = 16 bits, steps =   255   prog: GEO_SUM, SHR1, EMIT_S, PUSH_N
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   317   prog: DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   128   prog: EMIT_S, PUSH_N, GEO_SUM, EMIT_S
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   381   prog: GEO_SUM, DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, INC, LOG2, DUP, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  37  L = 28 bits, steps =   442   prog: EMIT_S, GEO_SUM, PUSH_N, ADD, DUP, LOG2, PUSH0
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+  >>> drop_DIV_LOG
+    N=3, J=0 (hard)           Kt =  24  L = 16 bits, steps =   255   prog: GEO_SUM, SHR1, EMIT_S, PUSH_N
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   319   prog: INC, LOG2, INC, EMIT_S, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+    N=4, J=1 (hard)           Kt =  37  L = 28 bits, steps =   447   prog: LOG2, ADD, DUP, LI, LOG2, EMIT_S, PUSH_N
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+  >>> drop_GEO_SUM
+    N=3, J=0 (hard)           Kt =  27  L = 20 bits, steps =   106   prog: EMIT_S, EMIT_S, PUSH_N, PUSH1, EMIT_S
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   317   prog: DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+    N=4, J=0 (hard)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, PUSH0, DIV_LOG, DUP, LI, EMIT_S
+    N=4, J=1 (hard)           Kt =  37  L = 28 bits, steps =   447   prog: LOG2, ADD, DUP, LI, LOG2, EMIT_S, PUSH_N
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=2 (hard)           Kt =  37  L = 28 bits, steps =   446   prog: DIV_LOG, LI, SHR1, SHR1, EMIT_S, PUSH_N, PUSH0
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+  >>> only_LI
+    N=3, J=0 (hard)           Kt =  27  L = 20 bits, steps =   106   prog: EMIT_S, EMIT_S, PUSH_N, PUSH1, EMIT_S
+    N=3, J=1 (hard)           Kt =  29  L = 20 bits, steps =   319   prog: INC, SHR1, SHR1, EMIT_S, PUSH_N
+    N=3, J=2 (easy)           Kt =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+    N=4, J=2 (easy)           Kt =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+    N=4, J=3 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=5, J=3 (easy)           Kt =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+    N=5, J=4 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+    N=6, J=4 (easy)           Kt =  36  L = 28 bits, steps =   224   prog: EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S
+    N=6, J=5 (easy) /trivial  Kt =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+ABLATION DELTA TABLE (Kt change vs baseline; '+' means worse):
+  N J  zone     baseline       drop_LOG2         drop_LI    drop_DIV_LOG    drop_GEO_SUM         only_LI
+  ------------------------------------------------------------------------------------------------------
+  3 0  hard      24                 =               =               =            27(+3)          27(+3)
+  3 1  hard      29                 =               =               =               =               =  
+  3 2  easy      23                 =               =               =               =               =  
+  4 0  hard      36                 =              INF*            INF*             =              INF*
+  4 1  hard      37                INF*            INF*             =               =              INF*
+  4 2  easy      33                 =               =               =               =               =  
+  4 3  easy      10                 =               =               =               =               =  
+  5 0  hard      41*               INF*            INF*            INF*            INF*            INF*
+  5 1  hard      41*               INF*            INF*            INF*            INF*            INF*
+  5 2  hard      37                 =              INF*            INF*             =              INF*
+  5 3  easy      33                 =               =               =               =               =  
+  5 4  easy      10                 =               =               =               =               =  
+  6 0  hard      41*               INF*            INF*            INF*            INF*            INF*
+  6 1  hard      41*               INF*            INF*            INF*            INF*            INF*
+  6 2  hard      41*               INF*            INF*            INF*            INF*            INF*
+  6 3  easy      41*               INF*            INF*            INF*            INF*            INF*
+  6 4  easy      36                 =            37(+1)             =               =               =  
+  6 5  easy      10                 =               =               =               =               =  
+
+VERDICT ANALYSIS:
+  Easy-zone (J in [ceil(N/2), J*)) cells COMPRESSED in baseline: [(3, 2), (4, 2), (5, 3), (6, 4)]
+
+  drop_LOG2       : easy-zone cells now SATURATED = []
+  drop_LI         : easy-zone cells now SATURATED = []
+  drop_DIV_LOG    : easy-zone cells now SATURATED = []
+  drop_GEO_SUM    : easy-zone cells now SATURATED = []
+  only_LI         : easy-zone cells now SATURATED = []
+
+  --> F4: no single primitive is strictly necessary (all easy-zone cells survive every single-drop).
+
+  Per-cell hard-zone / J* trivial impact (informational):
+    N=4, J=0 (hard, baseline 36): drop_LI=SAT, drop_DIV_LOG=SAT, only_LI=SAT
+    N=4, J=1 (hard, baseline 37): drop_LOG2=SAT, drop_LI=SAT, only_LI=SAT
+    N=5, J=2 (hard, baseline 37): drop_LI=SAT, drop_DIV_LOG=SAT, only_LI=SAT
+
+==============================================================================

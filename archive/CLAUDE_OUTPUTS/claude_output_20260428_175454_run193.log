@@ -1,0 +1,716 @@
+[autonomy] Default mode 'cross_domain' overridden by 'commit'
+=== Run #193 — Mode: commit — Tue Apr 28 17:54:54 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:connes_amortisation
+    sessions_used:2
+    session_history:S193
+    status:in_progress
+    prev_thread:s82_invariant_subspace_DONE
+    last_synthesis:archive/sessions/session193_commit_connes_amortisation.md
+    slot1_summary:S193 sharper closure of E3.1 - Connes K^3 dominated by Hiary K^{17/13} on setup; per-query identical (both O(K) explicit-formula sum); Thread 2 reduces to Thread 3
+    next_action:slot 2/5 extend K_sustained(x) measurement to x in 10^6..10^8 using 8000 cached zeros; characterise distributional fluctuation
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session193_commit_connes_amortisation.md
+    1	# Session 193 — commit thread 2 step 1: Connes operator amortisation
+    2	
+    3	**Date:** 2026-04-28
+    4	**Mode:** commit (Thread 2 / Connes-Consani-Moscovici amortisation)
+    5	**Slot:** 1 of 5
+    6	**Prior thread:** Thread 1 (S82 invariant-subspace) closed at S190 DONE.
+    7	**Self-grade:** **B** (substantive refinement of an existing closure; sharpens
+    8	S53's E3.1 closure with a structurally cleaner argument that survives
+    9	the amortisation challenge).
+    10	
+    11	## Mission
+    12	
+    13	The commit prompt asks: re-examine S53's closure of E3.1 (CCM zeta
+    14	spectral triple as polylog architecture) **adversarially**. Was the
+    15	amortisation argument decisive or premature? Can the operator
+    16	construction be shared across many π(x) queries to drive per-query
+    17	cost down to polylog?
+    18	
+    19	## Adversarial finding (one paragraph)
+    20	
+    21	S53's argument 2 — "diagonalisation costs O(K³) and is the dominant
+    22	kernel-independent cost" — was framed as **per-query** cost. Under
+    23	amortisation (compute the operator's spectrum once, serve many π(x)
+    24	queries), the per-query cost reduces to the K-term explicit-formula
+    25	sum, O(K). The setup K³ is paid once. **However**, Galway 2004 +
+    26	Hiary computes the same K zeros at setup cost O(K^{17/13}) and
+    27	serves the same per-query cost O(K). Both routes are subject to the
+    28	identical K(x) ≈ √x worst-case requirement (Riemann-von Mangoldt /
+    29	explicit-formula floor). The Connes route is therefore **strictly
+    30	dominated by Galway** in every cost regime — by a factor of K^{22/13}
+    ... (263 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/
+    connes_amortisation.py
+    connes_amortisation_data.csv
+    connes_amortisation_results.md
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    1	"""
+    2	Connes-Consani-Moscovici operator amortisation: per-query lower bound.
+    3	
+    4	Thread 2 (commit S193, Connes amortisation).
+    5	
+    6	S53 closed Chain A on a per-query argument: building the operator costs
+    7	at least O(K^3) for K zeros, exceeding any plausible saving over O(1)
+    8	queries. S190 asked: is the construction actually amortisable across
+    9	k = polylog(N) queries with shared spectral data? If so, per-query
+    10	cost = T_setup/k + T_query and the polylog regime opens IF
+    11	T_setup <= N^c * k for small c.
+    12	
+    13	S193 adversarial finding: the answer is NO, but the structural reason
+    14	is sharper than S53's. Even with FREE amortised access to any zero,
+    15	the per-query cost is bounded below by the EXPLICIT FORMULA truncation
+    16	T(x), which is K_min(x) >= x^{1/2-eps} / log x by Riemann-von Mangoldt.
+    17	
+    18	This script empirically confirms K_min(x) scales as x^{1/2} for the
+    19	worst-case error |pi_explicit(x; K) - pi(x)| <= 0.5 threshold.
+    20	
+    21	The bottleneck is NOT operator construction. It is the bit-content of
+    22	the explicit-formula truncation. Thread 2's amortisation question
+    23	therefore reduces to Thread 3's (Galway frontier) "is K = polylog
+    24	sufficient in distribution?" question.
+    25	
+    26	Falsifiable: if K_min(x) is observed to scale slower than x^{1/2-eps}
+    27	across the tested x values, the structural argument fails.
+    28	"""
+    29	
+    30	from __future__ import annotations
+    ... (275 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md
+    1	# Connes operator amortisation — results
+    2	
+    3	**Status:** REFINES the closure of E3.1 (Chain A) from S53.
+    4	**Mode:** B-grade structural refinement. The original S53 closure stands;
+    5	the adversarial re-examination under amortisation produces a sharper,
+    6	cleaner closure argument that survives the "amortise diagonalisation
+    7	across many queries" challenge.
+    8	**Date:** 2026-04-28 (Session 193, commit thread 2 / Connes).
+    9	**Script:** `connes_amortisation.py`.
+    10	
+    11	## Question
+    12	
+    13	S53 (CLOSED_PATHS row 696) closed E3.1 with three arguments. The
+    14	dominant kernel-independent argument was:
+    15	
+    16	> **S53 argument 2:** Even granting CCM's published per-zero accuracy
+    17	> at face value, spectrum extraction from an N×N truncation costs
+    18	> O(N³) = O(K³) for K eigenvalues. For K = √x, this is O(x^{3/2}) —
+    19	> strictly worse than the existing O(x^{1/2+ε}) zero-summation barrier.
+    20	
+    21	Thread 2's adversarial challenge: **does this argument survive
+    22	amortisation?** Specifically, the operator's spectrum is *universal*
+    23	(zeta zeros do not depend on x). One could in principle diagonalise
+    24	once, cache K eigenvalues, and serve many π(x) queries via the
+    25	explicit-formula partial sum at per-query cost O(K).
+    26	
+    27	If amortisation collapses argument 2, only S53's argument 1 (rank-one
+    28	parameter count) and argument 3 (CCM's geometric error growth) remain.
+    29	
+    30	## Adversarial finding
+    ... (146 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_data.csv
+    1	x,pi_x,K_sustained,K_first_eps05,sqrt_x,Ksust_over_sqrt_x
+    2	100.0,25,3,3,10.0,0.3
+    3	1000.0,168,77,2,31.622776601683793,2.4349537983296523
+    4	5000.0,669,40,8,70.71067811865476,0.565685424949238
+    5	10000.0,1229,-1,24,100.0,nan
+    6	50000.0,5133,138,42,223.60679774997897,0.617154761789942
+    7	
+  [Bash] ls /apps/aplikacijos/prime-research/data/ | grep -i zeta
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_2000.txt
+    zeta_zeros_300.txt
+    zeta_zeros_500.txt
+    zeta_zeros_8000.txt
+  [Bash] wc -l /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt; head -3 /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt; tail -3 /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt
+    8000 /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt
+    14.1347251417346937904572519836
+    21.0220396387715549926284795939
+    25.0108575801456887632137909926
+    8146.2512838101
+    8147.37555866397
+    8148.18840580463
+Let me examine what's available and plan the slot 2 extension.
+  [Bash] python3 -c "
+import time
+import mpmath as mp
+mp.mp.dps = 20
+t0 = time.time()
+for _ in range(100):
+    z = mp.ei(mp.mpc(0.5, 1000)*5)
+print('mpmath dps=20 ei x100:', time.time()-t0, 's')
+mp.mp.dps = 30
+t0 = time.time()
+for _ in range(100):
+    z = mp.ei(mp.mpc(0.5, 1000)*5)
+print('mpmath dps=30 ei x100:', time.time()-t0, 's')
+"
+
+    mpmath dps=20 ei x100: 0.006479978561401367 s
+    mpmath dps=30 ei x100: 0.006840944290161133 s
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -i commit | head -10; echo "---"; ls /apps/aplikacijos/prime-research/archive/sessions/ | sort -V | tail -10
+    session165_commit_s82_invariant_subspace.md
+    session166_commit_s82_invariant_subspace.md
+    session168_commit_s82_invariant_subspace.md
+    session169_commit_s82_invariant_subspace.md
+    session190_commit_s82_invariant_subspace.md
+    session193_commit_connes_amortisation.md
+    ---
+    session187_verify.md
+    session188_verify.md
+    session189_verify.md
+    session190_commit_s82_invariant_subspace.md
+    session191_paradigm_shift_pointwise_spike.md
+    session192_critique.md
+    session193_commit_connes_amortisation.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; ls /apps/aplikacijos/prime-research/archive/sessions/session19*
+    193
+    ---
+    /apps/aplikacijos/prime-research/archive/sessions/session190_commit_s82_invariant_subspace.md
+    /apps/aplikacijos/prime-research/archive/sessions/session191_paradigm_shift_pointwise_spike.md
+    /apps/aplikacijos/prime-research/archive/sessions/session192_critique.md
+    /apps/aplikacijos/prime-research/archive/sessions/session193_commit_connes_amortisation.md
+    /apps/aplikacijos/prime-research/archive/sessions/session19_synthesis.md
+Now I'll extend the script with CLI-parameterized modes.
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    175	
+    176	
+    177	# -----------------------------------------------------------------------------
+    178	# Main experiment.
+    179	# -----------------------------------------------------------------------------
+    180	
+    181	
+    182	def main():
+    183	    # Heights to test. Trimmed to fit comfortably under 5 minutes total.
+    184	    # K_max chosen to bracket the empirical sqrt(x)/2 baseline of the
+    185	    # existing riemann_explicit results (50 zeros suffice for x <= ~5000,
+    186	    # 200 for x <= ~50000, etc.).
+    187	    xs = [100.0, 1000.0, 5000.0, 10000.0, 50000.0]
+    188	    K_max = 500
+    189	
+    190	    print("Computing first %d Riemann zeros..." % K_max)
+    191	    t0 = time.time()
+    192	    gammas = get_zeros(K_max, dps=30)
+    193	    print("  done in %.1fs (gamma_1 = %.4f, gamma_K = %.4f)"
+    194	          % (time.time() - t0, gammas[0], gammas[-1]))
+    195	
+    196	    rows = []
+    197	    print("\nSUSTAINED K_min: smallest K such that round(pi_K') = pi(x) for")
+    198	    print("all K' in [K, K_max]. This is the rigour measure used by S53.")
+    199	    print("\nx        pi(x)  Ksust(x)  K_min0.5  sqrt(x)  K/sqrt(x)  time")
+    200	    print("-" * 70)
+    201	    for x in xs:
+    202	        t1 = time.time()
+    203	        pi_x = pi_brute(x)
+    204	        R_x = riemann_R(x)
+    ... (100 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    220	        rounded_eq: List[bool] = []
+    221	        first_eps05 = -1
+    222	        for K in range(1, K_max + 1):
+    223	            Rrho = R_at_rho(x, gammas[K - 1])
+    224	            correction += 2 * Rrho.real
+    225	            approx = R_x - correction
+    226	            err = approx - pi_x
+    227	            rounded_eq.append(round(approx) == pi_x)
+    228	            if first_eps05 == -1 and abs(err) <= 0.5:
+    229	                first_eps05 = K
+    230	        K_sust = -1
+    231	        for K in range(1, K_max + 1):
+    232	            if all(rounded_eq[K - 1:]):
+    233	                K_sust = K
+    234	                break
+    235	        sqrt_x = math.sqrt(x)
+    236	        ratio = K_sust / sqrt_x if K_sust > 0 else float('nan')
+    237	        elapsed = time.time() - t1
+    238	        print(f"[{tag}] %-9g %7d %7d %8d %8.1f %10.4f  (%.1fs)"
+    239	              % (x, pi_x, K_sust, first_eps05, sqrt_x, ratio, elapsed))
+    240	        rows.append(dict(x=x, pi_x=pi_x, K_sustained=K_sust,
+    241	                         K_first_eps05=first_eps05, sqrt_x=sqrt_x,
+    242	                         Ksust_over_sqrt_x=ratio, time=elapsed))
+    243	    return rows
+    244	
+    245	
+    246	# -----------------------------------------------------------------------------
+    247	# Main experiment.
+    248	# -----------------------------------------------------------------------------
+    249	
+    ... (100 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    345	          ("X = 10^a", "K~sqrt(X)", "Connes K^3", "Galway K^17/13", "ratio"))
+    346	    print("  " + "-" * 65)
+    347	    for a in [4, 6, 10, 50, 100]:
+    348	        K = 10 ** (a / 2)
+    349	        c = K ** 3
+    350	        g = K ** (17.0 / 13.0)
+    351	        r = c / g
+    352	        print("  %-12s %10s %14s %14s %12s" % (
+    353	            f"10^{a}",
+    354	            f"10^{a/2:.1f}",
+    355	            f"10^{math.log10(c):.2f}",
+    356	            f"10^{math.log10(g):.2f}",
+    357	            f"10^{math.log10(r):.2f}",
+    358	        ))
+    359	    print()
+    360	    print("Conclusion: Connes setup is dominated by Galway/Hiary by")
+    361	    print("  10^(22a/26) ~ 10^(0.85*a) at x = 10^a (e.g., 10^85 worse at x=10^100).")
+    362	    print("  Even with infinite amortisation, Connes cannot beat Galway.")
+    363	    print("  The CCM operator's amortisation question therefore reduces to")
+    364	    print("  Thread 3 (Galway frontier): does K(x) = polylog(x) suffice for")
+    365	    print("  pi(x) +/- 1 in distribution? If yes, BOTH routes go polylog;")
+    366	    print("  if no, NEITHER does. Connes adds nothing distinct to amortise.")
+    367	
+    368	
+    369	if __name__ == "__main__":
+    370	    main()
+    371	
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Bash] python3 -c "
+import sys
+sys.path.insert(0, 'experiments/analytic/connes_amortisation')
+from connes_amortisation import R_at_rho, get_zeros, riemann_R
+import time
+gammas = get_zeros(500, dps=30)
+print('zeros loaded')
+t0 = time.time()
+x = 1e6
+R_x = riemann_R(x)
+print('R(x) =', R_x, 'in', time.time() - t0, 's')
+t0 = time.time()
+correction = 0.0
+for k in range(500):
+    Rrho = R_at_rho(x, gammas[k])
+    correction += 2 * Rrho.real
+print('500 R_at_rho calls in', time.time() - t0, 's')
+print('approx pi(x) =', R_x - correction, 'true pi(1e6) = 78498')
+"
+
+    zeros loaded
+    R(x) = 78527.3466205274 in 0.0020017623901367188 s
+    500 R_at_rho calls in 0.4967319965362549 s
+    approx pi(x) = 78502.65328662496 true pi(1e6) = 78498
+Good — 500 zeros takes 0.5s. 8000 zeros per x ≈ 8s. Let me run the full experiment.
+  [Bash] python3 experiments/analytic/connes_amortisation/connes_amortisation.py --mode wide --K-max 8000 --sieve-limit 10500000 2>&1 | tee /tmp/wide_out.log
+    WIDE-RANGE: xs = [1000.0, 10000.0, 50000.0, 100000.0, 500000.0, 1000000.0, 5000000.0, 10000000.0], K_max = 8000
+    Loading 8000 cached zeros...
+      loaded in 0.0s (gamma_1=14.1347, gamma_K=8148.1884)
+    Building cumulative pi(.) array up to N=10500000...
+      done in 0.2s. pi(10500000)=695609.
+    
+    [wide] x        pi(x)    Ksust   K_eps05  sqrt(x)   K/sqrt(x)  time
+    [wide] ------------------------------------------------------------------------
+    [wide] 1000          168      77        2     31.6     2.4350  (6.2s)
+    [wide] 10000        1229    1097       24    100.0    10.9700  (5.8s)
+    [wide] 50000        5133      -1       42    223.6        nan  (5.0s)
+    [wide] 100000       9592    5375        3    316.2    16.9972  (5.4s)
+    [wide] 500000      41538      -1      155    707.1        nan  (5.7s)
+    [wide] 1e+06       78498    5530     3754   1000.0     5.5300  (4.8s)
+    [wide] 5e+06      348513      -1      216   2236.1        nan  (5.1s)
+    [wide] 1e+07      664579      -1      563   3162.3        nan  (4.8s)
+    Wrote /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_wide.csv
+    
+    LOG-LOG FIT (wide range, 4 points):
+      K_sustained(x) ~ 1.9207 * x^0.6259
+      Riemann-von Mangoldt baseline slope: 0.5
+The K_sustained criterion is too noisy for the smaller x — the partial sums oscillate. Let me also capture the error at fixed K values to test the "polylog in distribution" question.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Bash] python3 experiments/analytic/connes_amortisation/connes_amortisation.py --mode fluctuation --fluc-center 30000 --fluc-n 6 --fluc-K-max 300 2>&1 | tail -30
+    FLUCTUATION: center=30000.0, n=6, x in [30000, 94868], K_max=300
+    Loading 300 zeros...
+      loaded in 0.0s
+    Sieve up to 94968...
+      done in 0.0s
+    
+    [fluc] Sweeping 6 x values, K=300 each:
+      [1/6] x=30000, pi(x)=3245, K_sust=262, t=0.4s
+      [2/6] x=37768, pi(x)=3995, K_sust=-1, t=0.4s
+      [3/6] x=47547, pi(x)=4902, K_sust=-1, t=0.3s
+      [4/6] x=59858, pi(x)=6047, K_sust=297, t=0.3s
+      [5/6] x=75357, pi(x)=7425, K_sust=-1, t=0.3s
+      [6/6] x=94868, pi(x)=9147, K_sust=-1, t=0.3s
+    Wrote /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation.csv
+    
+    FLUCTUATION SUMMARY (6 x in [30000, 94868]):
+      K_sust/sqrt(x):  min=1.214, med=1.363, max=1.513, std=0.149
+    
+      Policy           K(x_med)   median|err|   hit-rate (|err|<=0.5)
+      ------------------------------------------------------------
+      log2x                119        0.535   3/6 = 0.50
+      log3x               1292        0.713   2/6 = 0.33
+      5log2x               593        0.713   2/6 = 0.33
+      sqrtx                232        0.804   1/6 = 0.17
+      halfsqrtx            116        0.645   2/6 = 0.33
+Now let me run the main fluctuation experiment.
+  [Bash] python3 experiments/analytic/connes_amortisation/connes_amortisation.py --mode fluctuation --fluc-center 100000 --fluc-n 40 --fluc-K-max 3000 2>&1 | tee /tmp/fluc_1e5.log | tail -60
+    FLUCTUATION: center=100000.0, n=40, x in [100000, 316228], K_max=3000
+    Loading 3000 zeros...
+      loaded in 0.0s
+    Sieve up to 316327...
+      done in 0.0s
+    
+    [fluc] Sweeping 40 x values, K=3000 each:
+      [1/40] x=100000, pi(x)=9592, K_sust=578, t=2.5s
+      [5/40] x=112534, pi(x)=10664, K_sust=-1, t=1.8s
+      [9/40] x=126638, pi(x)=11874, K_sust=1098, t=1.9s
+      [13/40] x=142510, pi(x)=13223, K_sust=-1, t=1.8s
+      [17/40] x=160372, pi(x)=14713, K_sust=2857, t=2.3s
+      [21/40] x=180472, pi(x)=16380, K_sust=-1, t=1.8s
+      [25/40] x=203092, pi(x)=18232, K_sust=-1, t=1.8s
+      [29/40] x=228546, pi(x)=20307, K_sust=2970, t=1.8s
+      [33/40] x=257191, pi(x)=22611, K_sust=-1, t=1.9s
+      [37/40] x=289427, pi(x)=25181, K_sust=2477, t=1.8s
+    Wrote /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation.csv
+    
+    FLUCTUATION SUMMARY (40 x in [100000, 316228]):
+      K_sust/sqrt(x):  min=1.828, med=4.519, max=7.225, std=1.646
+    
+      Policy           K(x_med)   median|err|   hit-rate (|err|<=0.5)
+      ------------------------------------------------------------
+      log2x                146        1.580   12/40 = 0.30
+      log3x               1767        0.593   17/40 = 0.42
+      5log2x               731        0.896   9/40 = 0.23
+      sqrtx                422        0.775   8/40 = 0.20
+      halfsqrtx            211        1.084   7/40 = 0.17
+  [Bash] cp experiments/analytic/connes_amortisation/connes_amortisation_fluctuation.csv experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv && wc -l experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv
+    41 experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv
+  [Bash] python3 experiments/analytic/connes_amortisation/connes_amortisation.py --mode fluctuation --fluc-center 1000000 --fluc-n 40 --fluc-K-max 8000 2>&1 | tee /tmp/fluc_1e6.log | tail -60
+    FLUCTUATION: center=1000000.0, n=40, x in [1000000, 3162278], K_max=8000
+    Loading 8000 zeros...
+      loaded in 0.0s
+    Sieve up to 3162377...
+      done in 0.1s
+    
+    [fluc] Sweeping 40 x values, K=8000 each:
+      [1/40] x=1000000, pi(x)=78498, K_sust=5530, t=6.2s
+      [5/40] x=1125336, pi(x)=87544, K_sust=6840, t=5.7s
+      [9/40] x=1266380, pi(x)=97647, K_sust=-1, t=5.6s
+      [13/40] x=1425103, pi(x)=108851, K_sust=6756, t=5.9s
+      [17/40] x=1603719, pi(x)=121413, K_sust=-1, t=4.8s
+      [21/40] x=1804722, pi(x)=135392, K_sust=-1, t=4.9s
+      [25/40] x=2030918, pi(x)=151080, K_sust=-1, t=5.6s
+      [29/40] x=2285464, pi(x)=168515, K_sust=-1, t=5.6s
+      [33/40] x=2571914, pi(x)=187943, K_sust=-1, t=4.9s
+      [37/40] x=2894266, pi(x)=209724, K_sust=-1, t=5.4s
+    Wrote /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation.csv
+    
+    FLUCTUATION SUMMARY (40 x in [1000000, 3162278]):
+      K_sust/sqrt(x):  min=4.038, med=5.566, max=6.628, std=0.712
+    
+      Policy           K(x_med)   median|err|   hit-rate (|err|<=0.5)
+      ------------------------------------------------------------
+      log2x                207        4.564   2/40 = 0.05
+      log3x               2981        1.444   6/40 = 0.15
+      5log2x              1036        2.711   6/40 = 0.15
+      sqrtx               1334        2.297   4/40 = 0.10
+      halfsqrtx            667        2.643   5/40 = 0.12
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] mv experiments/analytic/connes_amortisation/connes_amortisation_fluctuation.csv experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e6.csv && ls experiments/analytic/connes_amortisation/
+    __pycache__
+    connes_amortisation.py
+    connes_amortisation_data.csv
+    connes_amortisation_fluctuation_1e5.csv
+    connes_amortisation_fluctuation_1e6.csv
+    connes_amortisation_results.md
+    connes_amortisation_wide.csv
+  [Bash] rm -rf experiments/analytic/connes_amortisation/__pycache__
+    (Bash completed with no output)
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv
+    1	x,pi_x,K_sustained,sqrt_x,K_log2x,abs_err_at_K_log2x,hit_at_K_log2x,K_log3x,abs_err_at_K_log3x,hit_at_K_log3x,K_5log2x,abs_err_at_K_5log2x,hit_at_K_5log2x,K_sqrtx,abs_err_at_K_sqrtx,hit_at_K_sqrtx,K_halfsqrtx,abs_err_at_K_halfsqrtx,hit_at_K_halfsqrtx
+    2	100000.0,9592,578,316.22776601683796,133,0.33290226875033113,1,1526,0.12116217286711617,1,663,0.40159482916897105,1,316,1.202320775413682,0,158,0.8733385433097283,0
+    3	102996.03658099899,9853,1691,320.92995587978226,133,0.378417517280468,1,1538,0.5596185544909531,0,666,0.6494135865923454,0,321,0.20071840859600343,1,160,0.4847357565558923,1
+    4	106081.83551394482,10110,-1,325.7020655659783,134,3.9249301483432646,0,1550,1.183252802131392,0,670,0.13930982106467127,1,326,1.9917395756965561,0,163,2.529950248024761,0
+    5	109260.0861117378,10387,-1,330.5451347573245,135,0.1406856921257713,1,1561,0.3329552308914572,1,673,0.7412334516975534,0,331,0.33531501967263466,1,165,1.2968855391554825,0
+    6	112533.55826007646,10664,-1,335.46021859540434,135,1.8600722103692533,0,1573,1.1837608611331234,0,676,2.3456069922722236,0,335,0.7700976002706739,0,168,0.5072900894774648,0
+    7	115905.10483144816,10958,-1,340.4483879113663,136,7.271681783167878,0,1585,2.75103082397618,0,680,5.165676692880879,0,340,5.196816828745796,0,170,6.334450798693069,0
+    8	119377.66417144357,11246,1204,345.5107294592218,137,0.23065136290097144,1,1598,0.1643802186663379,1,683,1.0018170897346863,0,346,1.3415250276466395,0,173,0.32356906987297407,1
+    9	122954.26265956216,11560,1184,350.6483461526122,137,0.679064644016762,0,1610,0.053491567665332695,1,687,0.9442082436216879,0,351,0.6968274554201344,0,175,0.624839216014152,0
+    10	126638.01734674022,11874,1098,355.86235730509657,138,1.345915932306525,0,1622,0.10058708783253678,1,690,0.131778935672628,1,356,0.0641073383467301,1,178,1.1263929043143435,0
+    11	130432.13867190041,12198,960,361.15389887401244,139,0.3775514005046716,1,1634,0.23937254628617666,1,694,0.03062133711500792,1,361,0.34459131313815305,1,181,0.09267688437103061,1
+    12	134339.93325988986,12526,-1,366.5241237079626,139,1.8850539093418774,0,1646,0.757014590781182,0,697,0.8421655009242386,0,367,1.6862571084966476,0,183,1.7591930008165946,0
+    13	138364.8068032461,12871,-1,371.97420179798235,140,1.1350107474354445,0,1659,0.7257026793868135,0,701,1.5527883333797945,0,372,1.502998032467076,0,186,1.0418597764364677,0
+    14	142510.26703029993,13223,-1,377.50532053243955,141,2.319168650883512,0,1671,1.097801679479744,0,704,2.2580510335901636,0,378,2.8460845133758994,0,189,2.313930832386177,0
+    15	146779.92676220706,13572,780,383.1186849557289,142,0.8965946116732084,0,1684,0.23665137484022125,1,708,0.25572919773730973,1,383,0.41965550493841874,1,192,2.0056332405511057,0
+    16	151177.5070615663,13948,-1,388.81551803080896,142,2.444532599500235,0,1696,0.1941667620685621,1,711,1.1736267896794743,0,389,0.2937827499354171,1,194,0.5634446963795199,0
+    17	155706.84047537317,14334,2851,394.5970609056448,143,2.6472136651827896,0,1709,1.183581183255228,0,715,0.7366549142407166,0,395,0.02647618161608989,1,197,1.4438746733558219,0
+    18	160371.8743751331,14713,2857,400.46457318361274,144,1.4541112479855656,0,1722,0.6263786644267384,0,718,0.04574419095479243,1,400,1.4271359277990996,0,200,1.5534378583452053,0
+    19	165176.67439704583,15106,1227,406.4193331979248,144,2.6455604159909853,0,1734,0.33704005379695445,1,722,0.047835792171099456,1,406,2.480730659548499,0,203,2.4332295088097453,0
+    20	170125.42798525892,15508,-1,412.4626382901352,145,2.321603582071475,0,1747,0.9008743149333895,0,725,0.6460787273808819,0,412,0.6056811462349287,0,206,0.9114458879885206,0
+    21	175222.44804127837,15928,-1,418.5958050927868,146,4.05395225569373,0,1760,1.1591103660612134,0,729,1.8178954110935592,0,419,1.5423395799716673,0,209,0.12366854155334295,1
+    22	180472.17668271702,16380,-1,424.8201698162612,146,5.852879820184171,0,1773,0.8887655097223615,0,732,0.6459952706172771,0,425,0.5914212796396896,0,212,1.4927080198485783,0
+    23	185879.18911465636,16824,1003,431.13708853989397,147,0.6043086596182548,0,1786,0.08654551322615589,1,736,0.3077953830215847,1,431,0.6434292265075783,0,216,0.5529974847995618,0
+    24	191448.19761699575,17276,-1,437.54793750741845,148,6.4327875184426375,0,1799,3.1443457752284303,0,740,5.002300780870428,0,438,5.259670977720816,0,219,4.6658548639425135,0
+    25	197184.05565126418,17750,1771,444.05411342680316,149,2.004028727853438,0,1812,0.2602984563127393,1,743,0.5274637467882712,0,444,0.5834786287123279,0,222,2.110124138649553,0
+    26	203091.76209047346,18232,-1,450.6570337745473,149,0.3820083512691781,1,1825,1.6926980481366627,0,747,1.0247203903600166,0,451,0.6636012970629963,0,225,0.5430222225077159,0
+    27	209176.4655756995,18729,-1,457.35813710450094,150,6.379110178702831,0,1839,1.9945510448596906,0,750,4.310121824080852,0,457,4.149543377850932,0,229,5.5411571415752405,0
+    28	215443.46900318822,19244,-1,464.15888336127773,151,0.12874241945610265,1,1852,0.535128744362737,0,754,0.7815995000019029,0,464,0.7797148436875432,0,232,0.5940800655262137,0
+    29	221898.23414589697,19768,2661,471.06075419832734,152,0.30672097701972234,1,1865,0.49847001011221437,1,758,1.1394794285697571,0,471,0.6338916139357025,0,236,1.239252510786173,0
+    30	228546.38641349884,20307,2970,478.06525330073805,152,1.3103592581719568,0,1879,0.3198282724370074,1,761,1.519746063870116,0,478,0.9236398170651228,0,239,0.27043905262326007,1
+    ... (12 more lines)
+  [Bash] python3 - <<'EOF'
+import csv
+import math
+import numpy as np
+
+for tag, path in [("1e5", "experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv"),
+                  ("1e6", "experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e6.csv")]:
+    with open(path) as f:
+        rows = list(csv.DictReader(f))
+    print(f"\n=== center {tag}: {len(rows)} samples ===")
+    Ksust = [int(r['K_sustained']) for r in rows]
+    sqrtx = [float(r['sqrt_x']) for r in rows]
+    valid_pairs = [(k,s) for k,s in zip(Ksust, sqrtx) if k > 0]
+    n_unstab = sum(1 for k in Ksust if k <= 0)
+    print(f"unstabilised at K_max: {n_unstab}/{len(rows)}")
+    if valid_pairs:
+        ratios = np.array([k/s for k,s in valid_pairs])
+        print(f"K_sust/sqrt(x): n={len(ratios)} min={ratios.min():.2f} med={np.median(ratios):.2f} mean={ratios.mean():.2f} max={ratios.max():.2f} std={ratios.std():.2f}")
+
+    # hit rates per policy
+    for col in ['hit_at_K_log2x', 'hit_at_K_log3x', 'hit_at_K_5log2x', 'hit_at_K_sqrtx', 'hit_at_K_halfsqrtx']:
+        n_hit = sum(int(r[col]) for r in rows)
+        print(f"  {col}: {n_hit}/{len(rows)} = {n_hit/len(rows):.2%}")
+
+    # median |error| at each K policy
+    print("  policy             median |err|     90th-pctile |err|")
+    for col in ['abs_err_at_K_log2x', 'abs_err_at_K_log3x', 'abs_err_at_K_5log2x', 'abs_err_at_K_sqrtx', 'abs_err_at_K_halfsqrtx']:
+        errs = np.array([float(r[col]) for r in rows])
+        print(f"  {col:25s}  {np.median(errs):10.3f}    {np.percentile(errs, 90):10.3f}")
+EOF
+    === center 1e5: 40 samples ===
+    unstabilised at K_max: 21/40
+    K_sust/sqrt(x): n=19 min=1.83 med=4.52 mean=4.39 max=7.23 std=1.65
+      hit_at_K_log2x: 12/40 = 30.00%
+      hit_at_K_log3x: 17/40 = 42.50%
+      hit_at_K_5log2x: 9/40 = 22.50%
+      hit_at_K_sqrtx: 8/40 = 20.00%
+      hit_at_K_halfsqrtx: 7/40 = 17.50%
+      policy             median |err|     90th-pctile |err|
+      abs_err_at_K_log2x              1.580         4.234
+      abs_err_at_K_log3x              0.593         1.626
+      abs_err_at_K_5log2x             0.896         2.577
+      abs_err_at_K_sqrtx              0.775         3.798
+      abs_err_at_K_halfsqrtx          1.084         2.867
+    
+    === center 1e6: 40 samples ===
+    unstabilised at K_max: 27/40
+    K_sust/sqrt(x): n=13 min=4.04 med=5.57 mean=5.55 max=6.63 std=0.71
+      hit_at_K_log2x: 2/40 = 5.00%
+      hit_at_K_log3x: 6/40 = 15.00%
+      hit_at_K_5log2x: 6/40 = 15.00%
+      hit_at_K_sqrtx: 4/40 = 10.00%
+      hit_at_K_halfsqrtx: 5/40 = 12.50%
+      policy             median |err|     90th-pctile |err|
+      abs_err_at_K_log2x              4.564        10.329
+      abs_err_at_K_log3x              1.444         3.590
+      abs_err_at_K_5log2x             2.711         5.410
+      abs_err_at_K_sqrtx              2.297         5.045
+      abs_err_at_K_halfsqrtx          2.643         7.489
+Now let me update the results documentation and write the synthesis.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md
+    The file /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md has been updated successfully.
+Now let me update the closure log, session insights, commit state, and write the synthesis.
+  [Bash] tail -20 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    <persisted-output>
+    Output too large (37.5KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/d847d713-ebe4-4b0b-9d2d-8d8e0e70e7eb/tool-results/b755g0182.txt
+    
+    Preview (first 2KB):
+    | C3.a (NOVELTY_CHALLENGES §1, S105 successor) — Arithmetic-primitive bounded-Kt VM × per-bit difficulty: does adding LOG2 / LI_APPROX / DIV_LOG / GEO_SUM to the bounded-Kt simulator shift the cut on `s_J^(N) := (bit_J(π(0)),...,bit_J(π(2^N-1)))` from S105's `J*(N) ≈ N − log₂ N` toward E1.3's `⌈N/2⌉`? | REFINEMENT | E | Composition of E5.8 (Brandt-class barrier — structural argument inherited unchanged) + E1.3 (per-bit difficulty profile — refined inline). Built 4-bit-per-op extended VM (16 ops: 8 base {PUSH0/1/N, INC, ADD, SUB, MUL, SHR1, DUP, EMIT_S, EMIT0, HALT} + 4 R^{-1}-kernel arithmetic primitives {LOG2, LI_APPROX, DIV_LOG, GEO_SUM}) with integer stack alongside bit-emit stream; T_MAX = 4096, INT_CAP = 10⁹. C inner loop (`sim.c → sim.so`) batch-evaluates one program against all targets simultaneously; pre-skip of programs with no EMIT in pc cycle saves ~50% of enumeration. **Pre-stated falsifiers**: F1 (full shift to ⌈N/2⌉ — every easy-J compresses, every hard-J saturates); F2 (no shift — easy zone all saturated as in original VM, DUPLICATE-PLUS); F3 (intermediate hierarchy — some easy J compress, others saturate). **Result: F3 holds globally (intermediate hierarchy)**, with structure: per-N at L_max=24 (matched to target_lens 16/32/64), the cut moves fully to ⌈N/2⌉ for N ∈ {4, 5} and reverts to J*(N) for N=6; at L_max=28, N=6 partially shifts (J=4 compresses, J=3 still saturates). **Within-easy-zone J-monotone hierarchy identified**: bits closer to J*(N) (the trivial-zero boundary) compress at smaller L_max; bits closer to ⌈N/2⌉ (the E1.3 hard-easy boundary) require larger L_max — the bounded-Kt cost of bit-J of π is empirically monotone in N − J. **Headline compressing programs (L_max=24)**: (N=4, J=2) Kt_b'=33 prog `ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N` — emits `bit_0(LI(LI(2x)))` which EXACTLY matches `bit_2(π(x))` on [0, 16); (N=5, J=3) Kt_b'=33 prog `EMIT_S, LI, DUP, INC, PUSH_N, PUSH0`. Triple-LI program `EMIT_S, PUSH_N, LI, LI, LI, DUP, EMIT_S` (L=28) 
+    ...
+    </persisted-output>
+  [Bash] grep -n "S193" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | tail -5
+    810:| S193 commit-thread step 1 (Connes amortisation) — adversarial re-examination of S53's E3.1 closure: does S53 argument 2 (O(K^3) per-query diagonalisation cost) survive the AMORTISATION challenge of "diagonalise once, serve many π(x) queries"? | REFINEMENT+CLOSURE | E | Thread 2 commit step 1/5. **Adversarial finding**: the S53 closure of E3.1 stands but its dominant argument is sharpened. Argument 2 partially collapses — under amortisation across Q queries up to x=X, per-query cost reduces to O(K) explicit-formula evaluation, paid once-O(K³) for setup. **However**, Galway 2004 + Hiary computes the SAME K zeros at setup cost O(K^{17/13}) (Hiary t^{4/13}+ε per zero, height t≈K), with identical per-query O(K). **Setup ratio K³/K^{17/13} = K^{22/13} ≈ K^{1.69}**: at x = 10^{100}, Connes setup is 10^{84.6} times more expensive than Galway. Connes is strictly dominated by Galway in every cost regime — per-query (O(K) vs O(K), tie), one-shot (O(K³) vs O(K^{17/13}), Galway wins), full amortisation (K³/Q + K vs K^{17/13}/Q + K, Galway wins). **Empirical confirmation**: K_sustained(x) on x ∈ {100, 1000, 5000, 50000} fits to K_sust(x) ~ 0.48 · x^{0.55} (predicted slope 0.5, agrees with E1.5 / Riemann-von Mangoldt floor). **Reduction**: Thread 2 (Connes amortisation) ⊆ Thread 3 (Galway frontier). The Connes operator is just an alternative (and strictly more expensive) way to obtain the same K zeros that Galway/Hiary obtain more cheaply; per-query costs are identical because both routes reduce to the same explicit-formula partial sum on the same K zeros. **Sharper closure of E3.1 (refines row 706)**: even granting full amortisation and CCM unlimited per-prime accuracy, the diagonalisation setup cost K³ is dominated by Hiary's K^{17/13} for getting the same K zeros — independent of per-prime accuracy claims, of operator construction details, of amortisation regime. The remaining lever is K(x) = polylog(x) "in distribution" (Thread 3), to which both routes are equally subject. Cites E3.1, E1.5, S53 row 706, Galway 2004, Hiary 2011 (state_of_art_2026.md §2.5b). Cross-domain ingredient: classical asymmetric setup-cost comparison between dense eigensolvers (O(K³)) and Hiary's specialised zero-locating algorithm (O(t^{4/13}) per zero) — mildly novel framing; S53 had not compared to the Hiary baseline. See experiments/analytic/connes_amortisation/. | 193 |
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] tail -3 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | S193 commit-thread step 1 (Connes amortisation) — adversarial re-examination of S53's E3.1 closure: does S53 argument 2 (O(K^3) per-query diagonalisation cost) survive the AMORTISATION challenge of "diagonalise once, serve many π(x) queries"? | REFINEMENT+CLOSURE | E | Thread 2 commit step 1/5. **Adversarial finding**: the S53 closure of E3.1 stands but its dominant argument is sharpened. Argument 2 partially collapses — under amortisation across Q queries up to x=X, per-query cost reduces to O(K) explicit-formula evaluation, paid once-O(K³) for setup. **However**, Galway 2004 + Hiary computes the SAME K zeros at setup cost O(K^{17/13}) (Hiary t^{4/13}+ε per zero, height t≈K), with identical per-query O(K). **Setup ratio K³/K^{17/13} = K^{22/13} ≈ K^{1.69}**: at x = 10^{100}, Connes setup is 10^{84.6} times more expensive than Galway. Connes is strictly dominated by Galway in every cost regime — per-query (O(K) vs O(K), tie), one-shot (O(K³) vs O(K^{17/13}), Galway wins), full amortisation (K³/Q + K vs K^{17/13}/Q + K, Galway wins). **Empirical confirmation**: K_sustained(x) on x ∈ {100, 1000, 5000, 50000} fits to K_sust(x) ~ 0.48 · x^{0.55} (predicted slope 0.5, agrees with E1.5 / Riemann-von Mangoldt floor). **Reduction**: Thread 2 (Connes amortisation) ⊆ Thread 3 (Galway frontier). The Connes operator is just an alternative (and strictly more expensive) way to obtain the same K zeros that Galway/Hiary obtain more cheaply; per-query costs are identical because both routes reduce to the same explicit-formula partial sum on the same K zeros. **Sharper closure of E3.1 (refines row 706)**: even granting full amortisation and CCM unlimited per-prime accuracy, the diagonalisation setup cost K³ is dominated by Hiary's K^{17/13} for getting the same K zeros — independent of per-prime accuracy claims, of operator construction details, of amortisation regime. The remaining lever is K(x) = polylog(x) "in distribution" (Thread 3), to which both routes are equally subject. Cites E3.1, E1.5, S53 row 706, Galway 2004, Hiary 2011 (state_of_art_2026.md §2.5b). Cross-domain ingredient: classical asymmetric setup-cost comparison between dense eigensolvers (O(K³)) and Hiary's specialised zero-locating algorithm (O(t^{4/13}) per zero) — mildly novel framing; S53 had not compared to the Hiary baseline. See experiments/analytic/connes_amortisation/. | 193 |
+    
+    | S192 critique — audit of S164–S191 batch (S164 D44 Rédei + S82 commit thread closure S165/S166/S168/S169/S190 + S191 paradigm-shift T_Q + 20 verify slots S167/S170-S189) — does the batch contain inflated grades, mis-cited edges, or duplicate `novel/` placements? | CRITIQUE | C | Per-artefact verification of seven production sessions plus 20 verify slots. **Zero new demotions, zero inflations caught**: all seven self-grades honestly placed (six B, one C). **S190's HONEST self-down-grade A/B → C** distinguished as positive discipline signal — cleanest commit-thread closure in project history. **S191's "1.4% L²-match-with-S169" identified as TAUTOLOGICAL** (the construction projects onto exactly the subspaces S168 measures the energy of, so the agreement at the L² level is a definitional sanity check, not a new prediction); the actual B-grade content is the precision-at-π(N) lift table (new pointwise measurement) + d=14/18 missing-spike cross-validation (closes a S169 ambiguity) + L6 Lean candidate. **A-grade scarcity escalated**: S163 flagged 0/20, S192 flags **0/30** A-grades in the rolling window (S162-S191). The frontier-saturation pattern persists: every wild_swing (S164 D44 in this batch) closes at mode E or I via "matches matched-baseline" or "determined by graph/algebraic structure modulo arithmetic-blind invariant". **Recommended next-action**: commit mode → Thread 2 Connes-Consani-Moscovici amortisation (per .commit_state next_thread:connes_amortisation); non-commit → ATTACK_VECTORS §A.A7 plethysm sub-frame (S156's orbit-dim work explicitly leaves it open) OR §D.D48 BC endomotive Galois-orbit (S163 critique-pick still open). **Cadence note**: this is the third consecutive critique (S147, S163, S192) recommending an A-target attempt rather than another refinement; harness has continued to select commit/refinement modes; pattern flagged for human review (not at "≥ 2 F-grades in a row" escalation threshold — all sessions B/C). **No edits to EDGES.md, NOVELTY_CHALLENGES.md, ATTACK_VECTORS.md, or RESEARCH_AGENDA.md**. One trivial citation-drift note in S191 ("S190's 1.18 finite-size factor" should read "S166's"); not worth a separate row. See archive/ephemeral/critique_latest.md and archive/sessions/session192_critique.md. | 192 |
+  [Bash] tail -1 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | wc -c
+echo "---"
+wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    2299
+    ---
+    812 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [Bash] sed -n '809,812p' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -c 400
+    | S193 commit-thread step 1 (Connes amortisation) — adversarial re-examination of S53's E3.1 closure: does S53 argument 2 (O(K^3) per-query diagonalisation cost) survive the AMORTISATION challenge of "diagonalise once, serve many π(x) queries"? | REFINEMENT+CLOSURE | E | Thread 2 commit step 1/5. **Adversarial finding**: the S53 closure of E3.1 stands but its dominant argument is sharpened. Ar
+  [Bash] sed -n '811,812p' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -c 200
+    | S192 critique — audit of S164–S191 batch (S164 D44 Rédei + S82 commit thread closure S165/S166/S168/S169/S190 + S191 paradigm-shift T_Q + 20 verify slots S167/S170-S189) — does the batch con
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    808	| S191 paradigm-shift session — Pointwise Ramanujan-spike approximator T_Q(n) := (π(N)/N) · Σ_{q sqf ≤ Q} mu(q) c_q(n)/phi(q): does the explicit pointwise dual of S168's energy-level spike formula exhibit the predicted 21% L²-fraction at Q ≈ N^{0.185} and does it function as a non-trivial primality predictor? | NEW CONSTRUCTION | C | Paradigm-shift session (no cross-domain imports allowed) — built the **pointwise** dual of S168's L²-only spike formula. **Hölder simplification (project's algebraic step)**: for squarefree q with d = gcd(q, n), `mu(q) c_q(n) / phi(q) = mu(d) / phi(q/d)`; verified numerically for all squarefree q ∈ [1, 30] and n ∈ [0, 60] in `sanity_holder.py`. **Object**: `T_Q(n) := (π(N)/N) · Σ_{q sqf ≤ Q} mu(gcd(q,n))/phi(q/gcd(q,n))`, computable in `O(Q · ω(n))` per n. **Empirical results** at d ∈ {14, 16, 18, 20}, Q ∈ {2, 6, N^{0.185}, N^{0.21}, 30, √N}: (a) **At d=20, Q=13≈N^{0.185}**: `||T_Q − const||² / π(N) = 0.2229`, matching S169's measured SVD spike-block fraction `0.220 ± 0.005` within **1.4%** — first pointwise empirical confirmation of S168/S169's energy-level prediction. (b) At d=14, 18 the construction overestimates SVD by 16-20%, exactly the "missing-spike" finite-d gap S169 disclosed. (c) **Primality-predictor lift over random baseline**: precision-at-π(N) = 0.183, 0.439, 0.524, 0.998 at Q = 2, 13, 30, 1024 (d=20), giving lifts 2.34×, 5.61×, 6.70×, 12.76× — monotonically increasing in Q. (d) **Wheel-Mertens identity** falls out of the closed form: at primorial Q=W, n coprime to W, `M_W(n) = ∏_{p|W}(1 + 1/(p−1)) = W/φ(W)`, hence `T_W(coprime n) = (π(N)/N) · W/φ(W)` — pointwise Mertens-density correction. **Edges composed**: E2.1 + E1.5 + E1.6 + E2.2 + S168. **Cross-domain technique imported: NONE** (paradigm-shift constraint satisfied). **Honest novelty**: pointwise form not in project's prior writeups (S166-S190 stayed at L² level); algebraic content is the Hölder simplification + wheel-Mertens identification + pointwise empirical S168-test. The Ramanujan-Fourier coefficients `mu(q)/phi(q)` of the von Mangoldt function are classical (Hardy 1921) — re-derived here from S168 alone per the no-imports constraint. **Closure mode C**: T_Q does not break C-circular (computing it requires π(N) for the prefactor). The 79% remainder ‖chi_P − T_Q‖² is the bulk MP component. **Falsification status**: all four pre-stated falsifiers PASS. **Lean candidate**: the Hölder identity `mu(q) c_q(n)/phi(q) = mu(gcd)/phi(q/gcd)` is one-step character-theoretic, suitable for L1 queue. See experiments/constructions/ramanujan_spike_pointwise/. | 191 |
+    809	
+    810	| S193 commit-thread step 1 (Connes amortisation) — adversarial re-examination of S53's E3.1 closure: does S53 argument 2 (O(K^3) per-query diagonalisation cost) survive the AMORTISATION challenge of "diagonalise once, serve many π(x) queries"? | REFINEMENT+CLOSURE | E | Thread 2 commit step 1/5. **Adversarial finding**: the S53 closure of E3.1 stands but its dominant argument is sharpened. Argument 2 partially collapses — under amortisation across Q queries up to x=X, per-query cost reduces to O(K) explicit-formula evaluation, paid once-O(K³) for setup. **However**, Galway 2004 + Hiary computes the SAME K zeros at setup cost O(K^{17/13}) (Hiary t^{4/13}+ε per zero, height t≈K), with identical per-query O(K). **Setup ratio K³/K^{17/13} = K^{22/13} ≈ K^{1.69}**: at x = 10^{100}, Connes setup is 10^{84.6} times more expensive than Galway. Connes is strictly dominated by Galway in every cost regime — per-query (O(K) vs O(K), tie), one-shot (O(K³) vs O(K^{17/13}), Galway wins), full amortisation (K³/Q + K vs K^{17/13}/Q + K, Galway wins). **Empirical confirmation**: K_sustained(x) on x ∈ {100, 1000, 5000, 50000} fits to K_sust(x) ~ 0.48 · x^{0.55} (predicted slope 0.5, agrees with E1.5 / Riemann-von Mangoldt floor). **Reduction**: Thread 2 (Connes amortisation) ⊆ Thread 3 (Galway frontier). The Connes operator is just an alternative (and strictly more expensive) way to obtain the same K zeros that Galway/Hiary obtain more cheaply; per-query costs are identical because both routes reduce to the same explicit-formula partial sum on the same K zeros. **Sharper closure of E3.1 (refines row 706)**: even granting full amortisation and CCM unlimited per-prime accuracy, the diagonalisation setup cost K³ is dominated by Hiary's K^{17/13} for getting the same K zeros — independent of per-prime accuracy claims, of operator construction details, of amortisation regime. The remaining lever is K(x) = polylog(x) "in distribution" (Thread 3), to which both routes are equally subject. Cites E3.1, E1.5, S53 row 706, Galway 2004, Hiary 2011 (state_of_art_2026.md §2.5b). Cross-domain ingredient: classical asymmetric setup-cost comparison between dense eigensolvers (O(K³)) and Hiary's specialised zero-locating algorithm (O(t^{4/13}) per zero) — mildly novel framing; S53 had not compared to the Hiary baseline. See experiments/analytic/connes_amortisation/. | 193 |
+    811	
+    812	| S192 critique — audit of S164–S191 batch (S164 D44 Rédei + S82 commit thread closure S165/S166/S168/S169/S190 + S191 paradigm-shift T_Q + 20 verify slots S167/S170-S189) — does the batch contain inflated grades, mis-cited edges, or duplicate `novel/` placements? | CRITIQUE | C | Per-artefact verification of seven production sessions plus 20 verify slots. **Zero new demotions, zero inflations caught**: all seven self-grades honestly placed (six B, one C). **S190's HONEST self-down-grade A/B → C** distinguished as positive discipline signal — cleanest commit-thread closure in project history. **S191's "1.4% L²-match-with-S169" identified as TAUTOLOGICAL** (the construction projects onto exactly the subspaces S168 measures the energy of, so the agreement at the L² level is a definitional sanity check, not a new prediction); the actual B-grade content is the precision-at-π(N) lift table (new pointwise measurement) + d=14/18 missing-spike cross-validation (closes a S169 ambiguity) + L6 Lean candidate. **A-grade scarcity escalated**: S163 flagged 0/20, S192 flags **0/30** A-grades in the rolling window (S162-S191). The frontier-saturation pattern persists: every wild_swing (S164 D44 in this batch) closes at mode E or I via "matches matched-baseline" or "determined by graph/algebraic structure modulo arithmetic-blind invariant". **Recommended next-action**: commit mode → Thread 2 Connes-Consani-Moscovici amortisation (per .commit_state next_thread:connes_amortisation); non-commit → ATTACK_VECTORS §A.A7 plethysm sub-frame (S156's orbit-dim work explicitly leaves it open) OR §D.D48 BC endomotive Galois-orbit (S163 critique-pick still open). **Cadence note**: this is the third consecutive critique (S147, S163, S192) recommending an A-target attempt rather than another refinement; harness has continued to select commit/refinement modes; pattern flagged for human review (not at "≥ 2 F-grades in a row" escalation threshold — all sessions B/C). **No edits to EDGES.md, NOVELTY_CHALLENGES.md, ATTACK_VECTORS.md, or RESEARCH_AGENDA.md**. One trivial citation-drift note in S191 ("S190's 1.18 finite-size factor" should read "S166's"); not worth a separate row. See archive/ephemeral/critique_latest.md and archive/sessions/session192_critique.md. | 192 |
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md <<'EOF'
+
+| S194 commit-thread step 2 (Connes amortisation, Galway frontier in distribution) — does K = polylog(x) suffice for π(x) ± 1 *in distribution* (over a band of x), as a route around the worst-case Riemann-von Mangoldt K = √x floor that S193 reduced Thread 2 to? | EXPERIMENT+REFINEMENT | E | Thread 2 commit step 2/5. Empirical sweep using 8000 cached Riemann zeros and the Riemann explicit formula π(x) ≈ R(x) − 2 Σ_{k≤K} Re R(x^{ρ_k}). **Wide-range K_sustained**: x ∈ {1e3, 1e4, 5e4, 1e5, 5e5, 1e6, 5e6, 1e7}, K_max=8000; stabilised samples (4 of 8): K_sust = 77, 1097, 5375, 5530 at x = 1e3, 1e4, 1e5, 1e6 respectively. Log-log fit slope 0.626 — significantly above the naive √x baseline because K_sustained is a worst-case-along-K measure (sustained rounding requires the *tail* to stay below 0.5). **Fluctuation sweep around x ~ 1e5** (40 samples geometric in [1e5, 3.16e5], K_max=3000): hit-rate at K = log²(x) is 30%, at K = log³(x) is 42%, at K = √x is 20%. Median |error| at K = log²(x) is 1.58. **Fluctuation sweep around x ~ 1e6** (40 samples in [1e6, 3.16e6], K_max=8000): hit-rate at K = log²(x) drops to 5%, at K = log³(x) drops to 15%, at K = √x is 10%. Median |error| at K = log²(x) grows to 4.56. **Hit-rate at fixed polylog K-policy DECAYS with x**, and median |error| grows roughly as x^{0.39−0.46} (between log²(x) and log³(x) policies). If polylog K sufficed in distribution, hit-rate would tend to a positive limit and median error would stay bounded; both fail empirically over the tested range. **Negative-shape evidence** sharpening Thread 3 (Galway frontier): polylog K does not suffice for π(x) ± 1 in distribution at x ≤ 3·10^6. Combined with S193's strict-dominance of Connes setup by Galway/Hiary (K^{22/13} factor), Thread 2 remains closed by transitivity through Thread 3. Cites E3.1, E1.5, S193 row 810, Galway 2004, Hiary 2011. Cross-domain ingredient: empirical distribution of explicit-formula partial-sum errors at polylog truncation — a genuine measurement that the project had not previously made. **Falsifier**: produce a polylog K-policy whose hit rate at |error| ≤ 0.5 tends to a positive limit, or whose median |error| stays bounded, as x → ∞. Empirically falsified within tested range (x ≤ 3·10^6) but un-tested above. See experiments/analytic/connes_amortisation/connes_amortisation_results.md §"Slot 2 (S194) extension". | 194 |
+EOF
+echo "appended"
+    appended
+  [Bash] tail -25 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    **Sharper closure of E3.1 (replaces S53 argument 2):** the diagonalisation
+    setup cost O(K³) is dominated by Hiary's O(K^{17/13}) for getting the
+    same K zeros — a robust framing that survives any amortisation regime,
+    unlike S53's per-query framing which collapsed.
+    
+    **Reduction:** Thread 2 (Connes amortisation) ⊆ Thread 3 (Galway
+    frontier). Both routes reduce to the K(x)-zero explicit-formula sum;
+    the only remaining lever is K(x) = polylog(x) "in distribution"
+    (Thread 3's open question). Connes contributes nothing distinct.
+    
+    **Bug fix:** existing draft `connes_amortisation.py` (created earlier
+    in run by an interrupted prior attempt at the same slot) had a
+    numerical bug computing R(x^ρ) via principal log of x^ρ — phase-wraps
+    for x ≥ 1.5. Replaced by direct Ei(ρ · ln x / n) per the well-tested
+    `riemann_explicit.py` baseline.
+    
+    **Recommended next-action (slot 2/5):** extend K_sustained(x) measurement
+    to x ∈ {10^6 .. 10^8} using 8000 cached zeros; characterise distributional
+    fluctuation of K_sustained (Thread 3 frame, executed under Thread 2
+    commit envelope).
+    
+    **Files:** `experiments/analytic/connes_amortisation/connes_amortisation.py`
+    + `_results.md` + `_data.csv`; `archive/sessions/session193_commit_connes_amortisation.md`;
+    `status/CLOSED_PATHS.md` S193 row appended; `.commit_state` updated
+    sessions_used:1 → 2 with session_history S193.
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md <<'EOF'
+
+## S194 — commit thread 2 / Connes amortisation, slot 2/5 (2026-04-28)
+
+**Goal (from S193 next-action):** extend K_sustained(x) measurement to x ∈
+{10^5..10^7} using 8000 cached zeros; characterise distributional
+fluctuation.
+
+**Action.** Parameterised `connes_amortisation.py` with
+`--mode {legacy,wide,fluctuation,both}`. Ran wide-range
+sweep (x ∈ {1e3, 1e4, 5e4, 1e5, 5e5, 1e6, 5e6, 1e7}, K_max=8000) and
+two fluctuation sweeps: 40 samples geometric in [1e5, 3.16e5]
+(K_max=3000) and 40 in [1e6, 3.16e6] (K_max=8000).
+
+**Findings.**
+1. Wide-range: 4 of 8 stabilise within K=8000; log-log fit
+   K_sust ~ 1.92·x^{0.626} on stabilised points. Slope above 0.5
+   because K_sust is worst-case along K.
+2. Fluctuation x~1e5: hit-rate at K = log²(x) is 30%; at K = log³(x)
+   is 42%; at K = √x is 20%. Median |error| at K = log²(x) = 1.58.
+3. Fluctuation x~1e6: hit-rate at K = log²(x) drops to 5%; at
+   K = log³(x) drops to 15%. Median |error| at K = log²(x) grows
+   to 4.56 (factor 2.88 over factor-10 in x; √10 ≈ 3.16).
+
+**Negative-shape conclusion.** Hit-rate at fixed polylog K decays
+with x; median |error| grows roughly as x^{0.39−0.46}. Empirically
+falsifies "K = polylog(x) suffices in distribution" within tested
+range (x ≤ 3·10^6), sharpening the Thread 3 / Galway frontier closure
+that Thread 2 reduces to via S193.
+
+**Recommended next-action (slot 3/5):** Thread 2 has now produced
+two slots of refinement of the closure of E3.1 (S193 sharper kernel-
+independent argument; S194 empirical fluctuation sweep). Slot 3 should
+either (a) push the empirical band above x = 10^7 by computing
+additional zeros (currently capped at 8000), OR (b) attempt the
+*positive-distribution* heuristic argument: using GUE statistics of
+zero spacings, predict the asymptotic hit rate at K = c·√x and check
+against measurement. (b) is more productive — it extracts the limit
+behaviour without needing to push x.
+
+**Files:** `experiments/analytic/connes_amortisation/connes_amortisation.py`
+(extended); `_wide.csv`, `_fluctuation_1e5.csv`, `_fluctuation_1e6.csv`
+new; `_results.md` augmented with §"Slot 2 (S194) extension";
+`archive/sessions/session194_commit_connes_amortisation.md`;
+`status/CLOSED_PATHS.md` S194 row appended; `.commit_state` updated
+sessions_used:2 → 3 with session_history S193,S194.
+EOF
+echo "appended"
+    appended
+Now update the commit state:
+  [Write] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session194_commit_connes_amortisation.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session194_commit_connes_amortisation.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -20; echo "---"; find /apps/aplikacijos/prime-research/experiments/ -name "__pycache__" -type d
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream_dashboard_results.md
+    ---
+    /apps/aplikacijos/prime-research/experiments/constructions/brandt_mktp/__pycache__
+    /apps/aplikacijos/prime-research/experiments/sieve/maynard_weight_pointwise/__pycache__
+    /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/__pycache__
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" -not -path "*/.lake/*" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/leading_row_search_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/n6_robust_check_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/depth1_threshold_test_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/greedy_d2_np_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enum_d2_smart_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/enumerated_depth2_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/sat_depth2_ilp_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/circuit_complexity/sat_tc0_primes_n8/ptf_degree_battery_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/information_theory/liouville_gowers_uk/extension_mu_and_u3_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/information_theory/mu_weighted_chi_p_uk/wtrick_check_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/dynamical/d39_ollivier_ricci_chi_p/d39_ollivier_ricci_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/dynamical/d39_ollivier_ricci_chi_p/analyze_per_generator_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/quantum/ctqw_chi_p/ctqw_scaling_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/quantum/ctqw_chi_p/ctqw_supp_results.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/
+    connes_amortisation.py
+    connes_amortisation_data.csv
+    connes_amortisation_fluctuation_1e5.csv
+    connes_amortisation_fluctuation_1e6.csv
+    connes_amortisation_results.md
+    connes_amortisation_wide.csv
+My session's experiment directory is clean. The MISSING entries pre-date this session. Now set the run state.
+  [Bash] echo 194 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    194
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session 194 complete. Slot 2/5 of Thread 2 (Connes amortisation) executed:
+
+- Extended `connes_amortisation.py` with `--mode {wide,fluctuation,both}`, faster K_sustained computation, and a build-once cumulative π array.
+- Wide-range sweep on x ∈ {1e3..1e7}, K_max=8000 — 4/8 stabilised, log-log slope 0.626.
+- Two fluctuation sweeps (40 samples each at x~1e5 and x~1e6) measuring hit rate of |R_K(x)−π(x)| ≤ 0.5 at K-policies log²x, log³x, 5·log²x, √x, ½√x.
+- **Negative-shape result**: hit rate at K = log²(x) decays 30% → 5% across factor-10 in x; median |error| at K = log²(x) grows 1.58 → 4.56 (≈√10 scaling). Empirical evidence within tested range (x ≤ 3·10⁶) that K = polylog(x) does NOT suffice for π(x)±1 *in distribution* — sharpens Thread 3 / Galway frontier closure that Thread 2 reduces to via S193.
+- Self-grade **B** (substantive new measurement class, falsifiable observation).
+- Updated CLOSED_PATHS.md, SESSION_INSIGHTS.md, results.md; wrote session194 synthesis; advanced `.commit_state` to slot 3/5 with next-action recommendation (GUE-statistics heuristic prediction of asymptotic hit rate).
+--- Session ended ---
+Sleeping 60 seconds before next run...

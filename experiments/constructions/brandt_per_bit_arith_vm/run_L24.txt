@@ -1,0 +1,83 @@
+==============================================================================
+C3.a -- Arithmetic-primitive bounded-Kt VM (S105 successor)
+==============================================================================
+
+Extended VM: 16 ops, 4-bit encoding, L_MAX_EXT = 24
+             T_MAX = 4096, INT_CAP = 1000000000
+             INF_EXT = 37
+
+Op set: 0=PUSH0, 1=PUSH1, 2=PUSH_N, 3=INC, 4=ADD, 5=SUB, 6=MUL, 7=SHR1, 8=LOG2, 9=LI, a=DIV_LOG, b=GEO_SUM, c=DUP, d=EMIT_S, e=EMIT0, f=HALT
+
+Targets: 5 calibration + 18 per-bit cells = 23
+
+Enumerating extended-VM programs up to L = 24 bits (C inner loop, batch evaluator):
+  L =  4 bits  (         16 total,           2 simulated   t =   0.00 s)
+  L =  8 bits  (        256 total,          58 simulated   t =   0.00 s)
+  L = 12 bits  (      4,096 total,       1,266 simulated   t =   0.00 s)
+  L = 16 bits  (     65,536 total,      24,650 simulated   t =   0.02 s)
+  L = 20 bits  (  1,048,576 total,     451,522 simulated   t =   0.36 s)
+  L = 24 bits  ( 16,777,216 total,   7,966,938 simulated   t =   6.75 s)
+  Total simulations: 8,444,436
+  Done in 7.1 s.
+
+CALIBRATION -- Kt_b' on canonical targets:
+  0^16          Kt_b' =  10  L=4b, steps=   64  prog: EMIT_S
+  1^16          Kt_b' =  15  L=8b, steps=  128  prog: PUSH1, EMIT_S
+  (01)^8        Kt_b' =  15  L=8b, steps=  127  prog: EMIT_S, PUSH_N
+  step8         Kt_b' =  29  L=20b, steps=  318  prog: GEO_SUM, DIV_LOG, EMIT_S, PUSH_N, PUSH_N
+  step7_9       Kt_b' =  33  L=24b, steps=  382  prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+
+PER-BIT SCAN  (computing original Kt_b column for reference)...
+  original column done in 0.2 s
+
+  N   J  | len |  ones zeros | zone_E13 | J* | id-0 | Kt_b(orig) | Kt_b'(ext)
+  ---------------------------------------------------------------------------
+   3   0  |   8 |     3     5 | hard     |  3 |      |   15      |   24  
+   3   1  |   8 |     4     4 | hard     |  3 |      |   12      |   29  
+   3   2  |   8 |     1     7 | easy     |  3 |      |   11      |   23  
+
+   4   0  |  16 |     5    11 | hard     |  3 |      |   61 *    |   37 *
+   4   1  |  16 |     7     9 | hard     |  3 |      |   61 *    |   37 *
+   4   2  |  16 |     9     7 | easy     |  3 |      |   15      |   33  
+   4   3  |  16 |     0    16 | easy     |  3 |  Y   |    5      |   10  
+
+   5   0  |  32 |    14    18 | hard     |  4 |      |   61 *    |   37 *
+   5   1  |  32 |    13    19 | hard     |  4 |      |   61 *    |   37 *
+   5   2  |  32 |    12    20 | hard     |  4 |      |   61 *    |   37 *
+   5   3  |  32 |    13    19 | easy     |  4 |      |   61 *    |   33  
+   5   4  |  32 |     0    32 | easy     |  4 |  Y   |    6      |   10  
+
+   6   0  |  64 |    29    35 | hard     |  5 |      |   61 *    |   37 *
+   6   1  |  64 |    31    33 | hard     |  5 |      |   61 *    |   37 *
+   6   2  |  64 |    28    36 | hard     |  5 |      |   61 *    |   37 *
+   6   3  |  64 |    34    30 | easy     |  5 |      |   61 *    |   37 *
+   6   4  |  64 |    11    53 | easy     |  5 |      |   61 *    |   37 *
+   6   5  |  64 |     0    64 | easy     |  5 |  Y   |    7      |   10  
+
+PROGRAMS FOUND  (compressed cells in extended VM):
+  N=3, J=0 (hard)           Kt_b' =  24  L = 16 bits, steps =   255   prog: GEO_SUM, SHR1, EMIT_S, PUSH_N
+  N=3, J=1 (hard)           Kt_b' =  29  L = 20 bits, steps =   317   prog: DIV_LOG, EMIT_S, PUSH_N, INC, PUSH_N
+  N=3, J=2 (easy)           Kt_b' =  23  L = 16 bits, steps =   127   prog: EMIT0, LI, EMIT_S, PUSH_N
+  N=4, J=2 (easy)           Kt_b' =  33  L = 24 bits, steps =   382   prog: ADD, LI, LI, EMIT_S, PUSH_N, PUSH_N
+  N=4, J=3 (easy/trivial)   Kt_b' =  10  L =  4 bits, steps =    64   prog: EMIT_S
+  N=5, J=3 (easy)           Kt_b' =  33  L = 24 bits, steps =   379   prog: EMIT_S, LI, DUP, INC, PUSH_N, PUSH0
+  N=5, J=4 (easy/trivial)   Kt_b' =  10  L =  4 bits, steps =    64   prog: EMIT_S
+  N=6, J=5 (easy/trivial)   Kt_b' =  10  L =  4 bits, steps =    64   prog: EMIT_S
+
+VERDICT: F3 (intermediate hierarchy)
+
+PER-N DIAGNOSTIC:
+  N=4: ceil(N/2)=2, J*(N)=3
+        easy zone J = [2];   hard J = [0, 1];   trivial J = [3]
+        easy compressed = [2];   easy saturated = []
+        hard compressed = [];   trivial compressed = [3]
+  N=5: ceil(N/2)=3, J*(N)=4
+        easy zone J = [3];   hard J = [0, 1, 2];   trivial J = [4]
+        easy compressed = [3];   easy saturated = []
+        hard compressed = [];   trivial compressed = [4]
+  N=6: ceil(N/2)=3, J*(N)=5
+        easy zone J = [3, 4];   hard J = [0, 1, 2];   trivial J = [5]
+        easy compressed = [];   easy saturated = [3, 4]
+        hard compressed = [];   trivial compressed = [5]
+
+==============================================================================
