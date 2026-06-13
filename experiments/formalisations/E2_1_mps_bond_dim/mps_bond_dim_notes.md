@@ -5,6 +5,46 @@
 **Build status (S152):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
 **S152 closed the orthogonal corner `(W = 9, d = j + 1)` — the FIRST closure of an S128/S129/S144 "block-triangular-required" wheel.** `mps_bond_dim_W_eq_9_d_eq_j_plus_1 : (unfolding 9 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Uses `Matrix.det_fromBlocks_zero₂₁` in a NESTED 1+(3+3) decomposition (under `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7` outer + `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6` inner). The 1×1 outer block contributes `det = 1` via `det_fin_one`; the two 3×3 inner blocks each contribute `det = -1` via `det_fin_three`; total `det = 1 · (-1) · (-1) = 1`, hence `IsUnit`. **First instance using `det_fromBlocks_zero₂₁`** — orthogonal to the previous nine corner closures (all using `det_of_upperTriangular`). Permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)` from S151 pre-search; primes `{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61}` (4 new at S152 — `chiP_thirteen, _forty_one, _fifty_three, _sixty_one`). ~610 Lean lines (49 entry-lemmas + 49+36 = 85 fromBlocks reindex case checks + structural assembly). **Eleventh unconditional `mps_bond_dim` instance; tenth over a wheel `W ≥ 3`.**
 
+**S423 added Sub-arc D-1: `det_fin_four` private lemma.** Adds the
+`4 × 4` Leibniz-form determinant primitive (24 monomials, mathlib stops
+at `det_fin_three`) so that the W=15 / W=16 corner closures (each with
+`R = 9`, inner 8×8 admitting only a `(4, 4)` BT shape per S245
+pre-search) become single-session targets. Proof: cofactor expansion via
+`det_succ_row_zero` + per-cofactor `det_fin_three` + 9 `decide`-checked
+`Fin.succAbove` equalities for the `(p, 2)` pivot pairs that mathlib's
+default simp set leaves unresolved (`p ∈ {1, 2, 3} : Fin 4` and second
+arg `q = 2 : Fin 3`, the maximum of `Fin 3`); `ring` closes the
+24-monomial equality. Inserted at line 2964 of `Basic.lean`, immediately
+after the S143 `prod_univ_nine'` helper. The same lemma also unblocks any
+future closure whose pre-search recommends a 4×? block.
+
+**S489 added Sub-arc D-2: W=15 orthogonal-corner closure.**
+`mps_bond_dim_W_eq_15_d_eq_j_plus_1 : (unfolding 15 (j+1) j).rank = 9` for
+every `j ≥ 1`, sorry-free. Two-level nested `det_fromBlocks_zero₂₁`:
+outer `(1+8)`, inner `(4+4)`. Both 4×4 blocks `A_in` and `D_in` have
+`det = +1`; computed via `simp [det_fin_four]` (the S423 primitive) on
+the explicit `!![1, 1, 1, 1; 1, 0, 1, 1; 1, 1, 1, 0; 1, 1, 0, 0]` and
+`!![1, 1, 1, 1; 0, 1, 1, 1; 0, 1, 1, 0; 1, 0, 1, 1]` matrices. Total det =
+`1 · 1 · 1 = 1`, hence `IsUnit`. Permutation `ρ ↦ (0, 1, 3, 7, 13, 2, 6,
+8, 12)`, `σ ↦ (2, 1, 3, 7, 13, 0, 6, 10, 12)` from S245 pre-search.
+Diagonal primes `{3, 17, 47, 113, 197, 31, 97, 131, 193}`; 7 new
+`chiP_X_eq_one` helpers `{101, 103, 107, 131, 191, 193, 197}` (all via
+`norm_num` per S137 precedent for primes ≥ 30); 18 prior primes reused
+(`{2, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 97, 109,
+113, 127, 181, 199}`). 52 composites (`{1, 4, 8, 14, 16, 18, 22, 26, 28,
+32, 33, 34, 38, 44, 46, 48, 49, 52, 56, 58, 91, 92, 93, 94, 98, 104, 106,
+108, 112, 116, 118, 119, 121, 122, 123, 124, 128, 133, 134, 182, 183,
+184, 187, 188, 194, 196, 198, 202, 203, 206, 208, 209}`); 39 via
+`decide`, 13 via `norm_num` (the ≥150 ones). Required `set_option
+maxHeartbeats 4000000` (20×) — the 81-cell `fin_cases × fin_cases`
+matrix-equality proof at R = 9 exceeds the 10× budget that suffices at
+R = 7 (W=14 in S235); scaling is `R²`. ~860 Lean lines.
+**Fourteenth unconditional instance; thirteenth over wheel `W ≥ 3`;
+first instance using `det_fin_four`.** Refutes the S245 pessimistic
+estimate that this would need a structural workaround; the (4,4) shape
+is unique among parts-≤-4 partitions of 8 for W=15, and `det_fin_four`
+makes it concretely workable.
+
 **No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
 
 ## What this file formalises
@@ -91,6 +131,13 @@ The proof is decomposed into 8 declarations:
 | `chiP_sixty_one_eq_one` *(S152)*          | `chiP 61 = 1`                                  | **done** |
 | `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner exhibit (R=7, **first `det_fromBlocks_zero₂₁` route** — `(1+6)→(3+3)` nested block-DIAGONAL decomposition; permutation from S151 pre-search) | **done** |
 | `mps_bond_dim_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner case `rank = 7` (sorry-free; closes the first S128/S129/S144 "block-triangular-required" wheel) | **done** |
+| `chiP_sixty_seven_eq_one` *(S235)*        | `chiP 67 = 1`                                  | **done** |
+| `chiP_one_hundred_thirteen_eq_one` *(S235)*    | `chiP 113 = 1`                            | **done** |
+| `chiP_one_hundred_seventy_three_eq_one` *(S235)* | `chiP 173 = 1`                          | **done** |
+| `chiP_one_hundred_eighty_one_eq_one` *(S235)*    | `chiP 181 = 1`                          | **done** |
+| `exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1` *(S235)* | W=14 corner exhibit (R=7, **first three-level nested `det_fromBlocks_zero₂₁`** — `(1+6) → ((5+1)) → ((2+3)+1)`; first `det_fin_two` use; permutation from S235 pre-search) | **done** |
+| `mps_bond_dim_W_eq_14_d_eq_j_plus_1` *(S235)* | W=14 corner case `rank = 7` (sorry-free; closes a third S128/S137/S144 "block-triangular-required" wheel; refutes S206 composite-W-tractability hypothesis) | **done** |
+| `det_fin_four` *(S423, private)* | local `4×4` determinant Leibniz expansion (24 terms, mathlib provides only up to `det_fin_three`); proof = cofactor expansion via `det_succ_row_zero` + `det_fin_three` per cofactor + 9 `decide`-checked `Fin.succAbove` resolutions for `(p, 2)` pivot pairs | **done** |
 
 (Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
 `Nat.le_antisymm` of the auxiliary lemmas. As of S83, `lower_bound` is
@@ -859,6 +906,138 @@ the prime-density argument from the deep portion.
   prediction that W=7 needed "a multi-session new technique" — actual
   closure is single-session via S152's nested-fromBlocks pattern with
   a fresh pre-search.
+
+* **Route A^{(14)} (orthogonal corner, `W = 14`, three-level nested
+  `det_fromBlocks_zero₂₁` route). DONE S235.**
+  Closed `exists_invertible_submatrix` for `(W = 14, d = j + 1)` via
+  six new declarations: `chiP_sixty_seven_eq_one`,
+  `chiP_one_hundred_thirteen_eq_one`,
+  `chiP_one_hundred_seventy_three_eq_one`,
+  `chiP_one_hundred_eighty_one_eq_one`,
+  `exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1`, and
+  `mps_bond_dim_W_eq_14_d_eq_j_plus_1 : (unfolding 14 (j+1) j).rank = 7`
+  for every `j ≥ 1`. All sorry-free; `lake build` succeeds.
+
+  **Pre-search: 34 (2, 3, 1) candidates.** The S235 pre-search
+  (`w14_blocktriangular_search.py`, `w14_j1_analysis.py`,
+  `w14_j1_shape_search.py`, `w14_j1_best_candidate.py`) on the W=14
+  j=1 inner 6×6 found `(2, 3, 1)` to be the **unique parts-≤-3 shape**
+  admitting a BT decomposition — a forced positional constraint
+  driven by row 8 (the unique support-size-1 row, with
+  chiP(113) = 1). Other parts-≤-3 shapes ((3, 3), (1, 2, 3),
+  (1, 3, 2), (3, 1, 2), (3, 2, 1), (2, 1, 3), (2, 2, 2)) all FAIL.
+  Best candidate (4 new helpers): `ρ ↦ (0, 2, 4, 3, 6, 12, 8)`,
+  `σ ↦ (1, 2, 8, 4, 10, 12, 0)`.
+
+  **Three-level nested `det_fromBlocks_zero₂₁`** — first instance in
+  the file. The 7×7 submatrix decomposes as `(1 + 6) → ((5 + 1)) →
+  ((2 + 3) + 1)`:
+  - **Outer (1+6) split** via `Fin 1 ⊕ Fin 6 ≃ Fin 7`. Layer-1 1×1
+    block at row 0 × dead col 1 with `chiP 2 = 1`. Lower-left zero
+    by `chiP (14r + 2) = 0` for `r ≥ 1`.
+  - **Mid (5+1) split** of the 6×6 D_outer via `Fin 5 ⊕ Fin 1 ≃ Fin
+    6`. The 1×1 corner is row 8 × col 0 with `chiP 113 = 1`.
+    Lower-left zero by chiP at `{115, 117, 121, 123, 125}` all 0.
+  - **Inner (2+3) split** of the 5×5 D_mid via `Fin 2 ⊕ Fin 3 ≃ Fin 5`.
+    The 2×2 A block (rows {2, 4} × cols {2, 8}) is `[[1, 1], [1, 0]]`
+    with `det = -1` via `Matrix.det_fin_two`. The 3×3 B block (rows
+    {3, 6, 12} × cols {4, 10, 12}) is `[[1, 1, 0], [1, 0, 1],
+    [1, 1, 1]]` with `det = -1` via `Matrix.det_fin_three`.
+
+  Total `det = 1 · (1 · ((-1) · (-1)) · 1) = 1`, hence `IsUnit 1`.
+
+  **First instance using `Matrix.det_fin_two`.** Prior closures used
+  only `det_fin_one`, `det_fin_three`, or `det_of_upperTriangular`.
+
+  **Heartbeat budget.** Required `set_option maxHeartbeats 2000000`
+  (10× default) — same as W=20 S143. The 49-entry `fin_cases ×
+  fin_cases` matrix-equality elaboration consumes most of the budget.
+
+  **`norm_num` for composites ≥ 150.** Composites `{169, 170, 171,
+  177}` exceed `decide`'s recursion depth; switched to `norm_num`
+  (matches W=18 S137 precedent). Other 24 composites use `decide`
+  directly.
+
+  **Refutation of S206 hypothesis.** S206 hypothesised that "composite
+  W avoids the W=11-style atomic-block obstruction". W=14 (composite)
+  shows the obstruction is NOT controlled by primality of W; instead
+  it is controlled by the *distribution of row-support sizes*. W=14
+  *narrowly escapes* atomicity only via the unique (2, 3, 1) shape,
+  driven by the row-8 support-size-1 isolation.
+
+  **Thirteenth unconditional `mps_bond_dim` instance; twelfth instance
+  over a wheel `W ≥ 3`; third instance using
+  `Matrix.det_fromBlocks_zero₂₁`** (after S152 W=9 and S159 W=7) —
+  but **first three-level nested** instance. Closes the third
+  S128/S137/S144 "block-triangular-required" wheel. The closed-W set
+  is now `{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 20}` — thirteen
+  wheels. See
+  `experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search_results.md`.
+
+* **Sub-arc D-1 — `det_fin_four` private lemma. DONE S423.**
+  Adds the `4 × 4` determinant primitive required by the W=15 / W=16
+  corner closures (per S245 pre-search: each has `R = 9`, the inner
+  `8 × 8` block admits only a `(4, 4)` shape under the
+  `det_fromBlocks_zero₂₁` template, so each `4 × 4` block needs a
+  closed-form determinant lemma). Mathlib provides `det_fin_two` and
+  `det_fin_three` but stops there.
+
+  **Statement.** `private theorem det_fin_four {R} [CommRing R]
+  (A : Matrix (Fin 4) (Fin 4) R) : A.det = (24-term Leibniz expansion)`.
+  The 24 monomials are `(±1) · A 0 σ(0) · A 1 σ(1) · A 2 σ(2) · A 3 σ(3)`
+  for each `σ ∈ S₄`, with sign equal to the parity of σ's inversion count.
+
+  **Proof skeleton (lines 2977–3024 of `Basic.lean`).** Cofactor
+  expand along row 0 via `Matrix.det_succ_row_zero`, then expand each
+  `3 × 3` cofactor via `Matrix.det_fin_three`, then close via `ring`.
+  The cofactor expansion produces submatrix entries of the form
+  `A.submatrix Fin.succ ((? : Fin 4).succAbove) i k`. After
+  `Matrix.submatrix_apply` and the standard `Fin.succ_zero_eq_one /
+  succ_one_eq_two / zero_succAbove / succ_succAbove_zero / one`
+  normalisations, **the cases where the second `succAbove` argument
+  is `(2 : Fin 3)` (the maximum) are NOT covered by mathlib's default
+  `succAbove` simp lemmas** — exposed as 9 unresolved `Fin.succAbove i 2`
+  terms (3 pivots × 3 second-arg values, with the `(0 : Fin 4).succAbove`
+  case handled by `Fin.zero_succAbove`). We supply the 9 missing
+  pivot-pair facts as `decide`-checkable equalities `h_p_q :
+  (p : Fin 4).succAbove (q : Fin 3) = ?` for `p ∈ {1, 2, 3}` and
+  `q ∈ {0, 1, 2}`, add them to the simp set, and `ring` closes the
+  24-monomial equality.
+
+  **Single-session, sorry-free, axiom-pure.** Build adds ~1.5 minutes
+  to total compile time (most of which is the `ring` normalisation
+  over 24 monomials). Inserted at line 2964 of `Basic.lean`, immediately
+  after `prod_univ_nine'` (the analogous mathlib-pattern-mirror lemma
+  added at S143 for W=20).
+
+  **What this unblocks.** Sub-arcs D-2 (W=15 closure) and D-3 (W=16
+  closure) become single-session targets with the standard nested
+  `det_fromBlocks_zero₂₁` template. The expected pattern (per S245
+  pre-search candidates):
+  - **D-2 W=15:** `ρ = (0, 1, 3, 7, 13, 2, 6, 8, 12)`,
+    `σ = (2, 1, 3, 7, 13, 0, 6, 10, 12)`, dead col 2, two 4×4 blocks
+    each closed via `det_fin_four` with block dets `[+1, +1]` →
+    full det `+1`. Max row 13 < 15 (j ≥ 1 OK). 7 new prime helpers
+    `{101, 103, 107, 131, 191, 193, 197}` (≥ 150 → `norm_num`).
+  - **D-3 W=16 (optional):** `ρ = (0, 1, 2, 3, 7, 5, 11, 13, 14)`,
+    `σ = (1, 0, 6, 10, 12, 2, 4, 8, 14)`, dead col 1, blocks `[-1, -1]`
+    → full det `+1`. Max row 14 < 16. 7 new prime helpers
+    `{83, 191, 223, 227, 229, 233, 239}`. The W=16 A-block can use
+    inner `(1, 3)` fromBlocks instead of `det_fin_four`, saving one
+    invocation; B-block still needs `det_fin_four`.
+
+  **The same `det_fin_four` lemma also unblocks** any future closure
+  whose pre-search recommends a `4 × ?` block (e.g., W ∈ {21, 22, 24,
+  25, 27, 28, 30} pre-searches that may favour `(4, ...)` shapes when
+  parts-≤-3 atomicity bites). Sub-arc D-1 is therefore a permanent
+  template addition rather than a single-corner trick.
+
+  **Note on `det_fin_five`.** The W=11 closure (Path B) needs
+  `det_fin_five` for its atomic 5×5 odd block. Sub-arc D-1 is a useful
+  precedent (proof skeleton: `det_succ_row_zero` + `det_fin_four` + 16
+  `decide` helpers for `(p : Fin 5).succAbove (q : Fin 4)` pivots
+  outside the `succAbove_zero / one` covered set), but does not solve
+  W=11 directly — that's a separate sub-arc.
 
 * **Route A'''' (orthogonal corner, `W = 4`). DONE S107.**
   Closed `exists_invertible_submatrix` for `(W = 4, d = j + 1)` via

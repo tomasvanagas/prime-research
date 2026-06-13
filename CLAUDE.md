@@ -147,7 +147,25 @@ A new mathematical object, identity, or structural fact that:
   (b) a working algorithm beating an existing benchmark on at least one
       concrete metric;
   (c) a frontier attack from `ATTACK_VECTORS.md` that produced a
-      *partial positive result* (not just "the technique didn't apply").
+      *partial positive result* (not just "the technique didn't apply");
+  (d) **a partial-positive result on an adjacent problem** — a faster
+      algorithm or new structural fact for a π-related computation that
+      wasn't previously known to be cheaper, even if it doesn't reduce
+      the complexity of single-x π(x) itself. Examples: batched π
+      queries, π in narrow windows, π in arithmetic progressions, prime
+      gap counting, density estimation at multiple scales, or any
+      concrete π-related problem where a measurable speedup is achieved.
+      The Correlation Dichotomy theorem (S224, Thread 5) is the
+      prototype: it does not reduce single-x π(x) complexity, but it
+      gives a 33× speedup for batched correlated queries — that is
+      A-grade-shaped output and the framework should produce more of it.
+
+**Partial-positive results are now first-class A-grade output**, not a
+consolation. After 200+ sessions producing negative-shape closures, the
+framework's most valuable next direction is finding more
+Correlation-Dichotomy-shaped wins on adjacent problems. See
+`OPEN_POSITIVE_TARGETS.md` for the curated list of problem variants
+where such wins are plausible.
 
 **A Lean 4 formalisation alone is NOT A-grade** (was a previous criterion;
 demoted because in practice it became "the only reachable A" and
@@ -434,15 +452,19 @@ reporting beats inflated success any day at this stage.
 
 ### Highest-EV mathematical threads (drive `commit` mode)
 
-**STATUS (S202, 2026-04-28):** All three originally-listed threads
-are now CLOSED. The list below is preserved for historical context;
-the next commit slot must NOT pick from it. The next commit thread
-must come from `frontier_gen` mode (auto-fire conditions met:
-A-grade drought S162–S201 ≥ 40 sessions; all three commit threads
-closed) or, failing that, from a direct A-grade attempt on an
-existing open ATTACK_VECTORS entry. Recommended fall-back targets:
-A7 plethysm sub-frame (S192 flagged) or D44 BC endomotive
-Galois-orbit (S163 flagged).
+**STATUS (Thread 11 active, 2026-04-30):** Threads 1-10 are CLOSED.
+Thread 11 (minimum line cover of primes under 2D embeddings) is
+ACTIVE — see `.commit_state` and `ATTACK_VECTORS.md` §H.H4. The next
+commit slot picks up Thread 11 slot 1; subsequent commit slots
+continue the 5-slot arc per `OPEN_POSITIVE_TARGETS.md` §P11. **Do not
+pick a different thread until Thread 11 reaches `sessions_used:5_final`.**
+
+Threads 1-10 summary: 4 obstruction theorems on per-query polylog
+(Threads 1-4); 4 partial-positive conditional theorems on adjacent
+problems (Threads 5, 7, 8, 9); 1 partial-negative (Thread 6); 1
+B-NEGATIVE structural (Thread 10). The framework's pivot to
+positive-direction work has produced ~1 partial-positive per 30-50
+sessions. Thread 11 attempts the first incidence-geometric variant.
 
 **Thread 1 — S82 invariant-subspace theorem (highest EV). [CLOSED S190]**
 Statement: *the spike eigenvectors of `M^T M` (chi_P MPS-Gram) are
@@ -468,14 +490,66 @@ random-phase heuristic across five regimes (per-query, amortised,
 CCM-spectral, in-distribution, log-Gaussian-smoothed) by the S202
 unified theorem; K*(x, p, h) = Θ̃(x) for any p ∈ (0, 1). Open
 falsifiers acknowledged but not needed for closure: non-Gaussian
-kernels, x ≥ 10^9, rigorous GUE pair-correlation bound, cross-x
-amortisation. See S195 + S196 syntheses; unified in S202.
+kernels, x ≥ 10^9, rigorous GUE pair-correlation bound, **cross-x
+amortisation (now Thread 5)**. See S195 + S196 syntheses; unified in S202.
 
-`commit` mode still locks 5 consecutive sessions on ONE thread; the
-state is in `./.commit_state` (currently `status:DONE`). **Do NOT
-pivot threads mid-session.** When the next commit slot runs, fresh
-threads should already exist in `.commit_state` via `frontier_gen`
-mode; if not, escalate to user for manual thread selection.
+**Thread 4 — A7 GCT plethysm sub-frame. [CLOSED S215]**
+Adiprasito-Bürgisser-Ikenmeyer-Panova plethysm-level occurrence
+obstructions on `f_χ_P^(n)_d`. Resolution: structural identity
+`closure(GL_n · χ_P_d) ⊆ V_{d,1}^{n,d}` (Chow variety of forms with
+at least one linear factor); `C[orbit-closure(χ_P_d)]_k ≅
+C[orbit-closure(matched-baseline)]_k` as GL_n-modules at every k ≥ 1.
+**No occurrence obstruction at any plethysm level separates χ_P from
+matched-support baselines.** See `archive/sessions/session211_*` through
+`session215_*`.
+
+**Thread 5 — Cross-x amortisation across the three pillars. [CLOSED S224, PARTIAL-POSITIVE]**
+Outcome: Correlation Dichotomy theorem. Conditional batch-polylog for
+correlated narrow-window queries (33× empirical speedup at M=64).
+First partial-positive in the project. See `.commit_state` `prev_thread_5`.
+
+**Threads 6-10 — partial-positive search on `OPEN_POSITIVE_TARGETS.md` §1-§2.**
+Thread 6 P1 (π in APs batched on q): CLOSED-B partial-negative S231.
+Thread 7 P3 (polylog approx π with named ε): CLOSED-CONDITIONAL S244
+under RH+Montgomery. Thread 8 P2 (π_h batched on h): CLOSED-CONDITIONAL
+S421 under HLRH. Thread 9 P4 (k-tuple narrow window batched on x):
+CLOSED-CONDITIONAL S433. Thread 10 P5 (Galway constant): CLOSED-B
+NEGATIVE structural S436 — Galway-shape itself is asymptotically loose
+at the worst-case-of-N tail.
+
+**Thread 11 — Minimum line cover of primes under 2D embeddings. [ACTIVE]**
+First incidence-geometric attack in the project. Under a chosen 2D
+embedding `Φ: ℕ → ℝ²` (Ulam spiral, residue-class grid, polynomial-image
+grid), what is the minimum number of straight lines `L_Φ(N)` covering
+all primes ≤ N? Ulam spiral (1963) shows visual diagonal lines of primes
+corresponding to Hardy-Littlewood quadratic-prime sequences (Euler's
+`n²+n+41` is canonical). **A-grade target:** named-exponent scaling
+`L_Ulam(N) ~ π(N)^α` with α < random-points lower bound, or polylog-time
+approximation algorithm exploiting HL alignment. **Predicted closure
+mode:** E (lines reduce to HL quadratic-prime constants, constant-
+factor compression only). **5-slot plan in `.commit_state`.**
+
+(legacy ACTIVE marker removed — Thread 5 closed PARTIAL-POSITIVE)
+**Thread 5 (legacy header) — Cross-x amortisation, originally active.**
+Threads 1-4 closed the *per-query* polylog frontier. **But Riemann
+zeros are properties of ζ, not x.** Per-x cost decomposes into
+`K_zeros_setup` (amortisable across M batched queries) +
+`K_per_x_evaluation` (per-query, not amortisable). Open question:
+*can `K_per_x_evaluation = polylog(x)` while `K_zeros_setup = Θ̃(x_max)`?*
+If yes, M-batched amortised cost is `Θ̃(x_max)/M + polylog(x)` →
+polylog when M ≥ Θ̃(x_max)/polylog(x_max). Same question for
+Meissel-Lehmer / HKM intermediate sieve state and for Aggarwal's
+binary-search sub-queries (E6.6). S202 WRAP explicitly flagged this
+as a *legitimate falsifier of Thread 3*, noted as open. **A-grade
+target: batch-polylog π(x) algorithm — first of its kind.** See
+`ATTACK_VECTORS.md` §H.H1, `RESEARCH_AGENDA.md` Arc 7, `.commit_state`
+`thread:cross_x_amortisation` for the 5-slot plan.
+
+`commit` mode locks 5 consecutive sessions on ONE thread; the state
+is in `./.commit_state` (currently `status:ACTIVE` on Thread 11).
+**Do NOT pivot threads mid-session.** Thread 11 is the active target
+until `sessions_used:5_final`. Threads 1-10 are CLOSED. After
+Thread 11 closes, escalate to user for next thread selection.
 
 ### Autonomy invariants (NEW — required for unattended operation)
 

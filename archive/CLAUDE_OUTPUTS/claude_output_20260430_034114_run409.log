@@ -1,0 +1,820 @@
+[autonomy] Default mode 'reframe' overridden by 'commit'
+=== Run #409 — Mode: commit — Thu Apr 30 03:41:14 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:p3_polylog_approx_pi_named_eps
+    sessions_used:1
+    status:ACTIVE
+    session_history:S240
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    last_synthesis:archive/sessions/session240_commit_p3_partial_sum_evaluator.md
+    thread_7_summary:Thread 7 = OPEN_POSITIVE_TARGETS.md §P3 — approximate pi(x) with bounded error eps(x) = O(x^{1/2}/polylog(x)) in polylog time. Slot 1 (S240): build partial-sum evaluator pi_K(x) = R(x) - 2 sum Re R(x^rho_k) for K = 1..K_max policies; empirical eps(x, K) at x in {10^5, 10^6, 10^7, 10^8, 10^10} for K policies {1, log x, log^2 x, log^3 x, log^4 x, x^{1/4}, x^{1/2}}; compare to S195 sigma-prediction sigma = sqrt(x) log K / (pi sqrt(2K) log x); derive named-exponent corollary eps(x, K=log^alpha x) = O(sqrt(x) log log x / log^{1+alpha/2} x) under Montgomery random-phase heuristic.
+    thread_7_a_grade_targets:(a) explicit polylog-time algorithm with provable eps(x) = O(x^{1/2}/polylog(x)) with named exponent; (b) tight eps vs K characterisation across x decades; (c) lower bound matching eps >= Omega(sqrt(x)/polylog(x)) under GRH or random-phase heuristic.
+    thread_7_slot_plan:
+      slot_1: Build partial-sum evaluator and empirical eps(x, K) at x in {10^5..10^10} for K policies {1, log x, log^2 x, log^3 x, log^4 x, x^{1/4}, x^{1/2}}. Fit eps vs K. Identify saturation behaviour. Derive named-exponent formula.
+      slot_2: Theoretical extrapolation via Montgomery pair-correlation random-phase heuristic (S195 framework) to higher x = 10^15, 10^20. Closed-form eps(x, K) prediction.
+      slot_3: Push to extreme x via Hiary 2011 multi-evaluation method. Test if asymptotic eps scaling holds.
+      slot_4: Smoothing kernel selection — Gaussian, raised-cosine. Does smoothing reduce eps beyond unsmoothed?
+      slot_5: Theoretical wrap. Prove eps(x, K = log^alpha x) = O(sqrt(x) log log x / log^{1+alpha/2} x) under Montgomery; or document break.
+    recommended_next_action:Slot 1 ACTIVE in S240. Slot 2 should pick up named-exponent prediction at extreme x via S195's gue_heuristic.py predictor extrapolated to x = 10^15, 10^20, plus measure-multi-sample averaging at x = 10^9, 10^10 (need more samples than the slot-1 single-anchor approach).
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -30
+    session73_critique.md
+    session74_c2_free_cumulants.md
+    session75_l1_lean_live_columns_count.md
+    session76_l1_lean_upper_bound.md
+    session77_n1_tensor_compression_family.md
+    session78_critique.md
+    session79_a3_cayley_spectral_primality.md
+    session80_d4_szegedy_walk.md
+    session81_c6_pillar_tradeoff_diagram.md
+    session82_c2_spike_eigenvectors.md
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session2[34][0-9]" | sort
+    session230_commit_p1_composite_q_multi_axis_fft.md
+    session231_commit_p1_cross_conductor_wrap.md
+    session232_d17_discrete_morse_divisibility.md
+    session233_d38_prime_mzv.md
+    session234_c9biv_4point_HL_identity.md
+    session235_arc2_w14_corner_closure.md
+    session236_b4_voronin_universality.md
+    session237_reverify_e2_13.md
+    session238_f1aig_phase_diagram.md
+    session239_paradigm_shift_parity_trinity.md
+    session240_commit_p3_partial_sum_evaluator.md
+    session240_critique.md
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session240_commit_p3_partial_sum_evaluator.md
+    1	# Session 240 — commit Thread 7 slot 1: P3 partial-sum evaluator + named-exponent corollary
+    2	
+    3	**Date:** 2026-04-30
+    4	**Mode:** commit (Thread 7 / P3 polylog approximate π(x) with named ε)
+    5	**Slot:** 1 of 5 (initial slot, fresh thread)
+    6	**Self-grade:** **B** — substantive refinement giving an explicit
+    7	named-exponent formula with empirical confirmation extending S195
+    8	from x = 10⁷ to x = 10¹⁰. Not A because the result is heuristic and
+    9	is a re-framing of the S195 variance formula. See §11 of
+    10	`experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md`.
+    11	
+    12	## Mission
+    13	
+    14	CLAUDE.md `.commit_state` was DONE on Thread 6 (P1 batched-on-q AP
+    15	primes, CLOSED-B at S231). Per the recommended-next-action, advance
+    16	to Thread 7 (P3) and reset `sessions_used:0`.
+    17	
+    18	Slot 1 plan: build the partial-sum evaluator π_K(x) = R(x) − 2 Σ_{j≤K}
+    19	Re R(x^{ρ_j}) for the broad K-policy set {1, log x, log² x, log³ x,
+    20	log⁴ x, log⁶ x, x^{1/4}, x^{1/2}}; measure empirical ε(x, K) at
+    21	x ∈ {10⁵, 10⁶, 10⁷, 10⁸, 10¹⁰}; fit ε vs K; identify saturation
+    22	behaviour; derive named-exponent formula.
+    23	
+    24	## Output (the named-exponent corollary)
+    25	
+    26	**Theorem (heuristic; S195 variance formula re-framed).** Under the
+    27	Montgomery random-phase heuristic for {γ_j log x mod 2π}, for K =
+    28	(log x)^α with any α > 0:
+    29	
+    30	  σ(x, K = log^α x) ≈ α · √x · log log x / (π √2 · log^{1 + α/2} x).
+    ... (143 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/
+    main_run.log
+    polylog_approx_pi.py
+    polylog_approx_pi_main.csv
+    polylog_approx_pi_results.md
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi.py
+    1	"""
+    2	Polylog approximation to pi(x) with named-exponent error.
+    3	
+    4	Thread 7 (commit, slot 1, S240). Target: OPEN_POSITIVE_TARGETS.md §P3.
+    5	
+    6	The partial-sum truncation under RH is
+    7	
+    8	  pi_K(x) = R(x) - 2 sum_{j=1..K} Re R(x^{rho_j}),
+    9	  rho_j = 1/2 + i gamma_j.
+    10	
+    11	S195 derived (under the Montgomery random-phase heuristic for {gamma_j log x mod 2 pi})
+    12	
+    13	  sigma(K, x) := stddev(pi(x) - pi_K(x))
+    14	              ~  sqrt(x) * log K / (pi * sqrt(2 K) * log x).               (*)
+    15	
+    16	This script (a) builds a clean evaluator using the same R_at_rho machinery
+    17	as connes_amortisation.py but parameterised for the broader K-policy set
+    18	needed for P3, and (b) measures the empirical |error| at x in
+    19	{10^5, 10^6, 10^7, 10^8, 10^10} for K policies
+    20	{1, log x, log^2 x, log^3 x, log^4 x, x^{1/4}, x^{1/2 cap 8000}}.
+    21	
+    22	Comparing the empirical |error| to (*) gives the named-exponent corollary
+    23	
+    24	  eps(x, K = log^alpha x) ~ Theta( sqrt(x) * log log x / log^{1 + alpha/2} x )
+    25	
+    26	under the random-phase heuristic. For alpha = 6 this is sqrt(x) * log log x / log^4 x;
+    27	for alpha = 2 it is sqrt(x) * log log x / log^2 x. Both are strictly better
+    28	than the trivial Riemann smooth bound R(x)-pi(x) = O(sqrt(x)).
+    29	
+    30	The script is parameterised by CLI args:
+    ... (394 more lines)
+  [Bash] which primecount primesieve 2>&1; ls /apps/aplikacijos/prime-research/data/ 2>&1 | head -30
+    combine_zeros.py
+    gen_zeros_2000.log
+    gen_zeros_2000.py
+    gen_zeros_8000.log
+    gen_zeros_8000.py
+    gen_zeros_parallel.py
+    odlyzko
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_2000.txt
+    zeta_zeros_300.txt
+    zeta_zeros_500.txt
+    zeta_zeros_8000.txt
+  [Bash] command -v primecount; command -v primesieve; command -v sympy 2>/dev/null; python3 -c "import sympy; print(sympy.__version__)" 2>&1
+    1.14.0
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/ | head -30
+    advanced_convergence.py
+    advanced_convergence_results.md
+    analytic_continuation.py
+    analytic_continuation_results.md
+    analytic_methods.py
+    analytic_methods_results.md
+    analytic_nt_new.py
+    analytic_nt_new_results.md
+    batched_q_amortisation
+    cipolla_pade.py
+    cipolla_pade_results.md
+    cohn_elkies_chi_p
+    compressed_sensing_zeros.py
+    compressed_sensing_zeros_results.md
+    conditional
+    connes_amortisation
+    connes_operator
+    convergence_accel.py
+    convergence_accel_results.md
+    corrected_variable_accuracy.py
+    corrected_variable_accuracy_results.md
+    cross_x_amortisation
+    d37_quantum_modular_chi_p
+    d43c_k_truncated_residual
+    deep_error_analysis.py
+    deep_error_analysis_results.md
+    dirichlet_bypass.py
+    dirichlet_bypass_results.md
+    few_zeros_search.py
+    few_zeros_search_results.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/ /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/ 2>&1
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/:
+    connes_amortisation.py
+    connes_amortisation_data.csv
+    connes_amortisation_fluctuation_1e5.csv
+    connes_amortisation_fluctuation_1e6.csv
+    connes_amortisation_fluctuation_1e7.csv
+    connes_amortisation_results.md
+    connes_amortisation_wide.csv
+    galway_smoothing.py
+    galway_smoothing_data.csv
+    galway_smoothing_results.md
+    galway_smoothing_summary.csv
+    gue_heuristic.py
+    gue_heuristic_results.md
+    
+    /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/:
+    cross_x_aggarwal_amortised.py
+    cross_x_aggarwal_amortised_results.md
+    cross_x_aggarwal_hyperbola.csv
+    cross_x_aggarwal_op_breakdown.csv
+    cross_x_aggarwal_shared_small.csv
+    cross_x_aggarwal_summary.csv
+    cross_x_batched_amortised.csv
+    cross_x_batched_direct.csv
+    cross_x_batched_evaluator.py
+    cross_x_batched_evaluator_results.md
+    cross_x_batched_taylor.csv
+    cross_x_decoupled_eval.csv
+    cross_x_decoupled_fits.csv
+    cross_x_decoupled_perterm_spread.csv
+    ... (18 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] grep -n "P3" /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md | head -20; echo "---"; grep -n "S195\|sigma" /apps/aplikacijos/prime-research/archive/sessions/session195_commit_galway_frontier.md | head -30
+    75:### P3 — Approximate π(x) with bounded error in polylog time [Thread 7 ACTIVE]
+    ---
+    grep: /apps/aplikacijos/prime-research/archive/sessions/session195_commit_galway_frontier.md: No such file or directory
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -i "195\|galway\|connes_amort\|s202\|s195" | head -20
+    session193_commit_connes_amortisation.md
+    session194_commit_connes_amortisation.md
+    session195_commit_connes_amortisation.md
+    session196_commit_connes_amortisation.md
+    session202_commit_connes_amortisation.md
+  [Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    70	
+    71	**A-grade target:** per-h amortised polylog over H = poly(log x).
+    72	
+    73	**Budget:** 4-session arc.
+    74	
+    75	### P3 — Approximate π(x) with bounded error in polylog time [Thread 7 ACTIVE]
+    76	**Problem:** what is the smallest ε(x) such that there is a polylog
+    77	algorithm computing π(x) ± ε(x)? The Riemann smooth approximation
+    78	R(x) gives ε ≈ √x. Can polylog buy ε = O(x^{1/2-δ}) for some δ > 0?
+    79	
+    80	**Status: ACTIVE — Thread 7 in progress, slot 1/5 done at S240.**
+    81	
+    82	**Why partial-positive plausible:** R(x) + K zeros gives, under
+    83	Montgomery random-phase heuristic (S195 variance formula),
+    84	
+    85	  σ(K, x) ≈ √x · log K / (π √(2K) · log x).
+    86	
+    87	For K = (log x)^α the named-exponent corollary (S240) is
+    88	
+    89	  σ(x, K = log^α x) ≈ α · √x · log log x / (π √2 · log^{1 + α/2} x).
+    90	
+    91	Inverting: for any β > 1, taking K = log^{2(β-1)} x zeros gives a
+    92	polylog-time algorithm with typical error
+    93	ε(x) ≤ √x · log log x / log^β x. (Note: this CORRECTS an earlier
+    94	version of this entry that claimed K = log²x gives
+    95	ε ≈ √x · log log x / log⁴ x — that used K rather than √K in the
+    96	denominator; correct formula gives ε ≈ √x · log log x / log² x at
+    97	K = log²x.)
+    98	
+    99	**S240 empirical confirmation** (slot 1, single-anchor measurements
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session195_commit_connes_amortisation.md
+    1	# Session 195 — commit thread 2 step 3: Connes operator amortisation
+    2	
+    3	**Date:** 2026-04-28
+    4	**Mode:** commit (Thread 2 / Connes-Consani-Moscovici amortisation)
+    5	**Slot:** 3 of 5
+    6	**Prior:** S193 (slot 1) reduced Thread 2 ⊆ Thread 3 via Galway/Hiary
+    7	strict dominance K^{22/13}; S194 (slot 2) produced empirical
+    8	hit-rate decay across two decades.
+    9	**Self-grade:** **B** — substantive theoretical refinement giving a
+    10	closed-form prediction that matches the S194 empirical curve and
+    11	extrapolates correctly to a new decade. Not A-grade because the
+    12	random-phase assumption is heuristic (GUE pair correlation dropped).
+    13	
+    14	## Mission
+    15	
+    16	Slot 2's recommended slot-3 action: "use GUE statistics of zero
+    17	spacings (Montgomery 1973, Odlyzko 1989) to predict the asymptotic
+    18	hit rate at K = c·√x for various c. Compare the heuristic prediction
+    19	to the empirical data."
+    20	
+    21	## Construction (1 page)
+    22	
+    23	### The heuristic
+    24	
+    25	Riemann's exact explicit formula:
+    26	  π_0(x) = R(x) − Σ_ρ R(x^ρ) − (lower order).
+    27	
+    28	Truncate to K conjugate pairs ρ_j = 1/2 + iγ_j (j ≤ K, γ_j > 0):
+    29	  π_K(x) = R(x) − 2 Σ_j Re R(x^{ρ_j}).
+    30	
+    ... (171 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py
+    1	"""
+    2	GUE random-phase heuristic for the explicit-formula error variance.
+    3	Slot 3/5 of commit thread "connes_amortisation" (S195).
+    4	
+    5	Hypothesis (random-phase model for {gamma_j log x mod 2pi}):
+    6	   Var(pi(x) - pi_K(x)) ~ x * log^2(K) / (2 pi^2 K log^2(x))   (*)
+    7	
+    8	Derivation sketch (in gue_heuristic_results.md):
+    9	   Each conjugate pair contributes 2 x^{1/2} sin(gamma_j log x) / (gamma_j log x)
+    10	   (asymptotic li expansion); under iid uniform phases Var(sin) = 1/2;
+    11	   sum 1/gamma_j^2 over j > K, using gamma_j ~ 2 pi j / log(j),
+    12	   evaluates to log^2(K) / (4 pi^2 K) + lower order.
+    13	
+    14	This script:
+    15	  1. Loads the S194 fluctuation CSVs (40 samples each at x ~ 1e5, x ~ 1e6).
+    16	  2. For each (x, K) computes predicted sigma per (*).
+    17	  3. Compares predicted Gaussian-quantile median |err| against empirical
+    18	     mean / median |err| across the 40 samples.
+    19	  4. Compares predicted erf-hit-rate against empirical hit-rate.
+    20	  5. Sweeps the K-policy axis to identify the K* where hit-rate -> 1.
+    21	
+    22	The script is self-contained (no zeros needed beyond the CSV).
+    23	"""
+    24	
+    25	from __future__ import annotations
+    26	
+    27	import csv
+    28	import math
+    29	import statistics
+    30	from collections import defaultdict
+    ... (50 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py
+    80	
+    81	
+    82	POLICIES = [
+    83	    ("log2x",       "K_log2x",       "abs_err_at_K_log2x",       "hit_at_K_log2x"),
+    84	    ("log3x",       "K_log3x",       "abs_err_at_K_log3x",       "hit_at_K_log3x"),
+    85	    ("5log2x",      "K_5log2x",      "abs_err_at_K_5log2x",      "hit_at_K_5log2x"),
+    86	    ("sqrtx",       "K_sqrtx",       "abs_err_at_K_sqrtx",       "hit_at_K_sqrtx"),
+    87	    ("halfsqrtx",   "K_halfsqrtx",   "abs_err_at_K_halfsqrtx",   "hit_at_K_halfsqrtx"),
+    88	]
+    89	
+    90	
+    91	def compare_csv(path: Path, label: str):
+    92	    rows = list(load_fluctuation_csv(path))
+    93	    print(f"\n=== {label}: {len(rows)} samples ===")
+    94	    print(f"x range: [{min(r['x'] for r in rows):.3g}, {max(r['x'] for r in rows):.3g}]")
+    95	    print()
+    96	    print(f"{'policy':10s} {'K_med':>7s} {'pred_sig':>9s} {'pred_med':>9s} "
+    97	          f"{'emp_med':>9s} {'pred_hit':>9s} {'emp_hit':>9s} {'ratio_sig':>10s}")
+    98	    print("-" * 80)
+    99	
+    100	    for name, k_col, err_col, hit_col in POLICIES:
+    101	        Ks = [r[k_col] for r in rows]
+    102	        errs = [r[err_col] for r in rows]
+    103	        hits = [r[hit_col] for r in rows]
+    104	        K_med = statistics.median(Ks)
+    105	        x_med = statistics.median([r["x"] for r in rows])
+    106	
+    107	        pred_sig = sigma_predicted(x_med, int(round(K_med)))
+    108	        pred_med = median_predicted(x_med, int(round(K_med)))
+    109	        pred_hit = hit_rate_predicted(x_med, int(round(K_med)))
+    ... (50 more lines)
+  [Bash] head -3 /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e7.csv; echo "---"; wc -l /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_*.csv
+    x,pi_x,K_sustained,sqrt_x,K_log2x,abs_err_at_K_log2x,hit_at_K_log2x,K_log3x,abs_err_at_K_log3x,hit_at_K_log3x,K_5log2x,abs_err_at_K_5log2x,hit_at_K_5log2x,K_sqrtx,abs_err_at_K_sqrtx,hit_at_K_sqrtx,K_halfsqrtx,abs_err_at_K_halfsqrtx,hit_at_K_halfsqrtx
+    10000000.0,664579,-1,3162.2776601683795,260,15.451504564029165,0,4187,1.19968666927889,0,1299,2.410281070973724,0,3162,0.06356066651642323,1,1581,3.1988084382610396,0
+    10299603.658099899,683158,-1,3209.2995587978226,261,4.566655605798587,0,4210,4.177533276379108,0,1304,9.036302051739767,0,3209,2.6674428274855018,0,1605,4.627563735703006,0
+    ---
+       41 /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e5.csv
+       41 /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e6.csv
+       41 /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_fluctuation_1e7.csv
+      123 total
+  [Bash] grep -rn "fluctuation\|fluctu" /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/ 2>&1 | head -20
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/galway_smoothing_results.md:163:fluctuation on the trajectory and represents an unstable hit, not a
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:15:  1. Loads the S194 fluctuation CSVs (40 samples each at x ~ 1e5, x ~ 1e6).
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:69:def load_fluctuation_csv(path: Path):
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:92:    rows = list(load_fluctuation_csv(path))
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:126:    rows = list(load_fluctuation_csv(path))
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:144:        rows = list(load_fluctuation_csv(path))
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:286:    csv_1e5 = here / "connes_amortisation_fluctuation_1e5.csv"
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:287:    csv_1e6 = here / "connes_amortisation_fluctuation_1e6.csv"
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:289:    csv_1e7 = here / "connes_amortisation_fluctuation_1e7.csv"
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/gue_heuristic.py:313:        rows = list(load_fluctuation_csv(path))
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:160:  `--mode {legacy,wide,fluctuation,both}`).
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:165:- `connes_amortisation_fluctuation_1e5.csv` — S194 fluctuation sweep,
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:167:- `connes_amortisation_fluctuation_1e6.csv` — S194 fluctuation sweep,
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:171:## Slot 2 (S194) extension: fluctuation of K_sustained and the
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:240:Comparing the two fluctuation sweeps:
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:337:A new fluctuation sweep at x ~ 1e7 (40 samples, K_max = 5500;
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:338:output `connes_amortisation_fluctuation_1e7.csv`) extends the S194
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation_results.md:384:- `connes_amortisation_fluctuation_1e7.csv` — new 40-sample sweep.
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py:370:# Slot 2 (S194) extension: wide-range and fluctuation modes.
+    /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py:421:def run_fluctuation(center: float, n_samples: int, K_max_cap: int,
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    370	# Slot 2 (S194) extension: wide-range and fluctuation modes.
+    371	# -----------------------------------------------------------------------------
+    372	
+    373	
+    374	def run_wide_range(K_max_cap: int, sieve_limit: int, output_csv: str):
+    375	    """Decade-spaced K_sustained(x) measurement on x = 1e3 .. 1e7.
+    376	
+    377	    Uses the 8000-zero cache. K_max_cap caps the search depth.
+    378	    """
+    379	    xs = [1e3, 1e4, 5e4, 1e5, 5e5, 1e6, 5e6, 1e7]
+    380	    xs = [x for x in xs if x <= sieve_limit]
+    381	
+    382	    print(f"WIDE-RANGE: xs = {xs}, K_max = {K_max_cap}")
+    383	    print(f"Loading {K_max_cap} cached zeros...")
+    384	    t0 = time.time()
+    385	    gammas = get_zeros(K_max_cap, dps=30)
+    386	    print(f"  loaded in {time.time() - t0:.1f}s "
+    387	          f"(gamma_1={gammas[0]:.4f}, gamma_K={gammas[-1]:.4f})")
+    388	
+    389	    print(f"Building cumulative pi(.) array up to N={sieve_limit}...")
+    390	    t0 = time.time()
+    391	    cum = build_prime_count_array(sieve_limit)
+    392	    print(f"  done in {time.time() - t0:.1f}s. pi({sieve_limit})={int(cum[-1])}.")
+    393	    pi_lookup = lambda x: pi_from_array(cum, x)
+    394	
+    395	    rows = measure_K_sustained_for_xs(xs, K_max_cap, gammas, pi_lookup,
+    396	                                       tag="wide")
+    397	
+    398	    import csv
+    399	    with open(output_csv, "w") as f:
+    ... (90 more lines)
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi && python3 -c "
+import time, mpmath as mp
+import sys
+sys.path.insert(0, '.')
+from polylog_approx_pi import R_at_rho, get_zeros
+mp.mp.dps = 25
+gammas = get_zeros(50)
+t0 = time.time()
+for g in gammas:
+    _ = R_at_rho(1e9, g, M=8, dps=25)
+elapsed = time.time() - t0
+print(f'50 R_at_rho calls at x=1e9, dps=25: {elapsed:.2f}s, {elapsed/50*1000:.2f}ms each')
+"
+
+    50 R_at_rho calls at x=1e9, dps=25: 0.05s, 0.96ms each
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+  [Bash] python3 -c "
+from multi_sample import segmented_prime_indicator, pi_array_for_samples
+# pi(2e7) - pi(1e7) = 1270607 - 664579 = 606028
+seg = segmented_prime_indicator(10**7 + 1, 2 * 10**7)
+print(f'primes in (1e7, 2e7] = {sum(seg)} (expected 606028)')
+
+# Test pi_array_for_samples
+res = pi_array_for_samples(10**7, 664579, [10**7 + 100, 15 * 10**6, 2 * 10**7])
+print(f'pi at samples: {res}')
+print(f'  (pi(1e7+100)~664592 if 13 primes in (1e7, 1e7+100]; pi(1.5e7)=970704; pi(2e7)=1270607)')
+"
+
+    primes in (1e7, 2e7] = 606028 (expected 606028)
+    pi at samples: [664581, 970704, 1270607]
+      (pi(1e7+100)~664592 if 13 primes in (1e7, 1e7+100]; pi(1.5e7)=970704; pi(2e7)=1270607)
+  [Bash] python3 multi_sample.py --anchors 7,8 --N 30 --K-max 8000 --quiet 2>&1 | tee multi_sample_run_1e7_1e8.log | head -100
+    Command running in background with ID: bce47nm7h. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/e23d011d-a204-4c64-bc3e-6f3b8a456ce7/tasks/bce47nm7h.output
+  [Bash] timeout 1500 python3 multi_sample.py --anchors 7,8 --N 30 --K-max 8000 --quiet 2>&1 | tee multi_sample_run_1e7_1e8.log
+    Loading 8000 zeta zeros (mp dps=25)...
+      loaded 8000 zeros in 0.0s (gamma_1=14.1347, gamma_K=8148.1884)
+    
+    [anchor 10^7]  N=30 samples in [1.04e+07, 3.163e+07]; pi(10^7)=664579
+      segmented-sieve pi(x_j): 2.0s (pi range [689699, 1952541])
+    
+    [anchor 10^8]  N=30 samples in [1.04e+08, 3.163e+08]; pi(10^8)=5761455
+      segmented-sieve pi(x_j): 19.1s (pi range [5981207, 17087785])
+    
+    ==============================================================================================================
+     anchor   policy      K    N   sig_pred  med|err|  mean|err|   med/sig  mean/sig    KS_D    KS_p
+    --------------------------------------------------------------------------------------------------------------
+       10^7     Kmax   8000   30      5.865     3.078      3.895     0.555     0.678   0.181   0.250
+       10^7    log2x    279   30     19.632    10.391     11.602     0.555     0.575   0.188   0.215
+       10^7    log3x   4702   30      7.197     3.563      4.114     0.552     0.571   0.252   0.037
+       10^7     logx     17   30     40.107    25.460     24.746     0.591     0.615   0.205   0.140
+       10^8     Kmax   8000   30     16.305     8.836     10.721     0.591     0.642   0.180   0.261
+       10^8    log2x    362   30     50.202    24.335     26.708     0.428     0.526   0.262   0.027
+       10^8    log3x   6920   30     17.248     9.697     11.301     0.563     0.635   0.172   0.311
+       10^8     logx     19   30    109.613    33.023     47.688     0.304     0.426   0.353   0.001
+    
+    Wrote per-sample CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_data.csv  (300 rows)
+    Wrote summary CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_summary.csv  (8 rows)
+    
+    ==============================================================================================================
+    EXTRAPOLATION (sigma_pred for K = log^alpha x); rows = alpha, cols = log10 x
+    - raw sigma below diagonal, sigma / sqrt(x) above
+    
+    alpha   K_at(1e10)   -- sigma(x, K=log^alpha x) --
+                                 1e6         1e8        1e10        1e12        1e15        1e18        1e21        1e24
+    ... (13 more lines)
+Multi-sample at x=1e7, 1e8 ran cleanly; KS p-values 0.001-0.31 across policies, with the half-Gaussian fit closest at log³x and Kmax. Now extending to x=1e9 with chunked sieving.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py has been updated successfully.
+  [Bash] timeout 1500 python3 multi_sample.py --anchors 9 --N 30 --K-max 8000 --quiet 2>&1 | tee multi_sample_run_1e9.log | tail -50
+    Loading 8000 zeta zeros (mp dps=25)...
+      loaded 8000 zeros in 0.0s (gamma_1=14.1347, gamma_K=8148.1884)
+    
+    [anchor 10^9]  N=30 samples in [1.04e+09, 3.163e+09]; pi(10^9)=50847534
+      segmented-sieve pi(x_j): 40.6s (pi range [52800244, 151922633])
+    
+    ==============================================================================================================
+     anchor   policy      K    N   sig_pred  med|err|  mean|err|   med/sig  mean/sig    KS_D    KS_p
+    --------------------------------------------------------------------------------------------------------------
+       10^9     Kmax   8000   30     46.002    24.699     26.860     0.582     0.558   0.292   0.009
+       10^9    log2x    456   30    131.263    71.245     69.215     0.558     0.531   0.285   0.012
+       10^9    log3x   8000   30     46.002    24.699     26.860     0.582     0.558   0.292   0.009
+       10^9     logx     22   30    304.163   227.493    202.114     0.862     0.689   0.147   0.505
+    
+    Wrote per-sample CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_data.csv  (150 rows)
+    Wrote summary CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_summary.csv  (4 rows)
+    
+    ==============================================================================================================
+    EXTRAPOLATION (sigma_pred for K = log^alpha x); rows = alpha, cols = log10 x
+    - raw sigma below diagonal, sigma / sqrt(x) above
+    
+    alpha   K_at(1e10)   -- sigma(x, K=log^alpha x) --
+                                 1e6         1e8        1e10        1e12        1e15        1e18        1e21        1e24
+      2.0          530          6.19        38.7         266    1.96e+03    4.23e+04    9.76e+05    2.36e+07    5.91e+08
+      3.0        12208           2.5        13.5        83.2         558    1.08e+04    2.27e+05    5.09e+06    1.19e+08
+      4.0       281101         0.897         4.2        23.1         142    2.45e+03    4.71e+04    9.77e+05    2.14e+07
+      6.0    149037011        0.0973       0.342        1.51        7.69         106     1.7e+03    3.03e+04    5.81e+05
+      8.0  79017904734       0.00939      0.0247      0.0873       0.371         4.1        54.8         835     1.4e+04
+    
+    alpha               -- sigma / sqrt(x) --
+    ... (6 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py has been updated successfully.
+Now run all three anchors together for a unified dataset.
+  [Bash] timeout 1800 python3 multi_sample.py --anchors 7,8,9 --N 30 --K-max 8000 --quiet 2>&1 | tee multi_sample_main.log | tail -80
+    Loading 8000 zeta zeros (mp dps=25)...
+      loaded 8000 zeros in 0.0s (gamma_1=14.1347, gamma_K=8148.1884)
+    
+    [anchor 10^7]  N=30 samples in [1.04e+07, 3.163e+07]; pi(10^7)=664579
+      segmented-sieve pi(x_j): 0.4s (pi range [689699, 1952541])
+    
+    [anchor 10^8]  N=30 samples in [1.04e+08, 3.163e+08]; pi(10^8)=5761455
+      segmented-sieve pi(x_j): 4.0s (pi range [5981207, 17087785])
+    
+    [anchor 10^9]  N=30 samples in [1.04e+09, 3.163e+09]; pi(10^9)=50847534
+      segmented-sieve pi(x_j): 41.3s (pi range [52800244, 151922633])
+    
+    ==================================================================================================================================
+     anchor   policy      K    N   sig_pred  med|err|  mean|err|   med/sig  mean/sig  KSp_pred   KSp_eff  sig_eff/sig_pred
+    ----------------------------------------------------------------------------------------------------------------------------------
+       10^7     Kmax   8000   30      5.865     3.078      3.895     0.555     0.678     0.250     0.192             0.904
+       10^7    log2x    279   30     19.632    10.391     11.602     0.555     0.575     0.215     0.539             0.756
+       10^7    log3x   4702   30      7.197     3.563      4.114     0.552     0.571     0.037     0.713             0.746
+       10^7     logx     17   30     40.107    25.460     24.746     0.591     0.615     0.140     0.486             0.734
+       10^8     Kmax   8000   30     16.305     8.836     10.721     0.591     0.642     0.261     0.210             0.781
+       10^8    log2x    362   30     50.202    24.335     26.708     0.428     0.526     0.027     0.690             0.644
+       10^8    log3x   6920   30     17.248     9.697     11.301     0.563     0.635     0.311     0.729             0.796
+       10^8     logx     19   30    109.613    33.023     47.688     0.304     0.426     0.001     0.140             0.599
+       10^9     Kmax   8000   30     46.002    24.699     26.860     0.582     0.558     0.009     0.695             0.754
+       10^9    log2x    456   30    131.263    71.245     69.215     0.558     0.531     0.012     0.590             0.620
+       10^9    log3x   8000   30     46.002    24.699     26.860     0.582     0.558     0.009     0.695             0.754
+       10^9     logx     22   30    304.163   227.493    202.114     0.862     0.689     0.505     0.500             0.816
+    
+    Wrote per-sample CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_data.csv  (450 rows)
+    Wrote summary CSV: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_summary.csv  (12 rows)
+    ... (20 more lines)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] tail -40 /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md
+      K-vs-√K denominator error).
+    - **Algorithmic shape.** A polylog-time algorithm whose error is
+      strictly polylog-factor better than the Riemann smooth bound under
+      random-phase heuristic. This is a partial-positive on §P3 in the
+      log-factor-improvement sense.
+    - **Slot 2 next-action.** Multi-sample averaging at x = 10⁹..10¹² to
+      tighten empirical confirmation; theoretical extrapolation to
+      x = 10¹⁵, 10²⁰ via S195's predictor.
+    
+    ## 11. Self-grade
+    
+    **B-grade.** Substantive refinement: a named-exponent formula
+    ε(x, K=log^α x) ≈ α √x log log x / log^{1+α/2} x with explicit
+    constants, plus empirical confirmation extending S195 from x = 10⁷ to
+    x = 10¹⁰. The "polylog-time algorithm beating √x by polylog factor"
+    shape qualifies as the partial-positive direction CLAUDE.md
+    prioritises post-Thread 5. Not A-grade because:
+    - The result is heuristic (random-phase model unproven; same caveat
+      as S195).
+    - It is a re-framing/refinement of S195's variance formula, not a
+      fundamentally new theorem.
+    - The empirical work uses single-sample-per-decade rather than the
+      multi-sample averaging that would tighten the confirmation.
+    
+    If slot 2-5 of Thread 7 produce (a) a rigorous proof of the variance
+    bound at *some* explicit α, OR (b) an unconditional algorithm hitting
+    the named ε in polylog time, OR (c) a falsifying x ≥ 10¹² measurement,
+    the thread escalates to A or definitively closes at B.
+    
+    ## 12. Reproducibility
+    ... (10 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md
+    1	# Polylog approximation to π(x) with named-exponent error
+    2	
+    3	**Thread 7 (commit), slot 1 of 5 (S240).**
+    4	**Target:** OPEN_POSITIVE_TARGETS.md §P3 — *what is the smallest ε(x)
+    5	such that there is a polylog-time algorithm computing π(x) ± ε(x)?*
+    6	
+    7	**Edges referenced:** E1.5, E2.1, E3.1; extends S195 σ-prediction.
+    8	**Cross-domain ingredient:** GUE / random-matrix random-phase
+    9	heuristic (S195) re-framed for the polylog regime.
+    10	**Falsifiability:** see §6.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md
+    The file /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/polylog_approx_pi_results.md has been updated successfully.
+  [Bash] grep -n "S240" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -5; echo "---"; head -30 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    876:| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 1 — partial-sum evaluator pi_K(x) = R(x) - 2 sum_{j<=K} Re R(x^{rho_j}) + named-exponent corollary: under Montgomery random-phase, what is the smallest eps(x) achievable in polylog time, named to explicit log-power exponent? | REFINEMENT (polylog-time partial-positive shape, named-exponent formula corrected from P3 entry, empirical extension S195 -> 5 decades) | E (E1.5 + S195 variance formula) — partial-positive (heuristic) | Thread 7 commit step 1/5 (S240). Built `experiments/analytic/polylog_approx_pi/polylog_approx_pi.py` (parameterised K-policy evaluator across {1, log x, log^2 x, log^3 x, log^4 x, log^6 x, x^{1/4}, x^{1/2}}; uses S195's R_at_rho machinery at mp.dps=25, M=8 Mobius truncation). **Named-exponent corollary (heuristic, under Montgomery random-phase):** sigma(x, K = log^alpha x) ~ alpha * sqrt(x) * log log x / (pi sqrt(2) * log^{1 + alpha/2} x). Inverting: for any beta > 1, K = log^{2(beta-1)} x zeros yield polylog-time eps(x) <= sqrt(x) * log log x / log^beta x. **Empirical confirmation across 5 decades** at x in {10^5, 10^6, 10^7, 10^8, 10^10} with single-anchor canonical pi(10^k) values; full table of 35 (x, K) data points; median ratio empirical/sigma_pred = 0.476, mean 0.554 (consistent with half-Gaussian sqrt(2/pi) = 0.798 modulated by GUE pair-correlation reduction ~0.74 measured at S195); single-sample spread 0.07-1.66 within Gaussian-quantile band; no row exceeds 2sigma. **Headline polylog-better-than-sqrt(x) row**: at x=10^10, K=8000 (~ log^3 x), |err|=48.126 vs sqrt(x)=100000, ratio eps/sqrt(x) = 4.81e-4 — predicted 9.82e-4, ratio 0.49. Two new decades (10^8, 10^10) verify sigma-prediction beyond S195's 10^5-10^7 range. **Corrects** OPEN_POSITIVE_TARGETS.md §P3 formula: P3 originally claimed K=log^2 x gives eps ~ sqrt(x) * log log x / log^4 x (used K instead of sqrt(K) in denominator). Correct formula: K=log^2 x gives eps ~ sqrt(x) * log log x / log^2 x; to attain eps ~ sqrt(x) / log^4 x need K = log^6 x zeros. **Distinction from S195/Thread 3**: S195 closed Thread 3 ("polylog K -> threshold hit-rate -> 0 -> exact pi(x) hopeless in polylog"); Thread 7 slot 1 RE-FRAMES the same variance formula to ask the complementary algorithmic question ("polylog K -> what is the smallest typical eps?") and gives a positive named-exponent answer. Two complementary results: threshold negative + quantitative positive. **Open vs A-grade gap**: result is heuristic (random-phase model unproven); single-sample-per-decade rather than 20+ samples; "polylog improvement" is log-factor not x-factor. Slot 2 should run multi-sample averaging at x in {10^9..10^12} to tighten empirical confirmation; theoretical extrapolation to x = 10^15, 10^20 via S195's predictor; verify named-exponent corollary at extreme x. **Cross-domain ingredient**: re-uses S195's GUE / random-phase heuristic (Montgomery 1973, Odlyzko 1989); CROSS_DOMAIN_TECHNIQUES.md updated to mark this as a complementary algorithmic re-framing of the variance formula. Cites E1.5 (per-query bit-content barrier), E2.1 (spectral / sieve), E3.1 (CCM spectral triple), S195 (variance formula), S196 (Galway frontier closure conditional on random-phase), S202 (unified CCM closure), S224 (Correlation Dichotomy partial-positive template Thread 7 follows). See `experiments/analytic/polylog_approx_pi/{polylog_approx_pi.py, polylog_approx_pi_results.md, polylog_approx_pi_main.csv, main_run.log}`, `archive/sessions/session240_commit_p3_partial_sum_evaluator.md`. | 240 |
+    ---
+    # Closed Paths: Master Lookup (545+ Approaches)
+    
+    **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    
+    Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57 + S60-fresh-crit, 198+ sub-agents)
+    
+    ## Failure Modes
+    - **C** = Circularity (needs primes to compute primes)
+    - **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    - **I** = Information Loss (smooth approximation loses critical bits)
+    
+    ---
+    
+    ## Analytic / Explicit Formula / Zeta Zeros
+    
+    | Approach | Verdict | Mode | Key Finding | Session |
+    |----------|---------|------|-------------|---------|
+    | Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    | Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    | Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    | 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    | Higher-order n-correlations of zeta zeros at orders 4, 5, 6 (ATTACK_VECTORS §C2) | FAIL | I | First project measurement extending S25/S45/S57 from order 3 to orders 4-6 at N=8000 (γ ≤ 8148). Three independent probes with K=20 GUE Monte Carlo batches (N=2000, central 60% kept ~ 1200 evs each) AND K=20 gap-shuffled controls. (A) Equally-spaced R_n(0, s, ..., (n-1)s) for n=4,5,6 at s ∈ {0.5..5}: max \|z_vs_theory\| = 2.36σ (n=4, s=2.0); n=5 raw 6.0σ at s=2 reproduced by GUE batch (Poisson-shot-noise on `n_ref·tol⁴ ≈ 12`, NOT arithmetic). (B) k-th nearest-neighbor spacings P_k(s) for k=0..5 (probes up to 7-point correlation): rms vs GUE pool ∈ [0.09, 0.22]; per-bin \|z_vs_GUE_pool\| ≤ 1.5× sample noise. (C) Cumulants κ_n(L) for n=2..6 at L=1..64: at L≥8 all \|z\| < 2.1σ for n=3..6; κ_2 retains ~9σ rigidity z-score (E7.1 confirmed); κ_4, κ_6 huge \|z\| at L=1, 2 due to Riemann-vM-vs-semicircle finite-N unfolding mismatch (eliminated at L≥8). The Conrey-Snaith conjectural arithmetic correction at order n scales as 1/L² ≈ 0.024 with L=log(γ/2π)≈6.5; empirical noise floor 1/√(n_tuples) ≥ 0.3 at order n=5. Signal is 1.5+ orders below floor. Refines E7.1 from "GUE up to order 3" to "GUE up to order 6 across (P_k, R_n, κ_n)." Detection demands Odlyzko γ ≥ 10⁶ (cf. §C1 / S71 closure shares 1/L² scaling barrier). Promotes CROSS_DOMAIN_TECHNIQUES §1 row "Sine-kernel n-correlation determinant" implicit USED (n=2,3) → USED (n≤6) with mode E. See `experiments/analytic/zeta_structure/n_correlations_4_5_6/`, `archive/sessions/session122_c2_higher_order_zero_correlations.md`. | 122 |
+    | Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+    | Zeta zero pairwise rational relations | FAIL | I | 499,500 ratios tested; closest to p/q (q<=100) matches are no better than random (KS p=1.3e-6 but wrong direction — zeros FARTHER from rationals). GUE repulsion effect. | 25 |
+    | PSLQ linear relations among zeros | FAIL | I | 13,000+ tests at 60-digit precision: zero relations among subsets of 3-5 zeros with {1,pi,log(2pi)}. 1,225 pairwise tests negative. Large-K hits are lattice artifacts (random baseline confirms). Zeros linearly independent over Q. | 25 |
+    | DFT spectral structure of zeros | FAIL | I | Power spectrum matches GUE (corr=0.9999). Spectral flatness 0.93-0.999 at high freq (white noise). Pair correlation matches GUE 1-(sin(pi*r)/(pi*r))^2. Only faint p=2 signal (12x median). Number variance logarithmic (GUE). O(N) bits incompressible. | 25 |
+    | Zeta zeros mod constants (equidistribution) | FAIL | I | gamma_n mod m uniform for all 10 moduli tested (1, pi, log(2pi), 2pi, e, log(2,3,5,7)). KS p-values all >0.4. Weyl sums at 1/sqrt(N). Discrepancy BELOW random (GUE repulsion). Joint (mod 1, mod pi) independent. No arithmetic structure. | 25 |
+    | Convergence acceleration of zero sum | FAIL | I | Tested Richardson, Aitken Δ², Shanks, Padé, Cesàro, Euler-Maclaurin on partial zero sums for x=10^4..10^7. Errors GROW as N^{+1.0} (random walk). Best method (Shanks) gives O(1) improvement only. GUE-random phases make each term independent — no structured error to accelerate. | 32 |
+    ... (2 more lines)
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    872	| §P.P1 batched-on-modulus q amortisation, slot 4 — composite-q multi-axis FFT primitive via CRT decomposition + end-to-end Dirichlet-L zero finder for squarefree odd composite q: does the multi-axis primitive (numpy.fft.ifftn over a CRT-tuple-indexed tensor) extend slot-3's structural lift to the practical AP regime, and does composite q introduce asymptotic improvement over prime q? | REFINEMENT (architecture extension + bounded constant lift preserved) | I (multi-axis FFT works; FFT vs DIRECT 1.75× at q=1001 vs slot-3's 2.04× at q=1009; no asymptotic gain at composite q) | Thread 6 commit step 4/5 (S230). Built `experiments/analytic/batched_q_amortisation/slot4_composite_q_multi_axis_fft.py` (~600 lines): CRT decomposition `crt_decomp(q)` returns (primes, group_orders [p_i-1], primitive_roots g_i mod p_i) for squarefree odd q; `build_crt_log_table(q, ...)` precomputes residue → CRT-tuple (k_1, ..., k_K) where n ≡ g_i^{k_i} (mod p_i); multi-axis FFT primitive `l_eval_multiaxis_fft` aggregates W of shape (p_1-1, ..., p_K-1, n_t) and applies `phi · numpy.fft.ifftn(W, axes=(0,...,K-1))` to recover L-values for ALL φ(q) characters via dual-group identity `χ_{j_1,...,j_K}(n) = Π_i ω_i^{j_i k_i}`; full AFE main + reflected via same `Σ χ̄(n)/n^{½-it} = conj(Σ χ(n)/n^{½+it})` simplification (holds for ALL primitive characters of finite abelian groups, not just prime q); Gauss sums τ(χ) via multi-axis FFT identity over e_a; χ(-1) parity formula (Σ_i j_i) mod 2 [BUG-FIX: initial implementation used wrong (j_i · (p_i-1)/2) mod 2 which only matched prime q; caught via mpmath cross-check]; primitive character flag (j_i ≠ 0 ∀ i for squarefree q); Hardy Z + sign-change bracketing identical to slot 3. **Cross-method correctness verified to 1e-15 relative error** at q ∈ {15, 35, 105, 1001} via direct per-character matmul `chi_table @ cp` reference. **mpmath ground-truth zero finder cross-check** at q=15 χ_index=(1,1) t_max=40: slot-4 (2.697, 5.229, 8.383, 10.232, 11.896) vs mpmath Hardy-Z ground truth (2.746, 5.238, 8.418, 10.194, 11.920), max abs diff 0.049; q=35 χ_index=(1,1) t_max=30: max abs diff 0.062 — consistent with slot-3's 0.033 at q=11. **End-to-end π(x; q, a) timing 3-run median (q, factors, φ, K, t_single)**: (15, [3,5], 8, 50, 3.96ms), (35, [5,7], 24, 50, 5.25ms), (105, [3,5,7], 48, 50, 6.94ms), (105, [3,5,7], 48, 200, 38.4ms), (1001, [7,11,13], 720, 200, 166.6ms). **HEADLINE COMPARISON**: q=1009 (prime, φ=1008, slot-3, K=200): 186.3ms vs q=1001 (composite, φ=720, slot-4, K=200): 166.6ms — 11% wall-clock drop at q=1001 attributable mostly to smaller φ (29% reduction), NOT multi-axis-FFT-specific; per-character cost essentially unchanged because N_AFE depends on q (not φ) and is comparable between q=1001 and q=1009. **FFT vs DIRECT (no FFT sharing) within slot-4 pipeline**: q=105 K=50 N_AFE=283 n_t=218: FFT 5.09ms vs DIRECT 4.24ms = 0.83× (FFT loses, small composite q); q=1001 K=200 N_AFE=1872 n_t=823: FFT 145.24ms vs DIRECT 254.39ms = **1.75× FFT speedup** (vs slot-3's 2.04× at prime q=1009). **Multi-axis FFT preserves slot-3's structural lift in composite-q regime; does NOT introduce asymptotic gain.** Crossover q ∈ [200, 500] same as slot-2/slot-3 prime-q. Multi-axis FFT slightly underperforms single-axis at comparable q because numpy.fft.ifftn calls 1D FFT routines per axis; small per-axis transforms (e.g., shape (6, 10, 12) at q=1001) have proportionally higher constant overhead than one large 1D FFT (size 1008 at q=1009). **Falsifiers F4.1-F4.4 framing slot 5**: F4.1 multi-axis FFT does not give asymptotic improvement over slot-3 single-axis at composite q (constant-factor lift in same crossover regime); F4.2 end-to-end wall-clock dominated by AFE eval (N_AFE · n_t depends on q not φ, composite q inherits same AFE cost as nearby prime q); F4.3 multi-axis FFT does not shrink AFE truncation requirement (balanced N = √(qt/(2π)) is q-only); F4.4 cross-conductor amortisation across Q-family NOT attempted in slot 4 (slot-3 leftover priority-a). **Cross-domain ingredient**: CRT-based multi-axis Dirichlet character DFT — generalisation of slot-2's cyclic-group DFT primitive (Bober-Hiary 2017) to direct-product groups (Z/p_1Z)* ⊕ ... ⊕ (Z/p_KZ)* via Chinese Remainder Theorem (Davenport "Multiplicative NT" §1). Implemented as numpy.fft.ifftn on multi-dimensional tensor indexed by CRT log-tuples. **NEW USED I** in this project; CROSS_DOMAIN_TECHNIQUES.md §10 extension "CRT multi-axis Dirichlet character DFT". Cites E1.5 (per-query bit-content barrier; multi-axis primitive affects setup + AFE eval but not partial-sum eval, exactly per E1.5), E2.1 (spectral / sieve interface; multi-axis DFT generalises slot-2's cyclic DFT to direct-product groups), E3.1 (CCM setup-vs-eval decoupling; multi-axis FFT lifts setup but not eval), E6.6 (Aggarwal — orthogonal, within-q vs cross-call), E6.7 (DR per-query Θ(x^{2/3}/log²) — orthogonal pillar), S224 (Correlation Dichotomy template; slot-4 wall-clock shape ~1.75× constant lift NOT Correlation-Dichotomy-shaped, same shape as slot-3 "real-zeros for synthetic-cost"), S227 (slot 1), S228 (slot 2 cyclic-DFT primitive that slot-4 generalises), S229 (slot 3 prime-q end-to-end pipeline that slot-4 extends). See `experiments/analytic/batched_q_amortisation/{slot4_composite_q_multi_axis_fft.py, slot4_composite_q_multi_axis_fft_results.md, slot4_composite_q_end_to_end.csv, slot4_composite_fft_vs_direct.csv}`, `archive/sessions/session230_commit_p1_composite_q_multi_axis_fft.md`. | 230 |
+    873	
+    874	| §1.C9.b.iv composition challenge — four-point identity for spike-pointwise pointwise approximator at primorial conductor: do the (S205, S208, S209) k=(2,1,3)-point HL singular series identities extend to k=4 with the same proof template? | REFINEMENT (closed-form 4-point identity proven analytically + verified empirically) | E | S234 construction-mode session (C9.b.iv). Built `experiments/constructions/spike_pointwise_HL_quad/tq_quad_correlation.py` (~370 lines) with seven pre-stated falsifiers (F1-F7). **Theorem (S234, proven analytically; verified to 0.06% across 5×11 admissible cells at d=20):** for every squarefree W ≥ 1 and integers (h_1, h_2, h_3), `<T_W^{div}(n) T_W^{div}(n+h_1) T_W^{div}(n+h_2) T_W^{div}(n+h_3)>_n = (π(N)/N)^4 · ∏_{p|W} (p − ν_p(0,h_1,h_2,h_3)) p^3/(p−1)^4 = (π(N)/N)^4 · S_HL^{(W)}(0,h_1,h_2,h_3)`. **Two independent proofs**: (a) direct from S208 pointwise collapse `T_W^{div} = (π/N)·(W/φ(W))·[gcd(n,W)=1]` + CRT density factorisation across primes p|W giving `<∏[gcd(n+h_i,W)=1]>_n = ∏_{p|W} (p−ν_p)/p`; (b) Ramanujan-Fourier 4-cumulant expansion `G_p^{(4)} = 1 + 1/(p-1)² Σ_{i<j} c_p(h_j-h_i) − 1/(p-1)³ Σ_{|S|=3} f_p^{(3)}(S) + 1/(p-1)^4 f_p^{(4)}(h_1,h_2,h_3)` algebraically equal to `(p−ν_p) p^3/(p-1)^4` across 78/78 cells (p ∈ {2,3,5,7,11,13} × 13 non-zero shift triples) at abs_err ≤ 4.44e-16. **Closed form by ν_p**: ν_p=1 → (p/(p-1))^3; ν_p=2 → (p-2)p^3/(p-1)^4; ν_p=3 → (p-3)p^3/(p-1)^4; ν_p=4 → (p-4)p^3/(p-1)^4; ν_p=p (inadmissible) → 0. **Reduction lemmas (F4/F5 algebraic)**: h_1=h_2=h_3=0 reduces to `<T_W^4>=(π/N)^4(W/φ(W))^3`; h_3=0 reduces to `(W/φ(W)) · S209-3pt`; h_2=h_3=0 reduces to `(W/φ(W))² · S205-2pt`. **Falsifier verdict**: F1 PASS dramatically (worst 0.060% at d=20 W=2310 cell (4,6,10), 100× tighter than pre-stated 0.5% band); F2 PARTIAL (4/6 admissible cells within pre-stated 2.5% at d=20 Q=2310, worst 5.7% at (6,10,12) — cross-conductor leakage at k=4 amplified by 4-6× vs S205 k=2 due to 3 disconnected pair contractions); F3 PARTIAL (4/6 within 3% at d=20, worst 3.79% at (2,8,14)); F4 PASS (1.00000); F5 PASS (1.00000 at h_3=0 reductions); F6 PASS (inadmissible (2,4,6)/(2,4,8) primorial-W ⊇ {3} → 0 exactly; (2,4,8) finite-N edge effect 1/N decay confirmed); F7 PASS (78/78 cells, machine precision). **Composes S205 (2-point) + S208 (1-point divisor collapse) + S209 (3-point) + E2.13 (Gowers U^2 cube — 4-tuple (0,h_1,h_2,h_1+h_2) at e.g. (2,6,8) gives U^2 norm closed form) + E2.16 (3-point HL prime factorisation extended to 4-tuples) + E1.6/E2.2 (parity bisection at q=2; admissibility forces all h_i even) + E2.1 (spike pointwise 4-point form). **Closes the (S205, S208, S209, S234) k = (1, 2, 3, 4) hierarchy.** General-k closed form `G_p^{(k)} = (p − ν_p) p^{k-1}/(p-1)^k` follows by induction (proposed C9.b.v). **NO polylog opening** (cost is `O(N · |H|^3)` for general k=4 sweep; closed-form prediction `O(ω(W))` per cell). **No new edge** — refines E2.1 inline; refinement of E2.13 (extends 2-point HL imprint to 4-point), E2.16 (positive identity from negative-shape DPP failure). **Cross-domain ingredient**: NONE NEW (project-internal: Ramanujan sums + Möbius inversion + HL singular series + CRT density factorisation). CROSS_DOMAIN_TECHNIQUES.md unchanged. **Successor challenges (proposed in S234)**: C9.b.iv.α (cross-conductor leakage at k=4 closed-form bound — explains the 5.7% F2 deviation); C9.b.iv.β (Lean formalisation of the 4-point identity at primorial W — three-line proof tractable); C9.b.v (general-k inductive closed form proof); C9.b.vii (Hoffman / triple-MZV interpretation of f_p^{(k)} per multiplicity profile). Cites E2.1 (annotated S234 inline), E2.13 (HL imprint at U^2 cube), E2.16 (3-point HL prime factorisation), E1.6/E2.2 (parity), S191 (C9 spike pointwise), S205 (2-point), S208 (divisor collapse), S209 (3-point). See `experiments/constructions/spike_pointwise_HL_quad/{tq_quad_correlation.py, tq_quad_correlation_results.md, tq_quad_correlation_results.json, definition.md, run.log}`, `archive/sessions/session234_c9biv_4point_HL_identity.md`. | 234 |
+    875	| §B.B4 wild swing — Voronin universality with effective shifts as a polylog approximator: do natural target functions f admit polynomial-rate Voronin universality (smallest valid shift t*(ε) polynomial in 1/ε)? | EXPERIMENT (1600-shift mpmath scan, 6 natural targets, density model fit) | E+I (compound; both density and Riemann-Siegel obstructions super-polynomial) | S236 wild_swing-mode session. Built `experiments/analytic/voronin_universality_polylog/voronin_polylog.py` (~250 lines) + `voronin_density.py` + `voronin_extend.py`. Disc K = {|s − 0.75| ≤ 0.05} ⊂ {1/2 < Re(s) < 1}. Targets (all non-vanishing analytic on K): exp(s), exp(−s), 1/(s−0.5), 1/(s−0.4), exp(s²), exp(0.3·s). 1600 geometrically-spaced shifts in t ∈ [10, 10⁶], mp.dps=18, 12-boundary-point sup-error sampling. **Result (target exp(−s), cleanest)**: per-decade hit count at fixed ε is approximately constant across t-decades [10¹..10⁶] (positive Voronin density verified). Density d(ε): {0.500: 0.322, 0.300: 0.151, 0.200: 0.0625, 0.150: 0.0306, 0.100: 0.00813, 0.080: 0.0025, 0.060: 0.000625, 0.050: 0.000625, 0.040: 0, 0.030: 0}. **Quasi-polynomial fit**: ln d(ε) / log²(1/ε) converges to ≈ −0.91 asymptotically (last 5 ratios: −0.91, −0.94, −0.93, −0.82). Hence d(ε) ~ exp(−0.91 · log²(1/ε)) and t*(ε) ~ exp(0.91 · log²(1/ε)) — **super-polynomial in 1/ε** but matches Steuding 2007 quasi-polynomial conjecture (refines Garunkstis 2003 worst-case exp(exp(10/ε^13)) by a tower exponentiation). **Polynomial-model rejection**: at ε=0.04, polynomial fit d ~ ε^2.05 predicts ≈ 2.18 hits in 1600 trials; observed 0; cumulative Poisson p ≤ 0.034 against polynomial scaling. **Compound obstruction at polylog-π(x) scale**: ε ≪ x^{−1/2}/log²x ⇒ log(1/ε) > log x / 2 ⇒ t*(ε) ~ exp(0.23 · log²x) (quasi-poly in x); evaluating ζ(s + i t*) by Riemann-Siegel costs ≈ exp(0.11 · log²x), also quasi-poly in x. Both obstructions super-polylog → Voronin route is structurally inert for polylog π(x). **Falsifier triggered (I)**: empirical t*(ε) is super-polynomial; AND **(E)**: even at observed t*, Riemann-Siegel cost circular for polylog construction. **Cross-domain ingredient**: Voronin 1975 universality theorem + Bohr-Jessen 1932 value distribution + Steuding 2007 effective universality — NEW USED (E) in this project; CROSS_DOMAIN_TECHNIQUES.md §1 row "Voronin universality / Bohr-Jessen value distribution / Steuding 2007 effective universality" added with status PROPOSED → USED (E). Adds **EDGE E7.24** ("Voronin universality density on disc K is empirically QUASI-POLYNOMIAL d(ε) ~ exp(−0.91 · log²(1/ε)); first empirical refutation of polynomial-rate Voronin universality for natural f"). **Distinct from prior closures**: E3.2 (explicit-formula needs ~1200 zeros) — Voronin trades zero-summation for one-shift evaluation, different mechanism; E7.5 (communication rank caps log²x) — same structural role on algorithmic side; E7.11 (convergence-acceleration / variance-reduction family) — different mechanism, same compound-obstruction wall; E7.10 (AKS modulus-twist orthogonality) — orthogonal twist direction. **Open successor (low-EV)**: π-related target f analytic non-vanishing on K admitting polynomial-rate Voronin? Mellin-li and ζ'/ζ are not analytic on K (branch points and poles at zeros respectively); no obvious π-related f remains. **Cross-domain refs**: Voronin 1975 *Izv. Akad. Nauk SSSR* 39, 475; Garunkstis 2003 *Acta Arith.* 113 = arXiv:math/0306072; Steuding 2007 Springer LNM 1877; Bohr-Jessen 1932 *Acta Math.* 54+58. Cites E3.2, E7.5, E7.11, E7.10. ATTACK_VECTORS §B.B4 closed at "Closed attacks". See `experiments/analytic/voronin_universality_polylog/{voronin_polylog.py, voronin_polylog_results.md, voronin_density.py, voronin_density_summary.md, voronin_extend.py, voronin_extend_results.json}`, `archive/sessions/session236_b4_voronin_universality.md`. | 236 |
+    876	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 1 — partial-sum evaluator pi_K(x) = R(x) - 2 sum_{j<=K} Re R(x^{rho_j}) + named-exponent corollary: under Montgomery random-phase, what is the smallest eps(x) achievable in polylog time, named to explicit log-power exponent? | REFINEMENT (polylog-time partial-positive shape, named-exponent formula corrected from P3 entry, empirical extension S195 -> 5 decades) | E (E1.5 + S195 variance formula) — partial-positive (heuristic) | Thread 7 commit step 1/5 (S240). Built `experiments/analytic/polylog_approx_pi/polylog_approx_pi.py` (parameterised K-policy evaluator across {1, log x, log^2 x, log^3 x, log^4 x, log^6 x, x^{1/4}, x^{1/2}}; uses S195's R_at_rho machinery at mp.dps=25, M=8 Mobius truncation). **Named-exponent corollary (heuristic, under Montgomery random-phase):** sigma(x, K = log^alpha x) ~ alpha * sqrt(x) * log log x / (pi sqrt(2) * log^{1 + alpha/2} x). Inverting: for any beta > 1, K = log^{2(beta-1)} x zeros yield polylog-time eps(x) <= sqrt(x) * log log x / log^beta x. **Empirical confirmation across 5 decades** at x in {10^5, 10^6, 10^7, 10^8, 10^10} with single-anchor canonical pi(10^k) values; full table of 35 (x, K) data points; median ratio empirical/sigma_pred = 0.476, mean 0.554 (consistent with half-Gaussian sqrt(2/pi) = 0.798 modulated by GUE pair-correlation reduction ~0.74 measured at S195); single-sample spread 0.07-1.66 within Gaussian-quantile band; no row exceeds 2sigma. **Headline polylog-better-than-sqrt(x) row**: at x=10^10, K=8000 (~ log^3 x), |err|=48.126 vs sqrt(x)=100000, ratio eps/sqrt(x) = 4.81e-4 — predicted 9.82e-4, ratio 0.49. Two new decades (10^8, 10^10) verify sigma-prediction beyond S195's 10^5-10^7 range. **Corrects** OPEN_POSITIVE_TARGETS.md §P3 formula: P3 originally claimed K=log^2 x gives eps ~ sqrt(x) * log log x / log^4 x (used K instead of sqrt(K) in denominator). Correct formula: K=log^2 x gives eps ~ sqrt(x) * log log x / log^2 x; to attain eps ~ sqrt(x) / log^4 x need K = log^6 x zeros. **Distinction from S195/Thread 3**: S195 closed Thread 3 ("polylog K -> threshold hit-rate -> 0 -> exact pi(x) hopeless in polylog"); Thread 7 slot 1 RE-FRAMES the same variance formula to ask the complementary algorithmic question ("polylog K -> what is the smallest typical eps?") and gives a positive named-exponent answer. Two complementary results: threshold negative + quantitative positive. **Open vs A-grade gap**: result is heuristic (random-phase model unproven); single-sample-per-decade rather than 20+ samples; "polylog improvement" is log-factor not x-factor. Slot 2 should run multi-sample averaging at x in {10^9..10^12} to tighten empirical confirmation; theoretical extrapolation to x = 10^15, 10^20 via S195's predictor; verify named-exponent corollary at extreme x. **Cross-domain ingredient**: re-uses S195's GUE / random-phase heuristic (Montgomery 1973, Odlyzko 1989); CROSS_DOMAIN_TECHNIQUES.md updated to mark this as a complementary algorithmic re-framing of the variance formula. Cites E1.5 (per-query bit-content barrier), E2.1 (spectral / sieve), E3.1 (CCM spectral triple), S195 (variance formula), S196 (Galway frontier closure conditional on random-phase), S202 (unified CCM closure), S224 (Correlation Dichotomy partial-positive template Thread 7 follows). See `experiments/analytic/polylog_approx_pi/{polylog_approx_pi.py, polylog_approx_pi_results.md, polylog_approx_pi_main.csv, main_run.log}`, `archive/sessions/session240_commit_p3_partial_sum_evaluator.md`. | 240 |
+    877	
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    876	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 1 — partial-sum evaluator pi_K(x) = R(x) - 2 sum_{j<=K} Re R(x^{rho_j}) + named-exponent corollary: under Montgomery random-phase, what is the smallest eps(x) achievable in polylog time, named to explicit log-power exponent? | REFINEMENT (polylog-time partial-positive shape, named-exponent formula corrected from P3 entry, empirical extension S195 -> 5 decades) | E (E1.5 + S195 variance formula) — partial-positive (heuristic) | Thread 7 commit step 1/5 (S240). Built `experiments/analytic/polylog_approx_pi/polylog_approx_pi.py` (parameterised K-policy evaluator across {1, log x, log^2 x, log^3 x, log^4 x, log^6 x, x^{1/4}, x^{1/2}}; uses S195's R_at_rho machinery at mp.dps=25, M=8 Mobius truncation). **Named-exponent corollary (heuristic, under Montgomery random-phase):** sigma(x, K = log^alpha x) ~ alpha * sqrt(x) * log log x / (pi sqrt(2) * log^{1 + alpha/2} x). Inverting: for any beta > 1, K = log^{2(beta-1)} x zeros yield polylog-time eps(x) <= sqrt(x) * log log x / log^beta x. **Empirical confirmation across 5 decades** at x in {10^5, 10^6, 10^7, 10^8, 10^10} with single-anchor canonical pi(10^k) values; full table of 35 (x, K) data points; median ratio empirical/sigma_pred = 0.476, mean 0.554 (consistent with half-Gaussian sqrt(2/pi) = 0.798 modulated by GUE pair-correlation reduction ~0.74 measured at S195); single-sample spread 0.07-1.66 within Gaussian-quantile band; no row exceeds 2sigma. **Headline polylog-better-than-sqrt(x) row**: at x=10^10, K=8000 (~ log^3 x), |err|=48.126 vs sqrt(x)=100000, ratio eps/sqrt(x) = 4.81e-4 — predicted 9.82e-4, ratio 0.49. Two new decades (10^8, 10^10) verify sigma-prediction beyond S195's 10^5-10^7 range. **Corrects** OPEN_POSITIVE_TARGETS.md §P3 formula: P3 originally claimed K=log^2 x gives eps ~ sqrt(x) * log log x / log^4 x (used K instead of sqrt(K) in denominator). Correct formula: K=log^2 x gives eps ~ sqrt(x) * log log x / log^2 x; to attain eps ~ sqrt(x) / log^4 x need K = log^6 x zeros. **Distinction from S195/Thread 3**: S195 closed Thread 3 ("polylog K -> threshold hit-rate -> 0 -> exact pi(x) hopeless in polylog"); Thread 7 slot 1 RE-FRAMES the same variance formula to ask the complementary algorithmic question ("polylog K -> what is the smallest typical eps?") and gives a positive named-exponent answer. Two complementary results: threshold negative + quantitative positive. **Open vs A-grade gap**: result is heuristic (random-phase model unproven); single-sample-per-decade rather than 20+ samples; "polylog improvement" is log-factor not x-factor. Slot 2 should run multi-sample averaging at x in {10^9..10^12} to tighten empirical confirmation; theoretical extrapolation to x = 10^15, 10^20 via S195's predictor; verify named-exponent corollary at extreme x. **Cross-domain ingredient**: re-uses S195's GUE / random-phase heuristic (Montgomery 1973, Odlyzko 1989); CROSS_DOMAIN_TECHNIQUES.md updated to mark this as a complementary algorithmic re-framing of the variance formula. Cites E1.5 (per-query bit-content barrier), E2.1 (spectral / sieve), E3.1 (CCM spectral triple), S195 (variance formula), S196 (Galway frontier closure conditional on random-phase), S202 (unified CCM closure), S224 (Correlation Dichotomy partial-positive template Thread 7 follows). See `experiments/analytic/polylog_approx_pi/{polylog_approx_pi.py, polylog_approx_pi_results.md, polylog_approx_pi_main.csv, main_run.log}`, `archive/sessions/session240_commit_p3_partial_sum_evaluator.md`. | 240 |
+    877	
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update OPEN_POSITIVE_TARGETS, SESSION_INSIGHTS, .commit_state.
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    claimed K=log²x gives ε ≈ √x · log log x / log⁴ x. The correct
+    formula (using √K, not K, in the denominator per (*)) gives
+    ε ≈ √x · log log x / log² x at K=log²x; to attain ε ≈ √x / log⁴ x
+    one needs K = log⁶ x zeros, not log² x. Fixed inline in
+    OPEN_POSITIVE_TARGETS.md.
+    
+    **Distinction from S195/Thread 3.** S195 closed Thread 3 ("polylog K
+    → threshold hit-rate → 0 → exact π(x) hopeless in polylog"). Thread 7
+    slot 1 RE-FRAMES the same variance formula to ask the COMPLEMENTARY
+    algorithmic question ("polylog K → what is the smallest typical ε?")
+    and gives a positive named-exponent answer. Two complementary results:
+    threshold negative + quantitative positive.
+    
+    **A-grade gap.** Result is heuristic (random-phase model unproven);
+    single-sample-per-decade rather than 20+ samples; "polylog
+    improvement" is log-factor not x-factor. Self-grade B; Thread 7 has
+    4 slots remaining.
+    
+    **Slot 2 next-action.** Multi-sample averaging at x ∈ {10⁹..10¹²}
+    to tighten empirical confirmation; theoretical extrapolation via
+    S195's predictor to x = 10¹⁵, 10²⁰; verify named-exponent corollary
+    at extreme x.
+    
+    **Files.** `experiments/analytic/polylog_approx_pi/{polylog_approx_pi.py,
+    polylog_approx_pi_results.md, polylog_approx_pi_main.csv,
+    main_run.log}`. CLOSED_PATHS.md §P.P3 row added. OPEN_POSITIVE_TARGETS
+    §P3 corrected with named-exponent formula and Thread 7 ACTIVE status.
+    .commit_state advanced to thread:p3_polylog_approx_pi_named_eps,
+    sessions_used:1, status:ACTIVE. Session synthesis at
+    `archive/sessions/session240_commit_p3_partial_sum_evaluator.md`.
+  [Bash] grep -n "^## S2[34]" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    10232:## S231 — commit thread 6 slot 5 of 5 (FINAL): cross-conductor (Q-batched) amortisation + Thread 6 wrap (B-grade)
+  [Bash] grep -nE "^## S[0-9]+" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -15
+    7067:## S161 (2026-04-28) — D45 Wild Swing: Baker-Norine RR closes — closed-form q-reduced identity for D_P on Γ_N and H_N
+    7741:## S194 — commit thread 2 / Connes amortisation, slot 2/5 (2026-04-28)
+    7786:## S195 — commit thread Connes amortisation, slot 3/5: GUE random-phase heuristic
+    8643:## S209 — paradigm-shift triple correlation T_W^{div} ↔ HL prime triple singular series
+    8729:## S211 (2026-04-29) — commit thread 4 slot 1: A7 plethysm sub-frame, B-grade
+    8768:## S212 (commit thread 4, slot 2 of 5; A7 plethysm sub-frame)
+    8840:## S213 (commit thread 4, slot 3 of 5; A7 plethysm sub-frame)
+    8922:## S214 (commit thread 4, slot 4 of 5; A7 plethysm sub-frame)
+    9031:## S215 (commit thread 4, slot 5 of 5; A7 plethysm sub-frame WRAP — THREAD CLOSED)
+    9363:## S220 (commit thread 5, slot 1 of 5; cross-x amortisation, explicit-formula pillar)
+    9430:## S221 (commit thread 5, slot 2 of 5; cross-x amortisation, multipoint falsifier)
+    9534:## S222 — commit thread 5, slot 3: HKM combinatorial-pillar cross-x amortisation closure (B)
+    9661:## S224 — commit thread 5 step 5 of 5 (FINAL): theoretical wrap
+    10052:## S229 — commit thread 6 slot 3: end-to-end Dirichlet-L zero finder via FFT-shared AFE + Hardy Z (B-grade)
+    10232:## S231 — commit thread 6 slot 5 of 5 (FINAL): cross-conductor (Q-batched) amortisation + Thread 6 wrap (B-grade)
+  [Bash] grep -nE "^## S2[34]0" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    (Bash completed with no output)
+  [Bash] grep -n "S240\|P3" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    2398:- **P3 (RMT local-moment predictor on Δ):** confirmed circular. Predictor
+    2411:2. **Δ local smoothness (P3):** std(Δ) over 200-point window < 2 even at
+    10284:**Self-extension proposed (next thread)**: Thread 7 = P3 (approximate
+    10295:Thread 7 (P3).
+    10718:## Session 240 — commit Thread 7 slot 1: P3 polylog approximate π(x) with named ε (B-grade)
+    10720:**Mode:** commit (Thread 7 / OPEN_POSITIVE_TARGETS.md §P3 polylog
+    10733:shape §P3 asks for ("polylog algorithm with named ε"); the answer is
+    10750:**Correction of P3 formula.** OPEN_POSITIVE_TARGETS.md §P3 originally
+    10776:main_run.log}`. CLOSED_PATHS.md §P.P3 row added. OPEN_POSITIVE_TARGETS
+    10777:§P3 corrected with named-exponent formula and Thread 7 ACTIVE status.
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    10780 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    10770	to tighten empirical confirmation; theoretical extrapolation via
+    10771	S195's predictor to x = 10¹⁵, 10²⁰; verify named-exponent corollary
+    10772	at extreme x.
+    10773	
+    10774	**Files.** `experiments/analytic/polylog_approx_pi/{polylog_approx_pi.py,
+    10775	polylog_approx_pi_results.md, polylog_approx_pi_main.csv,
+    10776	main_run.log}`. CLOSED_PATHS.md §P.P3 row added. OPEN_POSITIVE_TARGETS
+    10777	§P3 corrected with named-exponent formula and Thread 7 ACTIVE status.
+    10778	.commit_state advanced to thread:p3_polylog_approx_pi_named_eps,
+    10779	sessions_used:1, status:ACTIVE. Session synthesis at
+    10780	`archive/sessions/session240_commit_p3_partial_sum_evaluator.md`.
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+Now write the session synthesis.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session241_commit_p3_multisample.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session241_commit_p3_multisample.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/ -name "*.py" | while read f; do
+  r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"
+done
+echo "---";
+find /apps/aplikacijos/prime-research/experiments/ -name "__pycache__" -path "*polylog_approx_pi*"
+    ---
+    /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/__pycache__
+  [Bash] rm -rf /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/__pycache__
+ls /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/
+    main_run.log
+    multi_sample.py
+    multi_sample_data.csv
+    multi_sample_main.log
+    multi_sample_results.md
+    multi_sample_run_1e7_1e8.log
+    multi_sample_run_1e9.log
+    multi_sample_summary.csv
+    polylog_approx_pi.py
+    polylog_approx_pi_main.csv
+    polylog_approx_pi_results.md
+  [Bash] rm /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_run_1e7_1e8.log /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample_run_1e9.log
+ls /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/
+    main_run.log
+    multi_sample.py
+    multi_sample_data.csv
+    multi_sample_main.log
+    multi_sample_results.md
+    multi_sample_summary.csv
+    polylog_approx_pi.py
+    polylog_approx_pi_main.csv
+    polylog_approx_pi_results.md
+  [Bash] echo 410 > /apps/aplikacijos/prime-research/.run_state; cat /apps/aplikacijos/prime-research/.run_state /apps/aplikacijos/prime-research/.commit_state
+    410
+    thread:p3_polylog_approx_pi_named_eps
+    sessions_used:2
+    status:ACTIVE
+    session_history:S240,S241
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    last_synthesis:archive/sessions/session241_commit_p3_multisample.md
+    thread_7_summary:Thread 7 = OPEN_POSITIVE_TARGETS.md §P3 — approximate pi(x) with bounded error eps(x) = O(x^{1/2}/polylog(x)) in polylog time. Slot 1 (S240): build partial-sum evaluator pi_K(x) = R(x) - 2 sum Re R(x^rho_k) for K = 1..K_max policies; empirical eps(x, K) at x in {10^5, 10^6, 10^7, 10^8, 10^10} for K policies {1, log x, log^2 x, log^3 x, log^4 x, x^{1/4}, x^{1/2}}; compare to S195 sigma-prediction sigma = sqrt(x) log K / (pi sqrt(2K) log x); derive named-exponent corollary eps(x, K=log^alpha x) = O(sqrt(x) log log x / log^{1+alpha/2} x) under Montgomery random-phase heuristic.
+    thread_7_a_grade_targets:(a) explicit polylog-time algorithm with provable eps(x) = O(x^{1/2}/polylog(x)) with named exponent; (b) tight eps vs K characterisation across x decades; (c) lower bound matching eps >= Omega(sqrt(x)/polylog(x)) under GRH or random-phase heuristic.
+    thread_7_slot_plan:
+      slot_1: Build partial-sum evaluator and empirical eps(x, K) at x in {10^5..10^10} for K policies {1, log x, log^2 x, log^3 x, log^4 x, x^{1/4}, x^{1/2}}. Fit eps vs K. Identify saturation behaviour. Derive named-exponent formula.
+      slot_2: Theoretical extrapolation via Montgomery pair-correlation random-phase heuristic (S195 framework) to higher x = 10^15, 10^20. Closed-form eps(x, K) prediction.
+      slot_3: Push to extreme x via Hiary 2011 multi-evaluation method. Test if asymptotic eps scaling holds.
+      slot_4: Smoothing kernel selection — Gaussian, raised-cosine. Does smoothing reduce eps beyond unsmoothed?
+      slot_5: Theoretical wrap. Prove eps(x, K = log^alpha x) = O(sqrt(x) log log x / log^{1+alpha/2} x) under Montgomery; or document break.
+    recommended_next_action:Slot 2 DONE in S241 (multi-sample N=30 at x in {10^7, 10^8, 10^9}; half-Gaussian shape confirmed under sigma_eff scaling, KS_p_eff median 0.69; GUE 0.74 factor stable to within +/-5% across 3 decades; theoretical extrapolation table to x = 10^24). Slot 3 should EITHER (a) push empirical anchor to x = 10^12 via memory-efficient sieve (bit-packed segmented Eratosthenes, or use a primality-test-only narrow-window approach where pi(anchor) is precomputable from PI_KNOWN at 10^12), OR (b) pivot to slot 4 (smoothed kernel selection -- Gaussian / raised-cosine kernels: do they reduce eps beyond the unsmoothed sum? This directly addresses S195 falsifier (2) listed as "open" in S195/S202 wrap.). Recommendation: option (b) is more productive because (a) just adds another decade of confirmation while (b) probes whether smoothing opens a polylog-K route -- the variant of Thread 3 that Galway 2004 proves is K = O(x^{1/2+epsilon}) under GRH for SMOOTHED sums, which means polylog K under smoothing remains the only legitimate falsifier of slot-1's named-exponent corollary.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Slot 2 complete. **Self-grade: B.**
+
+Built `multi_sample.py` (chunked segmented Eratosthenes sieve + 360-point distribution test) and ran N=30 samples at three anchors x ∈ {10⁷, 10⁸, 10⁹}. Headline findings:
+
+- **Half-Gaussian SHAPE confirmed under σ_eff rescaling** — median KS p-value 0.69 across 9 (anchor, K ≥ log²x) cells; cells where KSp_pred < 0.05 (e.g., 10⁹ Kmax: 0.009) all have KSp_eff > 0.5. The rejection of σ_pred is purely scale, not shape.
+- **GUE 0.74 factor stable across 3 decades** — σ_eff/σ_pred = 0.755 ± 0.06 across 9 (anchor, policy ≥ log²x) cells, extending S195's 0.74 figure from {10⁵..10⁷} to {10⁷..10⁹}.
+- **Cross-decade ε/√x decay matches σ-formula** — at K=8000: 9.74e-4 → 8.84e-4 → 7.81e-4 (10⁷→10⁸→10⁹), ratio 1.25 vs predicted 1/log x of 1.286 (3% agreement).
+- **Theoretical extrapolation to x = 10²⁴** — at x = 10¹⁵ with K = log⁴x ≈ 9.3×10⁵ zeros, σ/√x ≈ 7.7×10⁻⁵ (13000× over R(x) baseline).
+
+Files: `experiments/analytic/polylog_approx_pi/{multi_sample.py, multi_sample_results.md, multi_sample_data.csv (450 rows), multi_sample_summary.csv (12 rows), multi_sample_main.log}`. Updated CLOSED_PATHS.md (S241 row), OPEN_POSITIVE_TARGETS.md §P3, SESSION_INSIGHTS.md, .commit_state (sessions_used 1→2). Session synthesis at `archive/sessions/session241_commit_p3_multisample.md`. `.run_state=410`.
+
+Slot 3 next-action recommended in `.commit_state`: pivot to slot 4 (smoothed kernel — does Gaussian/raised-cosine reduce ε beyond unsmoothed sum?) since this probes the legitimate open falsifier from S195/S202 wrap.
+--- Session ended ---
+Sleeping 60 seconds before next run...

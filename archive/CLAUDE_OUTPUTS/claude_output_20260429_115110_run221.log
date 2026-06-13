@@ -1,0 +1,656 @@
+[autonomy] Default mode 'commit' overridden by 'commit'
+=== Run #221 — Mode: commit — Wed Apr 29 11:51:10 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:cross_x_amortisation
+    sessions_used:0
+    status:ACTIVE
+    session_history:
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    last_synthesis:archive/sessions/session215_commit_a7_plethysm_WRAP.md
+    thread_5_summary:Cross-x amortisation across the three pillars. Galway/Connes obstruction (Thread 3) is per-query, but Riemann zeros are properties of zeta not x. If K zeros are computed once and reused across M queries pi(x_1)..pi(x_M), per-x amortised cost decomposes into K_zeros_setup (amortisable) + K_per_x_evaluation (not). Question: can K_per_x_evaluation be polylog(x) while K_zeros_setup = Theta-tilde(x_max)? Same question for Meissel-Lehmer/HKM intermediate-sieve sharing across x. And: Aggarwal binary search makes O(log x) sub-queries to pi(.) at different x values - is there missed amortisation in the Aggarwal analysis? S202 WRAP explicitly listed cross-x amortisation as a "legitimate falsifier of Thread 3, noted as open but not needed for Thread 2 closure." This thread closes that falsifier.
+    thread_5_a_grade_targets:(a) per-x amortised polylog over M = poly(log x_max) batched queries (paper-grade, batch-polylog π(x) algorithm); (b) Aggarwal analysis was sub-optimal — improved binary search via amortisation (concrete algorithmic speedup); (c) cross-x lower bound matching empirical curve under Montgomery (extends Thread 3 closure).
+    thread_5_slot_plan:
+      slot_1: Build partial-sum explicit-formula evaluator decoupling K_zeros_setup from K_per_x_evaluation. Profile both. Measure for K = log^2 x, log^3 x, ..., x^{1/2}.
+      slot_2: Empirically measure per-x amortised cost when M = log x, log^2 x, x^{1/4}, x^{1/2} queries are batched. Plot per-x cost vs M.
+      slot_3: Apply same decomposition to Meissel-Lehmer / HKM. What fraction of HKM's T*S = x^{5/6} is shareable across x?
+      slot_4: Re-examine Aggarwal binary search. Are O(log x) sub-queries amortisable in some way the original analysis missed?
+      slot_5: Theoretical wrap. Cross-x amortised lower bound matching empirical curve, OR empirics exceed theory.
+    recommended_next_action:Slot 1 of Thread 5. Read CLAUDE.md highest-EV-threads section for context, ATTACK_VECTORS.md §H.H1 for the formal attack-vector entry, RESEARCH_AGENDA.md Arc 7 for the multi-session arc structure. Build the prototype evaluator and run the profile.
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state
+    221
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "(commit|session195|session196|session202|session215)" | head -30
+    session165_commit_s82_invariant_subspace.md
+    session166_commit_s82_invariant_subspace.md
+    session168_commit_s82_invariant_subspace.md
+    session169_commit_s82_invariant_subspace.md
+    session190_commit_s82_invariant_subspace.md
+    session193_commit_connes_amortisation.md
+    session194_commit_connes_amortisation.md
+    session195_commit_connes_amortisation.md
+    session196_commit_connes_amortisation.md
+    session202_commit_connes_amortisation.md
+    session211_commit_a7_plethysm_subframe.md
+    session212_commit_a7_plethysm_I2.md
+    session213_commit_a7_plethysm_I3.md
+    session214_commit_a7_plethysm_BIP.md
+    session215_commit_a7_plethysm_WRAP.md
+  [Grep] H\.H1|cross_x_amortisation|cross-x amortisation
+    6758:## §H. Cross-x Amortisation — Beyond the Per-Query Obstruction
+    6770:### H1 — Per-pillar cross-x amortisation profile
+    6788:do not address cross-x amortisation. Meissel-Lehmer's φ-recursion
+    6810:single-x cost within polylog factors; cross-x amortisation provides
+    6833:### H2 — Sieve cross-x amortisation (HKM / Meissel-Lehmer)
+  [Read] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    6755	
+    6756	---
+    6757	
+    6758	## §H. Cross-x Amortisation — Beyond the Per-Query Obstruction
+    6759	
+    6760	**Why this section exists:** Threads 1-4 of the commit-mode arc closed
+    6761	the per-query polylog frontier. S202 WRAP (Thread 3 / Galway frontier)
+    6762	established that K*(x, p) = Θ̃(x) zeros are required for π(x) ± 1 in
+    6763	distribution under Montgomery pair-correlation. **But that's a single-x
+    6764	result.** Riemann zeros are properties of ζ, shared across all x. The
+    6765	open question — explicitly flagged in S202 WRAP as a "legitimate
+    6766	falsifier of Thread 3 closure, noted as open but not needed" — is
+    6767	whether *batched* π(x_1), ..., π(x_M) queries can have *amortised*
+    6768	per-x cost that's polylog. This section is its concrete realisation.
+    6769	
+    6770	### H1 — Per-pillar cross-x amortisation profile
+    6771	
+    6772	**Question:** for each of the three pillars (analytic / explicit
+    6773	formula, combinatorial / Meissel-Lehmer-HKM, prime-pillar /
+    6774	Aggarwal-via-π), what fraction of the per-query work is amortisable
+    6775	across M batched queries `π(x_1), ..., π(x_M)`?
+    6776	
+    6777	For the explicit-formula pillar concretely: per-query cost decomposes
+    6778	into `K_zeros_setup + K_per_x_evaluation`. K zeros must be computed
+    6779	to fixed precision (`K_zeros_setup`); each x then evaluates
+    6780	`Σ_{ρ ≤ K} Li(x^ρ)` (`K_per_x_evaluation`). The setup is amortisable
+    6781	across M; the evaluation is not. **Open question:** can
+    6782	`K_per_x_evaluation = polylog(x)` while `K_zeros_setup = Θ̃(x_max)`?
+    6783	If yes, M-batched amortised cost per x is `Θ̃(x_max)/M + polylog(x)`,
+    6784	which is polylog when `M ≥ Θ̃(x_max)/polylog(x_max)`.
+    ... (170 more lines)
+  [Grep] Arc 7|cross.x|amortisation
+    941:### Arc 7 — Cross-x amortisation across the three pillars (Thread 5)
+    943:**Owner:** commit-mode autonomy (`.commit_state` thread:cross_x_amortisation)
+    944:**Goal:** Test whether cross-x amortisation (sharing Riemann zeros, sieve
+    966:  amortisation help where the original analysis missed it?
+    967:- [ ] **Slot 5:** theoretical wrap. Prove a cross-x amortised lower
+    973:- (b) improved Aggarwal nth-prime via amortisation
+    974:- (c) rigorous cross-x lower bound under Montgomery, sealing the
+    978:(higher than threads 1-4 because cross-x has a known computational
+    984:- `archive/sessions/session202_commit_connes_amortisation.md` (S202
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    935	
+    936	**Estimated total effort:** ~6 sessions.
+    937	**Next action:** pick F4 (empirical, fast) or F6 (parametric family).
+    938	F2 information-rate side closed S69; pseudorandomness-battery side
+    939	remains open if anyone wants the cross-check.
+    940	
+    941	### Arc 7 — Cross-x amortisation across the three pillars (Thread 5)
+    942	**Status:** ACTIVE — commit thread 5 (5-session arc)
+    943	**Owner:** commit-mode autonomy (`.commit_state` thread:cross_x_amortisation)
+    944	**Goal:** Test whether cross-x amortisation (sharing Riemann zeros, sieve
+    945	state, or binary-search work across M batched π(x_i) queries) gives
+    946	sub-Θ̃(x_max) per-x amortised cost, opening a *batch-polylog π(x)*
+    947	algorithm — explicitly flagged in S202 WRAP as a "legitimate falsifier
+    948	of Thread 3 closure, noted as open."
+    949	
+    950	**Why this exists:** Threads 1-4 closed the per-query polylog frontier.
+    951	Thread 5 attacks the *batched-query* frontier, which has structurally
+    952	different accounting (Riemann zeros are properties of ζ, not x).
+    953	
+    954	**Slot plan:**
+    955	- [ ] **Slot 1:** build partial-sum explicit-formula evaluator with
+    956	  `K_zeros_setup` / `K_per_x_evaluation` decoupled. Profile both at
+    957	  K = log² x, log³ x, x^{1/4}, x^{1/2} for x ∈ {10⁵, 10⁶, 10⁷}.
+    958	- [ ] **Slot 2:** batch the evaluator over M = log x, log² x, x^{1/4},
+    959	  x^{1/2} queries. Plot per-x amortised cost vs M empirically. Determine
+    960	  M_min for amortised polylog if it exists.
+    961	- [ ] **Slot 3:** apply same decomposition to Meissel-Lehmer / HKM.
+    962	  Measure shareable fraction of HKM's `T·S = x^{5/6}` across M batched
+    963	  x's.
+    964	- [ ] **Slot 4:** re-examine Aggarwal binary search (E6.6) adversarially.
+    ... (40 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/ | head -30
+    algebraic
+    analytic
+    circuit_complexity
+    constructions
+    dynamical
+    formalisations
+    information_theory
+    ml
+    other
+    proposals
+    quantum
+    sieve
+    topological
+    wildcard
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/ | head -50
+    advanced_convergence.py
+    advanced_convergence_results.md
+    analytic_continuation.py
+    analytic_continuation_results.md
+    analytic_methods.py
+    analytic_methods_results.md
+    analytic_nt_new.py
+    analytic_nt_new_results.md
+    cipolla_pade.py
+    cipolla_pade_results.md
+    cohn_elkies_chi_p
+    compressed_sensing_zeros.py
+    compressed_sensing_zeros_results.md
+    conditional
+    connes_amortisation
+    connes_operator
+    convergence_accel.py
+    convergence_accel_results.md
+    corrected_variable_accuracy.py
+    corrected_variable_accuracy_results.md
+    d43c_k_truncated_residual
+    deep_error_analysis.py
+    deep_error_analysis_results.md
+    dirichlet_bypass.py
+    dirichlet_bypass_results.md
+    few_zeros_search.py
+    few_zeros_search_results.md
+    generating_function_extraction.py
+    generating_function_extraction_results.md
+    gram_point_approach.py
+    ... (20 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/ | grep -E "(galway|explicit|partial_sum|connes_amort|zeros)" | head -20
+    compressed_sensing_zeros.py
+    compressed_sensing_zeros_results.md
+    connes_amortisation
+    few_zeros_search.py
+    few_zeros_search_results.md
+    mobius_explicit_hp.py
+    mobius_explicit_hp_results.md
+    optimal_explicit_formula.py
+    optimal_explicit_formula_results.md
+    riemann_explicit.py
+    riemann_explicit_results.md
+    short_interval_explicit.py
+    short_interval_explicit_results.md
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -10
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE "session[0-9]+" | grep -oE "[0-9]+" | sort -n | tail -5
+    215
+    216
+    217
+    218
+    219
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/session2{18,19}*.md 2>/dev/null; ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "^session(218|219)"
+    /apps/aplikacijos/prime-research/archive/sessions/session218_f1ai_dip_scaling.md
+    /apps/aplikacijos/prime-research/archive/sessions/session219_paradigm_shift_wheel_liouville.md
+    session218_f1ai_dip_scaling.md
+    session219_paradigm_shift_wheel_liouville.md
+  [Bash] wc -l /apps/aplikacijos/prime-research/archive/sessions/session195_commit_galway_frontier.md /apps/aplikacijos/prime-research/archive/sessions/session202_commit_connes_amortisation.md
+    Exit code 1
+    wc: /apps/aplikacijos/prime-research/archive/sessions/session195_commit_galway_frontier.md: No such file or directory
+      307 /apps/aplikacijos/prime-research/archive/sessions/session202_commit_connes_amortisation.md
+      307 total
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/session19*
+    /apps/aplikacijos/prime-research/archive/sessions/session190_commit_s82_invariant_subspace.md
+    /apps/aplikacijos/prime-research/archive/sessions/session191_paradigm_shift_pointwise_spike.md
+    /apps/aplikacijos/prime-research/archive/sessions/session192_critique.md
+    /apps/aplikacijos/prime-research/archive/sessions/session193_commit_connes_amortisation.md
+    /apps/aplikacijos/prime-research/archive/sessions/session194_commit_connes_amortisation.md
+    /apps/aplikacijos/prime-research/archive/sessions/session195_commit_connes_amortisation.md
+    /apps/aplikacijos/prime-research/archive/sessions/session196_commit_connes_amortisation.md
+    /apps/aplikacijos/prime-research/archive/sessions/session197_wild_swing_acsv_d32.md
+    /apps/aplikacijos/prime-research/archive/sessions/session198_reverify_e1_5.md
+    /apps/aplikacijos/prime-research/archive/sessions/session199_f1a_cross_modulus.md
+    /apps/aplikacijos/prime-research/archive/sessions/session19_synthesis.md
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session202_commit_connes_amortisation.md
+    1	# Session 202 — commit thread 2 step 5 (WRAP): Connes operator amortisation
+    2	
+    3	**Date:** 2026-04-28
+    4	**Mode:** commit (Thread 2 / Connes-Consani-Moscovici amortisation)
+    5	**Slot:** 5 of 5 — final synthesis; this slot writes no new code, only
+    6	unifies the four preceding commit-slot results into a single statement.
+    7	**Prior:** S193 (slot 1) reduced Thread 2 ⊆ Thread 3 via Galway/Hiary
+    8	strict dominance K^{22/13}; S194 (slot 2) produced empirical hit-rate
+    9	decay across two decades; S195 (slot 3) derived a GUE random-phase
+    10	heuristic σ²(K, x) ≈ x log²(K)/(2π² K log²x) and proved K* = Θ(x) for
+    11	any positive in-distribution hit-rate (unsmoothed); S196 (slot 4)
+    12	extended the heuristic to log-Gaussian smoothing kernels via the
+    13	variance-additivity decomposition Var(error) = Var(TAIL)(K) +
+    14	Var(BIAS)(K, h), eliminating smoothing as an escape.
+    15	**Self-grade:** **B** — substantive synthesis producing a unified
+    16	conditional theorem (Connes-Galway equivalence across all tested
+    17	regimes) that does not appear in any single one of S193–S196 alone.
+    18	The unified theorem is heuristic (depends on the Montgomery pair-
+    19	correlation random-phase model from S195) but quantitatively backed
+    20	by 600 + 440 = 1040 (x, K, h, |err|) measurements across ~3 decades
+    21	of x and 11 bandwidths. Not A-grade because the random-phase model
+    22	remains conditional and no breakthrough was achieved.
+    23	
+    24	## What this slot wraps
+    25	
+    26	The commit prompt assigned five sessions to one of three high-EV
+    27	threads. Threads 1 (S82 invariant-subspace; closed at S190) and 3
+    28	(Galway frontier in distribution) were independent priorities; this
+    29	arc was nominally Thread 2 but **the slot 1 reduction Thread 2 ⊆
+    30	Thread 3 redirected the remaining four slots to Thread 3 in disguise**
+    ... (90 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session202_commit_connes_amortisation.md
+    120	   M_φ(ρ) = e^{ρ² h² /2}. Compactly-supported kernels (sinc, sech²,
+    121	   Bartlett) have not been tested. The variance-additivity decomposition
+    122	   should generalise (Var_TAIL is determined by truncation, not kernel)
+    123	   but a 100% complete closure would require checking this.
+    124	
+    125	3. **Cross-x amortisation.** π_{K, h}(x_1), π_{K, h}(x_2) for
+    126	   correlated x_1, x_2 might combine to give better information than
+    127	   single-point evaluation. This is a different computational model
+    128	   (not per-query) and is not closed by the arc. Treat as open.
+    129	
+    130	4. **Larger x.** All measurements live below x = 3·10^7. A polylog
+    131	   K-policy that fails at x ≤ 10^7 but succeeds at x ≥ 10^9 would
+    132	   falsify the empirical confirmation (without contradicting the
+    133	   heuristic theorem if the random-phase assumption breaks at large
+    134	   x — which would itself be A-grade content).
+    135	
+    136	These are the legitimate falsifiers; none is currently known to fail.
+    137	
+    138	## Edges composed across the arc
+    139	
+    140	- **E3.1** (Chain A / CCM zeta spectral triple): the closure of S53
+    141	  is sharpened by S193 (setup-cost dominance) and reinforced by the
+    142	  per-query cost equivalence with Galway across all five regimes.
+    143	  Net effect: E3.1 closure is now strictly stronger than at S53 and
+    144	  survives any amortisation regime.
+    145	- **E1.5** (information-theoretic per-query barrier): the GUE
+    146	  heuristic σ² ~ x/K matches the bit-content barrier x ↦ K = Θ(x)
+    147	  exactly. The five-regime closure is the strongest concrete
+    148	  expression of E1.5 in the project to date.
+    149	- **E2.1** (MPS bond-dim spectral): the random-phase model is
+    ... (159 more lines)
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session195_commit_connes_amortisation.md
+    1	# Session 195 — commit thread 2 step 3: Connes operator amortisation
+    2	
+    3	**Date:** 2026-04-28
+    4	**Mode:** commit (Thread 2 / Connes-Consani-Moscovici amortisation)
+    5	**Slot:** 3 of 5
+    6	**Prior:** S193 (slot 1) reduced Thread 2 ⊆ Thread 3 via Galway/Hiary
+    7	strict dominance K^{22/13}; S194 (slot 2) produced empirical
+    8	hit-rate decay across two decades.
+    9	**Self-grade:** **B** — substantive theoretical refinement giving a
+    10	closed-form prediction that matches the S194 empirical curve and
+    11	extrapolates correctly to a new decade. Not A-grade because the
+    12	random-phase assumption is heuristic (GUE pair correlation dropped).
+    13	
+    14	## Mission
+    15	
+    16	Slot 2's recommended slot-3 action: "use GUE statistics of zero
+    17	spacings (Montgomery 1973, Odlyzko 1989) to predict the asymptotic
+    18	hit rate at K = c·√x for various c. Compare the heuristic prediction
+    19	to the empirical data."
+    20	
+    21	## Construction (1 page)
+    22	
+    23	### The heuristic
+    24	
+    25	Riemann's exact explicit formula:
+    26	  π_0(x) = R(x) − Σ_ρ R(x^ρ) − (lower order).
+    27	
+    28	Truncate to K conjugate pairs ρ_j = 1/2 + iγ_j (j ≤ K, γ_j > 0):
+    29	  π_K(x) = R(x) − 2 Σ_j Re R(x^{ρ_j}).
+    30	
+    ... (90 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/
+    connes_amortisation.py
+    connes_amortisation_data.csv
+    connes_amortisation_fluctuation_1e5.csv
+    connes_amortisation_fluctuation_1e6.csv
+    connes_amortisation_fluctuation_1e7.csv
+    connes_amortisation_results.md
+    connes_amortisation_wide.csv
+    galway_smoothing.py
+    galway_smoothing_data.csv
+    galway_smoothing_results.md
+    galway_smoothing_summary.csv
+    gue_heuristic.py
+    gue_heuristic_results.md
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/connes_amortisation/connes_amortisation.py
+    1	"""
+    2	Connes-Consani-Moscovici operator amortisation: per-query lower bound.
+    3	
+    4	Thread 2 (commit S193, Connes amortisation).
+    5	
+    6	S53 closed Chain A on a per-query argument: building the operator costs
+    7	at least O(K^3) for K zeros, exceeding any plausible saving over O(1)
+    8	queries. S190 asked: is the construction actually amortisable across
+    9	k = polylog(N) queries with shared spectral data? If so, per-query
+    10	cost = T_setup/k + T_query and the polylog regime opens IF
+    11	T_setup <= N^c * k for small c.
+    12	
+    13	S193 adversarial finding: the answer is NO, but the structural reason
+    14	is sharper than S53's. Even with FREE amortised access to any zero,
+    15	the per-query cost is bounded below by the EXPLICIT FORMULA truncation
+    16	T(x), which is K_min(x) >= x^{1/2-eps} / log x by Riemann-von Mangoldt.
+    17	
+    18	This script empirically confirms K_min(x) scales as x^{1/2} for the
+    19	worst-case error |pi_explicit(x; K) - pi(x)| <= 0.5 threshold.
+    20	
+    21	The bottleneck is NOT operator construction. It is the bit-content of
+    22	the explicit-formula truncation. Thread 2's amortisation question
+    23	therefore reduces to Thread 3's (Galway frontier) "is K = polylog
+    24	sufficient in distribution?" question.
+    25	
+    26	Falsifiable: if K_min(x) is observed to scale slower than x^{1/2-eps}
+    27	across the tested x values, the structural argument fails.
+    28	"""
+    29	
+    30	from __future__ import annotations
+    ... (568 more lines)
+I have the Thread 3/Thread 2 machinery in hand. Now I'll design Slot 1 — build a partial-sum evaluator that explicitly **decouples** the cost of acquiring K zeros (setup) from the cost of evaluating `Σ R(x^ρ_j)` at a fixed x given those zeros. Then profile both at the prescribed K-scales.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/data/ | grep -E "zeta_zeros"
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_2000.txt
+    zeta_zeros_300.txt
+    zeta_zeros_500.txt
+    zeta_zeros_8000.txt
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation && ls /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/ 2>/dev/null
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py
+Now let me run a quick smoke test to verify the script works.
+  [Bash] timeout 300 python experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py --quick 2>&1 | tail -80
+    timeout: failed to run command ‘python’: No such file or directory
+  [Bash] which python3 && python3 --version
+    /usr/bin/python3
+    Python 3.12.3
+  [Bash] timeout 200 python3 experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py --quick --K-max-cap 200 2>&1 | tail -80
+    Loading 200 zeros (slot 1 setup-cost profile)...
+      loaded in 0.00s (gamma_1=14.1347, gamma_K=396.3819)
+    
+    === Setup-cost profile ===
+         K    T_setup_load     Hiary_K^17/13
+        25          0.0001             67.31
+       100          0.0001            412.46
+    
+    === Per-x evaluation profile ===
+             x       K    policy        T_R      T_sum    T_total    T_per_term
+        100000      18     x_1_4      0.002      0.070      0.072      0.003887
+        100000      25                0.001      0.080      0.081      0.003218
+        100000      50                0.001      0.122      0.123      0.002443
+        100000     100                0.001      0.170      0.171      0.001704
+        100000     133     log2x      0.001      0.191      0.192      0.001438
+        100000     200  log3x,x_1_2      0.001      0.247      0.248      0.001234
+         1e+06      25                0.001      0.079      0.081      0.003170
+         1e+06      32     x_1_4      0.001      0.082      0.083      0.002568
+         1e+06      50                0.001      0.098      0.099      0.001956
+         1e+06     100                0.001      0.139      0.140      0.001388
+         1e+06     191     log2x      0.001      0.209      0.210      0.001093
+         1e+06     200  log3x,x_1_2      0.001      0.223      0.224      0.001114
+    
+    === Q1: T_sum(K, x) linearity check (per x) ===
+      x=   100000: log-log slope alpha=0.5330, prefactor exp(beta)=0.014730, per-term-vs-logK slope=-9.66e-04
+      x=    1e+06: log-log slope alpha=0.4979, prefactor exp(beta)=0.014928, per-term-vs-logK slope=-9.72e-04
+    
+    === Q2: T_per_term cross-x dependence at fixed K ===
+      K=   25: per_term in [0.003170, 0.003218], spread=1.52%
+      K=   50: per_term in [0.001956, 0.002443], spread=24.91%
+    ... (22 more lines)
+The smoke test works but reveals interesting structure. Let me run the full profile with larger K to see the asymptotic regime.
+  [Bash] timeout 600 python3 experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py --K-max-cap 3200 2>&1 | tail -100
+    Loading 3200 zeros (slot 1 setup-cost profile)...
+      loaded in 0.00s (gamma_1=14.1347, gamma_K=3731.0752)
+    
+    === Setup-cost profile ===
+         K    T_setup_load     Hiary_K^17/13
+        25          0.0001             67.31
+        50          0.0001            166.62
+       100          0.0001            412.46
+       200          0.0002           1021.03
+       400          0.0003           2527.52
+       800          0.0005           6256.74
+      1600          0.0011          15488.28
+      3200          0.0023          38340.49
+    
+    === Per-x evaluation profile ===
+             x       K    policy        T_R      T_sum    T_total    T_per_term
+        100000      18     x_1_4      0.002      0.075      0.076      0.004151
+        100000      25                0.001      0.081      0.082      0.003243
+        100000      50                0.001      0.122      0.123      0.002445
+        100000     100                0.001      0.165      0.166      0.001647
+        100000     133     log2x      0.001      0.197      0.198      0.001483
+        100000     200                0.001      0.244      0.245      0.001218
+        100000     316     x_1_2      0.001      0.331      0.331      0.001046
+        100000     400                0.001      0.391      0.392      0.000977
+        100000     800                0.001      0.711      0.712      0.000889
+        100000    1526     log3x      0.001      1.243      1.244      0.000815
+        100000    1600                0.001      1.319      1.320      0.000824
+        100000    3200                0.001      2.317      2.318      0.000724
+         1e+06      25                0.001      0.077      0.079      0.003092
+         1e+06      32     x_1_4      0.001      0.089      0.091      0.002795
+    ... (56 more lines)
+Profile complete. Now I'll write up the results. The key empirical finding is that per-term cost **floors** at large K (~0.0006s on this hardware), confirming the asymptotic linear-in-K bound, while the sub-linear log-log slope is a finite-K warm-up artifact.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now I'll update `.commit_state`, RESEARCH_AGENDA Arc 7 (slot 1 checkbox), CLOSED_PATHS row, SESSION_INSIGHTS, and CROSS_DOMAIN_TECHNIQUES.
+  [Read] /apps/aplikacijos/prime-research/.commit_state
+    1	thread:cross_x_amortisation
+    2	sessions_used:0
+    3	status:ACTIVE
+    4	session_history:
+    5	prev_thread:s82_invariant_subspace_DONE
+    6	prev_thread_2:connes_amortisation_DONE
+    7	prev_thread_3:galway_frontier_DONE
+    8	prev_thread_4:a7_plethysm_subframe_DONE
+    9	last_synthesis:archive/sessions/session215_commit_a7_plethysm_WRAP.md
+    10	thread_5_summary:Cross-x amortisation across the three pillars. Galway/Connes obstruction (Thread 3) is per-query, but Riemann zeros are properties of zeta not x. If K zeros are computed once and reused across M queries pi(x_1)..pi(x_M), per-x amortised cost decomposes into K_zeros_setup (amortisable) + K_per_x_evaluation (not). Question: can K_per_x_evaluation be polylog(x) while K_zeros_setup = Theta-tilde(x_max)? Same question for Meissel-Lehmer/HKM intermediate-sieve sharing across x. And: Aggarwal binary search makes O(log x) sub-queries to pi(.) at different x values - is there missed amortisation in the Aggarwal analysis? S202 WRAP explicitly listed cross-x amortisation as a "legitimate falsifier of Thread 3, noted as open but not needed for Thread 2 closure." This thread closes that falsifier.
+    11	thread_5_a_grade_targets:(a) per-x amortised polylog over M = poly(log x_max) batched queries (paper-grade, batch-polylog π(x) algorithm); (b) Aggarwal analysis was sub-optimal — improved binary search via amortisation (concrete algorithmic speedup); (c) cross-x lower bound matching empirical curve under Montgomery (extends Thread 3 closure).
+    12	thread_5_slot_plan:
+    13	  slot_1: Build partial-sum explicit-formula evaluator decoupling K_zeros_setup from K_per_x_evaluation. Profile both. Measure for K = log^2 x, log^3 x, ..., x^{1/2}.
+    14	  slot_2: Empirically measure per-x amortised cost when M = log x, log^2 x, x^{1/4}, x^{1/2} queries are batched. Plot per-x cost vs M.
+    15	  slot_3: Apply same decomposition to Meissel-Lehmer / HKM. What fraction of HKM's T*S = x^{5/6} is shareable across x?
+    16	  slot_4: Re-examine Aggarwal binary search. Are O(log x) sub-queries amortisable in some way the original analysis missed?
+    17	  slot_5: Theoretical wrap. Cross-x amortised lower bound matching empirical curve, OR empirics exceed theory.
+    18	recommended_next_action:Slot 1 of Thread 5. Read CLAUDE.md highest-EV-threads section for context, ATTACK_VECTORS.md §H.H1 for the formal attack-vector entry, RESEARCH_AGENDA.md Arc 7 for the multi-session arc structure. Build the prototype evaluator and run the profile.
+    19	
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+Now Arc 7 in RESEARCH_AGENDA.md to mark slot 1 done.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now update CLOSED_PATHS.md and SESSION_INSIGHTS.md.
+  [Bash] tail -50 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    <persisted-output>
+    Output too large (81.6KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/b4caa234-6192-4a89-8e26-dfc3e8a5e29c/tool-results/b6y2emy9j.txt
+    
+    Preview (first 2KB):
+    | S190 commit-thread step 5 (FINAL) — synthesis + thread DONE: chi_P MPS spectrum compiles into `π(N) = 0.21·π(N) [PNT-in-AP at sqf q ≤ N^{0.185}] + 0.79·π(N) [GUE-bulk MP]`, sharper closure of polylog spectral attack family | SYNTHESIS+CLOSURE | C | Commit-thread session 5/5 (final synthesis slot) on the S82 invariant-subspace theorem. **Compiled theorem (S190)**: combining S148 (refutation of S82's |L(1,χ)|² eigenvalue claim + Gallagher-variance K-formula), S166 (exact V_p ⊕ V_{2p}^prim energy via Ramanujan sums), S168 (squarefree extension to all sqf q with closed form `μ²(q)/φ(q)·(π(N)−r)²/N + R`), and S169 (empirical 21% spike-block-fraction at d=14,18,20 within 7%/5%/5%, finite-N Q_eff exponent ≈ 0.185), the chi_P MPS column-Gram operator decomposes additively into: (1) rank-1 wheel mean (excluded), (2) spike sector ≅ ⊕_{sqf q ≤ Q*≈N^{0.185}} V_q^prim carrying ≈ 0.21·π(N) energy, (3) bulk MP sector with σ-edge 2√(M·p·(1−p)) (M=√N, p=π(N)/N) carrying ≈ 0.79·π(N) energy. The spike eigenvectors ARE Dirichlet character vectors (S82 stands); the eigenvalues are Ramanujan-sum / principal-Dirichlet structure (NOT |L(1,χ)|², S148/S166). **Polylog-blocker reformulation (NEW for S190)**: computing π(N) ≡ computing the bulk MP sector at additive resolution q ≥ N^{0.185}; the spike sector reduces to PNT-in-AP at sqf q ≤ N^{0.185} computable in O(N^{0.185+ε}) by direct Fourier sieving but NOT polylog (E1.5 anchor); the bulk sector is GUE-pseudorandom across 35+ measures (S74/E1.5/T6 anchor). Both sub-sectors blocked. **Net effect**: structural progress, no algorithmic opening. The closure of the chi_P spectral attack family is now FACTORED into two separately-quantified sub-barriers at separate scales (21% at q≤N^{0.185} subpolynomial / 79% at q≥N^{0.185} information-theoretic), whereas before the closure was monolithic via "E2.1 + S74 → C-circular C2 collapse". **Closure mode C** (computability-circular within the C2 chain): every step of the decomposition reduces to a kn
+    ...
+    </persisted-output>
+  [Bash] grep -c "^| S2" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md; tail -3 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -1 | cut -c1-200
+    3
+  [Bash] tail -1 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | cut -c1-300
+    | §C8 — wheel-coprime cumulative Liouville identity (S219, paradigm-shift mode): is `L_W(x) := Σ_{n ≤ x, gcd(n, W) = 1} λ(n)` reducible to a finite signed sum of unrestricted Liouville sums `L(⌊x/d⌋)` indexed by divisors of `rad(W)`, and does the wheel-graded bisection π_W(x) = (1/2)(n_W
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    856 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    850	| §A.A7 plethysm sub-frame, 5-SESSION COMMIT THREAD WRAP — synthesise S211–S214 into a unified theorem and file thread closure | SYNTHESIS+CLOSURE | E | Thread 4 commit step 5/5 WRAP (S215; final synthesis, no new code or experiment). **Unified theorem (chi_P-vs-matched-baseline plethysm sub-frame, fully closed at all k ≥ 1)**: for all `n ≥ 2` and `d ≥ 2`: **(I)** `f_chi_P^(n)_d = x_1 · q_{d-1}^{(n-1)}(x_2, ..., x_n)` (parity argument: |S| ≥ 2 + val(S) prime ⇒ val(S) odd ⇒ 1 ∈ S); every matched-support baseline shares this factorization structure since its support is in `{S : 1 ∈ S, val(S) prime}`. **(II)** `closure(GL_n · chi_P_d) ⊆ V_{d,1}^{n,d}` (Chow variety of reducible forms; Landsberg 2017 ch. 8). **(III)** Under cofactor non-degeneracy (∗) (verified at (n,d)=(4,3) for 10/10 baselines: rank 3, discriminant ∈ [3/2, 27]), `closure(GL_n · chi_P_d) = closure(GL_n · matched-baseline)`. **(IV)** As `GL_n`-modules, `C[orbit-closure(chi_P_d)]_k ≅ C[orbit-closure(matched-baseline)]_k` at every `k ≥ 1`; **no occurrence obstruction at any plethysm level k separates chi_P from matched baselines**. The slot-by-slot map: S211 (k=1 first-order tangent), S212 (k=2 ideal at (n,d) ∈ {(4,3),(5,3),(5,4)}), S213 (k=3 ideal at (4,3)), S214 (parity lemma + Chow-variety identification at all k). Slots 1–3 are particular k = 1, 2, 3 of the all-k structural identity discovered in slot 4. **A7 thread CLOSED; 4th commit thread DONE** after S82 invariant subspace (S190), Connes amortisation (S202), Galway frontier (S195+S196). chi_P inherits the BIP 2017 no-OCB barrier from its support hypergraph via Chow geometry. **Algorithmic implication**: none directly; GCT-plethysm does not give a formula lower bound for chi_P at any k. **Why C-grade**: pure synthesis slot, no new mathematical content beyond consolidation; per CLAUDE.md `commit` protocol the WRAP slot is C-grade by design when the structural content was already produced in slot 4. **Successor sub-frame remaining open** (reclassified as classical alg-geom not chi_P-specific): `d_0(V_{d,1}^{n,d}) := min{k : I_k(V_{d,1}^{n,d}) ≠ 0}`, the first non-trivial degree of the Chow variety ideal; S212/S213 establish `d_0 ≥ 4` at (n,d)=(4,3). The fallback dim I_4 computation (~30 min, ambient 8855) was deemed unnecessary in S215 because by (IV) it would produce a property of V_{d,1}^{n,d}, not of chi_P. **Recommended next commit thread**: from `frontier_gen` queue (D44 BC endomotive Galois-orbit flagged S163 as fall-back); likely new sources are TDA on `pi(x)` fine scales, free-probability spectral constructions, transfer-operator spectrum at Connes-Bost automorphism. See `archive/sessions/session215_commit_a7_plethysm_WRAP.md`. | 215 |
+    851	| §A.A7 plethysm sub-frame, ALL-K Chow-variety identification — does the chi_P-vs-matched-baseline plethysm sub-frame close at every k ≥ 1 via a structural argument (rather than k-by-k computation)? | REFINEMENT (structural) | E | S214 commit-thread-4 step 4/5 (slot 4 of A7). **Lemma (parity argument):** For all n ≥ 2 and all d ≥ 2, `f_chi_P^(n)_d = x_1 · q_{d-1}^{(n-1)}(x_2,...,x_n)` where `q_{d-1}^{(n-1)} := Σ_{T ⊆ {2,...,n}, |T|=d-1, 1+val(T) prime} ∏_{i∈T} x_i`.  **Proof:** at |S| ≥ 2, val(S) is a sum of |S| distinct positive powers of 2; if 1 ∉ S, every term is even, so val(S) ≥ 6 is an even integer ≥ 6, hence not prime.  Verified symbolically for all (n, d) ∈ {(2..7, 2..n)} via sp.factor: every cell has the predicted x_1-common-factor structure. **Consequence (Chow-variety containment):** `closure(GL_n · chi_P^(n)_d) ⊆ V_{d,1}^{n,d}`, the affine cone over the Chow variety of degree-d forms with at least one linear factor (Landsberg 2017 *Geometry and Complexity Theory* CUP ch. 8).  Every matched-support random baseline `Σ_S c_S ∏_{i∈S} x_i` has its support as a subset of `{S : 1 ∈ S, val(S) prime}`, hence inherits the same factorization structure.  When the cofactor `q_{d-1}` is non-degenerate (verified at (n,d) = (4,3) for 10/10 random matched-support baselines: cofactor rank 3, discriminant ∈ [3/2, 27]), all matched baselines lie in the **SAME closed GL_n-orbit closure** as chi_P_d.  **Punchline:** the GL_n-modules `C[orbit-closure(chi_P^(n)_d)]_k` and `C[orbit-closure(matched-baseline)]_k` are IDENTICAL at every k ≥ 1.  No occurrence obstruction can ever distinguish chi_P from a matched-support baseline at any k.  S211 (k=1), S212 (k=2), S213 (k=3) sub-frame closures are particular cases of this all-k structural identity — the matched-baseline indistinguishability would persist at k → ∞. **Verifications (V1-V6):** (V2) dim Stab(chi_P^(4)_d3) = 4 (predicted = 1 + dim O_3(C) = 4: conformal scaling g(x_1) = α x_1 paired with g(q) = q/α, where q = e_2(x_2, x_3, x_4) is the rank-3 ternary quadratic factor); orbit dim = 12; dim V_{3,1}^{4,3} = 13.  (V3) e_3(4 vars) and p_3(4 vars) IRREDUCIBLE, hence outside V_{3,1}^{4,3} — different orbit closure from chi_P.  (V4) Iterated factorization at higher (n, d): chi_P^(5)_d4 = x_1·x_3·x_5·(x_2+x_4) (4 linear factors), chi_P^(5)_d5 = x_1·x_2·x_3·x_4·x_5 (fully decomposable; val([5])=31 prime), chi_P^(6)_d5 = x_1·x_4·(4-monomial irreducible cubic) (2 linear factors), chi_P^(7)_d7 = x_1···x_7 (val([7])=127 prime). **Refines E2.26 part (iii'''')**: the all-k Chow-variety-identification sub-frame supersedes S211/S212/S213's k=1,2,3 closures with one structural argument; the sub-frame catalogue grows from 11 entries (S213) to "all-k with structural mechanism" — chi_P-vs-matched-baseline plethysm sub-frame fully closed.  **Cross-domain ingredient**: classical algebraic geometry (Chow variety / variety of reducible forms; Landsberg 2017 ch. 8); BIP 2017 no-OCB barrier as the mechanism analogue. CROSS_DOMAIN_TECHNIQUES.md §2 GCT entry refined to "USED PARTIAL — orbit-dim, first-order tangent, second-order ideal, third-order ideal AND all-k Chow-variety-identification sub-frames".  **Does NOT close**: chi_P-vs-non-padded-comparison-polynomial plethysm sub-frame (e.g., chi_P vs e_3, p_3) at degrees k ≥ d_0 := first non-trivial degree of `I(V_{d,1}^{n,d})`.  S212/S213 ⇒ d_0 ≥ 4 at (n,d) = (4,3); the d_0 question is a property of the Chow variety V_{d,1}^{n,d}, not of chi_P specifically.  Slot 5 may compute dim I_4 fallback (~30 min, ambient dim 8855) to pinpoint d_0. **Why B-grade not A**: factorization observation is one-line parity; orbit-closure-V_{d,1} identification is standard algebraic geometry — derivable in an afternoon by an algebraic geometer.  **Why B-grade not C**: a NEW structural theorem with clean proof, supersedes S211/S212/S213 by extending the same conclusion to all k via geometric identification.  **Falsifiers**: (i) some chi_P^(n)_d at d ≥ 2 has a monomial NOT containing x_1 (would falsify lemma); (ii) dim Stab(chi_P_n4_d3) ≠ 4 (would falsify CO_3 prediction); (iii) e_3 or p_3 reducible at n=4 (would deflate comparison argument); (iv) some matched-support baseline does NOT factor as x_1·q.  All four no-signal branch held.  See `experiments/algebraic/gct_chi_p_orbit/bip_reducibility.py`, `experiments/algebraic/gct_chi_p_orbit/bip_reducibility_results.md`, `archive/sessions/session214_commit_a7_plethysm_BIP.md`. | 214 |
+    852	
+    853	| §D8 ATTACK_VECTORS — DARTS for π(x) TC^0 circuits at N=12: does Differentiable Architecture Search (Liu-Simonyan-Yang 2019) over a depth-3 circuit with gate library {AND, OR, XOR, MAJ_3, MAJ_5, MAJ_7, ID, NOT} synthesise a non-trivial generalising primality circuit? | FAIL | I | S216 wild-swing single-session attack imports DARTS as a cross-domain technique. Depth-3 differentiable circuit at N=12, G_1=G_2=12, soft input selection via sigmoid logits, gate-temperature anneal τ ≈ 2 → 10, Adam lr=1e-2, 100 epochs, BCE loss on (n, χ_P(n)) for n ∈ [0, 4096). **Result**: PRIMES converges deterministically to final loss 0.2969 ± 0.0000 across 3 seeds, exactly matching the 1-bit oddness baseline 0.2961 (`H(prime) − H(prime | bit_0)` ≈ 0.10 nats). Matched-density random control (3 seeds): 0.3967 ± 0.0113 (entropy floor 0.4008). Welch t = −15.3, p = 0.004 (PRIMES vs random_density). **Calibrated-1-bit random control** (3 seeds, parity-conditional density matched to PRIMES: 563 primes among 2048 odd n's, 1 prime among 2048 even n's): 0.2963 ± 0.0004. **PRIMES vs calibrated**: t = +2.3, p = 0.14 — statistically indistinguishable; gap = 0.0006 nats. **Oddness fully explains the DARTS PRIMES advantage** (mode I conditional: the cross-domain technique's signal is fully reducible to the single-bit predictor advantage that S84 already documented at depth-2 SAT). DARTS does NOT find mod-6 (loss 0.230) or mod-30 (loss 0.190) baselines at this depth/width. **Argmax discretisation completely fails**: best PRIMES architecture argmax = `Layer1: 12×ID; Layer2: 12×MAJ_5 (empty selected set); Layer3: 1×MAJ_7 (empty selected set)`, which evaluates to constant zero (MAJ_k(empty) = 0 at large τ). Discrete-circuit accuracy hits the majority-class baseline 0.8623 at every n-window tested (train, [2^N, 2^N+1000), [2^(N+1), ...), [10000, 11000), [10^5, ...]) with gap = 0 everywhere. The continuous-relaxation prime-specific signal is information-lost in argmax — known DARTS failure mode (Zela-Elsken-Saikia-Marrakchi-Brox-Hutter 2020 ICLR "Understanding and Robustifying DARTS"). **Adds a 36th orthogonal pseudorandomness measure** (DARTS continuous-relaxation reachable loss) with the SAME elementary mechanism as S84 (oddness-of-primes mod 2). **Mode I-with-mechanism**: the cross-domain DARTS technique survives import (the soft training does extract the parity bit) but is not load-bearing for any new conclusion — depth-2 SAT and depth-3 DARTS find the same predictor. **Falsifiers** (open follow-ups): (i) larger search (G_1, G_2 ≥ 32, depth ≥ 4) with XOR-favoured initialisation; (ii) different discretisation (top-k threshold + soft-to-hard rounding, Bender 2018); (iii) calibrated control on the same larger search space showing PRIMES-residual gap. **Cross-domain technique** Liu-Simonyan-Yang ICLR 2019 (https://arxiv.org/abs/1806.09055) PROPOSED → USED-I; see `CROSS_DOMAIN_TECHNIQUES.md §8`. **Reduces structurally to E1.10 / E3.13 / S84** — joins pseudorandomness-confirms-pseudorandomness closure family. Refines `novel/pseudorandomness_of_pi.md` with a 36th measure. See `experiments/ml/darts_primes/{darts_primes.py, baselines.py, calibrated_control.py, darts_primes_results.md, run/}`, `archive/sessions/session216_d8_darts_primes.md`. | 216 |
+    854	
+    855	| §RE-VERIFY E6.6 — Aggarwal binary search with INEXACT polylog π̃ + BPSW walk: does replacing exact pi(x) by an approximator with bounded error eps(x) open a polylog route to p(n)? | REFINEMENT | E | S217 re-verify-closure adversarial probe of E6.6 (S120 closure). The S120 composition (Aggarwal × Dusart × BPSW) used **exact** pi_lucy(x). The S217 question is: substitute any pi_tilde with absolute error eps(x) and BPSW-walk the residual window. **S217 theorem** (formalises the gap S120 left implicit): T(n) = O(log(n/eps) · cost(pi_tilde)) + O(eps · log p_n · cost(BPSW)). Corollary 1: pi_tilde = pi_exact (eps=0) recovers Aggarwal-pure. Corollary 2: polylog pi_tilde with polylog eps ⇒ T(n) = polylog (this is the OPEN frontier — Galway / Thread 3, conditionally closed S195/S196). Corollary 3: pi_tilde = R(x) (Riemann's R, polylog cost) under RH gives eps(x) ≤ √x log(x)/(8π) (Schoenfeld 1976), hence T(n) = O(√p_n log² p_n) — same asymptotic order as Aggarwal-pure. **Empirical verification** (8 cells, n ∈ {10, 10², 10³, 10⁴, 5·10⁴, 10⁵, 5·10⁵, 10⁶}): F1 (correctness) PASS 8/8 — output matches sympy.prime(n) exactly through n=10⁶ (p_n = 15485863); F2 (window scaling) PASS — walk W ≤ 4·eps_bound + O(1) in every cell (e.g. W=10698 ≤ 4·2598+296 at n=10⁶); F3 (BS-call scaling) PASS — pi_calls ∈ {0,2,3,5,5,6,7,7} matches predicted log(n/eps_bound). Observed empirical eps_obs is ~30× smaller than Schoenfeld bound (e.g. 110 vs 2598 at n=10⁶), reflecting R(x) tightness over Li(x). **No polylog opening**: total cost remains O(√p_n polylog), matching Aggarwal-pure asymptotic order. The "missed angle" (inexact π̃ tolerance) reduces to the open question of polylog π̃ with polylog eps, identical to the Galway frontier already closed (conditionally) at S195/S196. **Closure of E6.6 stands.** **Net new content**: (a) explicit ε-cost trade-off equation `T(n) = O(log(n/eps)·cost(π̃)) + O(eps·log p_n·cost(BPSW))` formalising S120's implicit assumption; (b) empirical verification at n=10⁶ that R(x) + Aggarwal-BS + BPSW-walk computes p_n correctly with walk window matching Schoenfeld's RH-conditional bound; (c) quantitative confirmation that R(x) error is ~30× tighter than Schoenfeld's worst-case in the tested regime. Cites E6.6, E6.8, E5.1, E3.3 (Riemann R-function smooth-part edge); composition only, no new edge. Cross-domain ingredient: none (pure analytic NT + classical sieve + classical primality, all in catalogue). See `experiments/sieve/aggarwal_inexact_oracle/`. | 217 |
+    856	| §C8 — wheel-coprime cumulative Liouville identity (S219, paradigm-shift mode): is `L_W(x) := Σ_{n ≤ x, gcd(n, W) = 1} λ(n)` reducible to a finite signed sum of unrestricted Liouville sums `L(⌊x/d⌋)` indexed by divisors of `rad(W)`, and does the wheel-graded bisection π_W(x) = (1/2)(n_W(x) − L_W(x)) − C_{3,W}(x) admit a closed-form divisor-sum decomposition? | REFINEMENT | E (refinement of E1.6 / E2.10) | S219 paradigm-shift session — no cross-domain imports. Composes E1.6 (cumulative bisection π = (x − L)/2 − C_3) with E2.10 (L mod 2 = x mod 2) and E2.1/E4.1/S208 (wheel-W density `φ(W)/W`, indicator-side `T_W^{div}`). **Theorem 1** (proven analytically + integer-exact verified at 16 W × ~200 x cells with N = 10⁴): `L_W(x) = Σ_{d | rad(W)} L(⌊x/d⌋)` for every W ≥ 1 and integer x ≥ 0. RHS has exactly `2^{ω(W)}` terms, depends on W only through `rad(W)`. Proof: Möbius expand `[gcd(n,W)=1]`, swap summation order, use `λ(dm) = λ(d)λ(m)` (completely multiplicative), collapse `μ(d)λ(d) = +1` for squarefree `d` and `0` otherwise. **Theorem 2** (proven + verified): `L_W(x) mod 2 = (Σ_{d | rad(W)} ⌊x/d⌋) mod 2`. Computable in `O(ω(W))` ops without any L-oracle. **Theorem 3** (wheel-graded bisection lift): `π_W(x) = (1/2) Σ_{d | rad(W)} (μ(d)⌊x/d⌋ − L(⌊x/d⌋)) − C_{3,W}(x)`, integer-exact verified at 16 W × 4 x cells. **F1-F6 all PASS** integer-exact. **Algorithmic content**: `2^{ω(W)}`-call oracle reduction `L_W → L`, polylog in W for primorial W (since `2^{ω(W)} = W^{O(1/log log W)}`); does NOT bypass the unconditional `O(x^{2/3})` ceiling for `L(x)` (the oracle bottleneck). **Why B not A**: classical Möbius inversion + completely-multiplicative `λ`, derivable in an afternoon by an analytic NT theorist. **Why B not C**: clean integer-exact pointwise identity + wheel-graded bisection lift + `2^{ω(W)}` reduction, none previously stated in EDGES.md / `experiments/` / sessions; symmetric counterpart to S208's pointwise indicator-side `T_W^{div}`. Refines E1.6 and E2.10 inline. Successor challenges added (NOVELTY_CHALLENGES.md §C8, §C8.b). **Cross-domain ingredient**: NONE imported (paradigm-shift mode). Tools used: Möbius inversion + completely-multiplicative property of `λ`, both already-`USED` in CROSS_DOMAIN_TECHNIQUES.md from prior sessions. See `experiments/constructions/wheel_coprime_liouville_identity/{definition.md, wheel_coprime_liouville.py, wheel_coprime_liouville_results.md, wheel_coprime_liouville_results.json, run.log}`, `archive/sessions/session219_paradigm_shift_wheel_liouville.md`. | 219 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update SESSION_INSIGHTS.md and CROSS_DOMAIN_TECHNIQUES.md.
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    E2.10 (L mod 2 = x mod 2), and E2.1 / E4.1 / S208 (wheel-W density
+    `φ(W)/W`):
+    
+    * **T1** `L_W(x) := Σ_{n ≤ x, gcd(n,W)=1} λ(n) = Σ_{d | rad(W)} L(⌊x/d⌋)`.
+    * **T2** `L_W(x) mod 2 = (Σ_{d | rad(W)} ⌊x/d⌋) mod 2`.
+    * **T3** `π_W(x) = (1/2) Σ_{d | rad(W)} (μ(d)⌊x/d⌋ − L(⌊x/d⌋)) − C_{3,W}(x)`.
+    
+    All three integer-exact verified at 16 W (sqfree primorial / sqfree
+    non-primorial / non-squarefree) × ~200 x grid points at N = 10⁴.
+    F1-F6 all PASS with residual = 0 (integer arithmetic).
+    
+    **Algorithmic content:** `2^{ω(W)}`-call oracle reduction `L_W → L`,
+    polylog in W for primorial W (`2^{ω(W)} = W^{O(1/log log W)}`).
+    The reduction is one-way and does NOT bypass `O(x^{2/3})` for `L(x)`.
+    
+    **Symmetric counterpart to S208**: S208's `T_W^{div}` is the pointwise
+    indicator-side wheel-collapse (polylog-cheap, finite-state on coprime
+    cosets); S219's `L_W` is the cumulative-side wheel-decomposition
+    (retains full λ oscillation, decomposed into `2^{ω(W)}` scaled copies).
+    
+    **Why B not A**: classical Möbius inversion + completely-multiplicative
+    `λ`, derivable in an afternoon by an analytic NT theorist.
+    
+    **Why B not C**: integer-exact pointwise identity + wheel-graded
+    bisection lift + `2^{ω(W)}` reduction, none of which were previously
+    stated in EDGES.md / `experiments/` / sessions. EDGES.md E1.6 and
+    E2.10 inline-annotated. NOVELTY_CHALLENGES.md §C10 + 3 successor
+    challenges (C10.a / C10.b / C10.c) added. CLOSED_PATHS row added.
+    
+    Synthesis: `archive/sessions/session219_paradigm_shift_wheel_liouville.md`.
+  [Bash] grep -n "^## S2[12]" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    8729:## S211 (2026-04-29) — commit thread 4 slot 1: A7 plethysm sub-frame, B-grade
+    8768:## S212 (commit thread 4, slot 2 of 5; A7 plethysm sub-frame)
+    8840:## S213 (commit thread 4, slot 3 of 5; A7 plethysm sub-frame)
+    8922:## S214 (commit thread 4, slot 4 of 5; A7 plethysm sub-frame)
+    9031:## S215 (commit thread 4, slot 5 of 5; A7 plethysm sub-frame WRAP — THREAD CLOSED)
+  [Bash] grep -n "^## S2" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -8
+    8643:## S209 — paradigm-shift triple correlation T_W^{div} ↔ HL prime triple singular series
+    8729:## S211 (2026-04-29) — commit thread 4 slot 1: A7 plethysm sub-frame, B-grade
+    8768:## S212 (commit thread 4, slot 2 of 5; A7 plethysm sub-frame)
+    8840:## S213 (commit thread 4, slot 3 of 5; A7 plethysm sub-frame)
+    8922:## S214 (commit thread 4, slot 4 of 5; A7 plethysm sub-frame)
+    9031:## S215 (commit thread 4, slot 5 of 5; A7 plethysm sub-frame WRAP — THREAD CLOSED)
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md; grep -n "^## S21[6-9]\|^## S22" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    9361 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    9350	(retains full λ oscillation, decomposed into `2^{ω(W)}` scaled copies).
+    9351	
+    9352	**Why B not A**: classical Möbius inversion + completely-multiplicative
+    9353	`λ`, derivable in an afternoon by an analytic NT theorist.
+    9354	
+    9355	**Why B not C**: integer-exact pointwise identity + wheel-graded
+    9356	bisection lift + `2^{ω(W)}` reduction, none of which were previously
+    9357	stated in EDGES.md / `experiments/` / sessions. EDGES.md E1.6 and
+    9358	E2.10 inline-annotated. NOVELTY_CHALLENGES.md §C10 + 3 successor
+    9359	challenges (C10.a / C10.b / C10.c) added. CLOSED_PATHS row added.
+    9360	
+    9361	Synthesis: `archive/sessions/session219_paradigm_shift_wheel_liouville.md`.
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now CROSS_DOMAIN_TECHNIQUES.md to update §8 amortised-algorithmics row.
+  [Bash] grep -n "amortised\|Tarjan\|amortization\|Section 8\|^## §8\|amortized algorithmics" /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | head -20
+    137:## §8. Computational / Algorithmic
+    147:| Amortised algorithmics / batch-query analysis | PROPOSED (H1, Thread 5 ACTIVE) | Tarjan 1985 *J. ACM* 22 (amortised analysis foundations); Iacono 2008 *Algorithmica* 51 (amortised dictionaries); Demaine-Patrascu 2008 *SODA* (lower bounds for batched data structures); Galway 2004 (explicit-formula evaluator engineering); Platt 2017 (high-precision zeta-zero computation) | H1 (commit Thread 5 ACTIVE: cross-x amortisation across explicit-formula / Meissel-Lehmer-HKM / Aggarwal-binary-search pillars; A-grade target = batch-polylog π(x) over M = poly(log x_max) queries; explicitly flagged in S202 WRAP as "legitimate falsifier of Thread 3, noted as open"; 5-slot arc per RESEARCH_AGENDA.md Arc 7) |
+  [Read] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    137	## §8. Computational / Algorithmic
+    138	
+    139	| Technique | Status | Survey ref | Linked vector / edge |
+    140	|-----------|--------|------------|----------------------|
+    141	| Tensor train (TT) | USED (I) | Oseledets 2011 | E2.1 / N1 |
+    142	| MPS / Hierarchical Tucker | USED (I) | Hackbusch 2012 textbook | E2.1 / N1 |
+    143	| MERA | USED (I) | Vidal 2007 PRL | N1 |
+    144	| Holographic / shadow tomography (Aaronson; classical shadows Huang-Kueng-Preskill) | PROPOSED (D11) | Aaronson 2018 STOC = arXiv:1711.01053; Huang-Kueng-Preskill 2020 Nature Physics 16, 1050 = arXiv:2002.08953 | D11 (S97 frontier_gen) |
+    145	| Differentiable programming for π(x) (DARTS architecture search) | USED I (S216, edge E2.33) — depth-3 differentiable circuit on (n, χ_P(n)) at N=12 with gate library {AND, OR, XOR, MAJ_3/5/7, ID, NOT}, soft-input selection via sigmoid logits β, gate-temperature anneal τ ≈ 2 → 10. PRIMES converges deterministically to 1-bit oddness floor (final BCE 0.2969 ± 0.0000 ≈ 0.2961 baseline) across 3 seeds. Matched-density random control plateaus at entropy floor 0.3967 ± 0.0113. Calibrated-1-bit control (parity-conditional density matched) at 0.2963 ± 0.0004 — statistically indistinguishable from PRIMES (Welch t = +2.3, p = 0.14). Argmax discretisation collapses to constant-zero (MAJ_k with empty selected set); discrete accuracy = majority-class baseline at every n-window (train, [2^N, 2^N+1000), [10^5, 10^5+1000)) — known DARTS failure mode (Zela et al. ICLR 2020). Cross-domain technique survives import but signal fully reduces to S84's oddness mechanism. **Adds 36th orthogonal pseudorandomness measure** with same elementary mechanism as S84 (oddness mod 2). | Liu-Simonyan-Yang 2019 "DARTS: Differentiable Architecture Search" ICLR 2019 = arXiv:1806.09055 https://arxiv.org/abs/1806.09055; Bender-Kindermans-Zoph-Vasudevan-Le 2018 "Understanding and Simplifying One-Shot Architecture Search" ICML 2018; Zela-Elsken-Saikia-Marrakchi-Brox-Hutter 2020 "Understanding and Robustifying Differentiable Architecture Search" ICLR 2020 = arXiv:1909.09656 https://arxiv.org/abs/1909.09656; Baydin-Pearlmutter-Radul-Siskind 2018 "Automatic Differentiation in Machine Learning: a Survey" JMLR 18 | D8 (CLOSED S216 — DARTS depth-3 PRIMES advantage = oddness only; calibrated-1-bit indistinguishable from PRIMES at p=0.14; argmax discretisation lossy → discrete circuit = constant zero; cross-domain DARTS import is mode-I) |
+    146	| Boolean SAT for circuit synthesis | PROPOSED | Knuth Vol 4F | A1 |
+    147	| Amortised algorithmics / batch-query analysis | PROPOSED (H1, Thread 5 ACTIVE) | Tarjan 1985 *J. ACM* 22 (amortised analysis foundations); Iacono 2008 *Algorithmica* 51 (amortised dictionaries); Demaine-Patrascu 2008 *SODA* (lower bounds for batched data structures); Galway 2004 (explicit-formula evaluator engineering); Platt 2017 (high-precision zeta-zero computation) | H1 (commit Thread 5 ACTIVE: cross-x amortisation across explicit-formula / Meissel-Lehmer-HKM / Aggarwal-binary-search pillars; A-grade target = batch-polylog π(x) over M = poly(log x_max) queries; explicitly flagged in S202 WRAP as "legitimate falsifier of Thread 3, noted as open"; 5-slot arc per RESEARCH_AGENDA.md Arc 7) |
+    148	
+    149	## §9. Logic / Foundations
+    150	
+    151	| Technique | Status | Survey ref | Linked vector / edge |
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    The file /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md has been updated successfully.
+  [Bash] find experiments/analytic/cross_x_amortisation/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r" || echo "OK: $r"; done
+    OK: experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile_results.md
+  [Bash] find experiments/analytic/cross_x_amortisation/ -name "__pycache__" -exec rm -rf {} + 2>/dev/null; ls experiments/analytic/cross_x_amortisation/
+    cross_x_decoupled_eval.csv
+    cross_x_decoupled_fits.csv
+    cross_x_decoupled_perterm_spread.csv
+    cross_x_decoupled_profile.py
+    cross_x_decoupled_profile_results.md
+    cross_x_decoupled_setup.csv
+Now write the session synthesis.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session220_commit_cross_x_amortisation.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session220_commit_cross_x_amortisation.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find experiments/ -name "*.py" 2>/dev/null | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -10; echo "---"; cat .commit_state
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md
+    ---
+    thread:cross_x_amortisation
+    sessions_used:1
+    status:ACTIVE
+    session_history:S220
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    last_synthesis:archive/sessions/session220_commit_cross_x_amortisation.md
+    thread_5_summary:Cross-x amortisation across the three pillars. Galway/Connes obstruction (Thread 3) is per-query, but Riemann zeros are properties of zeta not x. If K zeros are computed once and reused across M queries pi(x_1)..pi(x_M), per-x amortised cost decomposes into K_zeros_setup (amortisable) + K_per_x_evaluation (not). Question: can K_per_x_evaluation be polylog(x) while K_zeros_setup = Theta-tilde(x_max)? Same question for Meissel-Lehmer/HKM intermediate-sieve sharing across x. And: Aggarwal binary search makes O(log x) sub-queries to pi(.) at different x values - is there missed amortisation in the Aggarwal analysis? S202 WRAP explicitly listed cross-x amortisation as a "legitimate falsifier of Thread 3, noted as open but not needed for Thread 2 closure." This thread closes that falsifier.
+    thread_5_a_grade_targets:(a) per-x amortised polylog over M = poly(log x_max) batched queries (paper-grade, batch-polylog π(x) algorithm); (b) Aggarwal analysis was sub-optimal — improved binary search via amortisation (concrete algorithmic speedup); (c) cross-x lower bound matching empirical curve under Montgomery (extends Thread 3 closure).
+    thread_5_slot_plan:
+      slot_1: Build partial-sum explicit-formula evaluator decoupling K_zeros_setup from K_per_x_evaluation. Profile both. Measure for K = log^2 x, log^3 x, ..., x^{1/2}.
+      slot_2: Empirically measure per-x amortised cost when M = log x, log^2 x, x^{1/4}, x^{1/2} queries are batched. Plot per-x cost vs M.
+      slot_3: Apply same decomposition to Meissel-Lehmer / HKM. What fraction of HKM's T*S = x^{5/6} is shareable across x?
+      slot_4: Re-examine Aggarwal binary search. Are O(log x) sub-queries amortisable in some way the original analysis missed?
+      slot_5: Theoretical wrap. Cross-x amortised lower bound matching empirical curve, OR empirics exceed theory.
+    recommended_next_action:Slot 2 of Thread 5. Empirically measure per-x amortised cost when M = log x, log^2 x, x^{1/4}, x^{1/2} queries share K precomputed zeros. Build a multi-x evaluator that times the partial sum at M correlated x_i's. Plot per-x amortised cost vs M and confirm slot-1's forecast that amortised cost saturates at the per-term floor (~600 ns × K) independent of M. Slot 1 partial closure: explicit-formula pillar's per-x evaluation cost = a · K with a x-independent at large K (12% spread at K=3200), per-term floors at ~600 ns by K~1600 confirming asymptotic Theta(K) wall-clock; setup amortisation orthogonal to per-x evaluation; combined with Thread 3 closure K* = Theta-tilde(x), per-x amortised cost = Theta-tilde(x) for any M.
+The "MISSING" warnings are all under Mathlib's vendored `.lake/packages` directory — third-party Lean tooling, not my experiments. My slot-1 artifacts are clean.
+
+Setting `.run_state` and finalizing.
+  [Bash] echo 222 > .run_state && cat .run_state
+    222
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+## Session 220 — Thread 5 / Cross-x amortisation, slot 1 of 5 — **B-grade**
+
+**What slot 1 produced:**
+
+- New evaluator `experiments/analytic/cross_x_amortisation/cross_x_decoupled_profile.py` decoupling `K_zeros_setup` from `K_per_x_evaluation`, reusing the S195/S202 `R_at_rho` machinery.
+- Profile at K ∈ {25..3200} ∪ policy-K's for x ∈ {10⁵, 10⁶, 10⁷}: per-term cost **floors at ~600–750 ns/zero by K ≈ 1600** (asymptotic Ei regime); cross-x spread of T_per_term collapses to **12% at K = 3200**; log-log slope α ∈ {0.69, 0.72, 0.78} is finite-K warm-up, α → 1 asymptotically.
+- **Structural closure of explicit-formula pillar**: `T_per_x_amortised(K, M) = K^{17/13}/M + a·K + O(1)`. Polylog requires K = polylog (closed by Thread 3 K* = Θ̃(x) under Montgomery) or sub-O(1) Ei (closed by per-term floor). Setup amortisation is structurally orthogonal to per-x evaluation; per-x amortised cost = Θ̃(x) for any M. Conditional on Thread 3's Montgomery heuristic.
+- Live falsifier flagged for slot 2: Schönhage 1990 / Odlyzko-Schönhage multipoint zeta evaluation across correlated x_i for fixed ρ (predicted constant-factor only).
+
+**State updates:** `.commit_state` sessions_used 0 → 1, S220; `RESEARCH_AGENDA.md` Arc 7 slot 1 [x]; CLOSED_PATHS.md row 220 (§H.H1); SESSION_INSIGHTS.md S220; CROSS_DOMAIN_TECHNIQUES.md §8 amortised-algorithmics PROPOSED → USED PARTIAL; session synthesis saved; `.run_state` = 222. Slot 2 next.
+--- Session ended ---
+Sleeping 60 seconds before next run...

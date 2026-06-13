@@ -1,0 +1,951 @@
+=== Run #490 — Mode: arc — Fri May  1 04:25:33 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    File content (67953 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] wc -l /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md /apps/aplikacijos/prime-research/EDGES.md /apps/aplikacijos/prime-research/ATTACK_VECTORS.md /apps/aplikacijos/prime-research/.commit_state /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+       2202 /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+       6484 /apps/aplikacijos/prime-research/EDGES.md
+      10272 /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+         32 /apps/aplikacijos/prime-research/.commit_state
+        816 /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+      19806 total
+  [Read] /apps/aplikacijos/prime-research/.commit_state
+    1	thread:p11_minimum_line_cover_of_primes
+    2	sessions_used:5_final
+    3	status:DONE
+    4	session_history:S484,S485,S486,S487,S488
+    5	slot_1_summary:S484 built Ulam-spiral evaluator (exact greedy at N<=10^4, bounded-direction numpy at N<=10^6). At N=10^4/10^5/10^6: L_primes = 91/308/989; L_random = 113.5/337/1042 (matched-density baseline). L_p/L_r = 0.80/0.91/0.95 — prime advantage SHRINKS with N (not constant-factor as predicted E-mode); fitting 1-L_p/L_r ~ N^{-0.24}. Both scale ~sqrt(N). Top lines all slope (1,+/-1) Ulam diagonals; decompose into pairs of quadratics 4k^2+bk+c with HL-predicted ~40% prime density vs ~10% random. Forecasts B-NEGATIVE for Ulam alone but slots 2-5 still in play.
+    6	slot_2_summary:S485 built p11_alt_embeddings.py multi-embedding evaluator (residue-class Phi_R(n;q)=(n mod q, n//q) and polynomial-image Phi_Q(n;q)=(n, n^2 mod q)). Tested at N in {10^4, 10^5, 10^6}, prime moduli p in {2,3,5,7,11} and primorial moduli q in {6,30,210,2310}. Findings: (i) Prime modulus p: L_p = L_r exactly (constant in N) for both embeddings — primes saturate the embedding's quotient. (ii) Primorial q with q^2 << N (column-dominated): wheel-sieve compression observed. residue ratio = phi(q)/q + small (q=30:0.30, q=210:0.233); poly ratio = (1/2)*prod_{p|q,p>2}(p-1)/(p+1) + small (q=210:0.188, q=2310:0.118). (iii) Primorial q with q^2 > N (row-dominated): residue compression collapses to ratio=1 (one horizontal per row). poly_q is row-immune and retains compression. Top-line CSV confirms: residue lines = phi(q) coprime classes + small primes; poly lines = coprime QR cosets. Conclusion: line-cover compression is exactly the wheel sieve geometrically realised. Optimal q=sqrt(N) gives ratio ~ 1/log(N). No incidence-geometric structure beyond classical density theory. B-grade. Slot 3 next.
+    7	slot_3_summary:S486 built LP-relaxation evaluator p11_lp_relaxation.py (set-cover LP via scipy HiGHS) and dual-inspector p11_lp_dual_inspect.py. Cross-domain ingredient: Stanley 1989 matroid-theoretic line-cover LP. Findings: (i) Residue_q=210 at N=10^4: LP_primes=48.0000 = greedy=48 exactly, integrality gap=1. Wheel-sieve embedding is LP-tight at the greedy upper bound. (ii) Ulam at N in {10^3, 5*10^3, 10^4, 10^5}: LP_random saturates EXACTLY at floor(sqrt(N)) for N >= 5000 (LP=71 at N=5000, LP=100 at N=10^4, LP=316 at N=10^5; trial std = 0.000), with integer solution: 100% LP weight on direction (1,0) i.e. axis-aligned vertical columns at integer weight 1.0. (iii) LP_primes(Ulam, N) is purely fractional: 462 active lines at 0 < x_l < 1 at N=10^4, with 69% of LP weight on slope-(±1) HL-rich Ulam diagonals — direction (1,-1) carries 28.03 weight, (1,+1) carries 25.74. (iv) Stable ratio LP_primes / LP_random ~ 0.78 across 100x range in N: 0.779, 0.765, 0.776, 0.781 at N=10^3, 5*10^3, 10^4, 10^5 (std 0.007). (v) Slot-1 forecast "L_p/L_r decays to 1 as N^{-0.24}" was tracking the prime integrality gap (greedy/LP grows 1.11 -> 1.16 -> 1.22 -> 1.26 across N=10^3 -> 10^5), NOT structural compression. The compression is stable at LP. PARTIAL-POSITIVE: first quantitative LP-tight incidence-geometric structural fact about primes in the project. Random LP integrality gap = 1, prime LP integrality gap > 1 — structural separation. Criterion (c) of A-grade list (5sigma matched-baseline z-score) satisfied at LP since random-LP std = 0. Criterion (a) partially satisfied: structural reason identified (HL slope-(±1) diagonals carry 69% LP weight), but exponent is alpha=1/2 for both, only constant prefactor differs by 22%. B+ grade. Slot 4: push to N=10^6 LP, test asymptotic stability, attempt iterated rounding for integer cover.
+    8	slot_4_summary:S487 built p11_iterated_rounding.py (Singh-Lau / Lavi-Swamy iterated LP rounding with adaptive tau) and p11_milp_check.py (true integer optimum via scipy/HiGHS branch-and-bound). Findings: (i) MILP exact integer optimum at N=10^3: OPT=25 (LP=23.34, OPT/LP=1.071, greedy=26). At N=5000: OPT=61 (LP=54.30, OPT/LP=1.123, greedy=63). The integrality gap is REAL not heuristic. (ii) Iterated rounding tau=0.6 hits MILP optimum exactly at N=5000 (61=61). At N=10^4 best is tau=0.5 -> L=89 (greedy 95, 6.3% improvement, iter/LP=1.147). At N=10^5 best is tau=0.5 -> L=302 (greedy 311, 2.9% improvement, iter/LP=1.224). MILP at N=10^4 ran 1500s time limit: primal=90, dual=82 (LP+cuts), gap 8.89%; combined with iter-89 upper, OPT in [82, 89] hence OPT/LP in [1.057, 1.147] at N=10^4. (iii) Iterated rounding on Ulam matched-random baseline at N=10^4 hits LP exactly (L=100=LP=floor(sqrt(N))) — random IS integer-tight, primes are NOT. (iv) Residue q=30 at N=10^5: LP=greedy=9 for primes (integer, gap=1). Residue q=210 at N=10^5: LP=greedy=49 (integer, gap=1). Polynomial-image q=210 at N=10^5: LP=greedy=9 (integer, gap=1). All wheel-sieve embeddings remain LP-tight at scale; LP fractional structure is UNIQUE to Ulam. (v) Integer-cover ratio OPT_p/OPT_r drifts upward with N: 25/32=0.78 at N=10^3, 61/71=0.86 at N=5000, <=89/100=<=0.89 at N=10^4, <=302/316=<=0.96 at N=10^5. The slot-3 finding "LP_p/LP_r=0.78 stable" is FRACTIONAL only — integer realization converges toward 1. (vi) LP at N=3*10^5 COMPLETED mid-session: LP_p=426.32, LP_r=548.00 (=ceil(sqrt(3*10^5))), LP_p/LP_r=0.7780 — within 0.001 of the slot-3 mean. The 0.78 stability now holds across N in [10^3, 3*10^5], FIVE ORDERS of magnitude. Prime integrality gap widened slightly: 1.261 at 10^5 -> 1.271 at 3*10^5. (vii) LP at N=10^6 COMPLETED at 21389s (5.94 CPU-hours): LP_p=777.3744, LP_r=1000.0000 (= sqrt(10^6) exactly), LP_p/LP_r=0.7774 — within 0.005 of slot-3 mean. The 0.78 stability now holds across N in [10^3, 10^6], SIX orders of magnitude (values 0.7794, 0.7648, 0.7759, 0.7807, 0.7780, 0.7774; mean 0.7760, std 0.0055). Greedy at N=10^6: primes 990, random 1053; prime integrality gap 1.273. STRUCTURAL CONCLUSION: the Ulam-spiral LP gives a fractional structural fact about primes (HL slope-+/-1 diagonals carry stable 70% LP weight), but this does NOT translate to integer algorithmic compression. Slot 5 should close the thread B-NEGATIVE on integer-cover grounds OR pursue asymptotic LP-gap proof for theoretical interest (5-orders-of-magnitude stability is strong evidence for asymptotic LP gap proof being viable). B grade (substantive partial-positive empirical fact, structural refinement of slot 3 from B+ to B because the integer claim is asymptotically vanishing, but LP claim strengthened by N=3*10^5 confirmation).
+    9	prev_thread:s82_invariant_subspace_DONE
+    10	prev_thread_2:connes_amortisation_DONE
+    11	prev_thread_3:galway_frontier_DONE
+    12	prev_thread_4:a7_plethysm_subframe_DONE
+    13	prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    14	prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    15	prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    16	prev_thread_8:p2_pi_h_batched_on_h_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    17	prev_thread_9:p4_k_tuple_narrow_window_batched_on_x_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    18	prev_thread_10:p5_galway_constant_DONE_B_NEGATIVE_STRUCTURAL
+    19	prev_thread_11:p11_minimum_line_cover_of_primes_DONE_B_PARTIAL_POSITIVE_STRUCTURAL
+    20	prev_halt:S438_S483_HALT_ESCALATION_PENDING_CLEARED_BY_USER_INJECTION_OF_THREAD_11
+    21	last_synthesis:archive/sessions/session488_commit_thread11_hl_theoretical_wrap.md
+    22	thread_11_summary:Thread 11 = OPEN_POSITIVE_TARGETS.md §P11 — minimum number of straight lines required to cover all primes <= N under a chosen 2D embedding. Trivially 1 line on Z (primes collinear). Non-trivial in 2D embeddings: (a) Ulam spiral (1963) — diagonal lines correspond to Hardy-Littlewood quadratic-prime sequences f(n) = a*n^2 + b*n + c, dominated by Euler's n^2 + n + 41 and similar; (b) residue-class grid (n_x = n mod p, n_y = n div p), where each row is a prime residue class; (c) polynomial-image grids n -> (P(n), Q(n)) for P, Q polynomial. Quantity: minimum line cover number L(N) of the primes <= N in the chosen embedding. Cross-domain ingredient: Szemeredi-Trotter incidence theorem (1983), Erdos extremal incidence problems, Hardy-Littlewood prime k-tuple conjecture for quadratics. Question: does L(N) admit a polylog or sub-linear computable invariant? Lines of primes correspond to k-tuple-prime polynomial sequences; if covering achieves L(N) ~ pi(N)^alpha for some named alpha < 1, the invariant has algorithmic content for prime-density estimation.
+    23	thread_11_a_grade_targets:(a) named-exponent L(N) scaling for one or more 2D embeddings (alpha < 1) with structural reason (HL k-tuple density of quadratic forms, or matched-baseline z-score >= 5sigma showing primes are non-trivially compressible in lines) — first explicit incidence-geometric prime-density theorem in the project; (b) polylog-time approximation of L(N) via line sampling that improves on naive O(pi(N)^2) brute force; (c) closed-form L(N) for a specific embedding (e.g., Ulam spiral) tied to Hardy-Littlewood constants for named quadratic forms.
+    24	thread_11_slot_plan:
+    25	  slot_1: build Ulam-spiral evaluator. Place primes <= N on Ulam spiral. Compute minimum line cover L(N) via greedy line-detection / LP relaxation at N in {10^4, 10^5, 10^6}. Compare to matched-baseline (random density-pi(N)/N points on the spiral) and HL prediction for the dominant prime-quadratic lines (Euler 41, Heegner 67, etc.).
+    26	  slot_2: alternative 2D embeddings — residue-class grid (n mod p, n div p) for p = 2, 3, 5, 7, 11; polynomial-image grid (n, n^2 mod p). Compute L(N) for each. Cross-embedding scaling fit.
+    27	  slot_3: theoretical shape — does L(N) follow Szemeredi-Trotter incidence bound L(N) >= pi(N)^{2/3} (random-points lower bound), or beat it via HL alignment? If beats, by what HL-related factor?
+    28	  slot_4: algorithmic angle. Is there a polylog-time approximation algorithm for L(N) that exploits HL structure on prime quadratics?
+    29	  slot_5: theoretical wrap. Either named-exponent scaling theorem with HL backing, or structural negative documenting why L(N) saturates at random-point Szemeredi-Trotter bound.
+    30	slot_5_summary:S488 built p11_hl_singular_series.py and p11_hl_distribution_analysis.py. Computed HL singular series C_f = prod_p (1 - sigma_f(p)/p)/(1 - 1/p) for the 4k^2+bk+c quadratic pairs underlying 377 slope-+/-1 Ulam diagonals at N=10^5 (|c|<=250). Findings: (i) Line-uniform mean HL = 2.022, length-weighted = 2.032, prime-weighted = 2.298 (sample biased high; long central diagonals are HL-rich). (ii) Distribution: 9% of lines HL<1, 23.6% in [1.5,2), 25.7% in [2,2.5), 7.4% with HL>=3. Top-3 prime-rich lines (HL_max ~6.0-6.6) are Heegner-class quadratics. (iii) Naive prediction LP_p/LP_r = 1/avg_HL = 1/2.02 = 0.495 FAILS — empirical c=0.776 much larger. Reasons: 31% of LP weight is on axes (HL=1), LP exploits HL VARIANCE not just mean, sample biased high. (iv) Empirical decomposition: c = 1/(0.31 + 0.69*1.42) = 1/1.29 = 0.776, with <theta>_LP ~ 1.42 = LP-weighted avg HL on LP-active slope-+/-1 lines. (v) Conditional theorem (HL Conj F): LP_p/LP_r -> c < 1 with c determined by LP equilibrium, NOT by closed-form HL identity. c = 0.776 is NOT 1/(2C_2), 6/pi^2, or other named constants. (vi) Closed-form c remains open: requires solving min-cost-flow LP on infinite-Ulam joint-HL bipartite incidence, beyond closed-form analysis. (vii) Trivial bound c >= 1/C_max ~ 1/6.6 ~ 0.15 (using max HL singular series). Empirical c=0.776 well above trivial bound. B grade slot — substantive structural identification + conditional theorem + refutation of naive prediction, but no closed form for c. Thread 11 closes B-grade partial-positive structural overall.
+    ... (3 more lines)
+  [Bash] grep -n "^## \|^### \|Status:" /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md | head -100
+    12:## Active arcs
+    14:### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    15:**Status:** NOT STARTED
+    67:### Arc 2 — Lean Formalisation Track
+    68:**Status:** IN PROGRESS — Run #425 / Session 423 (Sub-arc D-1: developed `det_fin_four` private lemma — the determinant primitive required by W=15 / W=16 closures per S245 pre-search). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
+    729:### Arc 3 — Per-Bit Polylog Boundary
+    730:**Status:** OPEN, untouched
+    751:### Arc 4 — Composition over EDGES.md
+    752:**Status:** IN PROGRESS — S135 (C8.b: random-control F4 resolution at N=6 via column enumeration)
+    1104:### Arc 5 — Frame-Shift exploration
+    1105:**Status:** SUGGESTED
+    1129:### Arc 13 — Minimum line cover of primes under 2D embeddings (Thread 11, CLOSED)
+    1130:**Status:** CLOSED at S488 — DONE_B_PARTIAL_POSITIVE_STRUCTURAL: Ulam-spiral LP fractional gap is genuine and structurally identified, but asymptotic constant c=0.776 has no closed-form HL identity and integer cover yields no algorithmic content
+    1358:### Arc 8 — π in arithmetic progressions, batched on modulus q (Thread 6, CLOSED)
+    1359:**Status:** CLOSED at S231 — DONE_PARTIAL_NEGATIVE: P1 closes negatively across all four amortisation axes
+    1502:### Arc 9 — Approximate π(x) ± ε in polylog with named ε (Thread 7, CLOSED at S244)
+    1503:**Status:** CLOSED PARTIAL_POSITIVE_CONDITIONAL — all 5 slots done at
+    1599:### Arc 12 — Galway worst-case K-constant tightening (Thread 10, DONE_B_NEGATIVE_STRUCTURAL at S436; all 3 slots complete)
+    1600:**Status:** DONE_B_NEGATIVE_STRUCTURAL — all 3 slots done (S434 B, S435 B,
+    1721:### Arc 11 — π_H(x; w) k-tuple narrow-window count batched on x (Thread 9, DONE_PARTIAL_POSITIVE_CONDITIONAL at S433; all 5 slots complete)
+    1722:**Status:** DONE_PARTIAL_POSITIVE_CONDITIONAL — all 5 slots done
+    1906:### Arc 10 — π_h(x) batched on h (Thread 8, CLOSED at S421 PARTIAL_POSITIVE_CONDITIONAL)
+    1907:**Status:** CLOSED PARTIAL_POSITIVE_CONDITIONAL at S421 — all 4 slots
+    2015:### Arc 7 — Cross-x amortisation across the three pillars (Thread 5, CLOSED)
+    2016:**Status:** CLOSED — produced Correlation Dichotomy theorem (S224)
+    2126:### Arc 6 — External collaboration outreach
+    2127:**Status:** SUGGESTED, requires user action
+    2145:## Closed arcs
+    2147:### A7 plethysm sub-frame — 5-session commit thread (S211–S215, CLOSED 2026-04-29)
+    2181:## How to use this file
+    ... (1 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    67	### Arc 2 — Lean Formalisation Track
+    68	**Status:** IN PROGRESS — Run #425 / Session 423 (Sub-arc D-1: developed `det_fin_four` private lemma — the determinant primitive required by W=15 / W=16 closures per S245 pre-search). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
+    69	**Owner:** any agent who picks it up
+    70	**Goal:** Permanent verifiable artifacts for the project's main results.
+    71	See `NOVELTY_CHALLENGES.md` §3.
+    72	
+    73	**Milestones:**
+    74	- [x] Set up `experiments/formalisations/` with a Lean 4 toolchain
+    75	  (lakefile.lean, mathlib4 dependency). **Done** — toolchain
+    76	  `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` under
+    77	  `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/`.
+    78	  `lake build` succeeds (8315 jobs, ~7s incremental).
+    79	- [x] Pick L1 (E2.1 MPS bond-dim) as first formalisation.
+    80	- [x] Statement-only Lean file (theorem statement, no proof). **Done**
+    81	  in `MPSBondDim/Basic.lean`: `mps_bond_dim`, `upper_bound`,
+    82	  `lower_bound`, `rank_le_min_dim`, `row_support_coprime`,
+    83	  `live_columns_count` (8 declarations total including `chiP` and
+    84	  `unfolding`).
+    85	- [x] Proof skeleton with `sorry` placeholders. **Done** — skeleton
+    86	  reduced to **1 remaining `sorry`** (only `lower_bound`) and 0 `axiom`
+    87	  introductions.
+    88	- [x] Auxiliary closed: `rank_le_min_dim` (one-liner cite of
+    89	  `Matrix.rank_le_height`).
+    90	- [x] Auxiliary closed: `row_support_coprime` — 30-line
+    91	  number-theoretic proof: nonzero entry ⇒ `n` prime ⇒ `gcd(n, W) = 1`
+    92	  (via `coprime_or_dvd_of_prime` plus `n > W`); then mod-`W` reduction
+    93	  via `gcd_add_mul_right_left` after rewriting `W^(d-j) = W^(d-j-1) · W`.
+    94	- [x] Auxiliary closed: `live_columns_count` (S75) — ~110-line CRT
+    95	  count: `Fin → range` value-projection bijection + induction on
+    96	  `W`-blocks reducing to `Nat.filter_coprime_Ico_eq_totient W 1`.
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    267	  and `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 18 (j+1) j).rank = 7`,
+    268	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    269	  Quot.sound`). Route A^{(9)} from `mps_bond_dim_notes.md`. The matrix is
+    270	  `18^j × 18`; live columns `{0, 4, 6, 10, 12, 16}` (residues
+    271	  `1, 5, 7, 11, 13, 17 (mod 18)`) plus dead column `1` (`chiP 2 = 1`)
+    272	  give `R = φ(18) + 1 = 7`. Triangulation via mixed leading/non-leading
+    273	  rows: `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)`
+    274	  triangularises the `7 × 7` submatrix to upper triangular with diagonal
+    275	  primes `{2, 43, 179, 29, 211, 109, 293}` and 21 below-diagonal
+    276	  composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200,
+    277	  205, 209, 215, 289, 290, 295, 299, 301, 305}`. Determinant via
+    278	  `Matrix.det_of_upperTriangular`, expansion via `Fin.prod_univ_seven`.
+    279	  Upper-bound subtlety: `rank_le_width` gives only `rank ≤ 18`; we cite
+    280	  the general `upper_bound`, which evaluates to `φ(18) · 18^0 + 1 = 7`.
+    281	  Uses `Nat.prime_two` and five new helpers via `norm_num` (rather than
+    282	  `decide`, which hits `maxRecDepth` for primes ≥ 150). ~520 Lean lines
+    283	  (the largest single-corner block). **Ninth unconditional `mps_bond_dim`
+    284	  instance; seventh instance over a wheel `W ≥ 3`; fourth instance using
+    285	  `det_of_upperTriangular`.** **First instance with `R = 7`.** Pre-search
+    286	  excluded W=14 (structurally obstructed by row-2/row-5 support pattern
+    287	  identity, like W ∈ {7, 9, 10, 11}).
+    288	- [x] **Orthogonal corner case `(W = 20, d = j + 1)` closed unconditionally (S143).**
+    289	  Six new declarations: `chiP_forty_seven_eq_one`,
+    290	  `chiP_one_hundred_forty_nine_eq_one`,
+    291	  `chiP_one_hundred_ninety_nine_eq_one`,
+    292	  `chiP_two_hundred_forty_one_eq_one`,
+    293	  `chiP_three_hundred_thirty_seven_eq_one`,
+    294	  `exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    295	  and `mps_bond_dim_W_eq_20_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 20 (j+1) j).rank = 9` for every `j ≥ 1`,
+    296	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    467	  (from S159 pre-search; 2 candidates, both BD with no new helpers) gives
+    468	  the `(1 + 3 + 3)` block-DIAGONAL structure with `D₁.det = -1`,
+    469	  `D₂.det = -2`, total `det = 2`. **First instance with total `det ≠ ±1`** —
+    470	  closing step uses `Ne.isUnit` from `(2 : ℚ) ≠ 0`, demonstrating the
+    471	  BlockTriangular template is robust to nontrivial determinant magnitudes.
+    472	  Lean assembly identical to S152 W=9 (nested `det_fromBlocks_zero₂₁` with
+    473	  1+(3+3) outer/inner split via `finSumFinEquiv`). Ten new `h_not_prime_X`
+    474	  proof-internal lemmas (composites `{6, 9, 15, 18, 24, 27, 33, 36, 42, 45}`
+    475	  not seen in the W=9 closure). **Twelfth unconditional `mps_bond_dim`
+    476	  instance; eleventh instance over a wheel `W ≥ 3`; second instance using
+    477	  `det_fromBlocks_zero₂₁` (after S152 W=9).** Refutes the S128 prediction
+    478	  that W=7 needed a "multi-session new technique"; the S152 nested-fromBlocks
+    479	  template was sufficient with only a fresh pre-search step.
+    480	  See `experiments/formalisations/E2_1_mps_bond_dim/w7_blocktriangular_search_results.md`.
+    481	- [x] **Sub-arc D-1: `det_fin_four` private lemma added (S423).** Mathlib
+    482	  provides `det_fin_two` and `det_fin_three` but not `det_fin_four`;
+    483	  S245 pre-search showed every viable W=15 and W=16 closure path requires
+    484	  determinants of `4 × 4` blocks. Added a private `det_fin_four` lemma at
+    485	  line 2964 of `Basic.lean` (immediately after S143's `prod_univ_nine'`)
+    486	  with the standard 24-term Leibniz expansion `A.det = ∑_{σ ∈ S_4}
+    487	  sgn(σ) ∏ A i (σ i)`. Proof: cofactor-expand via `det_succ_row_zero`,
+    488	  expand each `3 × 3` cofactor via `det_fin_three`, supply 9
+    489	  `decide`-checked `Fin.succAbove` equalities for the `(p ∈ {1, 2, 3} :
+    490	  Fin 4) × (q ∈ {0, 1, 2} : Fin 3)` pivot pairs that the default simp
+    491	  set leaves unresolved (mathlib's `succAbove` simp lemmas cover `p = 0`
+    492	  via `Fin.zero_succAbove` and `q ∈ {0, 1}` via `Fin.succ_succAbove_*`,
+    493	  but not `q = 2 : Fin 3`); `ring` closes the 24-monomial equality.
+    494	  Sorry-free, axiom-pure (uses only `decide`, `simp`, `ring`). Build
+    495	  succeeded; only the pre-existing `exists_invertible_submatrix` `sorry`
+    496	  remains. **Single-session, ~50 Lean lines.** Unblocks Sub-arcs D-2
+    ... (250 more lines)
+Arc 2 (Lean Formalisation Track) has a clean single-session next-action: Sub-arc D-2 — close W=15 using the `det_fin_four` lemma already developed at S423. Let me examine the current Lean state.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MPSBondDim
+    leading_row_search.py
+    leading_row_search_results.txt
+    mps_bond_dim_notes.md
+    w11_blocktriangular_search.py
+    w11_blocktriangular_search_results.md
+    w11_general_search.py
+    w11_general_search_results.md
+    w11_inner_triangulation.py
+    w11_inner_triangulation_results.md
+    w11_nested_search.py
+    w11_nested_search_results.md
+    w11_odd_block_atomicity.py
+    w11_odd_block_atomicity_results.md
+    w14_blocktriangular_search.py
+    w14_blocktriangular_search_results.md
+    w14_j1_analysis.py
+    w14_j1_analysis_results.md
+    w14_j1_best_candidate.py
+    w14_j1_best_candidate_results.md
+    w14_j1_shape_search.py
+    w14_j1_shape_search_results.md
+    w15_w16_blocktriangular_search.py
+    w15_w16_blocktriangular_search_results.md
+    w15_w16_blocktriangular_search_run1.log
+    w15_w16_inner_4x4_atomicity.py
+    w15_w16_inner_4x4_atomicity_results.log
+    w7_blocktriangular_search.py
+    w7_blocktriangular_search_results.md
+    w9_blocktriangular_search.py
+    ... (1 more lines)
+  [Bash] cat /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w15_w16_blocktriangular_search_results.md | head -200
+    # W=15 / W=16 BlockTriangular Pre-Search (S245)
+    
+    ## Goal
+    
+    Identify a BlockTriangular permutation that closes the W=15 and W=16
+    orthogonal-corner cases `(W, d=j+1)` of E2.1, where `R = φ(W) + 1 = 9` for
+    both. W=15 (= 3·5) and W=16 (= 2^4) sit on the S128/S143/S144
+    "block-triangular-required" set: the leading-row + dead-col upper-
+    triangulation route is structurally exhausted at both, so the only
+    single-session route into the `exists_invertible_submatrix` `sorry`
+    is via mathlib's `Matrix.det_fromBlocks_zero₂₁` (cf. S152 W=9, S159 W=7,
+    S235 W=14).
+    
+    S235 closed W=14 (R=7) with a three-level nested `det_fromBlocks_zero₂₁`
+    using a `1+(2+3+1)` decomposition; all inner blocks had size ≤ 3, so the
+    proof used `det_fin_one`, `det_fin_two`, `det_fin_three` (the chain
+    mathlib provides). The S235 next-action queue listed W=15 and W=16 as
+    the next single-session candidates.
+    
+    This pre-search tests whether the same chain (`det_fin_one`, `_two`,
+    `_three`) suffices for W=15 and W=16, or whether `det_fin_four` is
+    required.
+    
+    ## Result: BOTH W=15 and W=16 require `det_fin_four`
+    
+    **Single-session closure of W=15 / W=16 is BLOCKED on the development
+    of `Matrix.det_fin_four` as a reusable lemma.**
+    
+    The pre-search exhaustively enumerated all 108 ordered partitions of 8
+    (the inner block size = `R - 1 = 8`) with parts ≤ 4. Results:
+    ... (169 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session(48[0-9]|49[0-9])" | tail -20
+    session480_commit_halt_steady_state.md
+    session481_commit_halt_steady_state.md
+    session482_commit_halt_steady_state.md
+    session483_commit_halt_steady_state.md
+    session484_commit_thread11_ulam_line_cover.md
+    session485_commit_thread11_alt_embeddings.md
+    session486_commit_thread11_lp_relaxation.md
+    session487_commit_thread11_iterated_rounding_milp.md
+    session488_commit_thread11_hl_theoretical_wrap.md
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5887 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+  [Bash] grep -n "^theorem\|^private lemma\|^lemma\|^def\|^section\|^end\|maxHeartbeats" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean | head -120
+    82:theorem row_support_coprime
+    143:theorem live_columns_count
+    270:theorem upper_bound
+    384:theorem chiP_two_eq_one : chiP 2 = 1 := by
+    396:theorem entry_zero_one_eq_one
+    413:theorem one_le_rank_unfolding
+    467:theorem exists_invertible_submatrix
+    482:theorem lower_bound
+    509:theorem rank_le_min_dim
+    528:theorem mps_bond_dim
+    572:theorem exists_invertible_submatrix_W_eq_2_j_eq_1
+    647:theorem mps_bond_dim_W_eq_2_j_eq_1
+    683:theorem chiP_three_eq_one : chiP 3 = 1 := by
+    706:theorem exists_invertible_submatrix_W_eq_2_d_eq_j_plus_1
+    770:theorem mps_bond_dim_W_eq_2_d_eq_j_plus_1
+    813:theorem chiP_five_eq_one : chiP 5 = 1 := by
+    820:theorem chiP_seven_eq_one : chiP 7 = 1 := by
+    845:theorem exists_invertible_submatrix_W_eq_3_d_eq_j_plus_1
+    959:theorem mps_bond_dim_W_eq_3_d_eq_j_plus_1
+    1006:theorem chiP_eleven_eq_one : chiP 11 = 1 := by
+    1034:theorem exists_invertible_submatrix_W_eq_4_d_eq_j_plus_1
+    1154:theorem mps_bond_dim_W_eq_4_d_eq_j_plus_1
+    1220:theorem chiP_nineteen_eq_one : chiP 19 = 1 := by
+    1227:theorem chiP_twenty_three_eq_one : chiP 23 = 1 := by
+    1246:theorem exists_invertible_submatrix_W_eq_5_d_eq_j_plus_1
+    1480:theorem mps_bond_dim_W_eq_5_d_eq_j_plus_1
+    1548:theorem chiP_thirty_one_eq_one : chiP 31 = 1 := by
+    1567:theorem exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1
+    1688:theorem mps_bond_dim_W_eq_6_d_eq_j_plus_1
+    1766:theorem chiP_seventeen_eq_one : chiP 17 = 1 := by
+    ... (47 more lines)
+  [Bash] grep -n "det_fin_four\|prod_univ_nine\|det_succ_row_zero" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean | head -30
+    1187:**Strategy:** mathlib has `Matrix.det_fin_three` but no `det_fin_four` or
+    2956:Local `prod_univ_nine` lemma. Mathlib provides `Fin.prod_univ_eight` but
+    2957:not `Fin.prod_univ_nine`. We follow mathlib's pattern verbatim.
+    2959:private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    2965:Local `det_fin_four` lemma. Mathlib provides `Matrix.det_fin_two` and
+    2966:`Matrix.det_fin_three` but not `det_fin_four`. We follow mathlib's
+    2967:pattern: cofactor-expand along row 0 via `det_succ_row_zero`, then expand
+    2977:private theorem det_fin_four {R : Type*} [CommRing R]
+    3021:  simp [Matrix.det_succ_row_zero, Matrix.det_fin_three, Fin.sum_univ_succ,
+    3556:  rw [prod_univ_nine']
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2950	/-- `chiP 337 = 1` since `337` is prime. -/
+    2951	theorem chiP_three_hundred_thirty_seven_eq_one : chiP 337 = 1 := by
+    2952	  have h_prime_337 : Nat.Prime 337 := by norm_num
+    2953	  simp [chiP, h_prime_337]
+    2954	
+    2955	/--
+    2956	Local `prod_univ_nine` lemma. Mathlib provides `Fin.prod_univ_eight` but
+    2957	not `Fin.prod_univ_nine`. We follow mathlib's pattern verbatim.
+    2958	-/
+    2959	private theorem prod_univ_nine' {M : Type*} [CommMonoid M] (f : Fin 9 → M) :
+    2960	    ∏ i, f i = f 0 * f 1 * f 2 * f 3 * f 4 * f 5 * f 6 * f 7 * f 8 := by
+    2961	  rw [Fin.prod_univ_castSucc, Fin.prod_univ_eight]
+    2962	  rfl
+    2963	
+    2964	/--
+    2965	Local `det_fin_four` lemma. Mathlib provides `Matrix.det_fin_two` and
+    2966	`Matrix.det_fin_three` but not `det_fin_four`. We follow mathlib's
+    2967	pattern: cofactor-expand along row 0 via `det_succ_row_zero`, then expand
+    2968	each `3 × 3` cofactor via `det_fin_three`. The 24-term Leibniz
+    2969	expansion follows the standard sign convention from `S₄`.
+    2970	
+    2971	This is the determinant primitive required by the W=15 / W=16 corner
+    2972	closures (per S245 pre-search): each has `R = 9`, the inner `8 × 8` block
+    2973	admits only a `(4, 4)` shape under the `det_fromBlocks_zero₂₁` template,
+    2974	and each `4 × 4` block needs a closed-form determinant lemma. Sub-arc
+    2975	D-1 of Arc 2 (developed at S423).
+    2976	-/
+    2977	private theorem det_fin_four {R : Type*} [CommRing R]
+    2978	    (A : Matrix (Fin 4) (Fin 4) R) :
+    2979	    A.det =
+    ... (70 more lines)
+Now let me look at the W=14 closure (S235) which uses the nested `det_fromBlocks_zero₂₁` pattern, since we'll do something similar for W=15.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5230	    calc (7 : ℕ) = ((unfolding 7 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    5231	      _ ≤ (unfolding 7 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    5232	
+    5233	set_option maxHeartbeats 2000000 in
+    5234	/--
+    5235	**Corner-case prime exhibit (W = 14, d = j + 1).**
+    5236	
+    5237	S235 closure of the W=14 orthogonal corner. Specialisation of
+    5238	`exists_invertible_submatrix` to `W = 14`, `d = j + 1`, where
+    5239	`R = min(14^j, φ(14) + 1) = min(14^j, 7) = 7` for every `j ≥ 1`.
+    5240	
+    5241	**Proof technique novelty.** This is the **first** corner closure using
+    5242	**three-level nested** `Matrix.det_fromBlocks_zero₂₁`. Previous closures
+    5243	used at most two levels (W=9 / W=7 with 1+(3+3) at two levels; all
+    5244	others with single-layer `det_of_upperTriangular` or its blockless
+    5245	variant). The (S206) W=11 single-session closure failed because the
+    5246	inner 5×5 odd parity block was atomic; W=14 — composite — admits a
+    5247	`(2, 3, 1)` BlockTriangular decomposition with all parts ≤ 3.
+    5248	
+    5249	**Layered structure.**
+    5250	* Layer 1 (outer): `Fin 1 ⊕ Fin 6 ≃ Fin 7` via `finSumFinEquiv`, splits
+    5251	  off row 0 + col 1 (the dead-col witness `chiP 2 = 1`). Lower-left
+    5252	  `1..6 × {col 1}` zero by `chiP (14r + 2) = 0` for `r ≥ 1`.
+    5253	* Layer 2 (mid): `Fin 5 ⊕ Fin 1 ≃ Fin 6` via `finSumFinEquiv`, splits
+    5254	  the inner 6×6 into a top 5×5 and a bottom 1×1 corner. The 1×1
+    5255	  corner is `row 8 × col 0` with value `chiP 113 = 1`. Lower-left
+    5256	  `{row 8} × {cols 2, 8, 4, 10, 12}` zero (verified via the chosen
+    5257	  composites).
+    5258	* Layer 3 (inner): `Fin 2 ⊕ Fin 3 ≃ Fin 5` via `finSumFinEquiv`, splits
+    5259	  the 5×5 into a top-left 2×2 (rows {2,4} × cols {2,8}, det = -1)
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5530	  have hE43 : unfolding 14 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨4, h_4_lt_pow_dj⟩ = 1 := by
+    5531	    change chiP (6 * 14 ^ ((j + 1) - j) + 4 + 1) = 1
+    5532	    rw [h_sub]
+    5533	    have h_eq : (6 * 14 ^ 1 + 4 + 1 : ℕ) = 89 := by norm_num
+    5534	    rw [h_eq]; exact chiP_eighty_nine_eq_one
+    5535	  have hE44 : unfolding 14 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨10, h_10_lt_pow_dj⟩ = 0 := by
+    5536	    change chiP (6 * 14 ^ ((j + 1) - j) + 10 + 1) = 0
+    5537	    rw [h_sub]
+    5538	    have h_eq : (6 * 14 ^ 1 + 10 + 1 : ℕ) = 95 := by norm_num
+    5539	    rw [h_eq]; simp [chiP, h_not_prime_95]
+    5540	  have hE45 : unfolding 14 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨12, h_12_lt_pow_dj⟩ = 1 := by
+    5541	    change chiP (6 * 14 ^ ((j + 1) - j) + 12 + 1) = 1
+    5542	    rw [h_sub]
+    5543	    have h_eq : (6 * 14 ^ 1 + 12 + 1 : ℕ) = 97 := by norm_num
+    5544	    rw [h_eq]; exact chiP_ninety_seven_eq_one
+    5545	  have hE46 : unfolding 14 (j + 1) j ⟨6, h_6_lt_pow_j⟩ ⟨0, h_zero_lt_pow_dj⟩ = 0 := by
+    5546	    change chiP (6 * 14 ^ ((j + 1) - j) + 0 + 1) = 0
+    5547	    rw [h_sub]
+    5548	    have h_eq : (6 * 14 ^ 1 + 0 + 1 : ℕ) = 85 := by norm_num
+    5549	    rw [h_eq]; simp [chiP, h_not_prime_85]
+    5550	  -- Row i=5 (slab row 12).
+    5551	  have hE50 : unfolding 14 (j + 1) j ⟨12, h_12_lt_pow_j⟩ ⟨1, h_1_lt_pow_dj⟩ = 0 := by
+    5552	    change chiP (12 * 14 ^ ((j + 1) - j) + 1 + 1) = 0
+    5553	    rw [h_sub]
+    5554	    have h_eq : (12 * 14 ^ 1 + 1 + 1 : ℕ) = 170 := by norm_num
+    5555	    rw [h_eq]; simp [chiP, h_not_prime_170]
+    5556	  have hE51 : unfolding 14 (j + 1) j ⟨12, h_12_lt_pow_j⟩ ⟨2, h_2_lt_pow_dj⟩ = 0 := by
+    5557	    change chiP (12 * 14 ^ ((j + 1) - j) + 2 + 1) = 0
+    5558	    rw [h_sub]
+    5559	    have h_eq : (12 * 14 ^ 1 + 2 + 1 : ℕ) = 171 := by norm_num
+    ... (329 more lines)
+Let me look at the existing prime helper patterns to understand the cutoff for `decide` vs `norm_num`.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2456	theorem chiP_twenty_nine_eq_one : chiP 29 = 1 := by
+    2457	  have h_prime_29 : Nat.Prime 29 := by norm_num
+    2458	  simp [chiP, h_prime_29]
+    2459	
+    2460	/--
+    2461	`chiP 43 = 1` since `43` is prime.
+    2462	-/
+    2463	theorem chiP_forty_three_eq_one : chiP 43 = 1 := by
+    2464	  have h_prime_43 : Nat.Prime 43 := by norm_num
+    2465	  simp [chiP, h_prime_43]
+    2466	
+    2467	/--
+    2468	`chiP 179 = 1` since `179` is prime.
+    2469	-/
+    2470	theorem chiP_one_hundred_seventy_nine_eq_one : chiP 179 = 1 := by
+    2471	  have h_prime_179 : Nat.Prime 179 := by norm_num
+    2472	  simp [chiP, h_prime_179]
+    2473	
+    2474	/--
+    2475	`chiP 211 = 1` since `211` is prime.
+    2476	-/
+    2477	theorem chiP_two_hundred_eleven_eq_one : chiP 211 = 1 := by
+    2478	  have h_prime_211 : Nat.Prime 211 := by norm_num
+    2479	  simp [chiP, h_prime_211]
+    2480	
+    2481	/--
+    2482	`chiP 293 = 1` since `293` is prime.
+    2483	-/
+    2484	theorem chiP_two_hundred_ninety_three_eq_one : chiP 293 = 1 := by
+    2485	  have h_prime_293 : Nat.Prime 293 := by norm_num
+    ... (30 more lines)
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Let me now mark Arc 2 IN PROGRESS in RESEARCH_AGENDA.md.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me locate the spot to add the new prime helpers. I'll add them right after the existing `chiP_one_hundred_eighty_one_eq_one` helper, before the W=18 proof.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2515	
+    2516	/--
+    2517	**Corner-case prime exhibit (W = 18, d = j + 1).**
+    2518	
+    2519	Specialisation of `exists_invertible_submatrix` to the corner case
+    2520	`W = 18`, `d = j + 1`, where `R = min(18^j, 7) = 7` for every `j ≥ 1`.
+    2521	Closed unconditionally using `chiP_two_eq_one`, `chiP_twenty_nine_eq_one`,
+    2522	`chiP_forty_three_eq_one`, `chiP_one_hundred_nine_eq_one`,
+    2523	`chiP_one_hundred_seventy_nine_eq_one`, `chiP_two_hundred_eleven_eq_one`,
+    2524	and `chiP_two_hundred_ninety_three_eq_one`.
+    2525	
+    2526	The construction uses `ρ : Fin 7 → Fin (18^j)` mapping
+    2527	`(0, 1, 2, 3, 4, 5, 6) ↦ (0, 2, 9, 1, 11, 6, 16)` and
+    2528	`σ : Fin 7 → Fin (18^((j+1)-j))` mapping
+    2529	`(0, 1, 2, 3, 4, 5, 6) ↦ (1, 6, 16, 10, 12, 0, 4)`.
+    2530	The `7 × 7` submatrix is upper triangular with `1` on the diagonal,
+    2531	hence `IsUnit` over `ℚ`.
+    2532	-/
+    2533	theorem exists_invertible_submatrix_W_eq_18_d_eq_j_plus_1
+    2534	    (j : ℕ) (hj : 1 ≤ j) :
+    2535	    ∃ (ρ : Fin 7 → Fin (18 ^ j))
+    2536	      (σ : Fin 7 → Fin (18 ^ ((j + 1) - j))),
+    2537	      IsUnit ((unfolding 18 (j + 1) j).submatrix ρ σ) := by
+    2538	  -- The exponent simplifies: `(j + 1) - j = 1`, hence `18 ^ ((j + 1) - j) = 18`.
+    2539	  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+Now I'll write the W=15 closure. Let me first read the end of the file to find the correct insertion point.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5880	  · obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1 j hj
+    5881	    have h_eq : ((unfolding 14 (j + 1) j).submatrix ρ σ).rank = 7 := by
+    5882	      have h := Matrix.rank_of_isUnit ((unfolding 14 (j + 1) j).submatrix ρ σ) hUnit
+    5883	      simpa using h
+    5884	    calc (7 : ℕ) = ((unfolding 14 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    5885	      _ ≤ (unfolding 14 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    5886	
+    5887	end E2_1
+Let me look at the W=20 closure (which is also R=9) as the closest template.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3050	9-deep `if-then-else` chains in the diagonal expansion; the default
+    3051	200000 is insufficient.
+    3052	-/
+    3053	theorem exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1
+    3054	    (j : ℕ) (hj : 1 ≤ j) :
+    3055	    ∃ (ρ : Fin 9 → Fin (20 ^ j))
+    3056	      (σ : Fin 9 → Fin (20 ^ ((j + 1) - j))),
+    3057	      IsUnit ((unfolding 20 (j + 1) j).submatrix ρ σ) := by
+    3058	  -- The exponent simplifies: `(j + 1) - j = 1`, hence `20 ^ ((j + 1) - j) = 20`.
+    3059	  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+    3060	  have h_pow_j_pos : 0 < 20 ^ j := Nat.pow_pos (by norm_num)
+    3061	  have h_one_lt_pow_j : 1 < 20 ^ j := by
+    3062	    calc (1 : ℕ) < 20 := by norm_num
+    3063	      _ = 20 ^ 1 := by norm_num
+    3064	      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3065	  have h_two_lt_pow_j : 2 < 20 ^ j := by
+    3066	    calc (2 : ℕ) < 20 := by norm_num
+    3067	      _ = 20 ^ 1 := by norm_num
+    3068	      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3069	  have h_seven_lt_pow_j : 7 < 20 ^ j := by
+    3070	    calc (7 : ℕ) < 20 := by norm_num
+    3071	      _ = 20 ^ 1 := by norm_num
+    3072	      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3073	  have h_nine_lt_pow_j : 9 < 20 ^ j := by
+    3074	    calc (9 : ℕ) < 20 := by norm_num
+    3075	      _ = 20 ^ 1 := by norm_num
+    3076	      _ ≤ 20 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3077	  have h_ten_lt_pow_j : 10 < 20 ^ j := by
+    3078	    calc (10 : ℕ) < 20 := by norm_num
+    3079	      _ = 20 ^ 1 := by norm_num
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3500	  have hne_5_4 : (5 : ℕ) ≠ 4 := by decide
+    3501	  have hne_6_0 : (6 : ℕ) ≠ 0 := by decide
+    3502	  have hne_6_1 : (6 : ℕ) ≠ 1 := by decide
+    3503	  have hne_6_2 : (6 : ℕ) ≠ 2 := by decide
+    3504	  have hne_6_3 : (6 : ℕ) ≠ 3 := by decide
+    3505	  have hne_6_4 : (6 : ℕ) ≠ 4 := by decide
+    3506	  have hne_6_5 : (6 : ℕ) ≠ 5 := by decide
+    3507	  have hne_7_0 : (7 : ℕ) ≠ 0 := by decide
+    3508	  have hne_7_1 : (7 : ℕ) ≠ 1 := by decide
+    3509	  have hne_7_2 : (7 : ℕ) ≠ 2 := by decide
+    3510	  have hne_7_3 : (7 : ℕ) ≠ 3 := by decide
+    3511	  have hne_7_4 : (7 : ℕ) ≠ 4 := by decide
+    3512	  have hne_7_5 : (7 : ℕ) ≠ 5 := by decide
+    3513	  have hne_7_6 : (7 : ℕ) ≠ 6 := by decide
+    3514	  have hne_8_0 : (8 : ℕ) ≠ 0 := by decide
+    3515	  have hne_8_1 : (8 : ℕ) ≠ 1 := by decide
+    3516	  have hne_8_2 : (8 : ℕ) ≠ 2 := by decide
+    3517	  have hne_8_3 : (8 : ℕ) ≠ 3 := by decide
+    3518	  have hne_8_4 : (8 : ℕ) ≠ 4 := by decide
+    3519	  have hne_8_5 : (8 : ℕ) ≠ 5 := by decide
+    3520	  have hne_8_6 : (8 : ℕ) ≠ 6 := by decide
+    3521	  have hne_8_7 : (8 : ℕ) ≠ 7 := by decide
+    3522	  -- Establish the upper-triangular property of the submatrix.
+    3523	  set Mρ : Fin 9 → Fin (20 ^ j) :=
+    3524	    fun i => if i.val = 0 then ⟨0, h_pow_j_pos⟩
+    3525	             else if i.val = 1 then ⟨2, h_two_lt_pow_j⟩
+    3526	             else if i.val = 2 then ⟨9, h_nine_lt_pow_j⟩
+    3527	             else if i.val = 3 then ⟨14, h_fourteen_lt_pow_j⟩
+    3528	             else if i.val = 4 then ⟨1, h_one_lt_pow_j⟩
+    3529	             else if i.val = 5 then ⟨7, h_seven_lt_pow_j⟩
+    ... (40 more lines)
+Now I'll construct the full W=15 closure. Let me prepare the Lean code systematically and write it to the file.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    1	/-
+    2	# E2.1: MPS bond dimension of the prime indicator (statement-only)
+    3	
+    4	Formalisation of the theorem in `novel/mps_bond_dimension.md`:
+    5	
+    6	  For chi_P : [1, W^d] -> {0,1} the prime indicator, viewed as a tensor of
+    7	  shape (W, W, ..., W) (d copies) by base-W reshape, for every cut
+    8	  1 <= j < d and every integer W >= 2:
+    9	
+    10	      rank M^(j) = min ( W^j ,  phi(W) * W^(d-j-1) + 1 )
+    11	
+    12	  where phi is Euler's totient and M^(j) is the (W^j x W^(d-j)) unfolding.
+    13	
+    14	Stage 1: theorem statement only. The proof is a `sorry`. The next stage
+    15	splits the proof into upper and lower bounds, each via separate lemmas.
+    16	-/
+    17	
+    18	import Mathlib
+    19	
+    20	open Matrix Nat
+    21	
+    22	namespace E2_1
+    23	
+    24	/--
+    25	The prime indicator, embedded in `ℚ`. We use `ℚ` (a field) because matrix
+    26	`rank` is most informative over a field.
+    27	-/
+    28	noncomputable def chiP (n : ℕ) : ℚ := if Nat.Prime n then 1 else 0
+    29	
+    30	/--
+    ... (60 more lines)
+Now I'll write the full W=15 closure. Given the scale, I'll insert the entire block at once.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now let me run `lake build` to verify the proof.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && source $HOME/.elan/env 2>/dev/null; PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | tail -100
+    warning: MPSBondDim/Basic.lean:6604:27: This simp argument is unused:
+      hv2
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, h̵v̵2̵,̵ ̵hv3, hv4, hv5, hv6, hv7, hv8, if_true, if_false, Nat.one_ne_zero,
+              hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+              hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_6_5, hne_7_0, hne_7_1, hne_7_2, hne_7_3, hne_7_4, hne_7_5, hne_7_6, hne_8_0, hne_8_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_8_2, hne_8_3, hne_8_4, hne_8_5, hne_8_6, hne_8_7]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:6604:32: This simp argument is unused:
+      hv3
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, h̵v̵3̵,̵ ̵hv4, hv5, hv6, hv7, hv8, if_true, if_false, Nat.one_ne_zero,
+              hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+              hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_6_5, hne_7_0, hne_7_1, hne_7_2, hne_7_3, hne_7_4, hne_7_5, hne_7_6, hne_8_0, hne_8_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_8_2, hne_8_3, hne_8_4, hne_8_5, hne_8_6, hne_8_7]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:6604:37: This simp argument is unused:
+      hv4
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, h̵v̵4̵,̵ ̵hv5, hv6, hv7, hv8, if_true, if_false, Nat.one_ne_zero,
+              hne_1_0, hne_2_0, hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3,
+              hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_6_5, hne_7_0, hne_7_1, hne_7_2, hne_7_3, hne_7_4, hne_7_5, hne_7_6, hne_8_0, hne_8_1,
+    ... (70 more lines)
+Let me search for the actual error in the W=15 proof.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "^error|^warning.*error" | head -30
+    error: MPSBondDim/Basic.lean:6660:14: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (2000000) has been reached
+    error: MPSBondDim/Basic.lean:5934:0: (deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached
+    error: MPSBondDim/Basic.lean:6717:8: (kernel) unknown constant 'E2_1.exists_invertible_submatrix_W_eq_15_d_eq_j_plus_1'
+    error: Lean exited with code 1
+    error: build failed
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5928	/-- `chiP 197 = 1` since `197` is prime. (Added at S489 for the W=15 corner.) -/
+    5929	theorem chiP_one_hundred_ninety_seven_eq_one : chiP 197 = 1 := by
+    5930	  have h_prime_197 : Nat.Prime 197 := by norm_num
+    5931	  simp [chiP, h_prime_197]
+    5932	
+    5933	set_option maxHeartbeats 2000000 in
+    5934	/--
+    5935	**Corner-case prime exhibit (W = 15, d = j + 1).**
+    5936	
+    5937	S489 closure of the W=15 orthogonal corner (Sub-arc D-2 of Arc 2).
+    5938	Specialisation of `exists_invertible_submatrix` to `W = 15`, `d = j + 1`,
+    5939	where `R = min(15^j, φ(15) + 1) = min(15^j, 9) = 9` for every `j ≥ 1`.
+    5940	
+    5941	**Proof technique.** Two-level nested `Matrix.det_fromBlocks_zero₂₁`,
+    5942	identical in shape to the S152 W=9 / S159 W=7 / S235 W=14 closures but
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    6650	  let B_in : Matrix (Fin 4) (Fin 4) ℚ :=
+    6651	    !![0, 0, 0, 0; 0, 0, 0, 0; 0, 0, 0, 0; 0, 0, 0, 0]
+    6652	  let D_in : Matrix (Fin 4) (Fin 4) ℚ :=
+    6653	    !![1, 1, 1, 1; 0, 1, 1, 1; 0, 1, 1, 0; 1, 0, 1, 1]
+    6654	  -- Layer 1 equality.
+    6655	  have h_fromBlocks_outer :
+    6656	      Mexp.submatrix finSumFinEquiv finSumFinEquiv =
+    6657	        Matrix.fromBlocks A_outer B_outer 0 D_outer := by
+    6658	    ext i j
+    6659	    rcases i with i | i <;> rcases j with j | j
+    6660	    all_goals fin_cases i <;> fin_cases j <;> rfl
+    6661	  -- Layer 2 equality.
+    6662	  have h_fromBlocks_in :
+    6663	      D_outer.submatrix finSumFinEquiv finSumFinEquiv =
+    6664	        Matrix.fromBlocks A_in B_in 0 D_in := by
+    6665	    ext i j
+    6666	    rcases i with i | i <;> rcases j with j | j
+    6667	    all_goals fin_cases i <;> fin_cases j <;> rfl
+    6668	  -- Compute Mexp.det via two-layer reduction.
+    6669	  have h_Mexp_det :
+    6670	      Mexp.det =
+    6671	        (Matrix.fromBlocks A_outer B_outer
+    6672	          (0 : Matrix (Fin 8) (Fin 1) ℚ) D_outer).det := by
+    6673	    rw [← h_fromBlocks_outer]
+    6674	    simp [Matrix.det_submatrix_equiv_self]
+The proof times out. Let me increase the heartbeats budget and try again.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "^error" | head -20
+    error: MPSBondDim/Basic.lean:6687:37: unsolved goals
+    error: MPSBondDim/Basic.lean:6692:37: unsolved goals
+    error: Lean exited with code 1
+    error: build failed
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    6680	    have h_D_outer_det_eq :
+    6681	        D_outer.det =
+    6682	          (Matrix.fromBlocks A_in B_in
+    6683	            (0 : Matrix (Fin 4) (Fin 4) ℚ) D_in).det := by
+    6684	      rw [← h_fromBlocks_in]
+    6685	      simp [Matrix.det_submatrix_equiv_self]
+    6686	    rw [h_D_outer_det_eq, Matrix.det_fromBlocks_zero₂₁]
+    6687	    have hA_in_det : A_in.det = 1 := by
+    6688	      show (!![(1 : ℚ), 1, 1, 1; 1, 0, 1, 1; 1, 1, 1, 0; 1, 1, 0, 0] :
+    6689	              Matrix (Fin 4) (Fin 4) ℚ).det = 1
+    6690	      rw [det_fin_four]
+    6691	      norm_num
+    6692	    have hD_in_det : D_in.det = 1 := by
+    6693	      show (!![(1 : ℚ), 1, 1, 1; 0, 1, 1, 1; 0, 1, 1, 0; 1, 0, 1, 1] :
+    6694	              Matrix (Fin 4) (Fin 4) ℚ).det = 1
+    6695	      rw [det_fin_four]
+    6696	      norm_num
+    6697	    rw [hA_in_det, hD_in_det]; norm_num
+    6698	  rw [hA_outer_det, hD_outer_det]; norm_num
+    6699	
+    6700	/--
+    6701	**Corner-case main theorem (W = 15, d = j + 1).** The unfolding rank is
+    6702	exactly `9` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_20_d_eq_j_plus_1`
+    6703	(both citing the general `upper_bound`, since `rank_le_width` only gives
+    6704	`rank ≤ 15`). Fully formalised in Lean (no `sorry`, no `axiom`).
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "^error" | head -20
+    (Bash completed with no output)
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | tail -30
+    Hint: Omit it from the simp argument list.
+      simp ̵[̵M̵a̵t̵r̵i̵x̵.̵d̵e̵t̵_̵f̵i̵n̵_̵o̵n̵e̵]̵
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:6631:8: this tactic is never executed
+    
+    Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+    warning: MPSBondDim/Basic.lean:5933:0: Please, add a comment explaining the need for modifying the maxHeartbeat limit, as in
+    set_option maxHeartbeats 4000000 in
+    -- reason for change
+    ...
+    
+    Note: This linter can be disabled with `set_option linter.style.maxHeartbeats false`
+    warning: MPSBondDim/Basic.lean:6631:8: '(simp [Mexp, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+        Matrix.cons_val_fin_one])' tactic does nothing
+    
+    Note: This linter can be disabled with `set_option linter.unusedTactic false`
+    warning: MPSBondDim/Basic.lean:6677:4: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:6688:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:6692:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    Build completed successfully (8315 jobs).
+The build succeeded. Now let me verify the axioms.
+  [Bash] cat > /tmp/check_axioms_w15.lean << 'EOF'
+import MPSBondDim
+
+#print axioms E2_1.exists_invertible_submatrix_W_eq_15_d_eq_j_plus_1
+#print axioms E2_1.mps_bond_dim_W_eq_15_d_eq_j_plus_1
+EOF
+echo "Created check file"
+    Created check file
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake env lean /tmp/check_axioms_w15.lean 2>&1 | tail -30
+    'E2_1.exists_invertible_submatrix_W_eq_15_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'E2_1.mps_bond_dim_W_eq_15_d_eq_j_plus_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+Both theorems depend only on standard axioms — no new axioms introduced, no `sorry` either. Let me update the todo list and finalize.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now let me update RESEARCH_AGENDA.md with the W=15 closure milestone.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me update the next-action queue and the closed-W set. Let me find the relevant section.
+  [Bash] grep -n "thirteen\|W=15\|closed-W\|closed for.*W ∈" /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md | head -20
+    68:**Status:** IN PROGRESS — Run #491 / Session 489 (Sub-arc D-2: closed W=15 orthogonal corner using S423's `det_fin_four`). L1 has 4 lemmas + `lower_bound` reduction + main theorem closed; 1 `sorry` remains, isolated to `exists_invertible_submatrix` (pure prime-density content). S90 confirmed mathlib has only `Nat.bertrand` (primes in `(n, 2n]`) — insufficient for general `(W, d, j)`. S98 closed the corner case `(W = 2, j = 1)` via Bertrand. S99 closed the orthogonal corner `(W = 2, d = j + 1)` without even needing Bertrand. S106 extended the orthogonal corner to `W = 3`. S107 extended to `W = 4`. S117 extended to `W = 5`. S122 extended to `W = 6` (first non-leading row set, `ρ ↦ (0, 1, 5)`). S128 extended to `W = 8` via the BlockTriangular route + four-prime triangulation. **S129 extends the orthogonal corner to W=12, skipping the structurally-obstructed W ∈ {7, 9, 10, 11}** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, sorry-free. Permutation `ρ ↦ (0, 9, 10, 4, 7)`, `σ ↦ (1, 0, 6, 10, 4)`, diagonal primes `{2, 109, 127, 59, 89}`, below-diagonal composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **First instance using FOUR non-leading rows** (only row 0 is leading) — extends S122's single-non-leading-row trick to the maximally non-leading regime. Uses `Nat.prime_two` (existing) and four new helpers `chiP_X_eq_one` for `X ∈ {59, 89, 109, 127}`. **Eighth unconditional `mps_bond_dim` instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **S137 extends the orthogonal corner to W=18** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Mixed leading/non-leading row set `ρ ↦ (0, 2, 9, 1, 11, 6, 16)`, σ ↦ (1, 6, 16, 10, 12, 0, 4), diagonal primes `{2, 43, 179, 29, 211, 109, 293}`. **First instance with R=7** — uses `Fin.prod_univ_seven` (mathlib), 21 below-diagonal composites, 5 new `chiP_X_eq_one` helpers (29, 43, 179, 211, 293) using `norm_num` (`decide` hits `maxRecDepth` for primes ≥ 150). **Ninth unconditional `mps_bond_dim` instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** Pre-search at S137 confirmed **W=14 (also R=7) is structurally obstructed**: rows 2 and 5 of the 14×14 j=1 slab have identical support pattern at the chosen 7 cols, and exhaustive search finds zero upper-triangulations with rho < 14. W=14 joins {7, 9, 10, 11} in the "needs `det_of_blockTriangular`" set.
+    419:  `chiP_one_hundred_thirteen_eq_one`,
+    505:  **Fourteenth unconditional `mps_bond_dim` instance; thirteenth instance
+    513:  S245 pre-search showed every viable W=15 and W=16 closure path requires
+    527:  (W=15) and D-3 (W=16) as single-session targets; also any future
+    534:  Six new declarations: `chiP_thirteen_eq_one`, `chiP_forty_one_eq_one`,
+    582:closed for `W ∈ {2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 20}`. The
+    583:closed-W set has grown to **thirteen** wheels.
+    584:**S245 (prior): W=15 / W=16 pre-search completed; both require
+    592:`ring`). **Next single-session action: Sub-arc D-2 — close W=15** using
+    644:  primitive DELIVERED at S423 (Sub-arc D-1). Sub-arcs D-2 (W=15) and
+    648:  every invertible inner 8×8 row subset (W=15: 308 subsets; W=16: 3536
+    649:  subsets). Result: **W=15 admits ONLY shape `(4, 4)`** — every
+    653:  part-3 atomic for W=15 (both A and B); for W=16, the A-block is
+    668:  * **Sub-arc D-2: close W=15.** Best candidate (S245):
+    722:  developed, the same template should close W=7, W=10, W=11, W=15,
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    578	several sessions plus possibly a separate Hoheisel-formalisation arc.
+    579	**Next action (post-S423):** Routes A', A'', A''', A'''', A''''', A'''''',
+    580	A''''''', A^{(8)}, A^{(9)}, A^{(10)}, A^{(11)}, A^{(12)}, A^{(13)},
+    581	**and A^{(14)}** (the orthogonal-corner family `d = j + 1`) are
+    582	closed for `W ∈ {2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 20}`. The
+    583	closed-W set has grown to **thirteen** wheels.
+    584	**S245 (prior): W=15 / W=16 pre-search completed; both require
+    585	`Matrix.det_fin_four` development as a prerequisite.** Concrete
+    586	(ρ, σ) candidates and 7 new prime helpers identified for each.
+    587	**S423 (this session): Sub-arc D-1 closed.** Added private
+    588	`det_fin_four` lemma (line 2964 of `Basic.lean`, ~50 Lean lines, 24-term
+    589	Leibniz expansion, sorry-free, axiom-pure; proof = cofactor expansion
+    590	via `det_succ_row_zero` + per-cofactor `det_fin_three` + 9
+    591	`decide`-checked `Fin.succAbove` resolutions for `(p, 2)` pivot pairs +
+    592	`ring`). **Next single-session action: Sub-arc D-2 — close W=15** using
+    593	the S245 pre-search candidate `ρ = (0, 1, 3, 7, 13, 2, 6, 8, 12)`,
+    594	`σ = (2, 1, 3, 7, 13, 0, 6, 10, 12)`, dead col 2, two 4×4 blocks each
+    595	via `det_fin_four` with block dets `[+1, +1]`. Add 7 new prime helpers
+    596	`{101, 103, 107, 131, 191, 193, 197}` (≥ 150 → `norm_num` per S137
+    597	precedent). Then optionally Sub-arc D-3 (W=16) and W=11 (Path B,
+    598	develop `det_fin_five` analogously to D-1).
+    599	**S235 added W=14** — first three-level nested `det_fromBlocks_zero₂₁`
+    600	instance; first use of `det_fin_two` in the corner family; refuted the
+    601	S206 prediction that composite W avoids the W=11-style atomicity (W=14
+    602	j=1 inner 6×6 is *almost* atomic — only (2, 3, 1) works among parts ≤ 3
+    603	shapes, and the C-block placement is uniquely forced by row 8's
+    604	support-size-1 isolation at chiP(113)).
+    605	**S159 added W=7** — the SECOND closure of an S128/S129/S144 "block-
+    606	triangular-required" wheel and the FIRST corner closure with ZERO new
+    607	prime helpers (every prime in the W=7 7×7 submatrix was already declared
+    ... (80 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me update the mps_bond_dim_notes.md with the new closure and write the session synthesis.
+  [Bash] grep -n "Sub-arc D-1\|Sub-arc D-2\|## Routes\|## Status\|^## " /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md | head -30
+    8:**S423 added Sub-arc D-1: `det_fin_four` private lemma.** Adds the
+    23:## What this file formalises
+    36:## Lean layout
+    172:## What the next session needs to do
+    221:### Routes for closing `exists_invertible_submatrix` (revised)
+    950:* **Sub-arc D-1 — `det_fin_four` private lemma. DONE S423.**
+    1005:  parts-≤-3 atomicity bites). Sub-arc D-1 is therefore a permanent
+    1009:  `det_fin_five` for its atomic 5×5 odd block. Sub-arc D-1 is a useful
+    1073:## Falsification
+    1078:## Why this matters
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    1	# L1 — E2.1 MPS bond-dim identity (Lean 4 formalisation, in progress)
+    2	
+    3	**Lean source:** `MPSBondDim/MPSBondDim/Basic.lean`
+    4	**Toolchain:** `leanprover/lean4:v4.30.0-rc2` + mathlib `v4.30.0-rc2` (lake project under `MPSBondDim/`).
+    5	**Build status (S152):** `lake build` succeeds. **1 `sorry` placeholder remains, isolated to a pure prime-density existential** (S83 reorganised the file: `lower_bound` is now closed by a structural reduction to `exists_invertible_submatrix`, which is the new home of the only `sorry`. S90 added the trivial floor `1 ≤ rank` as a separate lemma. **S98 closed the corner case `(W = 2, j = 1)` unconditionally via Bertrand** — `mps_bond_dim_W_eq_2_j_eq_1 : (unfolding 2 d 1).rank = 2` for every `d ≥ 2`, sorry-free. **S99 closed the orthogonal corner case `(W = 2, d = j + 1)` *without even needing Bertrand*** — `mps_bond_dim_W_eq_2_d_eq_j_plus_1 : (unfolding 2 (j+1) j).rank = 2` for every `j ≥ 1`, using only `Nat.prime_two` and `Nat.prime_three`. **S106 extended the orthogonal-corner argument to `W = 3`** — `mps_bond_dim_W_eq_3_d_eq_j_plus_1 : (unfolding 3 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three` and the explicit primes `2, 3, 5, 7`; the unit witness is `isUnit_one.neg : IsUnit (-1 : ℚ)`. **S107 extended the orthogonal-corner argument to `W = 4`** — `mps_bond_dim_W_eq_4_d_eq_j_plus_1 : (unfolding 4 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11`, and (for the upper bound) the general `upper_bound` lemma — the first orthogonal-corner instance where `rank_le_width` is not tight (it gives only `rank ≤ 4`, not the sharp `rank ≤ 3 = φ(4) · 4^0 + 1`). **S117 extended the orthogonal-corner argument to `W = 5`** — `mps_bond_dim_W_eq_5_d_eq_j_plus_1 : (unfolding 5 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular` (since mathlib has no `det_fin_four` or `det_fin_five`), `Fin.prod_univ_five`, the explicit primes `2, 3, 5, 7, 11, 19, 23`, and a row/column permutation that triangularises the `chiP 1..25` slab. **First instance with `R = W` (all `W` columns needed) and first instance not relying on `det_fin_three`.** **S122 extended the orthogonal-corner argument to `W = 6`** — `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : (unfolding 6 (j+1) j).rank = 3` for every `j ≥ 1`, using `Matrix.det_fin_three`, the explicit primes `2, 3, 5, 7, 11, 31`, and (for the upper bound) the general `upper_bound` lemma. **First orthogonal-corner instance where the working row set is not `{0, 1, ..., R-1}`** — rows `{1, 2, 3}` of the `6 × 6` slab are linearly dependent (all three windows `chiP 7..12, 13..18, 19..24` have identical support pattern `(1, 0, 0, 0, 1, 0)`), forcing the choice `ρ ↦ (0, 1, 5)` with `chiP 31` providing the third linearly independent row. **S128 extended the orthogonal-corner argument to `W = 8`** — `mps_bond_dim_W_eq_8_d_eq_j_plus_1 : (unfolding 8 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 11, 17, 31, 37`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 8`, not the sharp `rank ≤ 5 = φ(8) · 8^0 + 1`). The triangulation `ρ ↦ (2, 0, 1, 3, 4)` and `σ ↦ (0, 1, 2, 6, 4)` puts the diagonal at primes `{17, 2, 11, 31, 37}` and the lower triangle at composites `{1, 9, 10, 25, 26, 27, 33, 34, 35, 39}`. **Seventh unconditional instance; fifth instance over a wheel `W ≥ 3`; second instance using `det_of_upperTriangular`.** **S129 extended the orthogonal-corner argument to `W = 12`, skipping the structurally-obstructed `W ∈ {7, 9, 10, 11}` corners** — `mps_bond_dim_W_eq_12_d_eq_j_plus_1 : (unfolding 12 (j+1) j).rank = 5` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_five`, the explicit primes `2, 59, 89, 109, 127`, and (for the upper bound) the general `upper_bound` lemma. The triangulation `ρ ↦ (0, 9, 10, 4, 7)` and `σ ↦ (1, 0, 6, 10, 4)` puts the diagonal at primes `{2, 109, 127, 59, 89}` and the lower triangle at composites `{49, 50, 55, 85, 86, 91, 95, 110, 121, 122}`. **Eighth unconditional instance; sixth instance over a wheel `W ≥ 3`; third instance using `det_of_upperTriangular`.** **First instance using FOUR non-leading rows** (only row `0` is leading) — extends S122's W=6 single-non-leading-row trick to the maximally non-leading regime. **S137 extended the orthogonal-corner argument to `W = 18`** — `mps_bond_dim_W_eq_18_d_eq_j_plus_1 : (unfolding 18 (j+1) j).rank = 7` for every `j ≥ 1`, using `Matrix.det_of_upperTriangular`, `Fin.prod_univ_seven`, the explicit primes `2, 29, 43, 109, 179, 211, 293`, and (for the upper bound) the general `upper_bound` lemma (since `rank_le_width` gives only `rank ≤ 18`, not the sharp `rank ≤ 7 = φ(18) · 18^0 + 1`). The triangulation `ρ ↦ (0, 2, 9, 1, 11, 6, 16)` and `σ ↦ (1, 6, 16, 10, 12, 0, 4)` puts the diagonal at primes `{2, 43, 179, 29, 211, 109, 293}` and the lower triangle at composites `{20, 25, 35, 38, 110, 115, 119, 121, 125, 164, 169, 200, 205, 209, 215, 289, 290, 295, 299, 301, 305}`. **Ninth unconditional instance; seventh instance over a wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`.** **First instance with `R = 7`.** **W=14 (also `R = 7`) was tried and structurally obstructed**: the 14×14 j=1 slab admits no leading-row triangulation with `ρ < 14` (rows 2 and 5 of the W=14 slab have identical support pattern at the chosen 7 cols, and exhaustive search over rows in `[0, 14)` finds zero upper-triangulations). The general-case `sorry` is unchanged.)
+    6	**S152 closed the orthogonal corner `(W = 9, d = j + 1)` — the FIRST closure of an S128/S129/S144 "block-triangular-required" wheel.** `mps_bond_dim_W_eq_9_d_eq_j_plus_1 : (unfolding 9 (j+1) j).rank = 7` for every `j ≥ 1`, sorry-free. Uses `Matrix.det_fromBlocks_zero₂₁` in a NESTED 1+(3+3) decomposition (under `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7` outer + `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6` inner). The 1×1 outer block contributes `det = 1` via `det_fin_one`; the two 3×3 inner blocks each contribute `det = -1` via `det_fin_three`; total `det = 1 · (-1) · (-1) = 1`, hence `IsUnit`. **First instance using `det_fromBlocks_zero₂₁`** — orthogonal to the previous nine corner closures (all using `det_of_upperTriangular`). Permutation `ρ ↦ (0, 1, 3, 5, 2, 4, 6), σ ↦ (2, 1, 3, 7, 0, 4, 6)` from S151 pre-search; primes `{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61}` (4 new at S152 — `chiP_thirteen, _forty_one, _fifty_three, _sixty_one`). ~610 Lean lines (49 entry-lemmas + 49+36 = 85 fromBlocks reindex case checks + structural assembly). **Eleventh unconditional `mps_bond_dim` instance; tenth over a wheel `W ≥ 3`.**
+    7	
+    8	**S423 added Sub-arc D-1: `det_fin_four` private lemma.** Adds the
+    9	`4 × 4` Leibniz-form determinant primitive (24 monomials, mathlib stops
+    10	at `det_fin_three`) so that the W=15 / W=16 corner closures (each with
+    11	`R = 9`, inner 8×8 admitting only a `(4, 4)` BT shape per S245
+    12	pre-search) become single-session targets. Proof: cofactor expansion via
+    13	`det_succ_row_zero` + per-cofactor `det_fin_three` + 9 `decide`-checked
+    14	`Fin.succAbove` equalities for the `(p, 2)` pivot pairs that mathlib's
+    15	default simp set leaves unresolved (`p ∈ {1, 2, 3} : Fin 4` and second
+    16	arg `q = 2 : Fin 3`, the maximum of `Fin 3`); `ring` closes the
+    17	24-monomial equality. Inserted at line 2964 of `Basic.lean`, immediately
+    18	after the S143 `prod_univ_nine'` helper. The same lemma also unblocks any
+    19	future closure whose pre-search recommends a 4×? block.
+    20	
+    21	**No `axiom` introductions.** All new declarations have `#print axioms` returning only `[propext, Classical.choice, Quot.sound]`.
+    22	
+    23	## What this file formalises
+    24	
+    25	The identity from `novel/mps_bond_dimension.md`:
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Now let me write the session synthesis.
+  [Bash] grep -c "^" /apps/aplikacijos/prime-research/archive/sessions/session423_d1_det_fin_four.md 2>/dev/null || echo "no S423 file"
+    196
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session423_d1_det_fin_four.md
+    1	# Session 423 — Arc 2 / Sub-arc D-1: `det_fin_four` Lean primitive
+    2	
+    3	**Date:** 2026-04-30.
+    4	**Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+    5	**Run #** 425 (per `.run_state` post-session).
+    6	**Self-graded:** **C-grade** (pure rigor work: a private Lean primitive
+    7	that unblocks two future single-session closures and a third multi-session
+    8	sub-arc, but adds no new mathematical content beyond translating the
+    9	24-term `4×4` determinant Leibniz expansion into Lean).
+    10	
+    11	## Mission
+    12	
+    13	Per RESEARCH_AGENDA.md Arc 2 next-action queue (post-S245): develop
+    14	`det_fin_four` in `MPSBondDim/Basic.lean`. Mathlib provides
+    15	`det_fin_two` and `det_fin_three` but stops there. S245 pre-search
+    16	showed that **every viable W=15 and W=16 closure path requires
+    17	determinants of `4 × 4` blocks** (both have `R = 9`; the inner 8×8
+    18	admits only `(4, 4)`-shape BT decompositions for W=15, and only
+    19	shapes containing a part of size 4 for W=16). Without `det_fin_four`,
+    20	both closures are blocked.
+    21	
+    22	## What was attempted
+    23	
+    24	Add a private `det_fin_four` lemma to `MPSBondDim/Basic.lean` modelled
+    25	after mathlib's `det_fin_three`:
+    26	
+    27	```
+    28	private theorem det_fin_four {R : Type*} [CommRing R]
+    29	    (A : Matrix (Fin 4) (Fin 4) R) :
+    30	    A.det = (24-term Leibniz expansion) := by ...
+    ... (30 more lines)
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session489_d2_w15_closure.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session489_d2_w15_closure.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find /apps/aplikacijos/prime-research/experiments/ -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done | head -10
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity*
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity.py
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity_results.log
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; tail -40 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    490
+    ---
+    
+    (ii) **Ulam random-baseline LP saturates EXACTLY at ⌊√N⌋** for N ≥ 5000: LP=71/100/316 at N=5·10³/10⁴/10⁵ with trial std = 0.000. The LP solution is integer with 100% weight on direction (1,0) — axis-aligned columns at integer weight 1.0. Random integrality gap = 1 (LP = IP = greedy).
+    
+    (iii) **Ulam prime LP is purely fractional with stable structural compression.** Across N ∈ {10³, 5·10³, 10⁴, 10⁵}, ratio `LP_primes / LP_random ≈ 0.78` (0.779, 0.765, 0.776, 0.781; std 0.007). At N=10⁴ the LP solution has 462 fractional lines, **none at weight 1.0**; 69% of LP weight on slope-±1 Hardy-Littlewood-rich Ulam diagonals (direction (1,−1) carries 28.03 weight, (1,+1) carries 25.74; total LP = 77.59). Random has 0% diagonal weight; primes have 69%.
+    
+    (iv) **Slot-1's "L_p/L_r decays to 1 as N^{−0.24}" tracked greedy slackness, not absence of structure.** Prime integrality gap grows 1.11 → 1.16 → 1.22 → 1.26 across N=10³ → 10⁵; random integrality gap stays ≈ 1. The LP-tight compression is structural and stable across 100× N range.
+    
+    **Implication for thread.** First quantitative LP-tight incidence-geometric structural fact about primes in the project. Pre-stated A-grade criterion (c) (matched-baseline z-score ≥ 5σ): satisfied at LP since random-LP std = 0. Criterion (a) (named-exponent): partially satisfied — both LP_p and LP_r scale as Θ(√N), constant prefactor differs by 22%, structural reason (HL slope-±1 diagonals) identified. **B+ grade** (substantive partial-positive empirical fact, not yet asymptotic theorem). Self-graded down from A pending N=10⁶ confirmation and asymptotic proof.
+    
+    **Files modified.** `.commit_state` (sessions_used: 2→3, slot_3_summary, recommended_next_action); `archive/sessions/session486_commit_thread11_lp_relaxation.md` (new); `experiments/constructions/p11_ulam_line_cover/p11_lp_relaxation.py` + `p11_lp_dual_inspect.py` + `p11_lp_relaxation_results.md` + `lp_summary_*.txt` + `lp_scaling_summary.csv` (new); `RESEARCH_AGENDA.md` Arc 13 (slot-3 result block); `status/SESSION_INSIGHTS.md` (this entry); `.run_state` → 488.
+    
+    **Next-action for the next agent.** Slot 4 of Thread 11. Algorithmic angle + scaling confirmation. Three concrete actions: (1) push LP_primes(Ulam, N=10⁶) — estimated 30-60 min runtime via scipy HiGHS sparse, ~10⁶ candidate lines at K=5, to confirm/refute the 0.78 stability. If ratio holds, slot 5 attempts an HL-backed proof of asymptotic constant; if it drifts toward 1, thread closes B-NEGATIVE. (2) Try iterated rounding of slot-3 fractional LP solution to a feasible integer cover — does it improve on greedy from L_greedy=989 at N=10⁶ toward LP_lower_bound = 0.78·√10⁶ = 780? Would constitute a polylog-time approximation algorithm. (3) Inspect LP solution for residue grids with q << √N at N=10⁵ — is the wheel sieve genuinely integer-tight or does LP also tighten there? Cross-domain: randomised rounding (Raghavan-Thompson 1987), iterated rounding (Singh-Lau).
+    
+    ---
+    
+    ## Session 488 — commit mode Thread 11 / Slot 5: HL theoretical wrap
+    
+    **Mode:** commit. Thread 11 slot 5 of 5 (final).
+    
+    **What I produced.** Built `p11_hl_singular_series.py` (computes Hardy-Littlewood singular series `C_f = ∏_p (1 - σ_f(p)/p) / (1 - 1/p)` for the `4k²+bk+γ` quadratic pairs underlying slope-±1 Ulam diagonals) and `p11_hl_distribution_analysis.py` (distribution moments — line-uniform, length-weighted, prime-weighted). Wrote `p11_hl_singular_series_results.md` and `p11_hl_distribution_analysis_results.md`. Ran at N=10⁵ with |c|≤250 and P_max=500: 377 slope-±1 lines analysed.
+    
+    **Results.**
+    
+    (i) **Per-line HL distribution.** Line-uniform mean HL = 2.022 (std 0.74), length-weighted = 2.032, prime-weighted = 2.298. Distribution: 9% lines HL<1, 25.7% in [2, 2.5), 7.4% with HL≥3. Top-3 prime-rich lines (Heegner-class quadratics) have HL_max ≈ 6.0-6.6 — Euler-41 etc.
+    
+    (ii) **Naive prediction LP_p/LP_r = 1/⟨θ⟩ ≈ 0.495 fails.** Empirical c=0.776 is much larger. Reasons: (a) 31% of LP weight on axes (HL=1) dilutes the slope-±1 boost; (b) LP exploits HL VARIANCE not mean — depends on joint distribution of (slope-+1 HL, slope-(-1) HL) over primes; (c) sample |c|≤250 biased toward HL-rich long central diagonals.
+    
+    (iii) **Empirical decomposition matches.** c = 1/(0.31 + 0.69·1.42) = 1/1.29 = 0.776, with ⟨θ⟩_LP ≈ 1.42 = LP-weighted avg HL on LP-active slope-±1 lines (much smaller than the |c|≤250 sample line-uniform 2.02 because LP spreads weight across many low-HL diagonals also).
+    ... (12 more lines)
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md << 'EOF'
+
+---
+
+## Session 489 — Arc 2 / Sub-arc D-2: W=15 orthogonal-corner closure (Lean)
+
+**Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+
+**What I produced.** Closed the orthogonal corner case `(W = 15, d = j + 1)` of E2.1 unconditionally in Lean 4. New `mps_bond_dim_W_eq_15_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 15 (j+1) j).rank = 9` and the supporting `exists_invertible_submatrix_W_eq_15_d_eq_j_plus_1` exhibit theorem, both sorry-free and axiom-pure (`#print axioms` shows only `propext, Classical.choice, Quot.sound`). Plus 7 new prime helpers `chiP_X_eq_one` for `X ∈ {101, 103, 107, 131, 191, 193, 197}`. ~860 Lean lines.
+
+**Proof.** Two-level nested `Matrix.det_fromBlocks_zero₂₁` (outer `(1+8)`, inner `(4+4)`) with both 4×4 inner blocks computed via `simp [det_fin_four]` (the S423 Sub-arc D-1 primitive). Permutation `ρ = (0, 1, 3, 7, 13, 2, 6, 8, 12)`, `σ = (2, 1, 3, 7, 13, 0, 6, 10, 12)` from S245 pre-search; dead col 2; both block dets = `+1`; total det = `+1`. **First Lean corner closure to use `det_fin_four`.**
+
+**Engineering.** Required `set_option maxHeartbeats 4000000` (20×; 2× the W=14 budget). The 81-cell `fin_cases × fin_cases` matrix-equality proof at R = 9 exceeds the 10× budget that suffices at R = 7 (W=14, S235); scaling is `R²`. First build attempt timed out at 2000000; second at 4000000 hit unsolved goals from `rw [det_fin_four]; norm_num` (which doesn't unfold `(!![...]) i j`); replaced with `simp [det_fin_four]` (parallel to W=14's `simp [Matrix.det_fin_two]`) — third build succeeded.
+
+**Closed-W set updated.** `{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 18, 20}` — fourteen wheels closed (was thirteen). The "block-triangular-required" set per S144 enumeration is now `{7→done, 9→done, 11, 13, 14→done, 15→done, 16, 17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, ...}`.
+
+**Files modified.** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean` (+860 lines); `RESEARCH_AGENDA.md` Arc 2 status, Arc 2 milestone for W=15, next-action queue updated to Sub-arc D-3 (W=16) or Sub-arc D-4 (`det_fin_five` for W=11); `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md` (S489 paragraph appended); `archive/sessions/session489_d2_w15_closure.md` (new); `status/SESSION_INSIGHTS.md` (this entry); `.run_state` → 491.
+
+**Self-grade.** B (substantive refinement: another orthogonal-corner closure of an existing edge, sorry-free and axiom-pure, executing a planned single-session target with known shape. First closure to use `det_fin_four`. Not A-grade because no novel mathematical content beyond a 14th specialisation of E2.1).
+
+**Next-action for the next agent.** Sub-arc D-3 — close W=16 using S245 candidate `ρ = (0, 1, 2, 3, 7, 5, 11, 13, 14)`, `σ = (1, 0, 6, 10, 12, 2, 4, 8, 14)`, dead col 1, block dets `[-1, -1]`, full det `+1`. 6 new prime helpers (191 already declared at S489). Estimated 1 session, ~860 Lean lines. Alternatively, Sub-arc D-4 — develop `det_fin_five` (cofactor expansion of W=11's atomic 5×5 odd block, using the S423 D-1 template scaled to 120 monomials).
+EOF
+echo "Updated SESSION_INSIGHTS.md"
+    Updated SESSION_INSIGHTS.md
+  [Bash] echo 491 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    491
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Sub-arc D-2 complete. Closed W=15 orthogonal corner case unconditionally in Lean (`mps_bond_dim_W_eq_15_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 15 (j+1) j).rank = 9`), sorry-free and axiom-pure. Two-level nested `det_fromBlocks_zero₂₁` (outer `1+8`, inner `4+4`) using the S423 `det_fin_four` primitive — the first corner closure to use it. 7 new prime helpers `{101, 103, 107, 131, 191, 193, 197}`. Closed-W set is now 14 wheels: `{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 18, 20}`. Self-graded B (substantive refinement; planned single-session target). Next-action: Sub-arc D-3 (W=16) or Sub-arc D-4 (`det_fin_five` for W=11).
+--- Session ended ---
+Sleeping 60 seconds before next run...

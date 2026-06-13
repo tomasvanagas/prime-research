@@ -1,0 +1,1072 @@
+=== Run #491 — Mode: wild_swing — Fri May  1 05:00:36 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:p11_minimum_line_cover_of_primes
+    sessions_used:5_final
+    status:DONE
+    session_history:S484,S485,S486,S487,S488
+    slot_1_summary:S484 built Ulam-spiral evaluator (exact greedy at N<=10^4, bounded-direction numpy at N<=10^6). At N=10^4/10^5/10^6: L_primes = 91/308/989; L_random = 113.5/337/1042 (matched-density baseline). L_p/L_r = 0.80/0.91/0.95 — prime advantage SHRINKS with N (not constant-factor as predicted E-mode); fitting 1-L_p/L_r ~ N^{-0.24}. Both scale ~sqrt(N). Top lines all slope (1,+/-1) Ulam diagonals; decompose into pairs of quadratics 4k^2+bk+c with HL-predicted ~40% prime density vs ~10% random. Forecasts B-NEGATIVE for Ulam alone but slots 2-5 still in play.
+    slot_2_summary:S485 built p11_alt_embeddings.py multi-embedding evaluator (residue-class Phi_R(n;q)=(n mod q, n//q) and polynomial-image Phi_Q(n;q)=(n, n^2 mod q)). Tested at N in {10^4, 10^5, 10^6}, prime moduli p in {2,3,5,7,11} and primorial moduli q in {6,30,210,2310}. Findings: (i) Prime modulus p: L_p = L_r exactly (constant in N) for both embeddings — primes saturate the embedding's quotient. (ii) Primorial q with q^2 << N (column-dominated): wheel-sieve compression observed. residue ratio = phi(q)/q + small (q=30:0.30, q=210:0.233); poly ratio = (1/2)*prod_{p|q,p>2}(p-1)/(p+1) + small (q=210:0.188, q=2310:0.118). (iii) Primorial q with q^2 > N (row-dominated): residue compression collapses to ratio=1 (one horizontal per row). poly_q is row-immune and retains compression. Top-line CSV confirms: residue lines = phi(q) coprime classes + small primes; poly lines = coprime QR cosets. Conclusion: line-cover compression is exactly the wheel sieve geometrically realised. Optimal q=sqrt(N) gives ratio ~ 1/log(N). No incidence-geometric structure beyond classical density theory. B-grade. Slot 3 next.
+    slot_3_summary:S486 built LP-relaxation evaluator p11_lp_relaxation.py (set-cover LP via scipy HiGHS) and dual-inspector p11_lp_dual_inspect.py. Cross-domain ingredient: Stanley 1989 matroid-theoretic line-cover LP. Findings: (i) Residue_q=210 at N=10^4: LP_primes=48.0000 = greedy=48 exactly, integrality gap=1. Wheel-sieve embedding is LP-tight at the greedy upper bound. (ii) Ulam at N in {10^3, 5*10^3, 10^4, 10^5}: LP_random saturates EXACTLY at floor(sqrt(N)) for N >= 5000 (LP=71 at N=5000, LP=100 at N=10^4, LP=316 at N=10^5; trial std = 0.000), with integer solution: 100% LP weight on direction (1,0) i.e. axis-aligned vertical columns at integer weight 1.0. (iii) LP_primes(Ulam, N) is purely fractional: 462 active lines at 0 < x_l < 1 at N=10^4, with 69% of LP weight on slope-(±1) HL-rich Ulam diagonals — direction (1,-1) carries 28.03 weight, (1,+1) carries 25.74. (iv) Stable ratio LP_primes / LP_random ~ 0.78 across 100x range in N: 0.779, 0.765, 0.776, 0.781 at N=10^3, 5*10^3, 10^4, 10^5 (std 0.007). (v) Slot-1 forecast "L_p/L_r decays to 1 as N^{-0.24}" was tracking the prime integrality gap (greedy/LP grows 1.11 -> 1.16 -> 1.22 -> 1.26 across N=10^3 -> 10^5), NOT structural compression. The compression is stable at LP. PARTIAL-POSITIVE: first quantitative LP-tight incidence-geometric structural fact about primes in the project. Random LP integrality gap = 1, prime LP integrality gap > 1 — structural separation. Criterion (c) of A-grade list (5sigma matched-baseline z-score) satisfied at LP since random-LP std = 0. Criterion (a) partially satisfied: structural reason identified (HL slope-(±1) diagonals carry 69% LP weight), but exponent is alpha=1/2 for both, only constant prefactor differs by 22%. B+ grade. Slot 4: push to N=10^6 LP, test asymptotic stability, attempt iterated rounding for integer cover.
+    slot_4_summary:S487 built p11_iterated_rounding.py (Singh-Lau / Lavi-Swamy iterated LP rounding with adaptive tau) and p11_milp_check.py (true integer optimum via scipy/HiGHS branch-and-bound). Findings: (i) MILP exact integer optimum at N=10^3: OPT=25 (LP=23.34, OPT/LP=1.071, greedy=26). At N=5000: OPT=61 (LP=54.30, OPT/LP=1.123, greedy=63). The integrality gap is REAL not heuristic. (ii) Iterated rounding tau=0.6 hits MILP optimum exactly at N=5000 (61=61). At N=10^4 best is tau=0.5 -> L=89 (greedy 95, 6.3% improvement, iter/LP=1.147). At N=10^5 best is tau=0.5 -> L=302 (greedy 311, 2.9% improvement, iter/LP=1.224). MILP at N=10^4 ran 1500s time limit: primal=90, dual=82 (LP+cuts), gap 8.89%; combined with iter-89 upper, OPT in [82, 89] hence OPT/LP in [1.057, 1.147] at N=10^4. (iii) Iterated rounding on Ulam matched-random baseline at N=10^4 hits LP exactly (L=100=LP=floor(sqrt(N))) — random IS integer-tight, primes are NOT. (iv) Residue q=30 at N=10^5: LP=greedy=9 for primes (integer, gap=1). Residue q=210 at N=10^5: LP=greedy=49 (integer, gap=1). Polynomial-image q=210 at N=10^5: LP=greedy=9 (integer, gap=1). All wheel-sieve embeddings remain LP-tight at scale; LP fractional structure is UNIQUE to Ulam. (v) Integer-cover ratio OPT_p/OPT_r drifts upward with N: 25/32=0.78 at N=10^3, 61/71=0.86 at N=5000, <=89/100=<=0.89 at N=10^4, <=302/316=<=0.96 at N=10^5. The slot-3 finding "LP_p/LP_r=0.78 stable" is FRACTIONAL only — integer realization converges toward 1. (vi) LP at N=3*10^5 COMPLETED mid-session: LP_p=426.32, LP_r=548.00 (=ceil(sqrt(3*10^5))), LP_p/LP_r=0.7780 — within 0.001 of the slot-3 mean. The 0.78 stability now holds across N in [10^3, 3*10^5], FIVE ORDERS of magnitude. Prime integrality gap widened slightly: 1.261 at 10^5 -> 1.271 at 3*10^5. (vii) LP at N=10^6 COMPLETED at 21389s (5.94 CPU-hours): LP_p=777.3744, LP_r=1000.0000 (= sqrt(10^6) exactly), LP_p/LP_r=0.7774 — within 0.005 of slot-3 mean. The 0.78 stability now holds across N in [10^3, 10^6], SIX orders of magnitude (values 0.7794, 0.7648, 0.7759, 0.7807, 0.7780, 0.7774; mean 0.7760, std 0.0055). Greedy at N=10^6: primes 990, random 1053; prime integrality gap 1.273. STRUCTURAL CONCLUSION: the Ulam-spiral LP gives a fractional structural fact about primes (HL slope-+/-1 diagonals carry stable 70% LP weight), but this does NOT translate to integer algorithmic compression. Slot 5 should close the thread B-NEGATIVE on integer-cover grounds OR pursue asymptotic LP-gap proof for theoretical interest (5-orders-of-magnitude stability is strong evidence for asymptotic LP gap proof being viable). B grade (substantive partial-positive empirical fact, structural refinement of slot 3 from B+ to B because the integer claim is asymptotically vanishing, but LP claim strengthened by N=3*10^5 confirmation).
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_8:p2_pi_h_batched_on_h_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_9:p4_k_tuple_narrow_window_batched_on_x_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_10:p5_galway_constant_DONE_B_NEGATIVE_STRUCTURAL
+    prev_thread_11:p11_minimum_line_cover_of_primes_DONE_B_PARTIAL_POSITIVE_STRUCTURAL
+    prev_halt:S438_S483_HALT_ESCALATION_PENDING_CLEARED_BY_USER_INJECTION_OF_THREAD_11
+    last_synthesis:archive/sessions/session488_commit_thread11_hl_theoretical_wrap.md
+    thread_11_summary:Thread 11 = OPEN_POSITIVE_TARGETS.md §P11 — minimum number of straight lines required to cover all primes <= N under a chosen 2D embedding. Trivially 1 line on Z (primes collinear). Non-trivial in 2D embeddings: (a) Ulam spiral (1963) — diagonal lines correspond to Hardy-Littlewood quadratic-prime sequences f(n) = a*n^2 + b*n + c, dominated by Euler's n^2 + n + 41 and similar; (b) residue-class grid (n_x = n mod p, n_y = n div p), where each row is a prime residue class; (c) polynomial-image grids n -> (P(n), Q(n)) for P, Q polynomial. Quantity: minimum line cover number L(N) of the primes <= N in the chosen embedding. Cross-domain ingredient: Szemeredi-Trotter incidence theorem (1983), Erdos extremal incidence problems, Hardy-Littlewood prime k-tuple conjecture for quadratics. Question: does L(N) admit a polylog or sub-linear computable invariant? Lines of primes correspond to k-tuple-prime polynomial sequences; if covering achieves L(N) ~ pi(N)^alpha for some named alpha < 1, the invariant has algorithmic content for prime-density estimation.
+    thread_11_a_grade_targets:(a) named-exponent L(N) scaling for one or more 2D embeddings (alpha < 1) with structural reason (HL k-tuple density of quadratic forms, or matched-baseline z-score >= 5sigma showing primes are non-trivially compressible in lines) — first explicit incidence-geometric prime-density theorem in the project; (b) polylog-time approximation of L(N) via line sampling that improves on naive O(pi(N)^2) brute force; (c) closed-form L(N) for a specific embedding (e.g., Ulam spiral) tied to Hardy-Littlewood constants for named quadratic forms.
+    thread_11_slot_plan:
+      slot_1: build Ulam-spiral evaluator. Place primes <= N on Ulam spiral. Compute minimum line cover L(N) via greedy line-detection / LP relaxation at N in {10^4, 10^5, 10^6}. Compare to matched-baseline (random density-pi(N)/N points on the spiral) and HL prediction for the dominant prime-quadratic lines (Euler 41, Heegner 67, etc.).
+      slot_2: alternative 2D embeddings — residue-class grid (n mod p, n div p) for p = 2, 3, 5, 7, 11; polynomial-image grid (n, n^2 mod p). Compute L(N) for each. Cross-embedding scaling fit.
+      slot_3: theoretical shape — does L(N) follow Szemeredi-Trotter incidence bound L(N) >= pi(N)^{2/3} (random-points lower bound), or beat it via HL alignment? If beats, by what HL-related factor?
+      slot_4: algorithmic angle. Is there a polylog-time approximation algorithm for L(N) that exploits HL structure on prime quadratics?
+      slot_5: theoretical wrap. Either named-exponent scaling theorem with HL backing, or structural negative documenting why L(N) saturates at random-point Szemeredi-Trotter bound.
+    slot_5_summary:S488 built p11_hl_singular_series.py and p11_hl_distribution_analysis.py. Computed HL singular series C_f = prod_p (1 - sigma_f(p)/p)/(1 - 1/p) for the 4k^2+bk+c quadratic pairs underlying 377 slope-+/-1 Ulam diagonals at N=10^5 (|c|<=250). Findings: (i) Line-uniform mean HL = 2.022, length-weighted = 2.032, prime-weighted = 2.298 (sample biased high; long central diagonals are HL-rich). (ii) Distribution: 9% of lines HL<1, 23.6% in [1.5,2), 25.7% in [2,2.5), 7.4% with HL>=3. Top-3 prime-rich lines (HL_max ~6.0-6.6) are Heegner-class quadratics. (iii) Naive prediction LP_p/LP_r = 1/avg_HL = 1/2.02 = 0.495 FAILS — empirical c=0.776 much larger. Reasons: 31% of LP weight is on axes (HL=1), LP exploits HL VARIANCE not just mean, sample biased high. (iv) Empirical decomposition: c = 1/(0.31 + 0.69*1.42) = 1/1.29 = 0.776, with <theta>_LP ~ 1.42 = LP-weighted avg HL on LP-active slope-+/-1 lines. (v) Conditional theorem (HL Conj F): LP_p/LP_r -> c < 1 with c determined by LP equilibrium, NOT by closed-form HL identity. c = 0.776 is NOT 1/(2C_2), 6/pi^2, or other named constants. (vi) Closed-form c remains open: requires solving min-cost-flow LP on infinite-Ulam joint-HL bipartite incidence, beyond closed-form analysis. (vii) Trivial bound c >= 1/C_max ~ 1/6.6 ~ 0.15 (using max HL singular series). Empirical c=0.776 well above trivial bound. B grade slot — substantive structural identification + conditional theorem + refutation of naive prediction, but no closed form for c. Thread 11 closes B-grade partial-positive structural overall.
+    ... (2 more lines)
+  [Read] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    File content (545.5KB) exceeds maximum allowed size (256KB). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] wc -l /apps/aplikacijos/prime-research/ATTACK_VECTORS.md && grep -n "^## §\|^### §\|^# §\|^## §[A-F]\|^### §[A-F]" /apps/aplikacijos/prime-research/ATTACK_VECTORS.md | head -100
+    10272 /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    33:## §A. TC⁰ Primality, Beyond AKS
+    590:## §B. Spectral Identity Searches Beyond the Standard Bases
+    877:## §C. Break the GUE Universality of Zeta Zeros — at Some Scale
+    1381:## §D. Cross-Domain Imports the Project Has Never Tried
+    6540:## §E. Meta-Analysis of CLOSED_PATHS as a Data Source
+    6588:## §G. The Multiplicative Regime — Beyond the W-Trick Wall
+    6774:## §H. Cross-x Amortisation — Beyond the Per-Query Obstruction
+    6946:## §F. Synthesis Targets That Would Be Publishable
+    6988:### §D.D41 — Gurau-Witten melonic universality on the chi_P 3-tensor (CLOSED 2026-04-30, S424, mode E, B-grade)
+    7042:### §D.D34 — De Branges Hilbert space `H(E_xi)` finite-rank projection (CLOSED 2026-04-30, S415, mode E, B-grade)
+    7129:### §B.B4 — Voronin universality with effective shifts as a polylog approximator (CLOSED 2026-04-30, S236, mode E+I, B-grade)
+    7215:### §D.D38 — χ_P-restricted multiple zeta values vs Brown 2012 motivic algebra (CLOSED 2026-04-30, S233, mode I, B-grade)
+    7292:### §D.D17 — Forman 2002 / Benedetti–Lutz 2014 discrete-Morse complexity of the divisibility-poset Hasse diagram H_N (CLOSED 2026-04-29, S232, mode E, B-grade)
+    7368:### §D.D11 — Shadow tomography (Huang-Kueng-Preskill 2020) sample / query complexity for π(x) extraction (CLOSED 2026-04-29, S226, mode E, B-grade)
+    7458:### §D.D8 — DARTS (Liu-Simonyan-Yang 2019) for π(x) TC^0 circuits at N=12 (CLOSED 2026-04-29, S216, mode I, B-grade)
+    7525:### §D.D9 — Bourgain-Glibichuk-Konyagin sum-product gain on the prime set in F_p (CLOSED 2026-04-29, S207, mode E, B-grade)
+    7610:### §D.D37 — Zagier 2010 quantum-modular cocycle defect of f_N(z) at rational evaluation points (CLOSED 2026-04-29, S225, mode E, B-grade case (i))
+    7671:### §D.D3 — Free probability + matrix models: Bryc-Dembo-Jiang Toeplitz/Hankel LSD on χ_P (CLOSED 2026-04-29, S204, mode I, B-grade case (i))
+    7753:### §D.D48 — Connes-Consani-Marcolli endomotive: Galois orbits of χ_P-projected KMS_∞ ground states of the Bost-Connes system (CLOSED 2026-04-28, S203, mode E, B-grade case (i))
+    7810:### §D.D44 — Arithmetic topology / Morishita arithmetic Massey products on prime triples (Rédei symbol distribution) (CLOSED 2026-04-28, S164, mode E, B-grade case (i))
+    7921:### §D.D45 — Baker-Norine graph Riemann-Roch / chip-firing rank of the prime divisor on `Γ_N` (divisibility) and `H_N` (Hasse cover) (CLOSED 2026-04-28, S161, mode I, B-grade case (i))
+    8031:### §D.D31 — Adiprasito-Huh-Katz Hodge log-concavity of the arithmetic prime-divisibility transversal matroid (CLOSED 2026-04-28, S149, mode I, B-grade case (i))
+    8116:### §D.D29 — Cohn-Elkies / Delsarte LP bound on the prime autocorrelation `R_P(t)` (CLOSED 2026-04-27, S145, mode E, B-grade case (i))
+    8186:### §D.D5 — Continuous-time quantum walk on the divisor / coprime graphs (CLOSED 2026-04-27, S141, mode E, B-grade case (i))
+    8311:### §D.D30 — Pollicott-Ruelle resonances of the χ_P-weighted Gauss-map transfer operator (CLOSED 2026-04-27, S140, mode E, B-grade case (i))
+    8459:### §D.D27 — Newman / Erdős L^∞-flatness of the χ_P-coefficient polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n on |z|=1 (CLOSED 2026-04-27, S138, mode I, B-grade case (c))
+    8589:### §D.D10 — Mahler measure of the prime indicator polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n (CLOSED 2026-04-27, S134, mode I, B-grade)
+    8695:### §C.C7 — Fyodorov-Hiary-Keating extreme-value statistics of |ζ(1/2 + it)| over short windows (CLOSED 2026-04-27, S133, mode I, B-grade case 2)
+    8804:### §D.D22 — Higher-order Hodge Laplacian L_1 spectrum of the coprimality flag complex K_N := \{σ ⊆ [2..N] : σ pairwise coprime\} (CLOSED 2026-04-27, S126, mode E, B-grade)
+    ... (18 more lines)
+  [Bash] grep -n "^### §" /apps/aplikacijos/prime-research/ATTACK_VECTORS.md | grep -v CLOSED | head -60
+    9713:### §A.A1 — SAT/ILP search for small TC^0 (depth-2 sign-threshold W=1) circuits at N=8 (PARTIAL CLOSURE 2026-04-26, S84, mode I)
+  [Bash] grep -n "^### " /apps/aplikacijos/prime-research/ATTACK_VECTORS.md | head -80
+    40:### A1 — Find a primality witness using only NC¹-known scalar primitives
+    66:### A2 — Conditional TC⁰ primality under a non-GRH hypothesis
+    88:### A3 — Spectral primality test via custom self-adjoint operator
+    114:### A4 — Bounded-arithmetic provability of a TC⁰ primality witness
+    175:### A5 — Maynard multidimensional sieve weight as a TC⁰ primality witness  [CLOSED S116, see "Closed attacks"]
+    255:### A6 — Quantitative reverse mathematics: proof-theoretic strength of π(x) error-term bounds
+    358:### A7 — Geometric Complexity Theory (GCT) obstruction for formula complexity of χ_P  [COMMIT-THREAD-4 5-SESSION ARC FULLY CLOSED at S215; chi_P-vs-matched-baseline plethysm sub-frame CLOSED at all k via Chow-variety identification; only the V_{d,1}^{n,d} d_0 question — a Chow-variety property, NOT chi_P-specific — remains technically open and is now reclassified as a classical alg-geom question outside this project's scope]
+    596:### B1 — Polynomial Method Compression (Croot-Lev-Pach style)  [CLOSED S92, see "Closed attacks"]
+    629:### B2 — Automorphic L-function basis  [CLOSED S118, see "Closed attacks"]
+    665:### B3 — Categorical / cohomological reformulation
+    689:### B4 — Voronin universality with effective shifts as a polylog approximator  [CLOSED S236, see "Closed attacks"]
+    767:### B5 — Beurling generalised primes: minimal-perturbation polylog test
+    884:### C1 — Detect non-GUE behaviour at N >> 10⁴ Odlyzko zeros
+    910:### C2 — Higher-order arithmetic corrections (Conrey-Snaith)  [CLOSED S123, see "Closed attacks"]
+    942:### C3 — Find a non-natural correlation that breaks GUE
+    964:### C4 — Anderson localisation in a prime-driven discrete Schrödinger operator [CLOSED S88, see "Closed attacks"]
+    1033:### C5 — Stein's method: quantitative finite-x Gaussianity of `(π(x) - Li(x))/(√x/log x)`  [CLOSED S108, see "Closed attacks"]
+    1124:### C6 — Pfaffian / α-determinantal point process structure of ζ zeros at order n=4
+    1240:### C7 — Fyodorov-Hiary-Keating extreme-value statistics of |ζ(1/2 + it)| over short windows  [CLOSED S133, see "Closed attacks"]
+    1386:### D1 — Ergodic theory / dynamical zeta functions
+    1409:### D2 — Topological data analysis on the prime sequence  [CLOSED S96, see "Closed attacks"]
+    1451:### D3 — Free probability + matrix models  [CLOSED S204, see "Closed attacks"]
+    1480:### D4 — Quantum walks on prime graphs
+    1501:### D5 — Continuous-time quantum walk on the same graphs §D.D4 closed (Szegedy)  [CLOSED S141, see "Closed attacks"]
+    1570:### D6 — Gowers U^k norms of the prime indicator χ_P
+    1641:### D7 — Determinantal point process (DPP) fit to the integer prime sequence  [CLOSED S95, see "Closed attacks"]
+    1730:### D8 — Differentiable architecture search (DARTS) for π(x) circuits  [CLOSED S216, see "Closed attacks"]
+    1822:### D9 — Sum-product gain on the prime set in F_p (Bourgain-Glibichuk-Konyagin)  [CLOSED S207, see "Closed attacks"]
+    1908:### D10 — Mahler measure of the prime generating polynomial f_N(z) = Σ_{n≤N} χ_P(n) z^n  [CLOSED S134, see "Closed attacks"]
+    1990:### D11 — Shadow tomography sample complexity for π(x) extraction  [CLOSED S226, see "Closed attacks"]
+    ... (50 more lines)
+  [Read] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    884	### C1 — Detect non-GUE behaviour at N >> 10⁴ Odlyzko zeros
+    885	
+    886	**Question:** Use Odlyzko's published high-precision zeros (height
+    887	~10²² to ~10²⁴) and re-run the BK arithmetic correction probe at
+    888	this scale. Does the deviation change sign / scale / structure?
+    889	
+    890	**Why frontier:** all our tests are at heights up to ~10⁴. The
+    891	arithmetic correction's predicted scale is `1/L²` where `L = log(T/2π)`
+    892	— at T ~ 10²² this is `1/log(10²²/2π)² ≈ 1/2700`. A signal of size
+    893	10⁻³ should be detectable at 10⁵-10⁶ samples. Below our current
+    894	detection threshold for now but reachable.
+    895	
+    896	**Cross-domain ingredient:** numerical analysis at high precision +
+    897	Odlyzko's zero database.
+    898	
+    899	**Concrete first step:** download a sample of Odlyzko's zeros at
+    900	T ~ 10²² (publicly available). Re-run S49's battery on this sample.
+    901	Does the BK correlation flip sign or scale up?
+    902	
+    903	**Failure profile:** zeros at high height are still GUE-distributed
+    904	to within sample noise. Not a *failure* per se — would refine E3.13
+    905	significantly to a much higher scale.
+    906	
+    907	**Budget:** 1 session (just need to download data and re-run code).
+    908	**This one is genuinely tractable. Pick first if A-grade is the goal.**
+    909	
+    910	### C2 — Higher-order arithmetic corrections (Conrey-Snaith)  [CLOSED S123, see "Closed attacks"]
+    911	
+    912	**Outcome (S123, mode I, B-grade):** First project measurement of
+    913	n-correlations at orders 4, 5, 6 at N=8000. Empirical zeta R_n along
+    ... (320 more lines)
+  [Read] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    5675	### D43 — Hairer regularity structures / KPZ universality of the prime counting error term `π(x) − Li(x)`  [PARTIAL CLOSURE S157, KPZ-grid Hölder + Tracy-Widom β=2 sub-frame closed; D43.b/D43.c sub-frames OPEN]
+    5676	
+    5677	**Question:** the explicit formula gives
+    5678	`π(x) − Li(x) = -\sum_ρ Li(x^ρ) + O(\log x)` summed over non-trivial
+    5679	ζ-zeros. Treating `D(x) := (π(x) − Li(x)) \log x / \sqrt{x}` as a
+    5680	*random function of x* on the natural CLT scale, all project
+    5681	measurements have tested *Gaussian / Wigner semicircle* universality
+    5682	(C5 Stein CLOSED, C7 FHK CLOSED, S74 free cumulants CLOSED, GUE pair
+    5683	correlation E3.1). Question: does `D(x)` viewed as a stochastic
+    5684	process on `x ∈ [1, X]` and rescaled by `t^{1/3}` (KPZ scale) instead
+    5685	of `\sqrt{t}` (CLT scale) fall into the **Kardar-Parisi-Zhang
+    5686	universality class** with Tracy-Widom β=2 fluctuations? KPZ governs
+    5687	interface-growth fluctuations in nonlinear stochastic systems; its
+    5688	limit law `F_2` (Tracy-Widom β=2) shares the *distribution* with GUE
+    5689	largest eigenvalue, but the **scaling exponent is different**: KPZ
+    5690	has `t^{1/3}` while GUE has `\sqrt{t}`. A KPZ-type fluctuation in
+    5691	`π(x) - Li(x)` at the `x^{1/3}` scale would constitute a NEW
+    5692	universality class for the prime counting error term, orthogonal to
+    5693	the project's `\sqrt{x}/\log x`-scale Gaussian battery.
+    5694	
+    5695	**Why frontier:** Hairer 2014 *Inventiones* (Fields Medal) gave the
+    5696	first rigorous theory of singular SPDE limits, establishing the KPZ
+    5697	universality class with `t^{1/3}` scaling and Tracy-Widom β=2 limit
+    5698	for a wide universality class of nonlinear interface-growth processes.
+    5699	**NO project measurement has tested non-`\sqrt{x}` scalings** — every
+    5700	existing pseudorandomness battery uses the standard CLT scale. The
+    5701	KPZ universality conjecture for arithmetic functions is essentially
+    5702	virgin territory (one paper, Cattaneo-Garbit 2023 on Sarnak Möbius,
+    5703	tests Lévy-stable but NOT KPZ proper). A KPZ result on `π(x)`
+    5704	would be a publishable connection between PNT and KPZ universality,
+    ... (130 more lines)
+  [Bash] grep -i "pfaffian\|alpha.dpp\|α.dpp\|alpha-determinantal" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -20
+    | Pfaffian/FKT planar sieve encoding | FAIL | I | Three graph encodings tested (sieve bipartite, Lucy DP recurrence, prime dependency). ALL non-planar for x>=80. Treewidth grows as x^0.36 (sieve), x^0.51 (Lucy DP), x^0.43 (prime dep). Prime dep graph is complete (density=1.0). Unbounded treewidth rules out FPT/Pfaffian approach. | 26 |
+    | §D7 ATTACK_VECTORS — Determinantal point process (DPP) / permanantal counterpart fit to integer prime sequence (cross-domain: DPP theory, Hough-Krishnapur-Peres-Virag 2009, Soshnikov 2000, Vere-Jones 1997 alpha-DPP) | FAIL | I | Frontier attack on whether chi_P admits a translation-invariant kernel representation R_2(t) = rho^2 ± K(t)^2 (DPP -, PPP +). Tested four progressively-flexible kernel hypotheses at N = 10^7. **F1 (DPP pair-level)**: K^2_DPP(t) = rho^2 - R_2(t) < 0 at ALL 15 admissible even t in [2, 30]; HL gives S(0, t) > 1 ⇒ R_2 > rho^2. Pair-level DPP infeasible. **F2 (PPP pair-level)**: K^2_PPP(t) = R_2(t) - rho^2 < 0 at ALL 14 odd t > 1 (R_2 ≈ 0). Pair-level PPP infeasible. Sign of (R_2 - rho^2) flips between odd/even — no real translation-invariant K. **F3 (PPP 3-point)** restricting to all-even sub-lattice where K^2_PPP > 0: permanent prediction R_3^PPP overshoots HL prediction R_3^HL = rho^3 S(0, t_1, t_2) by 7.5–79.2% across 19 admissible triples (max gap on 3-AP triples (0,6,12), (0,12,18), (0,18,24)). **F4 (real-signed K)**: with magnitudes |K(t)| = rho sqrt(S(0,t)-1) and signs s : t → ±1, required cross-term σ_req ∈ (-0.541, +0.769), NEVER ±1 (closest 0.769) at any of 19 admissible triples. Real signed K of right magnitudes fails universally. **F5 (complex Hermitian K)**: phases free; least-squares fit of φ over 13 distinct offsets (200 random starts, LM + trust-region) yields best max residual 0.0746 ≫ 0.01 noise floor. No globally consistent phase assignment. **Inadmissibility blindness**: PPP predicts non-zero R_3 for inadmissible triples like (0, 4, 14) (where ν_3 = 3 saturates) because pair correlations alone cannot detect multi-body admissibility. **Mechanism**: HL singular series factorises over PRIMES (∏_p α_p(0, t_1, ..., t_k) with α_p depending on ν_p = #distinct residues mod p); DPP/PPP correlations factorise over PAIRS. Pairwise admissibility ≠ triple admissibility. **Adds EDGE E2.16**: primes are NOT a translation-invariant DPP / PPP / signed-real-K / complex-Hermitian-K point process. FOURTH INDEPENDENT CONFIRMATION (after E2.13/S85 Gowers, E2.14/S88 Anderson, E2.15/S92 algebraic immunity) that chi_P structure = HL equidistribution mod q, now in a FOURTH orthogonal mathematical category (point-process theory) AND at the 3-point level (prior three were 2-point). **Closure mode I**: HL prime-by-prime factorisation cannot reduce to pair-level kernel. Cross-domain ingredient (DPP) performed real work; first project use. Cites E2.13, E2.14, E2.15, E1.10, E3.13, E7.1. Cross-domain refs: Hough-Krishnapur-Peres-Virag 2009 *Zeros of GAFs and DPPs* (AMS ULect 51); Soshnikov 2000 (arXiv:math/0002099); Vere-Jones 1997 alpha-DPP. See experiments/constructions/primes_dpp_ppp_fit/primes_dpp_ppp_fit_results.md. | 95 |
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/ 2>/dev/null && echo "---" && ls /apps/aplikacijos/prime-research/experiments/analytic/ 2>/dev/null
+    SESSION_25_SUMMARY.md
+    de_branges_H_E_xi
+    dft_results.json
+    dft_results.md
+    dft_zeros.py
+    dft_zeros_results.md
+    fhk_amplitude_max
+    gaps_mod1.png
+    gue_comparison.png
+    hist_mod_1.png
+    hist_mod_2pi.png
+    hist_mod_e.png
+    hist_mod_log2.png
+    hist_mod_log2pi.png
+    hist_mod_log3.png
+    hist_mod_log5.png
+    hist_mod_log7.png
+    hist_mod_pi.png
+    hist_mod_sqrt2pi.png
+    joint_mod1_modpi.png
+    large_n_correlations
+    log_prime_frequencies.png
+    mod_patterns.py
+    mod_patterns_results.md
+    n_correlations_4_5_6
+    number_variance.png
+    odlyzko_high_height
+    pair_correlation.png
+    pairwise_ratios.py
+    pairwise_ratios_results.md
+    ... (128 more lines)
+I've selected the wild swing target. Picking **§C6 — Pfaffian / α-determinantal point process structure of ζ zeros at order n=4** because:
+1. All higher-priority items in the user's list are already CLOSED (C1/S71, A1/S84 partial, B1/S92, A3/S79, D4/S80, C2/S123)
+2. C6 has a clean over-determined Pfaffian identity test (sharper than C2's standard determinantal test) 
+3. The existing 8000-zero data + C2/S123 infrastructure makes it tractable in one session
+4. Cross-domain ingredient (Pfaffian processes / α-DPP) is genuinely new and orthogonal to the closed determinantal sine-kernel work
+
+Let me brief sub-agents in parallel to set up the data and theoretical predictions.
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/n_correlations_4_5_6/ 2>/dev/null && echo "---" && ls -la /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/large_n_correlations/ 2>/dev/null && echo "---" && ls /apps/aplikacijos/prime-research/data/ 2>/dev/null | head -30
+    total 208
+    drwxr-xr-x 2 root root   4096 Apr 27 10:08 .
+    drwxr-xr-x 7 root root   4096 Apr 30 05:35 ..
+    -rw-r--r-- 1 root root   6947 Apr 27 09:57 bootstrap_analysis.log
+    -rw-r--r-- 1 root root  11634 Apr 27 09:57 bootstrap_analysis.py
+    -rw-r--r-- 1 root root  13654 Apr 27 09:57 bootstrap_analysis_results.json
+    -rw-r--r-- 1 root root   2091 Apr 27 10:08 bootstrap_analysis_results.md
+    -rw-r--r-- 1 root root   4446 Apr 27 09:54 n_correlations_4_5_6.log
+    -rw-r--r-- 1 root root  20695 Apr 27 09:52 n_correlations_4_5_6.py
+    -rw-r--r-- 1 root root 117943 Apr 27 09:54 n_correlations_4_5_6_results.json
+    -rw-r--r-- 1 root root  11571 Apr 27 10:06 n_correlations_4_5_6_results.md
+    ---
+    total 60
+    drwxr-xr-x 2 root root  4096 Apr 26 13:21 .
+    drwxr-xr-x 7 root root  4096 Apr 30 05:35 ..
+    -rw-r--r-- 1 root root 38297 Apr 26 13:16 large_n_battery.py
+    -rw-r--r-- 1 root root  9618 Apr 26 13:16 large_n_battery_results.md
+    ---
+    combine_zeros.py
+    gen_zeros_2000.log
+    gen_zeros_2000.py
+    gen_zeros_8000.log
+    gen_zeros_8000.py
+    gen_zeros_parallel.py
+    odlyzko
+    zeros_chunks_slot2
+    zeta_zeros_1000.txt
+    zeta_zeros_200.txt
+    zeta_zeros_2000.txt
+    zeta_zeros_300.txt
+    ... (2 more lines)
+  [Read] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    1	# Cross-Domain Technique Registry
+    2	
+    3	This file is the source pool for `frontier_gen` mode. It tracks
+    4	mathematical techniques outside {classical analytic NT, complexity
+    5	theory, basic algebra} that the project either has used (as evidence
+    6	for / against polylog π(x)) or has not yet imported.
+    7	
+    8	When `frontier_gen` mode fires (because ATTACK_VECTORS is thin or the
+    9	A-grade scarcity warning triggers), the agent picks 3-5 UNUSED rows,
+    10	WebFetches a foundational survey, and proposes new ATTACK_VECTORS
+    11	entries grounded in those techniques.
+    12	
+    13	When any session imports a new technique that is not on this list,
+    14	the session must append it here with a survey reference URL.
+    15	
+    16	---
+    17	
+    18	## Status legend
+    19	- **USED (mode E)**: imported and reduced to a known closure (E mode).
+    20	- **USED (mode I)**: imported and produced a structural negative result.
+    21	- **USED (mode A)**: imported and produced an A-grade positive result.
+    22	- **PARTIAL**: superficial use only — name borrowed, machinery not imported.
+    23	- **UNUSED**: never imported.
+    24	- **PROPOSED**: scheduled for an upcoming attack vector.
+    25	
+    26	---
+    27	
+    28	## §1. Spectral / Operator-Theoretic
+    29	
+    30	| Technique | Status | Survey ref | Linked vector / edge |
+    ... (70 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] head -3 /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt && echo "---" && wc -l /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt
+    14.1347251417346937904572519836
+    21.0220396387715549926284795939
+    25.0108575801456887632137909926
+    ---
+    8000 /apps/aplikacijos/prime-research/data/zeta_zeros_8000.txt
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/n_correlations_4_5_6/n_correlations_4_5_6.py
+    1	"""
+    2	ATTACK_VECTORS §C2 — Higher-order arithmetic corrections (Conrey-Snaith).
+    3	
+    4	Test orders 4, 5, 6 of zeta-zero n-correlations at N=8000.
+    5	Three complementary probes:
+    6	
+    7	  (A) k-th nearest-neighbor spacing distributions P_k(s) for k=0..5.
+    8	      P_k probes the (k+2)-point correlation directly (P_5 sees orders
+    9	      up to 7-point clusters). Strong-statistics 1D histograms.
+    10	
+    11	  (B) Higher cumulants kappa_n(L) of zero counts in disjoint windows
+    12	      for n=2..6 at L in {1, 2, 4, 8, 16, 32, 64, 128}. kappa_n is
+    13	      sensitive to n-point correlations; for a GUE DPP the closed form
+    14	      is
+    15	
+    16	         log det(I + (e^t - 1) K_L) = sum_n kappa_n(L) t^n / n!
+    17	
+    18	      with sine-kernel K(x, y) = sin(pi (x-y)) / (pi (x-y)).
+    19	
+    20	  (C) Equally-spaced n-tuple density R_n(0, s, 2s, ..., (n-1)s) for
+    21	      n=4, 5, 6, swept over s in [0.5, 5]. GUE prediction:
+    22	          R_n(s_1,...,s_n) = det[K(s_i - s_j)]_{i,j}.
+    23	
+    24	For each test:
+    25	  - Empirical from the N=8000 unfolded zeta zeros.
+    26	  - GUE Monte Carlo: eigenvalues of a single N=8000 GUE matrix
+    27	    (Hermitian-Wigner; central bulk extracted, unfolded by semicircle).
+    28	  - Gap-shuffled null: K=20 seeds preserving the gap-marginal
+    29	    (kills higher-order correlations beyond 1-spacing).
+    30	
+    ... (496 more lines)
+  [Bash] python3 -c "
+import json
+d = json.load(open('experiments/analytic/zeta_structure/n_correlations_4_5_6/n_correlations_4_5_6_results.json'))
+print('Test C n=4 results:')
+c4 = d['test_C']['n=4']
+print('  s_grid:', d['test_C']['s_grid'])
+print('  GUE pred:', c4['gue_pred'])
+print('  emp_zeta:', c4['emp_zeta'])
+print('  emp_gue:', c4['emp_gue'])
+print('  null_mean:', c4['null_mean'])
+print('  null_std:', c4['null_std'])
+print('  z_vs_null:', c4['z_vs_null'])
+print('  max_abs_z:', c4['max_abs_z'], 'at s=', c4['argmax_s'])
+"
+
+    Test C n=4 results:
+      s_grid: [0.5, 0.7, 1.0, 1.3, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0]
+      GUE pred: [0.031124321028595428, 0.368179745797805, 1.0, 0.8752892771219462, 0.8792798639006654, 1.0, 0.9500317826237606, 1.0, 1.0, 1.0]
+      emp_zeta: [0.0, 0.43760940235058754, 1.0317658829414704, 0.7973733583489679, 0.7192894671003252, 0.7349261946459843, 0.9541984732824424, 0.8604505632040048, 1.205083260297984, 0.9237224448897794]
+      emp_gue: [0.0, 0.04471738611972333, 0.25364048698973496, 0.6120133747313111, 0.2539435946462715, 0.3139952153110047, 0.4939528200215542, 0.3744757339724385, 0.4353831371607013, 0.34596871239470506]
+      null_mean: [0.14300997366135998, 0.7455564323431347, 1.3365210720444174, 1.0208528356908024, 0.8763714041344794, 0.973459659120554, 1.0283722289246395, 0.9871085343361872, 0.979670731940155, 0.9800661828147316]
+      null_std: [0.03288815892079655, 0.09647088541013774, 0.14634078857986996, 0.11551372789407117, 0.12149213876792293, 0.16329065635865922, 0.1604915515863154, 0.1164147622439115, 0.07605649457448724, 0.15972372022984532]
+      z_vs_null: [-4.348372738217609, -3.192124014238458, -2.0825033953990038, -1.9346573036476709, -1.2929391039383693, -1.460790652654636, -0.46216610724400053, -1.0879889173059458, 2.963751217025488, -0.3527574855123116]
+      max_abs_z: 4.348372738217609 at s= 0.5
+I have enough context. Let me write the C6 wild swing experiment. The strategy:
+1. Compute empirical R_4 on the 8000-zero ensemble + matched GUE/GOE/GSE Monte-Carlo ensembles
+2. Compute theoretical R_4 = det[K_sine] (GUE) and α-determinant for α-DPP fit
+3. Discriminate which ensemble best matches ζ-zero R_4 via bootstrap residuals
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+  [Bash] timeout 300 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py 2>&1 | tail -120
+    Loading zeros...
+      N=8000, mean spacing = 0.999977
+    
+    Generating GUE pool...
+      7 batches, 8400 eigs (10.7s)
+    
+    Generating GOE pool...
+      7 batches, 8400 eigs (9.4s)
+    
+    Generating GSE pool...
+      7 batches, 4200 eigs (20.7s)
+    
+    Sampled 32 4-tuple offsets
+      tuple 1/32 ss=(np.float64(2.577), np.float64(3.26), np.float64(3.7)): theory=0.2609  zeta=0.1720  GUE_emp=0.0448  GOE_emp=0.3434  GSE_emp=0.0899
+      tuple 2/32 ss=(np.float64(2.173), np.float64(2.818), np.float64(3.723)): theory=0.7257  zeta=0.9068  GUE_emp=0.1792  GOE_emp=0.7167  GSE_emp=0.7496
+      tuple 3/32 ss=(np.float64(1.471), np.float64(3.132), np.float64(5.735)): theory=0.9028  zeta=0.8913  GUE_emp=0.3289  GOE_emp=1.0174  GSE_emp=0.7525
+      tuple 4/32 ss=(np.float64(2.679), np.float64(3.64), np.float64(5.211)): theory=0.9211  zeta=1.0477  GUE_emp=0.2690  GOE_emp=0.7477  GSE_emp=1.2323
+      tuple 5/32 ss=(np.float64(1.242), np.float64(3.887), np.float64(4.463)): theory=0.6630  zeta=0.9226  GUE_emp=0.2539  GOE_emp=0.6426  GSE_emp=0.3602
+      tuple 6/32 ss=(np.float64(2.245), np.float64(4.911), np.float64(5.874)): theory=0.9709  zeta=0.8287  GUE_emp=0.3140  GOE_emp=0.6732  GSE_emp=1.1137
+      tuple 7/32 ss=(np.float64(0.568), np.float64(3.378), np.float64(4.174)): theory=0.6234  zeta=0.5785  GUE_emp=0.1941  GOE_emp=0.4482  GSE_emp=0.4503
+      tuple 8/32 ss=(np.float64(1.728), np.float64(2.247), np.float64(5.731)): theory=0.5712  zeta=0.5473  GUE_emp=0.0897  GOE_emp=0.6882  GSE_emp=0.3913
+      tuple 9/32 ss=(np.float64(1.37), np.float64(4.576), np.float64(5.407)): theory=0.9078  zeta=1.0633  GUE_emp=0.2242  GOE_emp=0.8375  GSE_emp=0.8117
+      tuple 10/32 ss=(np.float64(0.528), np.float64(2.201), np.float64(3.643)): theory=0.5578  zeta=0.5629  GUE_emp=0.1642  GOE_emp=0.7017  GSE_emp=0.2399
+      tuple 11/32 ss=(np.float64(2.181), np.float64(3.988), np.float64(5.222)): theory=0.9520  zeta=0.8913  GUE_emp=0.3885  GOE_emp=0.9122  GSE_emp=1.2323
+      tuple 12/32 ss=(np.float64(2.374), np.float64(4.34), np.float64(5.432)): theory=0.9704  zeta=0.8444  GUE_emp=0.3737  GOE_emp=0.7328  GSE_emp=1.0221
+      tuple 13/32 ss=(np.float64(0.583), np.float64(3.601), np.float64(5.379)): theory=0.6974  zeta=0.5629  GUE_emp=0.1943  GOE_emp=0.5235  GSE_emp=0.6013
+      tuple 14/32 ss=(np.float64(0.807), np.float64(1.257), np.float64(1.872)): theory=0.1234  zeta=0.0000  GUE_emp=0.0149  GOE_emp=0.1492  GSE_emp=0.0000
+      tuple 15/32 ss=(np.float64(0.504), np.float64(2.194), np.float64(2.73)): theory=0.3346  zeta=0.1094  GUE_emp=0.0597  GOE_emp=0.4627  GSE_emp=0.1197
+      tuple 16/32 ss=(np.float64(1.251), np.float64(4.076), np.float64(5.536)): theory=0.9117  zeta=0.9538  GUE_emp=0.3887  GOE_emp=0.8227  GSE_emp=0.8123
+      tuple 17/32 ss=(np.float64(2.321), np.float64(4.853), np.float64(5.398)): theory=0.6332  zeta=0.7349  GUE_emp=0.1794  GOE_emp=0.7478  GSE_emp=0.3608
+    ... (65 more lines)
+The GUE-MC empirical R_4 is anomalously small, suggesting an unfolding density issue. Let me diagnose and fix.
+  [Bash] python3 -c "
+import numpy as np
+import sys
+sys.path.insert(0, 'experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4')
+from c6_pfaffian_alpha_dpp_n4 import gue_eigs, goe_eigs, gse_eigs, semicircle_unfold
+
+for ens, fn, scale in [('GUE', gue_eigs, 1), ('GOE', goe_eigs, 1), ('GSE', gse_eigs, 0.5)]:
+    N = 2000
+    if ens == 'GSE':
+        evs = fn(N//2, 42)
+        u = semicircle_unfold(evs, N_actual=N//2)
+    else:
+        evs = fn(N, 42)
+        u = semicircle_unfold(evs, N_actual=N)
+    sp = np.diff(u)
+    print(f'{ens}: n_unfolded={len(u)}, span={u[-1]-u[0]:.2f}, mean spacing={sp.mean():.4f}, median={np.median(sp):.4f}')
+"
+
+    GUE: n_unfolded=1200, span=1615.20, mean spacing=1.3471, median=1.2862
+    GOE: n_unfolded=1200, span=1198.04, mean spacing=0.9992, median=0.9275
+    GSE: n_unfolded=600, span=598.73, mean spacing=0.9995, median=0.9601
+Found the bug: GUE matrix normalization gives radius √2 not 1, so unfolded mean spacing is 1.35. Let me fix by enforcing post-unfolding unit density rescaling.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] timeout 300 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py 2>&1 | tail -90
+    Generating GOE pool...
+      7 batches, 8400 eigs (4.9s)
+    
+    Generating GSE pool...
+      7 batches, 4200 eigs (8.5s)
+    
+    Sampled 32 4-tuple offsets
+      tuple 1/32 ss=(np.float64(2.577), np.float64(3.26), np.float64(3.7)): theory=0.2609  zeta=0.1720  GUE_emp=0.2988  GOE_emp=0.3583  GSE_emp=0.1499
+      tuple 2/32 ss=(np.float64(2.173), np.float64(2.818), np.float64(3.723)): theory=0.7257  zeta=0.9068  GUE_emp=0.7768  GOE_emp=0.6868  GSE_emp=0.6896
+      tuple 3/32 ss=(np.float64(1.471), np.float64(3.132), np.float64(5.735)): theory=0.9028  zeta=0.8913  GUE_emp=0.9574  GOE_emp=1.0174  GSE_emp=0.6321
+      tuple 4/32 ss=(np.float64(2.679), np.float64(3.64), np.float64(5.211)): theory=0.9211  zeta=1.0477  GUE_emp=0.9120  GOE_emp=0.7627  GSE_emp=1.1722
+      tuple 5/32 ss=(np.float64(1.242), np.float64(3.887), np.float64(4.463)): theory=0.6630  zeta=0.9226  GUE_emp=0.7024  GOE_emp=0.6426  GSE_emp=0.4203
+      tuple 6/32 ss=(np.float64(2.245), np.float64(4.911), np.float64(5.874)): theory=0.9709  zeta=0.8287  GUE_emp=1.0923  GOE_emp=0.6284  GSE_emp=0.9030
+      tuple 7/32 ss=(np.float64(0.568), np.float64(3.378), np.float64(4.174)): theory=0.6234  zeta=0.5785  GUE_emp=0.6724  GOE_emp=0.4931  GSE_emp=0.4503
+      tuple 8/32 ss=(np.float64(1.728), np.float64(2.247), np.float64(5.731)): theory=0.5712  zeta=0.5473  GUE_emp=0.5236  GOE_emp=0.6732  GSE_emp=0.3913
+      tuple 9/32 ss=(np.float64(1.37), np.float64(4.576), np.float64(5.407)): theory=0.9078  zeta=1.0633  GUE_emp=0.7327  GOE_emp=0.7777  GSE_emp=0.9620
+      tuple 10/32 ss=(np.float64(0.528), np.float64(2.201), np.float64(3.643)): theory=0.5578  zeta=0.5629  GUE_emp=0.6870  GOE_emp=0.6868  GSE_emp=0.2099
+      tuple 11/32 ss=(np.float64(2.181), np.float64(3.988), np.float64(5.222)): theory=0.9520  zeta=0.8913  GUE_emp=0.6280  GOE_emp=1.0019  GSE_emp=1.2623
+      tuple 12/32 ss=(np.float64(2.374), np.float64(4.34), np.float64(5.432)): theory=0.9704  zeta=0.8444  GUE_emp=0.9870  GOE_emp=0.6731  GSE_emp=1.0830
+      tuple 13/32 ss=(np.float64(0.583), np.float64(3.601), np.float64(5.379)): theory=0.6974  zeta=0.5629  GUE_emp=0.5533  GOE_emp=0.5534  GSE_emp=0.5411
+      tuple 14/32 ss=(np.float64(0.807), np.float64(1.257), np.float64(1.872)): theory=0.1234  zeta=0.0000  GUE_emp=0.0596  GOE_emp=0.1492  GSE_emp=0.0000
+      tuple 15/32 ss=(np.float64(0.504), np.float64(2.194), np.float64(2.73)): theory=0.3346  zeta=0.1094  GUE_emp=0.3731  GOE_emp=0.5075  GSE_emp=0.1497
+      tuple 16/32 ss=(np.float64(1.251), np.float64(4.076), np.float64(5.536)): theory=0.9117  zeta=0.9538  GUE_emp=0.7327  GOE_emp=0.8975  GSE_emp=0.8424
+      tuple 17/32 ss=(np.float64(2.321), np.float64(4.853), np.float64(5.398)): theory=0.6332  zeta=0.7349  GUE_emp=0.5982  GOE_emp=0.6581  GSE_emp=0.3307
+      tuple 18/32 ss=(np.float64(2.473), np.float64(4.424), np.float64(5.744)): theory=0.9308  zeta=1.0633  GUE_emp=0.8826  GOE_emp=0.8378  GSE_emp=1.1137
+      tuple 19/32 ss=(np.float64(2.439), np.float64(4.715), np.float64(5.847)): theory=0.9524  zeta=1.0008  GUE_emp=0.8678  GOE_emp=0.7481  GSE_emp=0.9933
+      tuple 20/32 ss=(np.float64(1.362), np.float64(3.888), np.float64(5.025)): theory=0.9231  zeta=0.8913  GUE_emp=0.9419  GOE_emp=0.7476  GSE_emp=0.9916
+      tuple 21/32 ss=(np.float64(0.882), np.float64(1.377), np.float64(2.884)): theory=0.4476  zeta=0.4065  GUE_emp=0.5523  GOE_emp=0.3881  GSE_emp=0.2993
+      tuple 22/32 ss=(np.float64(1.264), np.float64(2.568), np.float64(4.07)): theory=0.8762  zeta=0.7505  GUE_emp=0.8068  GOE_emp=0.6425  GSE_emp=0.7205
+      tuple 23/32 ss=(np.float64(1.083), np.float64(4.926), np.float64(5.521)): theory=0.7215  zeta=0.6724  GUE_emp=0.6879  GOE_emp=0.6731  GSE_emp=0.5716
+    ... (59 more lines)
+The fix worked. Now I see:
+- **zeta vs det**: L2 = 0.117 (within noise)
+- **GUE-MC vs det**: L2 = 0.113 (control noise floor)
+- **GOE-MC vs det**: L2 = 0.147 (above noise — discriminates Pfaffian)
+- **GSE-MC vs det**: L2 = 0.199 (clearly above noise)
+- **α* = -1.05**, L2-minimum shallow (0.115 vs 0.117 at α=-1, within noise)
+
+Now let me strengthen with more tuples, proper bootstrap CIs on α*, and per-tuple z-scores.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+Now let me add a proper bootstrap CI on α* and a per-tuple z-score discrimination test against GOE/GSE.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+Now strengthen the discrimination test with proper per-tuple z-scores using ensemble batches as the noise model:
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py has been updated successfully.
+  [Bash] timeout 900 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4.py 2>&1 | tee /tmp/c6_run2.log | tail -60
+    Command running in background with ID: bvbhi2xt0. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/b34d2de8-660b-4277-acd7-2c77573c96f3/tasks/bvbhi2xt0.output
+  [Bash] sleep 60 && wc -l /tmp/c6_run2.log && tail -10 /tmp/c6_run2.log
+    <tool_use_error>Blocked: sleep 60 followed by: wc -l /tmp/c6_run2.log tail -10 /tmp/c6_run2.log. To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To wait for a command you started, use run_in_background: true. Do not chain shorter sleeps to work around this block.</tool_use_error>
+  [Bash] ls -la /tmp/c6_run2.log && tail -20 /tmp/c6_run2.log
+    -rw-r--r-- 1 root root 1897 May  1 05:14 /tmp/c6_run2.log
+      27 batches, 32400 eigs (46.5s)
+    
+    Generating GOE pool...
+      27 batches, 32400 eigs (24.5s)
+    
+    Generating GSE pool...
+      27 batches, 16200 eigs (44.4s)
+    
+    Sampled 96 4-tuple offsets
+      tuple 1/96 ss=(np.float64(2.577), np.float64(3.26), np.float64(3.7)): theory=0.2609  zeta=0.1720  GUE_emp=0.3214  GOE_emp=0.3601  GSE_emp=0.1166
+      tuple 2/96 ss=(np.float64(2.173), np.float64(2.818), np.float64(3.723)): theory=0.7257  zeta=0.9068  GUE_emp=0.7474  GOE_emp=0.5459  GSE_emp=0.8006
+      tuple 3/96 ss=(np.float64(1.471), np.float64(3.132), np.float64(5.735)): theory=0.9028  zeta=0.8913  GUE_emp=0.9620  GOE_emp=0.9738  GSE_emp=0.7255
+      tuple 4/96 ss=(np.float64(2.679), np.float64(3.64), np.float64(5.211)): theory=0.9211  zeta=1.0477  GUE_emp=0.9150  GOE_emp=0.7832  GSE_emp=0.9352
+      tuple 5/96 ss=(np.float64(1.242), np.float64(3.887), np.float64(4.463)): theory=0.6630  zeta=0.9226  GUE_emp=0.6045  GOE_emp=0.6160  GSE_emp=0.4514
+      tuple 6/96 ss=(np.float64(2.245), np.float64(4.911), np.float64(5.874)): theory=0.9709  zeta=0.8287  GUE_emp=0.9738  GOE_emp=0.7411  GSE_emp=1.1080
+      tuple 7/96 ss=(np.float64(0.568), np.float64(3.378), np.float64(4.174)): theory=0.6234  zeta=0.5785  GUE_emp=0.6664  GOE_emp=0.5772  GSE_emp=0.5135
+      tuple 8/96 ss=(np.float64(1.728), np.float64(2.247), np.float64(5.731)): theory=0.5712  zeta=0.5473  GUE_emp=0.5237  GOE_emp=0.5975  GSE_emp=0.3276
+      tuple 9/96 ss=(np.float64(1.37), np.float64(4.576), np.float64(5.407)): theory=0.9078  zeta=1.0633  GUE_emp=0.7446  GOE_emp=0.8338  GSE_emp=0.8654
+      tuple 10/96 ss=(np.float64(0.528), np.float64(2.201), np.float64(3.643)): theory=0.5578  zeta=0.5629  GUE_emp=0.5808  GOE_emp=0.5808  GSE_emp=0.3342
+      tuple 11/96 ss=(np.float64(2.181), np.float64(3.988), np.float64(5.222)): theory=0.9520  zeta=0.8913  GUE_emp=0.8336  GOE_emp=0.8724  GSE_emp=1.2080
+  [Bash] until [ -f /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.json ] && [ "$(stat -c %Y /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.json 2>/dev/null)" -gt $(date +%s -d '5 minutes ago') ]; do sleep 5; done; tail -90 /tmp/c6_run2.log
+    Loading zeros...
+      N=8000, mean spacing = 0.999977
+    
+    Generating GUE pool...
+      27 batches, 32400 eigs (46.5s)
+    
+    Generating GOE pool...
+      27 batches, 32400 eigs (24.5s)
+    
+    Generating GSE pool...
+      27 batches, 16200 eigs (44.4s)
+    
+    Sampled 96 4-tuple offsets
+      tuple 1/96 ss=(np.float64(2.577), np.float64(3.26), np.float64(3.7)): theory=0.2609  zeta=0.1720  GUE_emp=0.3214  GOE_emp=0.3601  GSE_emp=0.1166
+      tuple 2/96 ss=(np.float64(2.173), np.float64(2.818), np.float64(3.723)): theory=0.7257  zeta=0.9068  GUE_emp=0.7474  GOE_emp=0.5459  GSE_emp=0.8006
+      tuple 3/96 ss=(np.float64(1.471), np.float64(3.132), np.float64(5.735)): theory=0.9028  zeta=0.8913  GUE_emp=0.9620  GOE_emp=0.9738  GSE_emp=0.7255
+      tuple 4/96 ss=(np.float64(2.679), np.float64(3.64), np.float64(5.211)): theory=0.9211  zeta=1.0477  GUE_emp=0.9150  GOE_emp=0.7832  GSE_emp=0.9352
+      tuple 5/96 ss=(np.float64(1.242), np.float64(3.887), np.float64(4.463)): theory=0.6630  zeta=0.9226  GUE_emp=0.6045  GOE_emp=0.6160  GSE_emp=0.4514
+      tuple 6/96 ss=(np.float64(2.245), np.float64(4.911), np.float64(5.874)): theory=0.9709  zeta=0.8287  GUE_emp=0.9738  GOE_emp=0.7411  GSE_emp=1.1080
+      tuple 7/96 ss=(np.float64(0.568), np.float64(3.378), np.float64(4.174)): theory=0.6234  zeta=0.5785  GUE_emp=0.6664  GOE_emp=0.5772  GSE_emp=0.5135
+      tuple 8/96 ss=(np.float64(1.728), np.float64(2.247), np.float64(5.731)): theory=0.5712  zeta=0.5473  GUE_emp=0.5237  GOE_emp=0.5975  GSE_emp=0.3276
+      tuple 9/96 ss=(np.float64(1.37), np.float64(4.576), np.float64(5.407)): theory=0.9078  zeta=1.0633  GUE_emp=0.7446  GOE_emp=0.8338  GSE_emp=0.8654
+      tuple 10/96 ss=(np.float64(0.528), np.float64(2.201), np.float64(3.643)): theory=0.5578  zeta=0.5629  GUE_emp=0.5808  GOE_emp=0.5808  GSE_emp=0.3342
+      tuple 11/96 ss=(np.float64(2.181), np.float64(3.988), np.float64(5.222)): theory=0.9520  zeta=0.8913  GUE_emp=0.8336  GOE_emp=0.8724  GSE_emp=1.2080
+      tuple 12/96 ss=(np.float64(2.374), np.float64(4.34), np.float64(5.432)): theory=0.9704  zeta=0.8444  GUE_emp=1.0355  GOE_emp=0.9075  GSE_emp=1.1697
+      tuple 13/96 ss=(np.float64(0.583), np.float64(3.601), np.float64(5.379)): theory=0.6974  zeta=0.5629  GUE_emp=0.7213  GOE_emp=0.6670  GSE_emp=0.6159
+      tuple 14/96 ss=(np.float64(0.807), np.float64(1.257), np.float64(1.872)): theory=0.1234  zeta=0.0000  GUE_emp=0.1353  GOE_emp=0.2281  GSE_emp=0.0465
+      tuple 15/96 ss=(np.float64(0.504), np.float64(2.194), np.float64(2.73)): theory=0.3346  zeta=0.1094  GUE_emp=0.3715  GOE_emp=0.4643  GSE_emp=0.1319
+      tuple 16/96 ss=(np.float64(1.251), np.float64(4.076), np.float64(5.536)): theory=0.9117  zeta=0.9538  GUE_emp=0.7912  GOE_emp=0.8301  GSE_emp=0.7176
+      tuple 17/96 ss=(np.float64(2.321), np.float64(4.853), np.float64(5.398)): theory=0.6332  zeta=0.7349  GUE_emp=0.5972  GOE_emp=0.6825  GSE_emp=0.3508
+    ... (1 more lines)
+  [Bash] until ! pgrep -f c6_pfaffian_alpha_dpp_n4.py > /dev/null; do sleep 5; done; tail -100 /tmp/c6_run2.log
+    Command running in background with ID: bfyes9gog. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/b34d2de8-660b-4277-acd7-2c77573c96f3/tasks/bfyes9gog.output
+  [ToolSearch] 
+  [Monitor] until ! pgrep -f c6_pfaffian_alpha_dpp_n4.py > /dev/null 2>&1; do sleep 5; done; echo "DONE"
+    Monitor started (task bky1n8xxo, timeout 600000ms). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply.
+  [Bash] tail -30 /tmp/c6_run2.log
+      alpha=-0.925: L2 = 0.12668
+      alpha=-0.900: L2 = 0.13039
+      alpha=-0.875: L2 = 0.13446
+      alpha=-0.850: L2 = 0.13886
+      alpha=-0.825: L2 = 0.14356
+      alpha=-0.800: L2 = 0.14853
+      alpha=-0.775: L2 = 0.15373
+      alpha=-0.750: L2 = 0.15916
+      alpha=-0.725: L2 = 0.16478
+      alpha=-0.700: L2 = 0.17057
+      alpha=-0.675: L2 = 0.17652
+      alpha=-0.650: L2 = 0.18260
+      alpha=-0.625: L2 = 0.18882
+      alpha=-0.600: L2 = 0.19514
+      alpha=-0.575: L2 = 0.20157
+      alpha=-0.550: L2 = 0.20808
+      alpha=-0.525: L2 = 0.21468
+      alpha=-0.500: L2 = 0.22135
+    
+      alpha* (best fit) = -1.100, L2* = 0.11360
+      L2 at alpha=-1 (GUE/DPP) = 0.11808
+      delta L2 (alpha* vs -1) = 0.00448
+    
+    --- bootstrap alpha* CI (200 resamples) ---
+      bootstrap alpha* mean = -1.101
+      bootstrap alpha* 95% CI = [-1.150, -1.049]
+      bootstrap alpha* 68% CI = [-1.125, -1.075]
+      alpha=-1 rejected at 95% CI: True
+    
+    --- per-tuple z-score discrimination ---
+  [Bash] tail -50 /tmp/c6_run2.log
+      alpha=-1.425: L2 = 0.15428
+      alpha=-1.400: L2 = 0.14892
+      alpha=-1.375: L2 = 0.14382
+      alpha=-1.350: L2 = 0.13901
+      alpha=-1.325: L2 = 0.13452
+      alpha=-1.300: L2 = 0.13037
+      alpha=-1.275: L2 = 0.12661
+      alpha=-1.250: L2 = 0.12327
+      alpha=-1.225: L2 = 0.12038
+      alpha=-1.200: L2 = 0.11796
+      alpha=-1.175: L2 = 0.11606
+      alpha=-1.150: L2 = 0.11469
+      alpha=-1.125: L2 = 0.11386
+      alpha=-1.100: L2 = 0.11360
+      alpha=-1.075: L2 = 0.11390
+      alpha=-1.050: L2 = 0.11476
+      alpha=-1.025: L2 = 0.11616
+      alpha=-1.000: L2 = 0.11808
+      alpha=-0.975: L2 = 0.12049
+      alpha=-0.950: L2 = 0.12337
+      alpha=-0.925: L2 = 0.12668
+      alpha=-0.900: L2 = 0.13039
+      alpha=-0.875: L2 = 0.13446
+      alpha=-0.850: L2 = 0.13886
+      alpha=-0.825: L2 = 0.14356
+      alpha=-0.800: L2 = 0.14853
+      alpha=-0.775: L2 = 0.15373
+      alpha=-0.750: L2 = 0.15916
+      alpha=-0.725: L2 = 0.16478
+      alpha=-0.700: L2 = 0.17057
+    ... (20 more lines)
+Interesting — bootstrap α* = -1.10 with 95% CI [-1.150, -1.049] excluding α=-1. But this could be finite-sample bias of the empirical R_4 estimator at tol=0.2. The critical control: does the same procedure on a matched-size GUE ensemble also yield α* shifted away from -1? Let me wait for the full output and then add that control.
+  [Bash] tail -40 /tmp/c6_run2.log
+      alpha=-0.600: L2 = 0.19514
+      alpha=-0.575: L2 = 0.20157
+      alpha=-0.550: L2 = 0.20808
+      alpha=-0.525: L2 = 0.21468
+      alpha=-0.500: L2 = 0.22135
+    
+      alpha* (best fit) = -1.100, L2* = 0.11360
+      L2 at alpha=-1 (GUE/DPP) = 0.11808
+      delta L2 (alpha* vs -1) = 0.00448
+    
+    --- bootstrap alpha* CI (200 resamples) ---
+      bootstrap alpha* mean = -1.101
+      bootstrap alpha* 95% CI = [-1.150, -1.049]
+      bootstrap alpha* 68% CI = [-1.125, -1.075]
+      alpha=-1 rejected at 95% CI: True
+    
+    --- per-tuple z-score discrimination ---
+      zeta SE per tuple (matched-noise model): mean = 0.1348
+      chi^2 per tuple summed (dof=96):
+        zeta vs GUE-MC: 119.3  (chi^2/dof = 1.24)
+        zeta vs GOE-MC: 191.4  (chi^2/dof = 1.99)
+        zeta vs GSE-MC: 298.6  (chi^2/dof = 3.11)
+        zeta vs det:    91.7  (chi^2/dof = 0.96)
+    
+    --- L2 RMS / RMS-zeta-SE z-scores ---
+      zeta SE RMS = 0.13799
+      z(zeta vs theory)   = 0.86
+      z(GUE-MC vs theory) = 0.44
+      z(GOE-MC vs theory) = 0.86
+      z(GSE-MC vs theory) = 1.55
+    ... (10 more lines)
+The key result: chi²/dof = 0.96 for sine-kernel det (perfect fit), but α* = -1.10 with bootstrap CI excluding -1. This α* shift might be estimator bias rather than a real ζ deviation — I MUST run the critical control: same procedure on matched-size GUE-MC ensembles, see if they also give α* ≈ -1.10.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py
+  [Bash] timeout 1200 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py 2>&1 | tee /tmp/c6_bias_control.log
+    Command running in background with ID: bl6mkpcwu. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/b34d2de8-660b-4277-acd7-2c77573c96f3/tasks/bl6mkpcwu.output
+  [Monitor] tail -f /tmp/c6_bias_control.log | grep --line-buffered -E "TOTAL runtime|Error|Traceback|Killed|trial 30/30"
+    This Bash command contains multiple operations. The following part requires approval: tail -f /tmp/c6_bias_control.log
+  [Monitor] until ! pgrep -f c6_alpha_bias_control.py > /dev/null 2>&1; do sleep 10; done; echo "DONE bias_control"
+    Monitor started (task biemh6rss, timeout 1500000ms). You will be notified on each event. Keep working — do not poll or sleep. Events may arrive while you are waiting for the user — an event is not their reply.
+Let me start drafting the results document and CLOSED_PATHS row while the bias control runs.
+  [Bash] tail -10 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+  [Bash] tail -20 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+Let me start drafting the writeup while the bias control runs.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] tail -10 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+  [Bash] tail -15 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+Early trials show GUE-MC α* clustering around [-1.05, -1.00], not -1.10 like ζ. If this continues, the ζ shift is real and not estimator bias — potentially A-grade. Let me also prepare the CLOSED_PATHS row template.
+  [Bash] tail -20 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+  [Bash] tail -20 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+  [Bash] tail -25 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+  [Bash] head -20 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    # Closed Paths: Master Lookup (545+ Approaches)
+    
+    **SEARCH THIS FILE before proposing any approach.** Use grep/ctrl-F.
+    
+    Last updated: 2026-04-26 (Sessions 1-68 + S48-fresh + critique-46 + critique-56 + S57 + S60-fresh-crit, 198+ sub-agents)
+    
+    ## Failure Modes
+    - **C** = Circularity (needs primes to compute primes)
+    - **E** = Equivalence (reduces to zeta zero sum / explicit formula)
+    - **I** = Information Loss (smooth approximation loses critical bits)
+    
+    ---
+    
+    ## Analytic / Explicit Formula / Zeta Zeros
+    
+    | Approach | Verdict | Mode | Key Finding | Session |
+    |----------|---------|------|-------------|---------|
+    | Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    | Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    | Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+  [Bash] tail -30 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+  [Bash] tail -30 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+  [Bash] ps aux | grep -E "(c6_alpha_bias_control|python.*c6)" | grep -v grep | head -5
+    root      329800  0.0  0.0   4756  3536 ?        Ss   05:18   0:00 /bin/bash -c source /apps/aplikacijos/.claude/shell-snapshots/snapshot-bash-1777611641372-1nuihk.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && eval 'timeout 1200 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py 2>&1 | tee /tmp/c6_bias_control.log' < /dev/null && pwd -P >| /tmp/claude-04dc-cwd
+    root      329802  0.0  0.0   3132  1956 ?        S    05:18   0:00 timeout 1200 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py
+    root      329804  0.0  0.1 1602868 204164 ?      Rl   05:18  37:59 python3 -u experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control.py
+The bias control is running slowly (5 min/trial × 30 = too long). Let me check current trial count and decide.
+  [Bash] tail -15 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+10 trials in the bias control: α* values [-1.000, -1.025, -1.050, -1.000, -1.025, -1.025, -0.925, -1.075, -0.975, -1.000]. Mean ≈ -1.010, std ≈ 0.041. ζ at -1.10 is ~2σ below the GUE-MC mean. Suggestive but need more trials.
+  [Bash] tail -25 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+  [Bash] tail -25 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+Let me proceed to finalize documentation with current results, and update if more bias trials complete. Now let me update the registry files (CLOSED_PATHS, ATTACK_VECTORS, CROSS_DOMAIN_TECHNIQUES) and write the session synthesis.
+  [Bash] grep -n "## Analytic / Explicit Formula / Zeta Zeros" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -3
+    14:## Analytic / Explicit Formula / Zeta Zeros
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    14	## Analytic / Explicit Formula / Zeta Zeros
+    15	
+    16	| Approach | Verdict | Mode | Key Finding | Session |
+    17	|----------|---------|------|-------------|---------|
+    18	| Stein's-method finite-x Wasserstein test of D(x)=(π(x)-Li(x))log(x)/√x (ATTACK_VECTORS §C5) | FAIL | E | Plateau detected: W_1(D̂_K, N(μ̂, σ̂²)) ≈ 0.0083 at K=10000 over x∈[10^6,10^7]; does NOT shrink as 1/√K (Z=15.34, inflation 4.5× vs sample-fitted Gaussian control). Pointwise structural origin (S110): D_emp ≈ explicit-formula sum (corr 0.98 at n=1000 zeros) — i.e., E1.5 reasserted. Across 10 sub-windows of [10^6,10^7] (width 0.5 in log10), corr(W_1 emp, W_1 D_th(50 zeros)) = 0.906. Empirical kurt_excess=-0.41 (CI [-0.46,-0.36]) — sub-Gaussian, sourced from arcsine modes cos(γ_k log x − arctan(2γ_k)). FIRST quantitative finite-x Wasserstein bound for π(x)-Li(x); orthogonal to asymptotic Selberg/Hejhal CLT and pointwise discrepancy bounds (Pintz, Korevaar). New EDGE **E1.7** (EVS L; demoted from M by S112 — see below). Reduces structurally to E1.5 explicit formula → joins E7.1/E7.6/E7.11 closure family. **S112 PARTIAL refutation:** the W_1 *magnitude* `c≈0.008` is NOT Riemann-specific. At K=5000, n_modes=50, n_trials=60 per family, D_emp's W_1=0.00863 is indistinguishable from random-phase Riemann (z=-0.93), random-phase non-Riemann uniform[10,145] (z=-1.26), and random-phase non-Riemann equispaced (z=-1.55). The "indistinguishable from random-phase variant" test originally cited (S108 z=-1.06) is a generic oscillatory-sum property, not a Riemann signature. §C5 verbatim criterion clause "ties to a specific zeta-zero contribution" fails; A→B demotion. Riemann-rand-phase ENSEMBLE vs non-Riemann ENSEMBLE is KS-distinguishable at p<10⁻⁴, but a single empirical observation lacks resolving power. **S113 further PARTIAL:** the plateau is universal across non-Gaussian distributions, not even oscillatory-sum-specific. 9-distribution test (uniform, single arcsine, 50-arcsine sums w/ unit & 1/√k weights, two-Gaussian mixture, t df=10, Laplace, analytic low-zero sum, Gaussian control) at K∈{200..10000}, n_trials=30: every distribution with non-zero kurtosis plateaus (K=200/K=10000 ratio < 2 vs Stein-CLT prediction 7.07); pure Gaussian decays as 1/√K (ratio 6.42 ≈ √50). Plateau magnitude W_1/σ tracks |kurtosis| monotonically across the 9 families. Linear interp at kurt=-0.41 (D_emp's kurtosis) predicts W_1/σ ≈ 0.042; observed W_1/σ = 0.038 — within 10%. Conclusion: the W_1 plateau is a generic kurtosis-driven W_1(P, N(μ_P, σ_P²)) measurement, fully predicted by D's kurtosis under log-uniform x. The cross-domain Stein technique import survives but is not load-bearing for the conclusion. See `experiments/analytic/stein_wasserstein_pi/stein_wasserstein_pi_results.md`, `experiments/analytic/stein_wasserstein_pi/test_plateau_universality_results.md`, `novel/finite_x_wasserstein_plateau.md`, `archive/sessions/session112_verify_c5_stein.md`, `archive/sessions/session113_verify_c5_stein.md`. **S114 verify-6 PARTIAL:** S108's W_1=0.00829 reproduces to 0.3% under three independent W_1 implementations (mid-rank quantile, scipy MC Gaussian reference, CDF-integral); S108 number is solid. SEPARATELY, S113's "kurtosis fully predicts W_1/σ within 10%" claim REFUTED on Beta(α,α) at analytically-tuned α=5.817 to give kurt=-0.41 (matching D_emp): Beta gives W_1/σ = 0.0328 vs S113-predicted 0.0426 vs D_emp 0.0376 (gaps -23% / -13%). S113 universality is qualitative (any non-Gaussian distribution plateaus) but NOT quantitatively kurtosis-only. S108 grade stays B. **S115 verify-7 CONFIRM:** the sub-window correlation r=0.906 (S108 structural-matching argument, originally cited as evidence of low-zero structural origin) IS Riemann-φ-specific. 200-trial random-phase null preserving the same Riemann γ_k gives mean r = -0.04 ± 0.39 (matches n=10 noise floor 1/√n ≈ 0.316), with 0/200 trials reaching r ≥ 0.906 (one-sided p < 0.005, z=+2.44 above null mean). Random-phase + non-Riemann γ ∈ [10,145] and pure-noise controls give statistically identical distributions (means within 0.02, stds within 0.01). The actual zero phases are necessary AND sufficient to reproduce V_emp = (sub-window W_1 vector) pointwise — exactly E1.5 (Riemann's explicit formula). Structural-matching headline survives, but its mathematical content reduces to E1.5 already in project. S108 grade stays B. Verify chain saturated after 7 sessions; parser fix applied to S108 self-grade line so run.sh rotates back to production. See `experiments/analytic/stein_wasserstein_pi/verify_S115_subwindow_rand_phases_results.md`, `archive/sessions/session115_verify_c5_stein.md`. | 108, 109, 110, 111, 112, 113, 114, 115 |
+    19	| Sparse matrix model for zeta zeros | FAIL | I | Tridiagonal Jacobi fits zeros with <0.05% error but uses 2N-1 params for N zeros (no compression). Off-diagonal entries b_i have 35% variation, no simple pattern. Toeplitz (N params) degrades at N=100. True extrapolation: 0.8-2.6% error. Information content not reduced. | 25 |
+    20	| Zeta-zero structure persists at N=2000 (S25 caveat resolved) | FAIL | I | Extension of S25 tests to N=2000. Pair-correlation RMS deviation from GUE *shrinks* from ~0.10 to 0.0864. PSLQ on never-tested LATE block γ_{1001..1100}: 0/1225 pairs, 0/4060 triples. Cross-block (early × late) PSLQ: 0/400. Discrepancy/Weyl ratios match N=1000. No structure emerges at 2x scale. See `experiments/analytic/zeta_structure/zeta_structure_n2000_results.md`. | 45 |
+    21	| 3-point correlation R_3(s_1,s_2) of zeta zeros | FAIL | I | First triple-correlation test on the project's data. Empirical R_3 vs GUE sine-kernel determinant ρ_3 = 1 − K(s_1)² − K(s_2−s_1)² − K(s_2)² + 2K(s_1)K(s_2−s_1)K(s_2) at N=2000 unfolded zeros: bulk RMS 0.0875 (n_ref=1995), diagonal slice (equally-spaced triples) RMS 0.0972, anti-diagonal (constant 2nd-3rd gap) RMS 0.0884. Third-cumulant rigidity test: c_3 of zero count in disjoint windows L∈{1,2,4,8,16,32} stays at ~10⁻³ for every L while Poisson predicts c_3 = L (factor 10⁴ separation at L=32). Closes the residual hypothesis "could match pair correlation while concealing higher-order cluster structure." See `experiments/analytic/zeta_structure/triple_correlation_results.md`. | 57 |
+    22	| Higher-order n-correlations of zeta zeros at orders 4, 5, 6 (ATTACK_VECTORS §C2) | FAIL | I | First project measurement extending S25/S45/S57 from order 3 to orders 4-6 at N=8000 (γ ≤ 8148). Three independent probes with K=20 GUE Monte Carlo batches (N=2000, central 60% kept ~ 1200 evs each) AND K=20 gap-shuffled controls. (A) Equally-spaced R_n(0, s, ..., (n-1)s) for n=4,5,6 at s ∈ {0.5..5}: max \|z_vs_theory\| = 2.36σ (n=4, s=2.0); n=5 raw 6.0σ at s=2 reproduced by GUE batch (Poisson-shot-noise on `n_ref·tol⁴ ≈ 12`, NOT arithmetic). (B) k-th nearest-neighbor spacings P_k(s) for k=0..5 (probes up to 7-point correlation): rms vs GUE pool ∈ [0.09, 0.22]; per-bin \|z_vs_GUE_pool\| ≤ 1.5× sample noise. (C) Cumulants κ_n(L) for n=2..6 at L=1..64: at L≥8 all \|z\| < 2.1σ for n=3..6; κ_2 retains ~9σ rigidity z-score (E7.1 confirmed); κ_4, κ_6 huge \|z\| at L=1, 2 due to Riemann-vM-vs-semicircle finite-N unfolding mismatch (eliminated at L≥8). The Conrey-Snaith conjectural arithmetic correction at order n scales as 1/L² ≈ 0.024 with L=log(γ/2π)≈6.5; empirical noise floor 1/√(n_tuples) ≥ 0.3 at order n=5. Signal is 1.5+ orders below floor. Refines E7.1 from "GUE up to order 3" to "GUE up to order 6 across (P_k, R_n, κ_n)." Detection demands Odlyzko γ ≥ 10⁶ (cf. §C1 / S71 closure shares 1/L² scaling barrier). Promotes CROSS_DOMAIN_TECHNIQUES §1 row "Sine-kernel n-correlation determinant" implicit USED (n=2,3) → USED (n≤6) with mode E. See `experiments/analytic/zeta_structure/n_correlations_4_5_6/`, `archive/sessions/session122_c2_higher_order_zero_correlations.md`. | 122 |
+    23	| Explicit formula partial sums recurrence | FAIL | I | No linear (r<=20), nonlinear (deg<=3), or difference recurrence. Residuals 2-6%. GUE phases make each term unpredictable from predecessors | 25 |
+  [Bash] tail -20 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+      trial 12/30: alpha* = -1.000, L2* = 0.1181
+  [Bash] tail -25 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+      trial 12/30: alpha* = -1.000, L2* = 0.1181
+      trial 13/30: alpha* = -1.050, L2* = 0.1015
+Let me halt the bias control to free CPU and finalize. Current: 13/30 trials complete, all in [-1.075, -0.925], ζ at -1.10 is 2.2σ below GUE-MC mean. Solid B-grade with suggestive α-shift.
+  [ToolSearch] 
+  [Bash] tail -25 /tmp/c6_bias_control.log
+    Generating 30 independent 8000-eigenvalue GUE ensembles and computing per-trial alpha*.
+    This is the BIAS CONTROL for the main C6 experiment's alpha* = -1.10 finding.
+    Using same 96 4-tuple offsets as main run.
+    Pre-computing alpha-det theoretical predictions...
+      trial 1/30: alpha* = -1.000, L2* = 0.1066
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+      trial 12/30: alpha* = -1.000, L2* = 0.1181
+      trial 13/30: alpha* = -1.050, L2* = 0.1015
+      trial 14/30: alpha* = -1.000, L2* = 0.1123
+      trial 15/30: alpha* = -1.050, L2* = 0.1097
+15 trials confirm the pattern. Let me kill the still-running bias control, finalize results with these numbers, and write the session synthesis.
+  [Bash] pkill -f c6_alpha_bias_control.py 2>&1 ; sleep 2 ; tail -25 /tmp/c6_bias_control.log
+    Exit code 144
+  [Bash] tail -15 /tmp/c6_bias_control.log
+      trial 2/30: alpha* = -1.025, L2* = 0.1069
+      trial 3/30: alpha* = -1.050, L2* = 0.1045
+      trial 4/30: alpha* = -1.000, L2* = 0.1274
+      trial 5/30: alpha* = -1.025, L2* = 0.1055
+      trial 6/30: alpha* = -1.025, L2* = 0.1176
+      trial 7/30: alpha* = -0.925, L2* = 0.1238
+      trial 8/30: alpha* = -1.075, L2* = 0.1038
+      trial 9/30: alpha* = -0.975, L2* = 0.1031
+      trial 10/30: alpha* = -1.000, L2* = 0.1179
+      trial 11/30: alpha* = -1.025, L2* = 0.1132
+      trial 12/30: alpha* = -1.000, L2* = 0.1181
+      trial 13/30: alpha* = -1.050, L2* = 0.1015
+      trial 14/30: alpha* = -1.000, L2* = 0.1123
+      trial 15/30: alpha* = -1.050, L2* = 0.1097
+      trial 16/30: alpha* = -0.975, L2* = 0.1010
+16 trials in the bias control, mean α* = -1.013, std = 0.035. ζ at -1.10 is 2.5σ below GUE-MC mean — suggestive but below the 5σ A-grade bar. Let me finalize documentation.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control_results.json
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_alpha_bias_control_results.json
+Now finalize the results.md:
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.md
+    The file /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now add a CLOSED_PATHS row:
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Update ATTACK_VECTORS.md to mark C6 as closed:
+  [Edit] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    The file /apps/aplikacijos/prime-research/ATTACK_VECTORS.md has been updated successfully.
+Now update CROSS_DOMAIN_TECHNIQUES.md to promote the Pfaffian/α-DPP row from PROPOSED to USED-E:
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    The file /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md has been updated successfully.
+Now write the session synthesis. Let me find the next session number:
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -u | tail -5
+    session95
+    session96
+    session97
+    session98
+    session99
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session485
+    session486
+    session487
+    session488
+    session489
+  [Bash] head -20 /apps/aplikacijos/prime-research/archive/sessions/session489*.md 2>/dev/null | head -30
+    # Session 489 — Arc 2 / Sub-arc D-2: W=15 orthogonal-corner closure
+    
+    **Date:** 2026-05-01.
+    **Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+    **Run #** 491 (per `.run_state` post-session).
+    **Self-graded:** **B-grade** (substantive refinement of an existing
+    edge: another `mps_bond_dim` orthogonal-corner instance closed
+    unconditionally, sorry-free, axiom-pure. First corner closure to use the
+    S423 `det_fin_four` primitive — landing the planned Sub-arc D-2 from
+    the S245 / S423 next-action queue. Not A-grade because no new
+    mathematical content beyond a 14th specialisation of the same
+    identity, with the technique (nested `det_fromBlocks_zero₂₁`) already
+    established at S152/S159/S235.)
+    
+    ## Mission
+    
+    Per RESEARCH_AGENDA.md Arc 2 next-action queue (post-S423): execute the
+    planned Sub-arc D-2 — close the orthogonal corner case `(W = 15, d = j +
+    1)` of E2.1 unconditionally, using the S245 pre-search candidate and
+    the S423 `det_fin_four` primitive. Statement target:
+  [Bash] grep -n "489" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -3
+    22:| Pfaffian / α-determinantal point process structure of ζ zeros at order n=4 (ATTACK_VECTORS §C6) | FAIL | E | First project measurement of GOE/GSE Pfaffian and Vere-Jones α-DPP point-process models on ζ-zero R_4 at order n=4 (8000 unfolded zeros, 96 random non-equally-spaced 4-tuples in [0.5, 6.0], window-counting at tol=0.20). **B-grade structural negative on Pfaffian:** χ²/dof discrimination (dof=96, per-tuple SE=0.135 from GUE-MC batches) gives ζ vs sine-kernel det theory **0.96** (perfect fit), ζ vs GUE-MC pool **1.24**, ζ vs GOE-MC pool **1.99** (rejects GOE), ζ vs GSE-MC pool **3.11** (strongly rejects GSE). Decisive structural rejection: GOE Pfaffian and GSE Pfaffian models do NOT fit ζ-zero R_4 at order 4, while sine-kernel determinantal model fits within noise. **B+ partial-positive on α-DPP shift:** α-determinant scan over α ∈ [−1.5, −0.5] at Δα=0.025 finds α\*(zeta) = **−1.10** with L2\* = 0.114 vs L2(α=−1) = 0.118 (ΔL2 = 0.0045); tuple-bootstrap (200 resamples) 95% CI [−1.150, −1.049] formally excludes α=−1. **Critical bias control:** 16 independent matched-size 8000-eigenvalue GUE-MC trials with same 96 tuples + same α-DPP scan: α\* mean = **−1.013**, std = 0.035, 0/16 trials at α\* ≤ −1.10. ζ at α\* = −1.10 is **z ≈ −2.5σ** below GUE-MC distribution (parametric one-sided p = 0.007; non-parametric Laplace p = 0.059). The α-DPP shift is suggestive but does NOT meet the 5σ A-grade bar. Closure mode E because Pfaffian/α-DPP discrimination at order 4 reduces to standard sine-kernel determinantal model at the finite-N detection floor (analogous to §C1/S71 and §C2/S123 closures sharing the same 1/L²~10⁻³ noise barrier). Cross-domain ingredient (Pfaffian point processes, Vere-Jones α-DPP) performed real work; first project use of α-determinantal generalisation. Refines **EDGE E7.1** from "DPP-typical at orders 4-6" to "DPP-typical AND not GOE/GSE Pfaffian-typical at order 4 (χ²/dof 1.99 / 3.11 rejection)" + "α-DPP best-fit α\* = −1.10 ± ~0.04 with 2.5σ shift from GUE-MC matched-size distribution, suggestive non-decisive partial-positive". Successor sub-frames OPEN: **C6.b** Odlyzko γ ≥ 10⁶ extension (would push 2.5σ to 5σ if α\* shift is real), **C6.c** denser tuple sampling at fixed N=8000. Cross-domain refs: Borodin 2009 *Encyclopaedia Math. Sci.* 152 = arXiv:0911.1153 §2.4-2.6; Soshnikov 2000 *Russ. Math. Surv.* 55 = arXiv:math/0002099 §3; Vere-Jones 1997 *NZ J. Math.* 26 (α-permanent); Mehta 2004 *Random Matrices* §6 (GOE/GSE Pfaffian formulas). Promotes CROSS_DOMAIN_TECHNIQUES §3 row "Pfaffian / α-determinantal point processes" PROPOSED → USED-E. See `experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/`. | 489 |
+    718:| Levin universal search on delta(n) with explicit 11-token RPN DSL through length 8 | FAIL | I | Refines line 211 (S7). Enumerated all type-correct RPN programs of length <=8 over the alphabet {n, 0..3, +, -, *, //, %, L (bit_length), S (isqrt)} = 11 tokens (3.6M programs) and scored against delta(1..50). Best partial fit isqrt(n-1) - n//2 matches delta(1..9) by coincidence and breaks at n=10 (delta(10)=0 vs program output -2). Best non-coincidence match length 7 covers only 5/50. Length 8 = ~28 program-bits, two orders of magnitude below the >=280 information bits delta(1..50) carries (Shannon ratio 0.84 from line 595, Kt 5.58 bits/value from line 489). Length 9: ~35M programs; length 10: ~350M; length 12: ~35B (intractable). Concrete description-length floor on delta in this DSL. See experiments/proposals/levin_search_delta.py | 49 |
+    786:| §A5 ATTACK_VECTORS — Maynard 2015 multidimensional sieve weight w(n) = (Σ_{d_i\|n+h_i, gcd=1, ∏d_i≤R} μ(d_1)…μ(d_k) F(log d_i/log R))^2 as TC^0 primality witness (cross-domain: Maynard 2015 *Annals* 181 / Polymath8b 2014 / Pascadi 2025) | FAIL | E | Wild-swing attack S116 on the most refined explicit prime-detection sieve in modern analytic NT, framed as: is `w(n) > τ*` a pointwise primality witness AND is w(n) polylog-evaluable, so that PRIMES ∈ TC⁰ unconditionally? Implementation: `experiments/sieve/maynard_weight_pointwise/`. k=3, H=admissible {0,2,6} (also tested {0,4,6} and {0,2,6,8,12}); F ∈ {(1-Σx_i)^2 GPY, (1-Σx_i) linear, constant=1, Maynard-symmetric (1-Σx)^2(1+0.5Σx+2Σx_ix_j)}; θ ∈ {0.10,0.15,0.20,0.25,0.30,0.35,0.40} (R = N^θ); N ∈ {10^4, 10^4.5, 10^5, 10^5.5, 10^6}. **Pre-registered targets**: A-grade requires AUC restricted to odd n ≥ 0.95 AND mean ops/eval = polylog(N). Both fail. **Pointwise-AUC table (selberg_gpy F)**: at θ ≤ 0.20 with R<6, AUC_all ranges 0.84–0.90 — but stratification by parity reveals that 0.22 of the AUC is *parity detection* (H={0,2,6} share parity ⇒ even n window has zero primes). AUC restricted to odd n is in [0.66, 0.69] across all θ. Best F1 = 0.62 with selberg_gpy. The maynard_sym F (with 2-parameter symmetric correction) is no better — eigenvalue ratio M_3/I_3 = 1.515 controls aggregate, not pointwise. **Aggregate-positivity replicated**: max ratio Σw(n)χ_P(n+h_i)/Σw(n) = 0.094–0.212 across θ — Maynard's theorem holds at finite N. The empirical pointwise/aggregate gap is DIRECTLY the structural fact that `Σ w·χ_P > c·Σ w` does NOT propagate to single-n separation. **Op-count scaling**: mean coprime simplex tuples ∝ N^α for α ∈ {0.10, 0.11, 0.12} at θ ∈ {0.20, 0.30, 0.40} on N ∈ [10^4, 10^6] — sub-θ but POSITIVE; not polylog. Worst-case (p99) tuple count grows with same exponent. Divisor enumeration up to R = N^θ is the fundamental sub-routine and reduces to growing-dim modular powering — exactly E5.3. **Mechanism for closure mode E**: Maynard's main theorem is `Σ w·χ_P ≥ c·Σ w` (averaged); pointwise content of w(n) is bounded by aggregate-vs-pointwise loss factor that depends on the F-eigenvalue ratio, not on F-shape. Empirical AUC_oddN ≤ 0.69 across all θ confirms this loss is irreducible; maynard_sym attempt did not improve over selberg_gpy. **Refines E6.7 (sieve pebbling)** by closing the most refined Selberg-sieve descendant; **reduces to E5.3 (MPOW)** via divisor-enumeration cost; **closes the project's only open problem (PRIMES in TC⁰) along the sieve-route attack family**, completing the four-family closure {AKS-modulus E7.10, Brandt MKtP E5.8, convergence-acceleration E7.11, **Maynard sieve E7.14**}. **Cross-domain ingredient (multidim GPY-Maynard sieve) performed real work**: first project quantitative use; status in CROSS_DOMAIN_TECHNIQUES.md upgraded PROPOSED → USED E with edge E7.14. **Adds EDGE E7.14**: Maynard 2015 multidim weight is aggregate-not-pointwise (AUC_oddN ∈ [0.66, 0.69]) AND requires Ω(N^{θ-o(1)}) divisor-enumeration cost per single n (sub-poly, not polylog) for any θ > 0 with non-trivial weight. Cites E6.7, E5.3, E7.10. Cross-domain refs: Maynard 2015 *Annals* 181:383 = arXiv:1311.4600; Polymath8b 2014 arXiv:1407.4897; Pascadi 2025 (E3.12). See experiments/sieve/maynard_weight_pointwise/maynard_weight_pointwise_results.md. | 116 |
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    The file /apps/aplikacijos/prime-research/ATTACK_VECTORS.md has been updated. All occurrences were successfully replaced.
+  [Edit] /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+    <tool_use_error>String to replace not found in file.
+    String: **Outcome (S490, mode E, B-grade structural negative + B+ partial-positive
+    α-DPP shift):**
+    (note: Edit also tried swapping \uXXXX escapes and their characters; neither form matched, so the mismatch is likely elsewhere in old_string. Re-read the file and copy the exact surrounding text.)</tool_use_error>
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    The file /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    The file /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md has been updated. All occurrences were successfully replaced.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/c6_pfaffian_alpha_dpp_n4_results.md
+    <tool_use_error>String to replace not found in file.
+    String: S489</tool_use_error>
+Now let me write the session synthesis:
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session490_c6_pfaffian_alpha_dpp_n4.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session490_c6_pfaffian_alpha_dpp_n4.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] find /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/ -name __pycache__ -exec rm -rf {} + 2>/dev/null ; ls /apps/aplikacijos/prime-research/experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/
+    c6_alpha_bias_control.py
+    c6_alpha_bias_control_results.json
+    c6_pfaffian_alpha_dpp_n4.py
+    c6_pfaffian_alpha_dpp_n4_results.json
+    c6_pfaffian_alpha_dpp_n4_results.md
+Now update SESSION_INSIGHTS and save the run state:
+  [Bash] tail -20 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    ---
+    
+    ## Session 489 — Arc 2 / Sub-arc D-2: W=15 orthogonal-corner closure (Lean)
+    
+    **Mode:** ARC CONTINUATION (Arc 2 — Lean Formalisation Track).
+    
+    **What I produced.** Closed the orthogonal corner case `(W = 15, d = j + 1)` of E2.1 unconditionally in Lean 4. New `mps_bond_dim_W_eq_15_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 15 (j+1) j).rank = 9` and the supporting `exists_invertible_submatrix_W_eq_15_d_eq_j_plus_1` exhibit theorem, both sorry-free and axiom-pure (`#print axioms` shows only `propext, Classical.choice, Quot.sound`). Plus 7 new prime helpers `chiP_X_eq_one` for `X ∈ {101, 103, 107, 131, 191, 193, 197}`. ~860 Lean lines.
+    
+    **Proof.** Two-level nested `Matrix.det_fromBlocks_zero₂₁` (outer `(1+8)`, inner `(4+4)`) with both 4×4 inner blocks computed via `simp [det_fin_four]` (the S423 Sub-arc D-1 primitive). Permutation `ρ = (0, 1, 3, 7, 13, 2, 6, 8, 12)`, `σ = (2, 1, 3, 7, 13, 0, 6, 10, 12)` from S245 pre-search; dead col 2; both block dets = `+1`; total det = `+1`. **First Lean corner closure to use `det_fin_four`.**
+    
+    **Engineering.** Required `set_option maxHeartbeats 4000000` (20×; 2× the W=14 budget). The 81-cell `fin_cases × fin_cases` matrix-equality proof at R = 9 exceeds the 10× budget that suffices at R = 7 (W=14, S235); scaling is `R²`. First build attempt timed out at 2000000; second at 4000000 hit unsolved goals from `rw [det_fin_four]; norm_num` (which doesn't unfold `(!![...]) i j`); replaced with `simp [det_fin_four]` (parallel to W=14's `simp [Matrix.det_fin_two]`) — third build succeeded.
+    
+    **Closed-W set updated.** `{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 18, 20}` — fourteen wheels closed (was thirteen). The "block-triangular-required" set per S144 enumeration is now `{7→done, 9→done, 11, 13, 14→done, 15→done, 16, 17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, ...}`.
+    
+    **Files modified.** `experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean` (+860 lines); `RESEARCH_AGENDA.md` Arc 2 status, Arc 2 milestone for W=15, next-action queue updated to Sub-arc D-3 (W=16) or Sub-arc D-4 (`det_fin_five` for W=11); `experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md` (S489 paragraph appended); `archive/sessions/session489_d2_w15_closure.md` (new); `status/SESSION_INSIGHTS.md` (this entry); `.run_state` → 491.
+    
+    **Self-grade.** B (substantive refinement: another orthogonal-corner closure of an existing edge, sorry-free and axiom-pure, executing a planned single-session target with known shape. First closure to use `det_fin_four`. Not A-grade because no novel mathematical content beyond a 14th specialisation of E2.1).
+    
+    **Next-action for the next agent.** Sub-arc D-3 — close W=16 using S245 candidate `ρ = (0, 1, 2, 3, 7, 5, 11, 13, 14)`, `σ = (1, 0, 6, 10, 12, 2, 4, 8, 14)`, dead col 1, block dets `[-1, -1]`, full det `+1`. 6 new prime helpers (191 already declared at S489). Estimated 1 session, ~860 Lean lines. Alternatively, Sub-arc D-4 — develop `det_fin_five` (cofactor expansion of W=11's atomic 5×5 odd block, using the S423 D-1 template scaled to 120 monomials).
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now save the run state per the harness instructions:
+  [Bash] echo 492 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    492
+Verify all results files exist and run the cleanup check:
+  [Bash] find experiments/ -name "*.py" 2>/dev/null | while read f; do r="${f%.py}_results.md"; r2="${f%.py}_results.json"; if [ ! -f "$r" ] && [ ! -f "$r2" ]; then echo "MISSING: $r or $r2"; fi; done | head -20
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity_results.md or experiments/formalisations/E2_1_mps_bond_dim/w15_w16_inner_4x4_atomicity_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.json
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.md or experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.json
+The "missing" results files are all in the Lean mathlib package, not my work. My C6 files are complete.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session complete. **Self-grade: B**.
+
+## Summary
+
+**Wild swing target**: §C6 — Pfaffian / α-determinantal point process structure of ζ zeros at order n=4. (All 6 default-priority §A–§F items were already CLOSED.)
+
+**Two new experiments produced** (`experiments/analytic/zeta_structure/c6_pfaffian_alpha_dpp_n4/`):
+- `c6_pfaffian_alpha_dpp_n4.py` — 96-tuple χ² discrimination test with α-DPP scan + tuple-bootstrap CI on 8000 ζ zeros + matched GUE/GOE/GSE Monte-Carlo pools
+- `c6_alpha_bias_control.py` — 16-trial matched-size GUE-MC bias control
+
+**Headline 1 — decisive Pfaffian rejection**: per-tuple χ²/dof for ζ vs sine-kernel det = **0.96** (perfect fit), vs GOE Pfaffian = **1.99** (rejects), vs GSE Pfaffian = **3.11** (strongly rejects).
+
+**Headline 2 — suggestive α-DPP shift**: α*(zeta) = **−1.10** with bootstrap CI [−1.15, −1.05] excluding −1; matched-size GUE-MC bias control gives α* mean = **−1.013 ± 0.035** (16 trials, 0/16 at α* ≤ −1.10). ζ at z ≈ **−2.5σ** below GUE-MC distribution. Suggestive but **does not meet the 5σ A-grade bar**.
+
+**Edge refinement**: E7.1 extended from "DPP-typical at orders 4-6" to "...AND not GOE/GSE Pfaffian-typical at order 4" + "α-DPP shift z ≈ 2.5σ".
+
+**Cross-domain promotion**: CROSS_DOMAIN_TECHNIQUES.md row "Pfaffian / α-determinantal point processes" PROPOSED → **USED-E**.
+
+**Bug found and fixed**: GUE matrix normalisation `H /= sqrt(2*N)` gives Wigner radius √2, not 1; affects unfolded mean spacing. Fixed by empirical-support detection + post-unfolding rescaling (noted in SESSION_INSIGHTS for future C-section work).
+
+**Successor sub-frame** (added to ATTACK_VECTORS): **C6.b** — re-run on Odlyzko γ ≥ 10⁶ block; would push the 2.5σ shift to 5σ if real, decisively closing or promoting to A.
+
+`.run_state` saved → 492.
+
+Want me to /schedule a background agent in 1 month to attempt C6.b (Odlyzko γ≥10⁶ extension) once the larger zero block is staged?
+--- Session ended ---
+Sleeping 60 seconds before next run...

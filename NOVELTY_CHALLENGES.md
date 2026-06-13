@@ -569,29 +569,351 @@ sessions.
 
 **Successor challenges (proposed in S191):**
 
-**C9.a — Divisor-only restriction at primorial Q.** Build the closed-form
-identity
+**C9.a — Divisor-only restriction at primorial Q — BUILT (S208, mode E, B-grade refinement of E2.1 / S191).**
+**Edges:** E2.1 + E2.2 + S191 / C9.
+**Object:** `M_W^{div}(n) := Σ_{q | W, q sqf} mu(gcd(q,n)) / phi(q/gcd(q,n))`
+and `T_W^{div}(n) := (pi(N)/N) · M_W^{div}(n)`; the divisor-only
+truncation of S191's full pointwise spike `M_Q`.
+**Closed-form identity (proved analytically and verified pointwise to
+machine epsilon):** for every squarefree `W ≥ 1`,
 ```
-   M_W^{div}(n) := Σ_{q | W, q sqf} mu(q) c_q(n) / phi(q)
-                 ≡ ∏_{p | W} (1 − 1[p | n]/(p − 1) · phi(p))
+   M_W^{div}(n)  =  [gcd(n, W) = 1] · W / phi(W).
 ```
-(or similar exact-divisor form), and verify pointwise vs the full
-`M_W(n)` (which sums over all squarefree q ≤ W, not just divisors of W).
-Question: at primorial W, is `M_W^{div}` exactly equal to a wheel
-indicator times a Mertens constant? If yes, `T_W^{div}(n)` is an
-*exact* pointwise wheel sieve weighted by Mertens density — a clean
-algebraic identity composing E2.1 and the M_Q closed form. Cost: 1
-session. **Save under:** `experiments/constructions/spike_divisor_only_wheel/`.
+For `W` not squarefree, the same identity holds with `W` replaced by
+`rad(W)`. The proof is a one-line Möbius collapse:
+`Σ_{A ⊆ P_n}(-1)^|A| = [P_n = ∅]` factorising the summation across the
+squarefree-divisor lattice of `W`.
+**Outcome (S208):** All six pre-stated falsifiers PASS. F1 (5
+primorials), F2 (squarefree non-primorials `15, 105`), F3 (non-squarefree
+`12, 60, 420` reducing to radical) all PASS pointwise to abs_err
+≤ 8.88·10⁻¹⁶ on `N = 10⁶`. F4 (mean = 1) PASS to ≤ 3·10⁻⁶. F5 (L²
+closed form `||T_W^{div} − chi_P||²/N` matches explicit prime-distribution
+count) PASS to rel_err < 10⁻⁹ on every cell. F6 (Pearson gap
+`Pearson(chi_P, T_W) > Pearson(chi_P, T_W^{div})`) PASS at every
+`W ∈ {6, 30, 210, 2310}`; equality at `W = 2` is structural (the only
+squarefree integers `≤ 2` are `{1, 2}`, both divisors). The Pearson gap
+grows monotonically: `0.028 → 0.089 → 0.177 → 0.281` at `W ∈ {6, 30, 210,
+2310}` (N=10⁵), so the divisor-only restriction captures only **69% of
+T_W's full Pearson with chi_P at W=2310**; the missing signal is in the
+non-divisor squarefree conductors `q ≤ W`.
+**Net new content:** (i) **closed-form pointwise identity on the full
+domain** of `n`, generalising S191's coprime-only corollary; (ii)
+**radical reduction** for non-squarefree `W`; (iii) explicit L² closed
+form via prime-distribution boundary count; (iv) localisation of the
+prime-discriminating signal to the *non-divisor squarefree conductors*
+in the full `M_Q`. **Refines E2.1** with a pointwise identity (the
+`phi(W)/W` factor is now the value of an explicit scalar field, not
+merely an asymptotic rank quotient).
+**Status:** BUILT, no polylog opening (the divisor-only `T_W^{div}` is
+information-theoretically a wheel sieve). CLOSED_PATHS row added (S208).
+EDGES.md E2.1 annotated.
+**Save under:** `experiments/constructions/spike_divisor_only_wheel/`.
 
-**C9.b — Higher-moment composition: T_Q correlations and Hardy-Littlewood.**
-The pointwise correlation `<T_Q(n), T_Q(n+h)>` summed over `n ≤ N`
-should reproduce a *truncated* Hardy-Littlewood twin-prime singular
-series at small h, Q. Test whether `<T_Q · shift_h T_Q> / N`
-equals (up to sub-leading error) the HL singular series `S(h) ·
-(π(N)/N)²` at Q = N^{0.185}. If yes, T_Q is a closed-form
-finite-conductor approximator of HL — a synthesis of E2.13 (Gowers-HL
-match) with the spike construction. Cost: 1 session. **Save under:**
-`experiments/constructions/spike_pointwise_HL_correlation/`.
+**Successor challenges (proposed in S208):**
+
+**C9.a.i — Off-divisor squarefree expansion at primorial W.** Build the
+residual `M_W − M_W^{div}` at primorial W = 2310 and decompose the
+0.281 Pearson gap by conductor `q`. Predicted: each prime
+`13 ≤ p ≤ √W` contributes `~ 1/φ(p)²` to the Pearson² gap (Selberg-
+Delange–style). Cost: 1 session.
+
+**C9.a.ii — Lean formalisation of the divisor-only identity.** The
+one-line Möbius collapse plus the Hölder-Möbius reduction (L6 queue) is
+a clean Lean target. Estimated 1 session. Save under
+`experiments/formalisations/L6_holder_normalised_ramanujan/`.
+
+**C9.a.iii — Λ-modulated divisor-only sum.** Replace `mu(q) c_q(n)/phi(q)`
+with `μ²(q) λ(q) c_q(n)/phi(q)` (or similar parity-twisted weight) and
+ask whether the divisor-only sum is again a closed-form scalar on the
+residue lattice mod `W`. Cost: 1 session.
+
+**C9.b — Higher-moment composition: T_Q correlations and Hardy-Littlewood — BUILT (S205).**
+**Edges:** E2.1 + E2.2 + E2.13 + E1.6 + C9 / S191.
+**Object:** Two-point function `R_h(Q, N) := ⟨T_Q(n) T_Q(n+h)⟩` with
+connected variant `R_h^conn := R_h − ⟨T_Q⟩²`. Predicted closed-form
+identity: `R_h^conn(Q, N) = (π(N)/N)² · (S_Q(h) − 1)` where
+`S_Q(h) = Σ_{q sqf ≤ Q} μ²(q)/φ²(q) c_q(h)` is the truncated
+Hardy-Littlewood twin-prime singular series.
+**Falsifiers:** F1 identity ratio in [0.85, 1.15]; F2 convergence to
+full HL at Q=√N; F3 odd-h asymptote → −(π/N)²; F4 h=0 self-consistency
+recovers S191 L²; F5 prime correlation matches HL.
+**Outcome (S205):** All five falsifiers PASS, with F1 holding to
+**< 0.6 %** uniformly across 14 shifts × 8 conductors at d = 20 (two
+orders of magnitude tighter than the pre-stated band). F2 (HL recovery
+at Q = √N): even-h ratios within 0.2 %; F3 (odd-h asymptote): within
+0.03 %; F4 (h=0 variance): within 0.01 %; F5 (prime correlation): within
+~6 % (standard finite-N for primes at d=20). The identity composes
+S191's pointwise spike with E2.13's HL signature: `T_Q` is a closed-form
+finite-conductor approximator of HL whose two-point function reproduces
+the truncated singular series exactly. The construction also recovers
+C9 / S191's single-point L² statement as the h = 0 diagonal.
+**Status:** BUILT, no polylog opening (cost is `O(N · |H|)`). Refines
+E2.13 (cube → two-point shift case), E2.1 (single-point spike → two-point
+spike correlation), C9 / S191 (single-point → two-point). CLOSED_PATHS
+row added (S205). EDGES.md E2.13 / E2.1 annotated.
+**Save under:** `experiments/constructions/spike_pointwise_HL_correlation/`.
+
+**Successor challenges (proposed in S205):**
+
+**C9.b.i — Cross-conductor off-diagonal explicit form.** F1 ratios
+drift by ~0.6 % at the highest tested conductor Q = 2310, d = 20. Build
+the explicit cross-conductor (gcd(q1, q2) > 1, both squarefree) sum and
+verify it matches the predicted `O(Q · log Q / N)` leakage. Cost: 1
+session. **Save under:** `experiments/constructions/spike_pointwise_HL_correlation/cross_conductor/`.
+
+**C9.b.ii — Triple correlation `<T_Q · shift_{h1} · shift_{h2}>` —
+BUILT (S209, mode I, B-grade refinement of E2.1 / S205 / S208).**
+Test whether the three-point function reproduces the truncated HL
+triple-prime singular series `S(0, h1, h2)`. This bridges S205's
+two-point identity to E2.13's full `U^2` cube content via an explicit
+sequence of `k`-point identities. **Save under:**
+`experiments/constructions/spike_pointwise_HL_triple/`.
+
+**Outcome (S209):** all six falsifiers PASS; F1 (primorial-W identity)
+within **0.01% at d=20** (100× tighter than the pre-stated 0.5% band).
+**Theorem (S209)**: for every squarefree primorial `W ≥ 1` and integers
+`(h_1, h_2)`,
+`⟨T_W^{div}(n) T_W^{div}(n+h_1) T_W^{div}(n+h_2)⟩_n =
+(π(N)/N)^3 · ∏_{p|W} (p − ν_p(0, h_1, h_2)) · p² / (p−1)^3 =
+(π(N)/N)^3 · S_HL^{(W)}(0, h_1, h_2)`. **Two independent proofs**:
+(a) direct cube of S208's wheel-indicator collapse + prime-factor
+inclusion-exclusion; (b) Ramanujan-Fourier prime-by-prime expansion
+giving `G_p = 1 + (1/(p-1)²)[c_p(h_1) + c_p(h_2) + c_p(h_2 - h_1)] −
+f_p/(p-1)³` with `f_p ∈ {(p-1)(p-2), -(p-2), +2}` for `ν_p ∈ {1, 2, 3}`,
+algebraically equal to `(p − ν_p) p²/(p−1)³` across 70/70 prime ×
+shift cells. F3 (HL recovery for general T_Q at Q ≈ √N) within 1%
+across all 6 admissible (h_1, h_2) tested at d=20. F4 / F5 (h=0 and
+h_2=0 self-consistency) within 0.001% at d=20. F6 (prime triple density
+finite-N) within 5% standard. **Composes** S205 (2-point), S208 (1-point
+divisor collapse), E2.1 (spike), E2.13 (cube), E2.16 (3-point HL factors
+over primes — turned negative-shape into positive identity), E1.6 / E2.2
+(parity sign at q=2). **No polylog opening** (cost `O(N · |H|²)`).
+CLOSED_PATHS row added (S209). EDGES.md E2.1 inline annotated.
+
+**Successor challenges (proposed in S209):**
+
+**C9.b.iv — k = 4 four-point identity at primorial W — BUILT (S234,
+mode E, B-grade refinement of E2.1 / S205 / S208 / S209).**
+**Theorem (S234, proven analytically; verified to 0.06% across
+admissible cells at d=20).** For every squarefree W ≥ 1 and integers
+(h_1, h_2, h_3),
+`<T_W^{div}(n) T_W^{div}(n+h_1) T_W^{div}(n+h_2) T_W^{div}(n+h_3)>_n
+= (π(N)/N)^4 · ∏_{p|W} (p − ν_p(0, h_1, h_2, h_3)) · p^3 / (p−1)^4
+= (π(N)/N)^4 · S_HL^{(W)}(0, h_1, h_2, h_3)`. Two independent proofs:
+(a) S208 pointwise collapse + CRT density factorisation; (b)
+Ramanujan-Fourier 4-cumulant expansion algebraically equal to the
+closed form across 78/78 small-prime cells (p ∈ {2,3,5,7,11,13} × 13
+shift triples) at abs_err ≤ 4.44e-16. Reduction lemmas:
+h_1=h_2=h_3=0 → `<T_W^4>=(π/N)^4(W/φ(W))^3` (F4); h_3=0 → (W/φ(W))×
+S209-3pt (F5). F1 (primorial-W identity) PASS at 100× tighter than
+pre-stated band; F2 / F3 partial fails (1-2 of 6 admissible cells outside
+pre-stated 2.5% / 3% bands at d=20 Q=2310; cross-conductor leakage at
+k=4 amplified by 4-6× vs S205 k=2 — 3 disconnected pair contractions).
+**Composes** S205 / S208 / S209 (k=1,2,3 → k=4 hierarchy now closed) +
+E2.13 (`U^2` cube subsumed at (h_1, h_2, h_1+h_2)) + E2.16 (DPP
+3-point negative shape extended to 4-tuples as positive identity) +
+E1.6 / E2.2 (q=2 parity admissibility). General-k form
+`G_p^{(k)} = (p − ν_p) p^{k-1} / (p−1)^k` follows by induction. No
+polylog opening. CLOSED_PATHS row added (S234). EDGES.md E2.1 inline
+annotated. See `experiments/constructions/spike_pointwise_HL_quad/`,
+`archive/sessions/session234_c9biv_4point_HL_identity.md`.
+
+**Successor challenges (proposed in S234):**
+
+**C9.b.iv.α — Cross-conductor leakage at k=4: closed-form bound.**
+S234's F2/F3 partial fails (worst 5.7% at (6,10,12)) reflect 3
+disconnected pair contractions at the 4-point level. Predicted scaling
+`O(Q · log^j Q / N)` for some j ≤ 3 (refining S205's `O(Q log Q / N)`
+at the 2-point level). Quantify analytically and verify at d ∈ {18, 20,
+22} for general Q. Cost: 1 session. **Save under:**
+`experiments/constructions/spike_pointwise_HL_quad/cross_conductor_k4/`.
+
+**C9.b.iv.β — Lean formalisation of the 4-point identity at primorial
+W.** Proof is `S208 + CRT + factor identity`. Add to L1 / L6 queue
+after C9.b.iii (S205 2-point) and C9.b.vi (S209 3-point). Cost: 1-2
+sessions.
+
+**C9.b.v — General-k closed form `G_p^{(k)} = (p−ν_p) p^{k-1}/(p−1)^k`.**
+With k=1,2,3,4 verified analytically (S208/S205/S209/S234), the inductive
+proof via S208 collapse on the k-fold indicator product is essentially
+mechanical. Verify with k=5 at one (h_1,h_2,h_3,h_4) tuple as a
+check + write up the inductive theorem. Cost: 0.5 session.
+
+**C9.b.vii — Hoffman / triple-MZV interpretation of `f_p^{(4)}` per
+multiplicity profile.** The closed-form values per ν_p and multiplicity
+split — (p-1)[1+(p-1)^3]/p for (4,); (p-3) for (2,1,1); -3 for
+(1,1,1,1); (1/p)[(p-2)+2(p-1)^2] for (2,2); etc. — are explicit small
+polynomials in p. Possibly bridges to D38 (S233) prime-MZV antisymmetric
+A(s,t) at weight 4 via Hoffman algebra. Cost: 1 session.
+
+**C9.b.v — General-Q off-diagonal calibration.** The F2 over-count
+at non-primorial Q (predicted `prod_{p sqf primes ≤ Q} G_p` minus
+empirical) is due to subsets of primes whose product exceeds Q being
+absent from the squarefree-cap sum. Quantify analytically. Cost: 1
+session. **Save under:** `experiments/constructions/spike_pointwise_HL_correlation/general_Q_calibration/`.
+
+**C9.b.vi — Lean formalisation of the 3-point identity.** ~30-line
+target via S208's Möbius collapse + 3-coprimality factorisation. Add to
+L1 / L6 queue after L1.a (S205 2-point) target. Cost: 1-2 sessions.
+
+**C9.b.iii — Lean formalisation of the two-point identity.** The
+identity `<T_Q(n) T_Q(n+h)>_n = (π(N)/N)² · S_Q(h)` is a one-step
+character-theoretic computation: Ramanujan-Fourier expansion +
+diagonal-conductor selection. Tractable Lean 4 target; add to L1 / L6
+queue. Cost: 2-3 sessions.
+
+### C10 — Wheel-coprime cumulative Liouville identity — **BUILT (S219, paradigm-shift mode, B-grade refinement of E1.6 / E2.10)**
+**Edges:** E1.6 + E2.10 + E2.1 / E4.1 / S208.
+**Object:** `L_W(x) := Σ_{n ≤ x, gcd(n,W)=1} λ(n)` — the cumulative
+Liouville sum restricted to wheel-W-coprime integers. The cumulative-
+side analogue of S208's pointwise indicator `T_W^{div}(n) = (π/N) ·
+(W/φ(W)) · [gcd(n,W)=1]`.
+**Closed-form identities (proved analytically, integer-exact verified):**
+* (T1) `L_W(x) = Σ_{d | rad(W)} L(⌊x/d⌋)` for every W ≥ 1.
+* (T2) `L_W(x) mod 2 = (Σ_{d | rad(W)} ⌊x/d⌋) mod 2` (combines T1 + E2.10).
+* (T3) Wheel-graded prime bisection lift: `π_W(x) = (1/2) Σ_{d | rad(W)}
+  (μ(d)⌊x/d⌋ − L(⌊x/d⌋)) − C_{3,W}(x)`, where π_W(x) := π(x) − π_W^{div}(x).
+**Outcome (S219):** All six pre-stated falsifiers PASS integer-exactly
+at 16 W (sqfree primorial / sqfree non-primorial / non-squarefree) ×
+~200 x grid points at N = 10⁴. F1 (T1 pointwise), F2 (radical reduction
+`L_W = L_{rad(W)}`), F3 (T2 mod-2), F4 (T3 wheel-bisection), F5 (RHS
+divisor count = `2^{ω(rad(W))}`), F6 (mod-q lift at q ∈ {2, 3, 4, 8}).
+**Algorithmic content:** `2^{ω(W)}`-call oracle reduction `L_W → L`,
+polylog in W for primorial W (since `2^{ω(W)} = W^{O(1/log log W)}`).
+Mod-2 unconditionally polylog (T2). Does NOT bypass the unconditional
+`O(x^{2/3})` ceiling for `L(x)` — the bottleneck stays on `L`.
+**Symmetric counterpart to S208** (indicator-side wheel-collapse):
+S208's `T_W^{div}` is pointwise-side, polylog-cheap, finite-state
+on coprime cosets; S219's `L_W` is cumulative-side, retains the full
+oscillatory content of `λ` decomposed into `2^{ω(W)}` scaled copies.
+**Status:** BUILT, no polylog opening. Refines E1.6 (bisection) and
+E2.10 (parity) inline. CLOSED_PATHS row added (S219).
+**Save under:** `experiments/constructions/wheel_coprime_liouville_identity/`.
+
+**Successor challenges (proposed in S219):**
+
+**C10.a — Selberg-Delange decomposition of the L_W − (φ(W)/W) L(x) heuristic.**
+The heuristic `L_W(x) ~ (φ(W)/W) L(x)` is folklore in PNT-in-AP. T1
+gives an EXACT rewriting:
+`L_W(x) − (φ(W)/W) L(x) = Σ_{d | rad(W), d > 1} (L(⌊x/d⌋) − ⌊x/d⌋ · L(x)/x)`.
+Each summand is `o(x/d)` by PNT for λ. Quantify the magnitude of
+`Σ_{d | rad(W), d > 1}` empirically at scales `N ∈ {10⁵, 10⁶, 10⁷}` and
+across primorial W ∈ {2, 6, 30, 210, 2310}. Predicted: heuristic error is
+dominated by the `d = 2` term `L(⌊x/2⌋) − ⌊x/2⌋ · L(x)/x` for primorial
+W. Cost: 1 session. **Save under:**
+`experiments/constructions/wheel_coprime_liouville_identity/selberg_delange/`.
+
+**C10.b — Mod-4 lift of L_W.** T2 gives the closed form for L_W mod 2
+(via E2.10). Mod 4 is the E1.5 / T6 hard-zone bit boundary.
+Apply T1 mod 4 directly: `L_W(x) mod 4 = Σ_{d | rad(W)} L(⌊x/d⌋) mod 4`.
+Empirically test whether at primorial W, the `2^{ω(W)}`-fold "blurring"
+of the L mod 4 hard-zone bit gives any algorithmic leverage at small
+scale. Predicted: no leverage (E1.5 saturation per E1.5 / T6), but
+worth empirical confirmation. Cost: 1 session. **Save under:**
+`experiments/constructions/wheel_coprime_liouville_identity/mod4_lift/`.
+
+**C10.c — Lean formalisation of T1 and T3.** T1 is a one-line Möbius
+inversion + completely-multiplicative collapse. T3 substitutes T1 into
+the bisection. Tractable Lean 4 target; add to L1 / L6 queue. Cost:
+1-2 sessions.
+
+### C11 — D17.b: Discrete Morse on the squarefree-only divisibility Hasse diagram — **BUILT (S422, mode E, B-grade refinement of D17 / S232)**
+**Edges/sources:** D17 closed at S232 (mode E, B-grade) with sharp
+identity `collapses(H_N) = (π(N) − π(N/2)) + Π_pow(N) + 1` for the
+full divisibility Hasse 1-skeleton. The squarefree-only restriction
+is a distinct combinatorial object: vertices `{n ≤ N : μ(n) ≠ 0}`;
+covering relations `(m, mp)` with `m, mp` squarefree, `p` prime,
+`p ∤ m`, `mp ≤ N`.
+**Outcome (S422):** Greedy random Morse collapse halts in **exactly
+one wave** at every `N ∈ {64, 128, 256, 512, 1024, 2048, 4096, 8192}`.
+Sharp identity (proven analytically + verified pointwise):
+> **Theorem (S422).** `collapses(H_N^sqfree) = π(N) − π(N/2)` exactly,
+> with `ε(N) ≡ 0`. Equivalently `m_0(H_N^sqfree) = |V_sqfree(N)| − (π(N) − π(N/2))`,
+> `m_1(H_N^sqfree) = |E(H_N^sqfree)| − (π(N) − π(N/2))`.
+
+Two-line proof: vertex-degree case-analysis shows wave-0 leaves are
+*exactly* primes `p ∈ (N/2, N]` (each has unique edge to vertex 1);
+peeling drops `deg(1)` from `π(N)` to `π(N/2) ≥ 2` for `N ≥ 6`; no
+other vertex's degree is modified, so wave 1 is empty. Leaves
+mutually non-adjacent, so Morse rigidity is automatic.
+
+Sharper than D17 by removing BOTH the `Π_pow(N) ~ Θ(√N/log N)`
+prime-power term AND the constant `+1` chained-collapse residual.
+F1 (polylog A-grade) FAILS: `m_0/|V| → 1` monotone. F2 (ER baseline
+match) FAILS: divisibility-Hasse is ≈ 4 % more collapsible than
+matched-density ER (vs D17's 0.5–2 %); squarefree restriction
+*amplifies* the divisibility-vs-random distinguishability gap. F3
+HOLDS exactly. F4 (Morse rigidity) HOLDS analytically across 200
+seeds at every measured N. **Status:** BUILT, no polylog opening
+(circular: `m_0` reduces to `π(N) − π(N/2)`, no easier than `π(N)`).
+**Refines D17 inline.** CLOSED_PATHS row added (S422). See
+`experiments/topological/d17b_squarefree_morse/`.
+**Save under:** `experiments/topological/d17b_squarefree_morse/`.
+
+**Successor challenges (proposed in S422):**
+
+**C11.a — D17.b.i full order complex.** Lift from 1-skeleton to the
+full chain complex of the squarefree-poset order complex. Cell count
+`~ Σ_{n sqf ≤ N} ω(n)!`, tractable for `N ≤ 256`. The unrestricted
+Boolean lattice's order complex is shellable with one critical top
+cell; the truncation `∏ p ≤ N` may reduce chain-level `m_0` below
+`Θ(N)`. **A-grade target if** `m_0(chain) = O(polylog N)` despite the
+1-skeleton failure. Cost: 1-2 sessions. Save under
+`experiments/topological/d17b_squarefree_morse/order_complex/`.
+
+**C11.b — D17.b.ii multiplicative-indicator generalisation.** Replace
+`μ²(n)` by other multiplicative indicators (k-free numbers,
+k-almost-primes, smooth-y-rough numbers). Each defines a sub-Hasse of
+`(Z, |) ∩ [1, N]`. Predicted: same `(π(N) − π(N/2))`-leading-term
+identity with a different second-order correction matching the
+indicator's level-2 structure. Cost: 1 session per indicator family.
+Save under
+`experiments/topological/d17b_squarefree_morse/multiplicative_indicators/`.
+
+**C11.c — D17.b.iii Lean formalisation.** Two-line proof
+(vertex-degree case-analysis + wave-1 emptiness lemma). Tractable
+Lean 4 target; add to L1 / L6 queue. Cost: 1-2 sessions. Save under
+`experiments/formalisations/L_d17b_morse_identity/`.
+
+### C12 — D38.a: Prime-MZV antisymmetric A(s,t) at weight ≥ 8 with Hoffman-irreducible MZV basis (NEW from S233 follow-up)
+**Edges/sources:** E7.23 (D38 closed S233, mode I, B-grade) — PSLQ
+NO_RELATION on `A(s,t) := ζ_P(s,t) − ζ_P(t,s)` against the COMPLETE
+weight-`(s+t)` basis at `(s,t) ∈ {(2,3), (2,4), (2,5), (3,4)}` (weights
+5/6/7). The weight-8 result was flagged INC because the basis missed
+the irreducible double zeta `ζ(3,5)` and the Hoffman-depth-3 generators
+`ζ(3,3,2), ζ(2,3,3), ζ(3,2,3)`. At weight 9 the gap widens further
+(`ζ(3,3,3)`, `ζ(2,2,5)`, etc.).
+**Question:** Compute the depth-3 Hoffman generators `ζ(3,3,2)`,
+`ζ(2,3,3)`, `ζ(3,2,3)` numerically to ≥ 50 digits via mpmath nested
+sums (or use Bigotte/Goncharov shuffle/stuffle reductions). Add to
+the weight-8 basis. Re-run PSLQ on `A(2,6), A(3,5)`. At weight 9 add
+`ζ(3,3,3)` and re-run PSLQ on `A(2,7), A(3,6), A(4,5)`.
+**Why this is a real successor (not a duplicate of D38 closure):** the
+weight-8 basis was the INC-flagged tier in S233. Adding the missing
+irreducible MZV either:
+- **Closes the gap** → primes ARE in Brown's algebra at higher depth
+  via Hoffman generators (would require an explicit reduction to
+  re-open D38 as E-mode); or
+- **Confirms** the structural negative at higher weights →
+  strengthens E7.23 by ruling out the depth-≥3 saturation hope.
+**A-grade target:** an explicit closed-form
+`A(2,6) = α_1 ζ(3,3,2) + α_2 ζ(2,3,3) + α_3 ζ(3,2,3)
+         + Σ β_j (Mertens monomial of weight 8)`
+with rational `α_j, β_j` would partially rehabilitate D38 and yield
+polylog evaluators for prime-MZVs at infinite depth via Brown's
+recursive Hoffman reduction → polylog access to certain prime
+correlation sums.
+**B-grade outcome:** PSLQ NO_RELATION at weight 8 (and 9) with the
+expanded depth-3 basis — confirms E7.23 universally, lifts the INC
+flag.
+**First step:** Implement nested-sum evaluator for `ζ(s_1, s_2, s_3)`
+in mpmath (`Σ_{n_1>n_2>n_3≥1} 1/(n_1^{s_1} n_2^{s_2} n_3^{s_3})`)
+with tail-correction. Compute `ζ(3,3,2), ζ(2,3,3), ζ(3,2,3),
+ζ(3,3,3)` to 50 dps. Re-run d38_prime_mzv.py PSLQ with expanded
+basis at weights 8, 9.
+**Save under:** `experiments/algebraic/d38_prime_mzv/` (extend the
+existing experiment; add `d38_higher_weight_results.md`).
+**Cost:** 1-2 sessions.
 
 ---
 
@@ -651,14 +973,90 @@ See `experiments/wildcard/bit_J_pn_cross_modulus/`,
 
 **Successor challenges (proposed in S199):**
 
-**§F1.a.i — Dip-depth scaling law.** Tabulate `rel(m)` across
-m ∈ {2, 3, ..., 30} (every integer modulus, prime + composite +
-primorial) at L = 2·10⁸. Test whether the closed-form
-`rel(m) = P[S(m) = 0]` with `S(m) ≈ ⟨e⟩/m^J* + N(0, var(e)/m^J*)`
-matches empirical depths. **A-grade if** the closed-form is exact
-(would be a derived Gaussian-RH-shadow formula); **B-grade if** it
-matches up to the m = 5 mid-wrap exception. Cost: 1 session
-(re-run with `moduli="2,3,4,...,30"`).
+**§F1.a.i — CLOSED (S218, mode E, B-grade refinement of E1.3).**
+Tabulated `rel_emp(m)` across `m ∈ {2..30}` at L = 2·10⁸ and tested
+the proposed Gaussian-RH-shadow closed-form against three concrete
+predictions: (Y) Gaussian-Y, (R) Empirical-e + uniform-r, (GR)
+Gaussian-e + uniform-r. **Outcome: A-grade refuted, B-grade
+established.**
+
+**EXACT identity** (verified to 0.04 % mean abs error across 29
+moduli): under uniformly-distributed `L_n mod m^J*`,
+`ag_emp(m, J*) = E_n[(1−frac_n)·𝟙[q_n ≡ 0 (mod m)] +
+frac_n·𝟙[q_n ≡ m−1 (mod m)]]` with `q_n = ⌊e_n/m^J*⌋`,
+`frac_n = (e_n mod m^J*)/m^J*`.
+
+**Gaussian-Y is APPROXIMATE.** Mean abs error 0.0962, holds to
+6–15 % for `σ_Y ≤ 1.5` cells but fails by 30 %–530 % on
+`σ_Y ≥ 2` cells (`m ∈ {12, 13, 27, 28, 29, 30}`) because empirical
+e is bounded `[0, 21648]` while Gaussian e leaks mass outside.
+
+**NEW PEAK structure.** `rel_emp(m)` non-monotone, `0.025 ≤
+rel_emp(m) ≤ 6.32`, peaking at `m = 24` (μ_Y = 1.28, σ_Y = 0.42).
+The "RH-shadow valley" reframes as **"RH-shadow phase alignment"**:
+agreement ratio is m·P[⌊Y⌋ ≡ 0 mod m], controlled by μ_Y(m) mod m
+relative to the integer lattice with σ_Y as a diffusion parameter.
+F5/F6 (m=5 mid-wrap) PASS; F7 (composite=parent) PARTIAL (3/6).
+**Refines E1.3 inline.** See
+`experiments/wildcard/bit_J_pn_dip_scaling/`,
+`archive/sessions/session218_f1ai_dip_scaling.md`.
+
+**Successor challenges (proposed in S218):**
+
+**§F1.a.i.α — Sub-Gaussian tail correction.** Replace the Gaussian
+e model with a truncated Gaussian on `[0, e_max]` (or beta-Cramér
+mixture matched to the empirical skew = -0.108 and the |e| < 22000
+bound). Re-fit the closed form. Predicted: closed-form error falls
+from O(10²) % to O(1) % across `m ∈ {2..30}`. **A-grade if** the
+tail-corrected closed form matches empirical to within 1 % on every
+m. Cost: 1 session.
+
+**§F1.a.i.β — Cramér-asymptotic prediction.** Under the Cramér model
+`e ~ √p_N · N(c, σ²)` with `c, σ` constants, derive the asymptotic
+`rel(m, p_N → ∞)` as a function of m only (J* absorbed via
+`m^J* = √p_N`). Test cross-scale at L ∈ {10⁷, 5·10⁷, 2·10⁸, 10⁹}
+(sympy/primecount for L = 10⁹). The Cramér prediction is L-independent
+in the limit; cross-scale stability would confirm. Cost: 2-3 sessions.
+
+**§F1.a.i.γ — CLOSED (S238, mode E, B-grade refinement of E1.3).**
+Phase-diagram sweep across `m ∈ {2..100, 110, 120, 140, 170, 200, 250,
+300, 400, 500, 700, 1000, 1500}` (111 cells, both J*=2 and J*=1) at
+L = 2·10⁸ in `(α, σ_norm)` coordinates produces four new structural
+facts: (a) wrapped-Gaussian density regime is σ_Y ≥ 2 valid (mean
+|Δrel| = 0.21 over 35 cells), σ_Y < 2 fails (3.47 over 76 cells);
+(b) U-shape against α decile-binned (max=4.67 at decile 0, min=0.05
+at decile 4) HOLDS; (c) peak ridge along α ≈ 0 reaches `rel_emp(110)
+= 22.37` (3.5× S218's m=24 max); (d) J*=1 bounded-support trough
+mechanism — deepest trough rel_emp(170)=0.005 at α=0.376 (NOT α=0.5),
+caused by truncation of Gaussian-Y's right-tail at the bounded-e
+support [0, 21648]; sharpens S218's Gaussian-Y downgrade to 17×
+worst-case at J*=1 (m=200). Refines E1.3 inline. F-verdicts: F_β
+HOLDS, F_ε HOLDS, F_α/F_δ/F_ζ/F_η FAIL informatively. See
+`experiments/wildcard/bit_J_pn_phase_diagram/`,
+`archive/sessions/session238_f1aig_phase_diagram.md`.
+
+**Successor challenges (proposed in S238):**
+
+**§F1.a.i.γ.i — Truncated-Gaussian closed form for J*=1 cells.**
+Replace Gaussian e by truncated normal on [0, e_max] (or beta-Cramér
+mixture matched to the empirical e support [0, 21648] and skew
+−0.108). Re-derive the closed form. Predicted: J*=1 trough errors
+collapse from 17× (m=200) to ≤ 30 %. **A-grade if** the tail-
+corrected closed form matches empirical to within 1 % across all
+m ∈ [2, 1500]. Cost: 1 session. (Subsumes §F1.a.i.α.)
+
+**§F1.a.i.γ.ii — Asymptotic peak height.**
+Conjecture: `max_m rel_emp(m, J*=2) → 1/(σ_norm·√(2π))` as m
+approaches the J*=2 ↔ J*=1 boundary at `m ≈ p_N^{1/4}`. Verify
+peak ridge scaling at `L ∈ {10⁷, 5·10⁷, 2·10⁸, 10⁹}`. Predicted:
+peak height grows as L^{1/8} or similar. Cost: 1-2 sessions.
+
+**§F1.a.i.γ.iii — Symmetry restoration via L-scaling.**
+F_δ failed because the natural α(m) distribution at fixed L is
+α-skewed. Test whether scanning `L ∈ {10⁶..10⁹}` produces mirror
+α-coordinates for the same m, and whether `rel_emp(m, L)` and
+`rel_emp(m, L')` with `α(m, L) ≈ 1 − α(m, L')` match within 30%.
+Cost: 1 session.
 
 **§F1.a.ii — Higher m primorial extension.** Extend to m ∈ {2310,
 30030} where `J*(m) ∈ {0, 1}` at L = 2·10⁸. Test whether the dip
@@ -721,10 +1119,85 @@ If such f exists, it weakens the pseudorandomness-→-hardness argument. If you 
 **Why novel:** This is the dual of "is π in TC⁰?" — and is more tractable.
 **First step:** AES output stream restricted to {0,1}, sampled at the same density as π(n) mod 2. Apply the 35 measures.
 
-### F6 — Compute π(x) for x in a parametric family
+### F6 — Compute π(x) for x in a parametric family — **PARTIALLY CLOSED (S246, mode E, B-NEGATIVE on dyadic per-query)**
 **Question:** Existing algorithms compute π(x) for arbitrary x. What is the complexity of computing `π(2^k)` for k = 1..N, all at once? The shared structure (powers of 2) might admit polylog amortised cost.
 **Why novel:** Batch / parametric / structured-input variants of π(x) are essentially unstudied.
 **First step:** Compute π(2^k) for k = 1..40 using primecount. Look for differences `π(2^{k+1}) - π(2^k)` and see if they admit a closed form or a polylog recurrence.
+
+**S246 outcome (PER-QUERY side, B-NEGATIVE).** Three independent
+structural tests on `(π(2^k))_{k=1..56}` (OEIS A007053) all return
+random-baseline values within Monte Carlo noise:
+- **F1 — sign-sequence linear complexity.** BM(sign(r_R)) = 28 against
+  MC random-shuffle null `mean=28.25, std=1.01, [p05=27, p95=30]`.
+  Sign sequence of `r_R(k) = π(2^k) - R(2^k)` is statistically
+  identical to random.
+- **F2 — autocorrelation of normalised residual.** `c_R(k) =
+  r_R(k)/2^{k/2}`, max `|ac|` over lags 1..10 is **0.283** at lag 1
+  vs MC iid-Gaussian `p999 = 0.437`. Bonferroni-corrected p ≈ 0.4.
+  Not significant. (NB: the v1 Li-baseline gave spurious lag-1 = 0.87
+  driven by the smooth `-Li(√x)/2` Möbius-series correction; corrected
+  by switching to R-baseline.)
+- **F3 — HKM dyadic speedup.** `sympy.primepi(2^k) / primepi(2^k ± 1)`
+  cold-start subprocess timing ratio = **1.013** averaged over
+  k ∈ {28, 30, 32}, range [0.998, 1.047]. Meissel-Lehmer cost is
+  x-magnitude-driven, not x-form-driven.
+
+**Net new content.** Empirical B-NEGATIVE closure of the per-query
+dyadic question with two independent mechanisms documented:
+(i) Weyl equidistribution of `γ_n · k log 2 mod 2π` makes phases
+random across k regardless of dyadic structure; (ii) Lucy / Meissel-
+Lehmer outer loop processes `{n ≤ √x}` and `{n smooth up to x^{2/3}}`
+which carry no binary-representation structure. **Refines E1.1
+inline.** See `experiments/wildcard/dyadic_pi_structure/`,
+`archive/sessions/session246_f6_dyadic_pi_structure.md`. Successor
+challenges below.
+
+**Successor challenges (proposed in S246):**
+
+**§F6.a — CLOSED (S426, mode E, B-grade refinement of E1.1).**
+Cross-modulus structural test on `x_k = m^k` at m ∈ {3, 5, 6, 10, 30}.
+**B-NEGATIVE shape carries over universally**: F1 (BM ≤ MC.p05) and F2
+(max|ac| ≥ MC.p999) FAIL for every m. K-budgets {22, 15, 14, 28, 8};
+total wall 30.6s.
+
+Bonus γ_1-cosine ceiling: `|emp_lag1_ac(m)| ≤ |cos(γ_1·log(m) mod 2π)|
++ 0.05` empirically saturates at 5/5 cross-modulus cases. m=6 identified
+as near-resonance (`φ_1(6) = 0.193 rad`, ceiling cos = +0.981, empirical
+lag-1 = 0.529 = 54% of ceiling) — even this near-saturation case stays
+below MC p999 = 0.687. Sign agreement of `cos(φ_1)` vs `emp_lag1`:
+3/5 m. **Refines E1.1 inline**. See
+`experiments/wildcard/cross_modulus_pi_structure/`,
+`archive/sessions/session426_f6a_cross_modulus.md`.
+
+**Successor challenges (proposed in S426):**
+
+**§F6.a.i — γ_1 ceiling tightness scan.** Extend the ceiling
+diagnostic to m ∈ {2..50}; conjecture: m^* ∈ {6, 14, 36}
+(`e^{2π·j/γ_1}` integers) are strongest near-resonances. Test
+each up to K_m = 14 anchors. Cost: 1 session.
+
+**§F6.a.ii — γ_2 decoherence rate.** Predicted `|emp_lag1_ac| → 0
+as K_m → ∞` at rate `~K_m^{-1/2}`. Test via sub-windowing m=10
+into rolling K=14 windows; or extend to K_m=40 via primecount.
+Cost: 1-2 sessions.
+
+**§F6.a.iii — Higher-lag ceiling breakdown.** m=6 lag-1 = 0.529
+matches γ_1 ceiling, but lag-2 = -0.049 vs γ_1-prediction +0.926
+fails — γ_1-only model collapses at lag ≥ 2. Map breakdown
+boundary in (m, ℓ) cells. Cost: 1 session.
+
+**§F6.b — Batched-on-k amortisation (Thread 5 shape transposed).**
+For `x_1 = 2^{k_1}, ..., x_M = 2^{k_M}`, the explicit-formula zero
+table `(γ_n)_{n=1..K}` is independent of k. Computing all `Re(R(x_i^ρ_n))`
+for i = 1..M and n = 1..K costs `O(M·K)`; per-query amortised
+`O(K)`. For `K = polylog(max x_i)`, per-query = polylog. **Exactly
+Thread 5 / S224 Correlation Dichotomy shape transposed to the
+dyadic setting.** Cost: 2-session arc.
+
+**§F6.c — Lower bound from output bit-budget.** Outputting all
+π(2^k) for k = 1..N requires `Σ_k log₂ π(2^k) = Σ_k k − O(log k) =
+Ω(N²)` bits. Make rigorous as a CLOSED_PATHS row under "lower
+bounds via output size". Cost: 0.5 session.
 
 ---
 

@@ -1,0 +1,1459 @@
+=== Run #402 — Mode: arc — Thu Apr 30 00:23:52 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    File content (41654 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/prime-research/.commit_state
+    1	thread:p1_pi_in_arithmetic_progressions_batched_on_q
+    2	sessions_used:5_final
+    3	status:DONE_PARTIAL_NEGATIVE
+    4	session_history:S227,S228,S229,S230,S231
+    5	prev_thread:s82_invariant_subspace_DONE
+    6	prev_thread_2:connes_amortisation_DONE
+    7	prev_thread_3:galway_frontier_DONE
+    8	prev_thread_4:a7_plethysm_subframe_DONE
+    9	prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    10	prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    11	last_synthesis:archive/sessions/session231_commit_p1_cross_conductor_wrap.md
+    12	thread_6_summary:Thread 6 = OPEN_POSITIVE_TARGETS.md §P1 — pi in arithmetic progressions, batched on modulus q. CLOSED-B at S231 across all four amortisation axes (a-direction trivial 8×; χ-direction 1.79-2.04× bounded constant; composite-q 1.75× bounded constant; Q-batched 1.05× decreasing toward 1×). None structural in algorithmic-complexity sense; all hardware-level FFT/BLAS arithmetic. No batch-polylog primes-in-AP algorithm via explicit-formula route. Thread-5-vs-Thread-6 distinction: Thread 5 partial-positive operates on SHARED-L geometry (ζ-zeros across queries); Thread 6 fails on DISTINCT-L geometry (distinct L(s, χ_q) per query). Future P_x targets should prioritise shared-L shapes.
+    13	thread_7_summary:Thread 7 = OPEN_POSITIVE_TARGETS.md §P3 — approximate pi(x) ± ε in polylog with named ε. R(x) gives ε ≈ √x. Question: can polylog buy ε = O(x^{1/2-δ}) for some explicit δ? With K=log²x zeros heuristically yields ε ≈ √x · O(log log x / log⁴ x) — strictly better-than-√x bound, polylog time. Smallest cross-domain barrier; pure analytic NT. Strongest a-priori chance of partial-positive based on R(x) error analysis from S195+S196 Galway frontier closure.
+    14	thread_7_a_grade_targets:(a) explicit polylog-time algorithm with provable ε(x) = O(x^{1/2}/polylog(x)) with named exponent → first sub-√x polylog approximation; (b) tight ε vs K characterisation across x decades (empirical Montgomery-validation); (c) lower bound matching ε ≥ Ω(√x/polylog(x)) under GRH or random-phase heuristic.
+    15	thread_7_slot_plan:
+    16	  slot_1: Build partial-sum evaluator π(x) ≈ R(x) - Σ_{ρ: |γ| ≤ T} 2 Re(li(x^ρ)) for K = {1, log x, log² x, log³ x, x^{1/4}, x^{1/2}} zeros. Empirical ε(x, K) at x ∈ {10⁶, 10⁸, 10¹⁰, 10¹²}. Fit ε vs K; identify saturation behaviour.
+    17	  slot_2: Theoretical extrapolation via Montgomery pair-correlation random-phase heuristic (S195 framework). Closed-form ε(x, K) prediction; compare to slot-1 empirical.
+    18	  slot_3: Push to x = 10¹⁵, 10¹⁸ via Hiary 2011 multi-evaluation method or Galway 2004 algorithm. Test if asymptotic ε scaling holds at extreme x.
+    19	  slot_4: Smoothing kernel selection — Gaussian, raised-cosine, exact. Does smoothing reduce ε beyond unsmoothed? (Galway 2004 §4 smoothed-sum analysis.)
+    20	  slot_5: Theoretical wrap. Prove ε(x, K = log² x) = O(√x · log log x / log⁴ x) under Montgomery; or document break.
+    21	recommended_next_action:Thread 6 CLOSED. Next commit slot picks Thread 7 (P3 — approximate π(x) ± ε in polylog). Slot 1 of Thread 7: build partial-sum evaluator π(x) ≈ R(x) - Σ_{ρ: |γ| ≤ T} 2 Re(li(x^ρ)) for K = {1, log x, log² x, log³ x, x^{1/4}, x^{1/2}} zeros, measure empirical ε(x, K) at x ∈ {10⁶, 10⁸, 10¹⁰, 10¹²}, fit ε vs K. If empirical ε ≈ √x · log log x / log⁴ x at K = log² x, that's a strong partial-positive candidate. See `OPEN_POSITIVE_TARGETS.md` §P3 and `archive/sessions/session195_commit_galway_frontier.md` (Galway/Montgomery framework). Reset sessions_used:0 when starting Thread 7.
+    22	
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+    <system-reminder>This memory is 2 days old. Memories are point-in-time observations, not live state — claims about code behavior or file:line citations may be outdated. Verify against current code before asserting as fact.</system-reminder>
+    1	- [Session numbering vs .run_state](session_numbering_vs_run_state.md) — sessionNN files use max(existing)+1, NOT .run_state value
+    2	
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/session_numbering_vs_run_state.md
+    <system-reminder>This memory is 2 days old. Memories are point-in-time observations, not live state — claims about code behavior or file:line citations may be outdated. Verify against current code before asserting as fact.</system-reminder>
+    1	---
+    2	name: Session numbering vs .run_state
+    3	description: In prime-research, .run_state tracks run.sh invocations (lags), while session NN files in archive/sessions/ are numbered consecutively across runs — pick max(existing) + 1.
+    4	type: project
+    5	originSessionId: c8940663-c50a-48f3-8bae-bcdf41d8e227
+    6	---
+    7	`.run_state` and session NN are DIFFERENT counters.
+    8	
+    9	- `.run_state` increments per `./run.sh` invocation.
+    10	- `archive/sessions/sessionNN_*.md` files are numbered consecutively
+    11	  across all runs (one run can produce multiple sessions via the
+    12	  rotation: novelty / construction / arc / lean / critique / verify).
+    13	- The two counters drift apart because most runs produce 1+ session.
+    14	
+    15	**Why:** Why this matters: when the prompt says "echo 130 > .run_state",
+    16	that is the next `run.sh` increment, NOT the next session number. The
+    17	session number must be `max(existing sessionNN files) + 1`.
+    18	
+    19	**How to apply:** Before writing `archive/sessions/sessionNN_*.md`, do
+    20	`ls archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -1` to
+    21	get the most recent session number, then increment. Use the same NN
+    22	inside the file (titles, references like "S<NN>") AND in EDGES.md
+    23	"S<NN>; …" stubs, CROSS_DOMAIN_TECHNIQUES.md "USED <mode> (S<NN>, …)"
+    24	cells, ATTACK_VECTORS.md "[CLOSED S<NN>]" markers, CLOSED_PATHS.md row
+    25	trailing " | <NN> |", and SESSION_INSIGHTS.md "## Session <NN> — …"
+    26	headers.
+    27	
+    28	When the session uses but is DIFFERENT FROM another session (e.g., my
+    29	session 133 closing a vector that S130 frontier_gen created), keep
+    ... (3 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session230
+    session231
+    session232
+    session233
+    session234
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state
+    402
+  [Grep] ^## ACTIVE ARCS|^## Active arcs|^### Arc|^Status:|^Next action:
+    12:## Active arcs
+    14:### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    67:### Arc 2 — Lean Formalisation Track
+    598:### Arc 3 — Per-Bit Polylog Boundary
+    620:### Arc 4 — Composition over EDGES.md
+    939:### Arc 5 — Frame-Shift exploration
+    964:### Arc 8 — π in arithmetic progressions, batched on modulus q (Thread 6, CLOSED)
+    1108:### Arc 7 — Cross-x amortisation across the three pillars (Thread 5, CLOSED)
+    1219:### Arc 6 — External collaboration outreach
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1	# Research Agenda — Long-Horizon Arcs
+    2	
+    3	This file holds **multi-session research arcs**. Each arc is a research
+    4	direction that takes more than one session to pursue. Arcs survive
+    5	across sessions, accumulate state, and have explicit next-actions.
+    6	
+    7	This file is for *continuity*. NOVELTY_CHALLENGES.md is for *targets*.
+    8	EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
+    9	
+    10	---
+    11	
+    12	## Active arcs
+    13	
+    14	### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    15	**Status:** NOT STARTED
+    16	**Owner:** any agent who picks it up
+    17	**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 + E7.14
+    18	into a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+    19	
+    20	**Milestones:**
+    21	- [ ] Outline the FIVE sections (one per closure family).
+    22	- [ ] Write precise statement of each family-level closure as a theorem
+    23	  (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
+    24	  E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
+    25	  exhaustion; **E7.14 = Maynard sieve aggregate-not-pointwise +
+    26	  divisor-enumeration sub-poly**).
+    27	- [ ] Write a unified introduction framing the five as "structural
+    28	  barriers to polylog π(x)".
+    29	- [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
+    30	  Bombieri-Vinogradov, the Aggarwal optimum.
+    ... (170 more lines)
+  [Grep] IN PROGRESS|^\*\*Status:|^\*\*Next action:
+    15:**Status:** NOT STARTED
+    37:**Next action:** outline the five sections in `novel/four_structural_barriers_outline.md`.
+    68:[Omitted long matching line]
+    599:**Status:** OPEN, untouched
+    617:**Next action:** read E1.3 source experiment and the carry-propagation
+    621:**Status:** IN PROGRESS — S135 (C8.b: random-control F4 resolution at N=6 via column enumeration)
+    875:**Next action:** All §1 composition challenges C1-C9 plus C9.b plus C9.b.iv are now BUILT
+    940:**Status:** SUGGESTED
+    960:**Next action:** pick F4 (empirical, fast) or F6 (parametric family).
+    965:**Status:** CLOSED at S231 — DONE_PARTIAL_NEGATIVE: P1 closes negatively across all four amortisation axes
+    1109:**Status:** CLOSED — produced Correlation Dichotomy theorem (S224)
+    1220:**Status:** SUGGESTED, requires user action
+    1282:1. Mark your arc as `Status: IN PROGRESS — <session number>`.
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    595	`experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/`. Future
+    596	agents can `cd` into that directory and run `lake build` directly.
+    597	
+    598	### Arc 3 — Per-Bit Polylog Boundary
+    599	**Status:** OPEN, untouched
+    600	**Owner:** any agent who picks it up
+    601	**Goal:** Find J such that bit_J(π(x)) is provably polylog-computable
+    602	for fixed J independent of N. See `NOVELTY_CHALLENGES.md` §2.F1.
+    603	
+    604	**Milestones:**
+    605	- [ ] Re-read `novel/carry_propagation_boundary.md` for the J = 0..0.6N
+    606	  smooth zone.
+    607	- [ ] Define bit_J(π(x)) precisely as a Boolean function.
+    608	- [ ] For J ∈ {0, N/4, N/2, 0.6N, 0.8N, N}, measure agreement between
+    609	  bit_J(π(x)) and bit_J(round(R^{-1}(n))) at scale x ≤ 10^9.
+    610	- [ ] Identify the empirical sigmoid boundary and verify against E1.3.
+    611	- [ ] Build a polylog circuit for the largest J that's still in the
+    612	  smooth region.
+    613	- [ ] If J = 0.6N is provably polylog while J = 0.7N is not, the
+    614	  boundary IS a publishable mathematical fact.
+    615	
+    616	**Estimated total effort:** 3-5 sessions.
+    617	**Next action:** read E1.3 source experiment and the carry-propagation
+    618	boundary novel doc.
+    619	
+    620	### Arc 4 — Composition over EDGES.md
+    621	**Status:** IN PROGRESS — S135 (C8.b: random-control F4 resolution at N=6 via column enumeration)
+    622	**Owner:** any agent
+    623	**Goal:** Systematically explore the "compose two edges" challenge space.
+    624	See `NOVELTY_CHALLENGES.md` §1.
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    893	**D2.a.1 CLOSED S124** with continuous-marginal-matched B3 baseline
+    894	(inverse-transform sampling on linearly-interpolated empirical CDF;
+    895	Devroye 1986 §II.2.1) absorbing the S117 marginal residual to within
+    896	Gaussian noise (|z(B3)| ≤ 0.65 across d ∈ {2, 3, 4}). E2.17 refined
+    897	inline to a three-component decomposition (envelope ~7-9σ on T0;
+    898	discreteness ~1-3σ on T0; serial-residual ~1-2σ on T0) with envelope
+    899	identified as the dominant singular-series carrier in the PH
+    900	observable. Successors: D2.a.1.i (pure-discrete IID B4) and D2.a.1.ii
+    901	(sliding-bandwidth KDE B5(σ)) proposed for direct discreteness
+    902	isolation.
+    903	**D2.a.2 CLOSED S138** — first W-scan of the serial-correlation
+    904	deficit `z(B2; T0)` across W ∈ {2, 6, 30, 210, 2310}. The HL closed-
+    905	form fit `r(W) = ∏_{p|W, p>2} (1 - α/p)` gives α ≈ 2.07 matching the
+    906	**Hardy-Littlewood twin-prime per-prime local factor `1 - 2/p`**. The
+    907	p=3 filter alone removes 70 % of the W=2 deficit; by W=6 the serial
+    908	component is at the K=20 noise floor. S117's W=210 anchor was in the
+    909	saturation regime, not the HL-active regime. PH-side analogue of
+    910	E2.13's Gowers W-scan with the *same* per-prime structure. M=1000
+    911	W=2310 rebound diagnosed as finite-size window non-stationarity
+    912	(Cramér normalisation drift at log range > 2). Successors:
+    913	D2.a.2.i (K=200 to tighten α-fit) and D2.a.2.ii (matched-physical-
+    914	window protocol).
+    915	**C3 CLOSED S105**
+    916	with the per-bit Brandt argument confirmed orthogonal to O1-O4 (DUP-PLUS
+    917	of E5.8) and a sharper bounded-Kt cut at `J*(N) ≈ N − log₂ N`. **C2
+    918	spike sub-arc CLOSED S82** with Dirichlet-
+    919	character identification of the spike subspace at conductors `2·p` for
+    920	small odd primes `p ≤ P*(N) ≈ N^{0.21}` — a clean structural
+    921	refinement of S74 and a C-circular collapse of the spectral barrier
+    922	into E1.5 / T6 saturation.
+    ... (170 more lines)
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    200	  **Determinant via `Matrix.det_of_upperTriangular`** (mathlib has no
+    201	  `det_fin_four` or `det_fin_five`): we pre-compute the 5 diagonal
+    202	  entries (each = 1) and the 10 below-diagonal entries (each = 0),
+    203	  establish `BlockTriangular id` by `fin_cases i <;> fin_cases k` (the 15
+    204	  vacuous `k < i` cases close via `simp [id_eq, Fin.lt_def] at h_lt;
+    205	  exact absurd h_lt (by decide)`), apply `det_of_upperTriangular`, expand
+    206	  the diagonal product via `Fin.prod_univ_five`, and finish with
+    207	  `norm_num`. Uses primes `{2, 3, 5, 7, 11, 19, 23}` (all `decide`-checkable)
+    208	  and decidability of non-primality for `{1, 4, 6, 9, 10, 14, 15, 20, 21,
+    209	  22, 24, 25}`. ~250 Lean lines. **Third unconditional `mps_bond_dim`
+    210	  instance over a wheel `W ≥ 3`; first instance with `R = W` (all `W`
+    211	  columns retained); first instance using `BlockTriangular id` rather
+    212	  than `Matrix.det_fin_three`.** The technique scales to any wheel `W`
+    213	  for which we can exhibit a permutation of `Fin W` that triangularises
+    214	  the `chiP 1 .. chiP W^2` slab — a finite check at each `W`.
+    215	- [x] **Orthogonal corner case `(W = 6, d = j + 1)` closed unconditionally (S122).**
+    216	  Three new declarations: `chiP_thirty_one_eq_one`,
+    217	  `exists_invertible_submatrix_W_eq_6_d_eq_j_plus_1 : ∀ j ≥ 1, ∃ ρ σ, IsUnit (submatrix ρ σ)`,
+    218	  and `mps_bond_dim_W_eq_6_d_eq_j_plus_1 : ∀ j ≥ 1, (unfolding 6 (j+1) j).rank = 3`,
+    219	  all sorry-free (`#print axioms` confirms only `propext, Classical.choice,
+    220	  Quot.sound`). Route A'''''' from `mps_bond_dim_notes.md`. The matrix is
+    221	  `6^j × 6`; live columns `{0, 4}` (residues `1, 5 (mod 6)`) plus dead
+    222	  column `1` (`chiP 2 = 1` at row 0, zero elsewhere on chosen rows) give
+    223	  `R = φ(6) + 1 = 3`. **Row choice subtlety:** rows `1, 2, 3` of the
+    224	  `6 × 6` slab are linearly dependent (each has identical support pattern
+    225	  `(1, 0, 0, 0, 1, 0)` from the primes `{7, 11}, {13, 17}, {19, 23}`),
+    226	  so we must skip to row `5` for the third independent row. With
+    227	  `ρ ↦ (0, 1, 5)` and `σ ↦ (0, 1, 4)`, the `3×3` submatrix is
+    228	  `[[chiP 1, chiP 2, chiP 5], [chiP 7, chiP 8, chiP 11], [chiP 31, chiP 32,
+    229	  chiP 35]] = [[0, 1, 1], [1, 0, 1], [1, 0, 0]]` with `det = +1` via
+    ... (370 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E 'session(2[1-3][0-9]|234)' | sort -V | tail -20
+    session215_commit_a7_plethysm_WRAP.md
+    session216_d8_darts_primes.md
+    session217_reverify_e6_6.md
+    session218_f1ai_dip_scaling.md
+    session219_paradigm_shift_wheel_liouville.md
+    session220_commit_cross_x_amortisation.md
+    session221_commit_cross_x_amortisation.md
+    session222_commit_cross_x_amortisation.md
+    session223_commit_cross_x_amortisation.md
+    session224_commit_cross_x_amortisation.md
+    session225_d37_quantum_modular_chi_p.md
+    session226_d11_shadow_tomography_chi_p.md
+    session227_commit_p1_per_q_a_profile.md
+    session228_commit_p1_afe_shared_l_eval.md
+    session229_commit_p1_dirichlet_zero_finder.md
+    session230_commit_p1_composite_q_multi_axis_fft.md
+    session231_commit_p1_cross_conductor_wrap.md
+    session232_d17_discrete_morse_divisibility.md
+    session233_d38_prime_mzv.md
+    session234_c9biv_4point_HL_identity.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/ 2>/dev/null | head -30
+    Basic.lean
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/
+    MPSBondDim
+    leading_row_search.py
+    leading_row_search_results.txt
+    mps_bond_dim_notes.md
+    w11_blocktriangular_search.py
+    w11_blocktriangular_search_results.md
+    w11_general_search.py
+    w11_general_search_results.md
+    w11_inner_triangulation.py
+    w11_inner_triangulation_results.md
+    w11_nested_search.py
+    w11_nested_search_results.md
+    w11_odd_block_atomicity.py
+    w11_odd_block_atomicity_results.md
+    w7_blocktriangular_search.py
+    w7_blocktriangular_search_results.md
+    w9_blocktriangular_search.py
+    w9_blocktriangular_search_results.md
+Let me look at the prior Arc 2 state and decide the cleanest next step.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w7_blocktriangular_search.py
+    1	"""
+    2	S159: Identify a `1 + 3 + 3` BlockTriangular permutation for the W=7
+    3	orthogonal-corner case (`(W=7, d=j+1)`, R = phi(7) + 1 = 7) of E2.1.
+    4	
+    5	W=7's 7×7 slab has live cols {0..5} (since 7 is prime, every k+1 ∈
+    6	{1..6} is coprime to 7) and dead col k=6 (k+1 = 7, prime). R = 7.
+    7	
+    8	The S144 leading_row_search showed W=7 has NO leading-row + dead-col
+    9	upper-triangulation in rows [0, 7). This pre-search asks for the next
+    10	best thing: a 1+3+3 BlockTriangular structure (block-diagonal with the
+    11	dead-col witness chiP(7) at top-left, 1×1 block) where each diagonal
+    12	3×3 block has nonzero determinant.
+    13	
+    14	USAGE:
+    15	    python3 w7_blocktriangular_search.py
+    16	"""
+    17	from itertools import combinations
+    18	from math import gcd
+    19	from sympy import isprime, totient, Matrix
+    20	
+    21	
+    22	def find_block_diagonal_decompositions(W=7, allow_extended_rows=False):
+    23	    """
+    24	    For the (W=7, d=j+1) corner, search 1+3+3 (block-DIAGONAL) splits.
+    25	    By default rows are in [1, W). Optionally allow rows up to 2*W-1
+    26	    if no decomposition is found in the basic regime.
+    27	    """
+    28	    live = [k for k in range(W) if gcd(k + 1, W) == 1]
+    29	    dead_candidates = [k for k in range(W)
+    30	                       if gcd(k + 1, W) != 1 and isprime(k + 1)]
+    ... (150 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w7_blocktriangular_search_results.md
+    1	# W=7 BlockTriangular Pre-Search (S159)
+    2	
+    3	## Goal
+    4	
+    5	Identify a `1 + 3 + 3` BlockTriangular permutation for the W=7 orthogonal-corner
+    6	case `(W=7, d=j+1)` of E2.1, which has `R = φ(7) + 1 = 7`. W=7 was on the
+    7	S128/S129/S144 "block-triangular-required" list — the leading-row +
+    8	dead-col upper-triangulation route is exhausted in rows `[0, 7)`.
+    9	
+    10	## Method
+    11	
+    12	Search over all `(A_rows, B_rows, A_cols, B_cols)` partitions where
+    13	- row `0` is forced to the dead-col witness (`k = 6`, `k+1 = 7` prime),
+    14	- rows `1..6` partition into two triples `A_rows`, `B_rows`,
+    15	- live cols `{0..5}` partition into two triples `A_cols`, `B_cols`,
+    16	- both 3×3 diagonal blocks have nonzero determinant,
+    17	- the lower-left block (`B_rows × A_cols`) is zero (BlockTriangular constraint).
+    18	
+    19	We additionally check the upper-right block (`A_rows × B_cols`) for the
+    20	stronger BLOCK-DIAGONAL property.
+    21	
+    22	## Result
+    23	
+    24	**2 valid (1+3+3) BlockTriangular decompositions found**, both block-diagonal,
+    25	both using zero new prime helpers.
+    26	
+    27	### Top candidate (S159 chosen)
+    28	
+    29	```
+    30	ρ ↦ (0, 1, 3, 5, 2, 4, 6)
+    ... (79 more lines)
+I'll pick Arc 2 (Lean Formalisation Track) — its accumulated state and explicit next-action queue (W=14 pre-search recommended at S207) make it the cleanest target.
+
+Let me check the W=11 search state and verify the recommendation.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w11_blocktriangular_search_results.md
+    1	# W=11 BlockTriangular pre-search results (S206)
+    2	
+    3	**Goal:** Identify a single-session-viable block-triangular decomposition
+    4	for the W=11 orthogonal corner case `(W=11, d=j+1)`, R = φ(11) + 1 = 11,
+    5	of E2.1.
+    6	
+    7	**Result:** **Single-session closure obstructed by an atomic 5×5 odd
+    8	block.** The arc's W=11 next-action (anticipated `1 + 5 + 5` split via
+    9	`Fin.prod_univ_five`) is **invalidated** by an explicit STRUCTURAL
+    10	obstruction: the only block-triangular decomposition of the W=11 11×11
+    11	matrix over rows in [0, 11) into blocks of size ≤ 5 forces a 5×5 block
+    12	with NO further block-triangular sub-decomposition (verified
+    13	exhaustively over all 15 ordered partitions of 5 with parts ≤ 4).
+    14	
+    15	## Pre-search summary
+    16	
+    17	Three Python scripts were run:
+    18	
+    19	* `w11_blocktriangular_search.py` — search for `1 + 1 + 3 + 3 + 3` block-
+    20	  DIAGONAL decompositions over rows in [0, 33). **Result: 0 candidates**.
+    21	  Row 0 has 5 nonzero entries (cols where `chiP(c+1) = 1` for primes 2,
+    22	  3, 5, 7, 11) → cannot isolate row 0 as a 1×1 block-DIAGONAL component.
+    23	* `w11_inner_triangulation.py` — leading-row upper-triangulation of the
+    24	  inner 10×10 over rows [1, 11) × live cols. **Result: obstructed** in
+    25	  rows [1, 11); FOUND in rows [1, 22) with `ρ ↦ (3, 2, 1, 6, 5, 7, 16,
+    26	  10, 19, 18)`, max row = 19. **Useful only for j ≥ 2** (since 19 ≥ 11
+    27	  forces `j ≥ 2` because `W^j = 11^j ≥ 19` requires j ≥ 2).
+    28	* `w11_general_search.py` — exhaustive search over partitions of 11 with
+    29	  blocks of size ≤ 5, peeling bottom-up. **Result: 0 candidates with all
+    30	  blocks ≤ 3** (or ≤ 4); only `(5, 5, 1)`, `(1, 5, 5)`, `(5, 1, 5)`,
+    ... (181 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/ | grep w14
+    (Bash completed with no output)
+Let me update the agenda to mark this session in progress, then run a W=14 BlockTriangular pre-search.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me write the W=14 BlockTriangular pre-search.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && python3 w14_blocktriangular_search.py 2>&1 | head -100
+    Command running in background with ID: b4wb4s1aw. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b4wb4s1aw.output
+  [ToolSearch] 
+  [TaskOutput] 
+    <retrieval_status>timeout</retrieval_status>
+    
+    <task_id>b4wb4s1aw</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>running</status>
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>b4wb4s1aw</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    === W=14 BlockTriangular pre-search ===
+    R = phi(14) + 1 = 7
+    Live cols (residues coprime to 14): [0, 2, 4, 8, 10, 12]
+    Dead-col candidates (k+1 prime, gcd != 1): [1, 6]
+    
+    --- Dead col k=1 (chiP(2) = 1) ---
+      rows in [0, 14): 0 valid (1+3+3) BlockTriangular decompositions
+      rows in [0, 28): 38254 valid (1+3+3) decompositions
+    
+    --- Dead col k=6 (chiP(7) = 1) ---
+      rows in [0, 14): 0 valid (1+3+3) BlockTriangular decompositions
+      rows in [0, 28): 38254 valid (1+3+3) decompositions
+    
+    Total candidates: 76508
+      block-diagonal (preferred):     308
+      block-triangular only:           76200
+    Minimum new chiP helpers needed: 2
+    
+    Top candidates (minimum new helpers):
+    ... (29 more lines)
+The pre-search found candidates but the best ones use rows > 13, requiring j ≥ 2. Let me investigate whether the j=1 slab admits any block-triangular decomposition at all, and check what rank it has.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && python3 w14_j1_analysis.py 2>&1 | head -150
+    Command running in background with ID: bai4gznao. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bai4gznao.output
+  [TaskOutput] 
+    <retrieval_status>timeout</retrieval_status>
+    
+    <task_id>bai4gznao</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>running</status>
+  [TaskOutput] 
+    <retrieval_status>timeout</retrieval_status>
+    
+    <task_id>bai4gznao</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>running</status>
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bai4gznao.output 2>/dev/null | head -20
+    (Bash completed with no output)
+  [ToolSearch] 
+  [TaskStop] 
+    {"message":"Successfully stopped task: bai4gznao (cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && python3 w14_j1_analysis.py 2>&1 | head -150)","task_id":"bai4gznao","task_type":"local_bash","command":"cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && python3 w14_j1_analysis.py 2>&1 | head -150"}
+Let me write a faster, more focused analysis using numpy.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 300 python3 w14_j1_analysis.py 2>&1 | head -200
+    Command running in background with ID: beb87ufgf. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/beb87ufgf.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>beb87ufgf</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py:1: SyntaxWarning: invalid escape sequence '\{'
+      """
+    === W=14 j=1 slab analysis ===
+    Live cols (residues coprime to 14): [0, 2, 4, 8, 10, 12]
+    Dead-col candidates: [1, 6]
+    
+    Inner matrix (rows 1..13, live cols):
+      r= 1: [0, 1, 1, 1, 0, 0]
+      r= 2: [1, 1, 0, 1, 0, 1]
+      r= 3: [1, 0, 1, 0, 1, 0]
+      r= 4: [0, 1, 1, 0, 1, 0]
+      r= 5: [1, 1, 0, 1, 0, 1]
+      r= 6: [0, 0, 1, 0, 0, 1]
+      r= 7: [0, 1, 1, 1, 1, 0]
+      r= 8: [1, 0, 0, 0, 0, 0]
+      r= 9: [1, 0, 1, 0, 1, 1]
+      r=10: [0, 0, 0, 1, 1, 0]
+      r=11: [0, 1, 0, 1, 0, 1]
+      r=12: [0, 0, 1, 0, 1, 1]
+    ... (39 more lines)
+There's a row-indexing bug. Let me fix it.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 600 python3 w14_j1_analysis.py 2>&1 | head -200
+    Command running in background with ID: botjgccir. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/botjgccir.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>botjgccir</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis.py:1: SyntaxWarning: invalid escape sequence '\{'
+      """
+    === W=14 j=1 slab analysis ===
+    Live cols (residues coprime to 14): [0, 2, 4, 8, 10, 12]
+    Dead-col candidates: [1, 6]
+    
+    Inner matrix (rows 1..13, live cols):
+      r= 1: [0, 1, 1, 1, 0, 0]
+      r= 2: [1, 1, 0, 1, 0, 1]
+      r= 3: [1, 0, 1, 0, 1, 0]
+      r= 4: [0, 1, 1, 0, 1, 0]
+      r= 5: [1, 1, 0, 1, 0, 1]
+      r= 6: [0, 0, 1, 0, 0, 1]
+      r= 7: [0, 1, 1, 1, 1, 0]
+      r= 8: [1, 0, 0, 0, 0, 0]
+      r= 9: [1, 0, 1, 0, 1, 1]
+      r=10: [0, 0, 0, 1, 1, 0]
+      r=11: [0, 1, 0, 1, 0, 1]
+      r=12: [0, 0, 1, 0, 1, 1]
+    ... (11 more lines)
+Let me write a comprehensive shape search for j=1.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 600 python3 w14_j1_shape_search.py 2>&1 | head -200
+    Command running in background with ID: bhp51xjso. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bhp51xjso.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>bhp51xjso</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>failed</status>
+    
+    <exit_code>143</exit_code>
+    
+    <output>
+    Terminated
+    </output>
+The brute-force was too slow. Let me use a partition-based approach (orderings within blocks don't matter for BT structure).
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 600 python3 w14_j1_shape_search.py 2>&1 | head -200
+    Command running in background with ID: bapkpxtrh. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bapkpxtrh.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>bapkpxtrh</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>failed</status>
+    
+    <exit_code>143</exit_code>
+    
+    <output>
+    Terminated
+    </output>
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search.py has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 300 python3 w14_j1_shape_search.py 2>&1 | head -100
+    Command running in background with ID: buvt1wdaw. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/buvt1wdaw.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>buvt1wdaw</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    Invertible inner 6×6: 587
+    
+      Shape (5, 1): HITS≥3, e.g.
+        A_rows = [1, 2, 3, 4, 6], B_rows = [8]
+        A_cols = [2, 4, 8, 10, 12], B_cols = [0]
+      Shape (1, 5): HITS≥3, e.g.
+        A_rows = [2], B_rows = [1, 3, 4, 7, 8]
+        A_cols = [12], B_cols = [0, 2, 4, 8, 10]
+      Shape (4, 2): 0 hits
+      Shape (2, 4): HITS≥3, e.g.
+        A_rows = [1, 4], B_rows = [3, 6, 8, 9]
+        A_cols = [2, 8], B_cols = [0, 4, 10, 12]
+      Shape (3, 3): 0 hits
+    
+      Shape (4, 1, 1): 0 hits
+      Shape (1, 4, 1): HITS≥3, e.g.
+        A_rows = [2], B_rows = [1, 3, 4, 7], C_rows = [8]
+        A_cols = [12], B_cols = [2, 4, 8, 10], C_cols = [0]
+      Shape (1, 1, 4): HITS≥3, e.g.
+    ... (12 more lines)
+Found viable shapes. Let me find the (2,3,1) candidate with minimum new prime helpers.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_best_candidate.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_best_candidate.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && timeout 120 python3 w14_j1_best_candidate.py 2>&1 | head -200
+    Invertible inner 6×6: 587
+    Total (2, 3, 1) BT decompositions: 34
+    
+    Min new helpers across all candidates: 4
+    Min max_row at min new helpers: 12
+    
+    === Top 5 candidates (min new helpers, then min max_row) ===
+    
+    --- Candidate #1 ---
+      rho   = (0, 2, 4, 3, 6, 12, 8)
+      sigma = (1, 2, 8, 4, 10, 12, 0)
+      max_row = 12
+      new prime helpers: [67, 113, 173, 181] (4 total)
+      composites to witness: 28
+      full 7×7 det: 1
+        [1, 1, 0, 1, 1, 1, 0]
+        [0, 1, 1, 0, 0, 1, 1]
+        [0, 1, 0, 1, 1, 0, 0]
+        [0, 0, 0, 1, 1, 0, 1]
+        [0, 0, 0, 1, 0, 1, 0]
+        [0, 0, 0, 1, 1, 1, 0]
+        [0, 0, 0, 0, 0, 0, 1]
+    
+    --- Candidate #2 ---
+      rho   = (0, 2, 4, 3, 6, 12, 8)
+      sigma = (6, 2, 8, 4, 10, 12, 0)
+      max_row = 12
+      new prime helpers: [67, 113, 173, 181] (4 total)
+      composites to witness: 28
+      full 7×7 det: 1
+    ... (52 more lines)
+Excellent — found a (2, 3, 1) BT decomposition for W=14 j=1 with only 4 new prime helpers, max_row=12 (works for ALL j ≥ 1). Let me write the results doc and start the Lean closure.
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search_results.md
+Let me look at the existing W=9 closure as a template for the W=14 Lean code.
+  [Bash] wc -l /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5144 /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+  [Grep] exists_invertible_submatrix_W_eq_9|mps_bond_dim_W_eq_9
+    3870:theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1
+    4460:theorem mps_bond_dim_W_eq_9_d_eq_j_plus_1
+    4474:    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1 j hj
+    5094:exactly `7` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_9_d_eq_j_plus_1`
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    3870	theorem exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1
+    3871	    (j : ℕ) (hj : 1 ≤ j) :
+    3872	    ∃ (ρ : Fin 7 → Fin (9 ^ j))
+    3873	      (σ : Fin 7 → Fin (9 ^ ((j + 1) - j))),
+    3874	      IsUnit ((unfolding 9 (j + 1) j).submatrix ρ σ) := by
+    3875	  have h_sub : (j + 1 : ℕ) - j = 1 := by omega
+    3876	  have h_pow_j_pos : 0 < 9 ^ j := Nat.pow_pos (by norm_num)
+    3877	  have h_1_lt_pow_j : 1 < 9 ^ j := by
+    3878	    calc (1 : ℕ) < 9 := by norm_num
+    3879	      _ = 9 ^ 1 := by norm_num
+    3880	      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3881	  have h_2_lt_pow_j : 2 < 9 ^ j := by
+    3882	    calc (2 : ℕ) < 9 := by norm_num
+    3883	      _ = 9 ^ 1 := by norm_num
+    3884	      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3885	  have h_3_lt_pow_j : 3 < 9 ^ j := by
+    3886	    calc (3 : ℕ) < 9 := by norm_num
+    3887	      _ = 9 ^ 1 := by norm_num
+    3888	      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3889	  have h_4_lt_pow_j : 4 < 9 ^ j := by
+    3890	    calc (4 : ℕ) < 9 := by norm_num
+    3891	      _ = 9 ^ 1 := by norm_num
+    3892	      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3893	  have h_5_lt_pow_j : 5 < 9 ^ j := by
+    3894	    calc (5 : ℕ) < 9 := by norm_num
+    3895	      _ = 9 ^ 1 := by norm_num
+    3896	      _ ≤ 9 ^ j := Nat.pow_le_pow_right (by norm_num) hj
+    3897	  have h_6_lt_pow_j : 6 < 9 ^ j := by
+    3898	    calc (6 : ℕ) < 9 := by norm_num
+    3899	      _ = 9 ^ 1 := by norm_num
+    ... (570 more lines)
+Let me see the chiP helper definitions to add the 4 new ones, and look at the file's end to find the right insertion point.
+  [Grep] chiP_thirty_seven_eq_one|chiP_two_hundred_eleven_eq_one|chiP_two_hundred_ninety_three_eq_one
+    1759:`chiP_thirty_seven_eq_one` (new at S128), and decidability of
+    1773:theorem chiP_thirty_seven_eq_one : chiP 37 = 1 := by
+    1784:`chiP_thirty_seven_eq_one`.
+    1877:    exact chiP_thirty_seven_eq_one
+    2433:`chiP_one_hundred_seventy_nine_eq_one`, `chiP_two_hundred_eleven_eq_one`,
+    2434:`chiP_two_hundred_ninety_three_eq_one` (new at S137), and decidability of
+    2477:theorem chiP_two_hundred_eleven_eq_one : chiP 211 = 1 := by
+    2484:theorem chiP_two_hundred_ninety_three_eq_one : chiP 293 = 1 := by
+    2495:`chiP_one_hundred_seventy_nine_eq_one`, `chiP_two_hundred_eleven_eq_one`,
+    2496:and `chiP_two_hundred_ninety_three_eq_one`.
+    2617:    exact chiP_two_hundred_eleven_eq_one
+    2631:    exact chiP_two_hundred_ninety_three_eq_one
+    2947:`chiP_one_hundred_ninety_nine_eq_one`, `chiP_two_hundred_eleven_eq_one`,
+    2948:`chiP_two_hundred_forty_one_eq_one`, `chiP_two_hundred_ninety_three_eq_one`,
+    3099:    exact chiP_two_hundred_ninety_three_eq_one
+    3134:    exact chiP_two_hundred_eleven_eq_one
+    4199:    exact chiP_thirty_seven_eq_one
+    4748:    exact chiP_thirty_seven_eq_one
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5070	    have h_D_det_eq :
+    5071	        D.det =
+    5072	          (Matrix.fromBlocks D1 (0 : Matrix (Fin 3) (Fin 3) ℚ) 0 D2).det := by
+    5073	      rw [← h_fromBlocks_D]
+    5074	      simp [Matrix.det_submatrix_equiv_self]
+    5075	    rw [h_D_det_eq, Matrix.det_fromBlocks_zero₂₁]
+    5076	    have hD1 : D1.det = -1 := by
+    5077	      show (!![(0 : ℚ), 1, 1; 1, 0, 0; 1, 0, 1] :
+    5078	              Matrix (Fin 3) (Fin 3) ℚ).det = -1
+    5079	      simp [Matrix.det_fin_three]
+    5080	    have hD2 : D2.det = -2 := by
+    5081	      show (!![(0 : ℚ), 1, 1; 1, 1, 0; 1, 0, 1] :
+    5082	              Matrix (Fin 3) (Fin 3) ℚ).det = -2
+    5083	      simp [Matrix.det_fin_three]
+    5084	      norm_num
+    5085	    rw [hD1, hD2]
+    5086	    norm_num
+    5087	  rw [hA_det, hD_det]
+    5088	  -- 1 * 2 = 2, IsUnit (2 : ℚ) since (2 : ℚ) ≠ 0.
+    5089	  have h_ne_zero : (1 * 2 : ℚ) ≠ 0 := by norm_num
+    5090	  exact h_ne_zero.isUnit
+    5091	
+    5092	/--
+    5093	**Corner-case main theorem (W = 7, d = j + 1).** The unfolding rank is
+    5094	exactly `7` for every `j ≥ 1`. Mirrors `mps_bond_dim_W_eq_9_d_eq_j_plus_1`
+    5095	(both citing the general `upper_bound`, since `rank_le_width` only gives
+    5096	`rank ≤ 7`, but `R = φ(7) + 1 = 7` and the slab has 7 cols, so they
+    5097	coincide here). Fully formalised in Lean (no `sorry`, no `axiom`).
+    5098	
+    5099	**Upper-bound subtlety:** the matrix has `7^((j+1)-j) = 7` columns, so
+    ... (45 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2470	theorem chiP_one_hundred_seventy_nine_eq_one : chiP 179 = 1 := by
+    2471	  have h_prime_179 : Nat.Prime 179 := by norm_num
+    2472	  simp [chiP, h_prime_179]
+    2473	
+    2474	/--
+    2475	`chiP 211 = 1` since `211` is prime.
+    2476	-/
+    2477	theorem chiP_two_hundred_eleven_eq_one : chiP 211 = 1 := by
+    2478	  have h_prime_211 : Nat.Prime 211 := by norm_num
+    2479	  simp [chiP, h_prime_211]
+    2480	
+    2481	/--
+    2482	`chiP 293 = 1` since `293` is prime.
+    2483	-/
+    2484	theorem chiP_two_hundred_ninety_three_eq_one : chiP 293 = 1 := by
+    2485	  have h_prime_293 : Nat.Prime 293 := by norm_num
+    2486	  simp [chiP, h_prime_293]
+    2487	
+    2488	/--
+    2489	**Corner-case prime exhibit (W = 18, d = j + 1).**
+    2490	
+    2491	Specialisation of `exists_invertible_submatrix` to the corner case
+    2492	`W = 18`, `d = j + 1`, where `R = min(18^j, 7) = 7` for every `j ≥ 1`.
+    2493	Closed unconditionally using `chiP_two_eq_one`, `chiP_twenty_nine_eq_one`,
+    2494	`chiP_forty_three_eq_one`, `chiP_one_hundred_nine_eq_one`,
+Let me check if the Lean toolchain works.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && ls -la lakefile.lean lean-toolchain 2>&1 | head -5
+    -rw-r--r-- 1 root root 481 Apr 26 16:12 lakefile.lean
+    -rw-r--r-- 1 root root  29 Apr 26 16:12 lean-toolchain
+  [Bash] which lake elan 2>&1; ls -la ~/.elan/bin/ 2>&1 | head -10
+    total 90308
+    drwxr-xr-x 2 root root     4096 Apr 26 16:11 .
+    drwxr-xr-x 5 root root     4096 Apr 26 16:14 ..
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 elan
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 lake
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 lean
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 leanc
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 leanchecker
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 leanmake
+    -rwxr-xr-x 7 root root 13207720 Apr 26 16:11 leanpkg
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | tail -10
+    Command running in background with ID: b52l12iu9. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b52l12iu9.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>b52l12iu9</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:5077:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:5081:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    Build completed successfully (8315 jobs).
+    </output>
+Let me add the 4 new chiP helpers and write the W=14 closure. First, let me find a good insertion point.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2440	support pattern at the 7 chosen columns, and no permutation (with all
+    2441	rho values < 14) achieves an upper-triangular form. W=18 is the
+    2442	smallest `W` with `R = 7` and `j = 1` row-count `W^j = W ≥ 17` (since
+    2443	the search at W=18 found valid triangulations using `ρ ∈ {0,1,2,6,9,11,16}`,
+    2444	all `< 18`). This makes W=18 the first `R = 7` corner closure;
+    2445	W ∈ {7, 14} remain structurally obstructed at the leading-row stage and
+    2446	W = 9 needs `Matrix.det_of_blockTriangular`.
+    2447	
+    2448	**Ninth unconditional `mps_bond_dim` instance; seventh instance over a
+    2449	wheel `W ≥ 3`; fourth instance using `det_of_upperTriangular`; first
+    2450	instance with `R = 7`.**
+    2451	-/
+    2452	
+    2453	/--
+    2454	`chiP 29 = 1` since `29` is prime.
+    2455	-/
+    2456	theorem chiP_twenty_nine_eq_one : chiP 29 = 1 := by
+    2457	  have h_prime_29 : Nat.Prime 29 := by norm_num
+    2458	  simp [chiP, h_prime_29]
+    2459	
+    2460	/--
+    2461	`chiP 43 = 1` since `43` is prime.
+    2462	-/
+    2463	theorem chiP_forty_three_eq_one : chiP 43 = 1 := by
+    2464	  have h_prime_43 : Nat.Prime 43 := by norm_num
+    2465	  simp [chiP, h_prime_43]
+    2466	
+    2467	/--
+    2468	`chiP 179 = 1` since `179` is prime.
+    2469	-/
+    ... (20 more lines)
+Now I'll insert the 4 new chiP helpers. Let me add them after the existing block.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+Now let me verify the chiP helpers build, then add the W=14 main theorem.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | tail -10
+    Command running in background with ID: bn7x0qd4s. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bn7x0qd4s.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>bn7x0qd4s</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    warning: MPSBondDim/Basic.lean:5105:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    warning: MPSBondDim/Basic.lean:5109:6: The `show` tactic should only be used to indicate intermediate goal states for readability.
+    However, this tactic invocation changed the goal. Please use `change` instead for these purposes.
+    
+    Note: This linter can be disabled with `set_option linter.style.show false`
+    ✔ [8314/8315] Built MPSBondDim (6.1s)
+    Build completed successfully (8315 jobs).
+    </output>
+Let me check if `Matrix.det_fin_two` exists in mathlib and look at the existing helpers I need.
+  [Grep] det_fin_two|det_fin_one|chiP_eighty_nine_eq_one|chiP_ninety_seven_eq_one
+    431:    rw [Matrix.det_fin_one]
+    607:  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_two]
+    724:  rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_fin_two]
+    2082:`chiP_eighty_nine_eq_one` (new), `chiP_one_hundred_nine_eq_one` (new),
+    2109:theorem chiP_eighty_nine_eq_one : chiP 89 = 1 := by
+    2133:`chiP_eighty_nine_eq_one`, `chiP_one_hundred_nine_eq_one`, and
+    2229:    exact chiP_eighty_nine_eq_one
+    3584:theorem chiP_ninety_seven_eq_one : chiP 97 = 1 := by
+    3595:and `chiP_ninety_seven_eq_one` (new at S144).
+    3686:    exact chiP_ninety_seven_eq_one
+    4405:  -- The 1×1 block A has det 1 (`det_fin_one`); the two 3×3 blocks D1, D2
+    4441:    simp [Matrix.det_fin_one]
+    5059:  -- The 1×1 block A has det 1 (`det_fin_one`); the two 3×3 blocks D1, D2
+    5095:    simp [Matrix.det_fin_one]
+Now let me write the full W=14 closure. I'll insert it before `end E2_1` at the end of the file.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5135	`-1`. This is the **first instance with total `det = ±2`** (W=9 had
+    5136	total `det = 1`), demonstrating that the BlockTriangular template is
+    5137	robust to nontrivial determinant magnitudes — `IsUnit` over `ℚ` follows
+    5138	from `Ne.isUnit` since `(2 : ℚ) ≠ 0`.
+    5139	
+    5140	**Helper reuse.** S159 added zero new `chiP_X_eq_one` helpers — every
+    5141	prime in the 7×7 submatrix (`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+    5142	37, 41, 43, 47}`) was already declared. Ten new `h_not_prime_X` lemmas
+    5143	internal to the proof (for composites `{6, 9, 15, 18, 24, 27, 33, 36,
+    5144	42, 45}` not seen in the W=9 closure).
+    5145	
+    5146	Together with prior corners, this is the **twelfth** unconditional
+    5147	instance of `mps_bond_dim` and the **eleventh** instance over a wheel
+    5148	`W ≥ 3`.
+    5149	-/
+    5150	theorem mps_bond_dim_W_eq_7_d_eq_j_plus_1
+    5151	    (j : ℕ) (hj : 1 ≤ j) :
+    5152	    (unfolding 7 (j + 1) j).rank = 7 := by
+    5153	  apply Nat.le_antisymm
+    5154	  · -- `≤ 7`: from `upper_bound`. (`rank_le_width` also gives `≤ 7` here,
+    5155	    -- but we route through `upper_bound` for uniformity.)
+    5156	    have hW : (2 : ℕ) ≤ 7 := by norm_num
+    5157	    have hj_hi : j < j + 1 := Nat.lt_succ_self j
+    5158	    have h := upper_bound 7 (j + 1) j hW hj hj_hi
+    5159	    have h_eq : Nat.totient 7 * 7 ^ ((j + 1 : ℕ) - j - 1) + 1 = 7 := by
+    5160	      have h_sub : (j + 1 : ℕ) - j - 1 = 0 := by omega
+    5161	      rw [h_sub]
+    5162	      decide
+    5163	    linarith
+    5164	  · -- `7 ≤ rank`: from the corner-case prime exhibit.
+    ... (9 more lines)
+Let me write the full W=14 closure. I'll insert it before `end E2_1`.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+Let me build and verify.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | tail -30
+    Command running in background with ID: b10oe28px. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>b10oe28px</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, hv4, h̵v̵5̵,̵ ̵hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:5611:47: This simp argument is unused:
+      hv6
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, hv4, hv5, h̵v̵6̵,̵if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:5612:36: This simp argument is unused:
+      Nat.one_ne_zero
+    
+    ... (12 more lines)
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output | grep -E "error|sorry" | head -30
+    error: MPSBondDim/Basic.lean:5796:8: (kernel) unknown constant 'E2_1.exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1'
+    error: Lean exited with code 1
+    error: build failed
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output | grep -E "sorry|warning|info|stuck|fail" | head -50
+    warning: MPSBondDim/Basic.lean:5611:47: This simp argument is unused:
+    warning: MPSBondDim/Basic.lean:5612:36: This simp argument is unused:
+    Some required targets logged failures:
+    error: build failed
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output | head -150
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, hv4, h̵v̵5̵,̵ ̵hv6, if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:5611:47: This simp argument is unused:
+      hv6
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, hv4, hv5, h̵v̵6̵,̵if_true, if_false, Nat.one_ne_zero, hne_1_0, hne_2_0,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_2_1, hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_2, hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    warning: MPSBondDim/Basic.lean:5612:36: This simp argument is unused:
+      Nat.one_ne_zero
+    
+    Hint: Omit it from the simp argument list.
+      simp only [hv0, hv1, hv2, hv3, hv4, hv5, hv6, if_true, if_false, N̵a̵t̵.̵o̵n̵e̵_̵n̵e̵_̵z̵e̵r̵o̵,̵hne_1_0, hne_2_0, hne_2_1,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_3_0, hne_3_1, hne_3_2, hne_4_0, hne_4_1, hne_4_2, hne_4_3, hne_5_0, hne_5_1, hne_5_2,
+      ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲hne_5_3, hne_5_4, hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    error: MPSBondDim/Basic.lean:5796:8: (kernel) unknown constant 'E2_1.exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1'
+    error: Lean exited with code 1
+    Some required targets logged failures:
+    - MPSBondDim.Basic
+    error: build failed
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output | wc -l
+    30
+  [Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b10oe28px.output | grep -B2 "error\|Error" | head -50
+    Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+    error: MPSBondDim/Basic.lean:5796:8: (kernel) unknown constant 'E2_1.exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1'
+    error: Lean exited with code 1
+    Some required targets logged failures:
+    - MPSBondDim.Basic
+    error: build failed
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 > /tmp/lake_build_full.log
+wc -l /tmp/lake_build_full.log
+grep -E "error|sorry" /tmp/lake_build_full.log | head -20
+    Command running in background with ID: ba39jfhhk. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/ba39jfhhk.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>ba39jfhhk</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    error: build failed
+    351 /tmp/lake_build_full.log
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+    error: MPSBondDim/Basic.lean:5293:47: maximum recursion depth has been reached
+    error: MPSBondDim/Basic.lean:5294:47: maximum recursion depth has been reached
+    error: MPSBondDim/Basic.lean:5295:47: maximum recursion depth has been reached
+    error: MPSBondDim/Basic.lean:5296:47: maximum recursion depth has been reached
+    error: MPSBondDim/Basic.lean:5620:8: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+    error: MPSBondDim/Basic.lean:5172:0: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+    error: MPSBondDim/Basic.lean:5796:8: (kernel) unknown constant 'E2_1.exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1'
+    error: Lean exited with code 1
+    </output>
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5290	  have h_not_prime_121 : ¬ Nat.Prime 121 := by decide
+    5291	  have h_not_prime_123 : ¬ Nat.Prime 123 := by decide
+    5292	  have h_not_prime_125 : ¬ Nat.Prime 125 := by decide
+    5293	  have h_not_prime_169 : ¬ Nat.Prime 169 := by decide
+    5294	  have h_not_prime_170 : ¬ Nat.Prime 170 := by decide
+    5295	  have h_not_prime_171 : ¬ Nat.Prime 171 := by decide
+    5296	  have h_not_prime_177 : ¬ Nat.Prime 177 := by decide
+    5297	  -- 49 entries of the 7×7 submatrix.
+    5298	  -- Row i=0 (slab row 0).
+    5299	  have hE00 : unfolding 14 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨1, h_1_lt_pow_dj⟩ = 1 := by
+    5300	    change chiP (0 * 14 ^ ((j + 1) - j) + 1 + 1) = 1
+    5301	    rw [h_sub]
+    5302	    have h_eq : (0 * 14 ^ 1 + 1 + 1 : ℕ) = 2 := by norm_num
+    5303	    rw [h_eq]; exact chiP_two_eq_one
+    5304	  have hE01 : unfolding 14 (j + 1) j ⟨0, h_pow_j_pos⟩ ⟨2, h_2_lt_pow_dj⟩ = 1 := by
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5165	    obtain ⟨ρ, σ, hUnit⟩ := exists_invertible_submatrix_W_eq_7_d_eq_j_plus_1 j hj
+    5166	    have h_eq : ((unfolding 7 (j + 1) j).submatrix ρ σ).rank = 7 := by
+    5167	      have h := Matrix.rank_of_isUnit ((unfolding 7 (j + 1) j).submatrix ρ σ) hUnit
+    5168	      simpa using h
+    5169	    calc (7 : ℕ) = ((unfolding 7 (j + 1) j).submatrix ρ σ).rank := h_eq.symm
+    5170	      _ ≤ (unfolding 7 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    5171	
+    5172	/--
+    5173	**Corner-case prime exhibit (W = 14, d = j + 1).**
+    5174	
+    5175	S235 closure of the W=14 orthogonal corner. Specialisation of
+    5176	`exists_invertible_submatrix` to `W = 14`, `d = j + 1`, where
+    5177	`R = min(14^j, φ(14) + 1) = min(14^j, 7) = 7` for every `j ≥ 1`.
+    5178	
+    5179	**Proof technique novelty.** This is the **first** corner closure using
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5615	                 hne_5_0, hne_5_1, hne_5_2, hne_5_3, hne_5_4,
+    5616	                 hne_6_0, hne_6_1, hne_6_2, hne_6_3, hne_6_4, hne_6_5]
+    5617	    all_goals first
+    5618	      | exact hE00
+    5619	      | exact hE01
+    5620	      | exact hE02
+    5621	      | exact hE03
+    5622	      | exact hE04
+    5623	      | exact hE05
+    5624	      | exact hE06
+    5625	      | exact hE10
+    5626	      | exact hE11
+    5627	      | exact hE12
+    5628	      | exact hE13
+    5629	      | exact hE14
+    5630	      | exact hE15
+    5631	      | exact hE16
+    5632	      | exact hE20
+    5633	      | exact hE21
+    5634	      | exact hE22
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "error|Building|Build|✔" | head -20
+    Command running in background with ID: bor4n9k7r. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bor4n9k7r.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>bor4n9k7r</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    ✖ [8313/8315] Building MPSBondDim.Basic (112s)
+    error: MPSBondDim/Basic.lean:5221:2: unexpected token 'set_option'; expected 'lemma'
+    error: Lean exited with code 1
+    error: build failed
+    </output>
+  [Bash] grep -n "set_option maxHeartbeats" /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean | head -10
+    2964:set_option maxHeartbeats 2000000 in
+    3897:set_option maxHeartbeats 800000 in
+    4541:set_option maxHeartbeats 800000 in
+    5214:**Heartbeat budget.** This theorem uses `set_option maxHeartbeats
+    5222:set_option maxHeartbeats 2000000 in
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    2960	    ∏ i, f i = f 0 * f 1 * f 2 * f 3 * f 4 * f 5 * f 6 * f 7 * f 8 := by
+    2961	  rw [Fin.prod_univ_castSucc, Fin.prod_univ_eight]
+    2962	  rfl
+    2963	
+    2964	set_option maxHeartbeats 2000000 in
+    2965	-- The W=20 corner has R = 9, producing 81 fin_cases × fin_cases subgoals in the
+    2966	-- BlockTriangular check (vs 49 at W=18, R=7). The simp blow-up scales as R² and
+    2967	-- pushes simp past the default 200000 heartbeats. See S143 synthesis.
+    2968	/--
+    2969	**Corner-case prime exhibit (W = 20, d = j + 1).**
+    2970	
+    2971	Specialisation of `exists_invertible_submatrix` to the corner case
+    2972	`W = 20`, `d = j + 1`, where `R = min(20^j, φ(20)·1 + 1) = 9` for every `j ≥ 1`.
+    2973	Closed unconditionally using `chiP_two_eq_one`, `chiP_twenty_three_eq_one`,
+    2974	`chiP_forty_seven_eq_one`, `chiP_one_hundred_forty_nine_eq_one`,
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    5170	      _ ≤ (unfolding 7 (j + 1) j).rank := Matrix.rank_submatrix_le _ _ _
+    5171	
+    5172	/--
+    5173	**Corner-case prime exhibit (W = 14, d = j + 1).**
+    5174	
+    5175	S235 closure of the W=14 orthogonal corner. Specialisation of
+    5176	`exists_invertible_submatrix` to `W = 14`, `d = j + 1`, where
+    5177	`R = min(14^j, φ(14) + 1) = min(14^j, 7) = 7` for every `j ≥ 1`.
+    5178	
+    5179	**Proof technique novelty.** This is the **first** corner closure using
+    5180	**three-level nested** `Matrix.det_fromBlocks_zero₂₁`. Previous closures
+    5181	used at most two levels (W=9 / W=7 with 1+(3+3) at two levels; all
+    5182	others with single-layer `det_of_upperTriangular` or its blockless
+    5183	variant). The (S206) W=11 single-session closure failed because the
+    5184	inner 5×5 odd parity block was atomic; W=14 — composite — admits a
+    5185	`(2, 3, 1)` BlockTriangular decomposition with all parts ≤ 3.
+    5186	
+    5187	**Layered structure.**
+    5188	* Layer 1 (outer): `Fin 1 ⊕ Fin 6 ≃ Fin 7` via `finSumFinEquiv`, splits
+    5189	  off row 0 + col 1 (the dead-col witness `chiP 2 = 1`). Lower-left
+    5190	  `1..6 × {col 1}` zero by `chiP (14r + 2) = 0` for `r ≥ 1`.
+    5191	* Layer 2 (mid): `Fin 5 ⊕ Fin 1 ≃ Fin 6` via `finSumFinEquiv`, splits
+    5192	  the inner 6×6 into a top 5×5 and a bottom 1×1 corner. The 1×1
+    5193	  corner is `row 8 × col 0` with value `chiP 113 = 1`. Lower-left
+    5194	  `{row 8} × {cols 2, 8, 4, 10, 12}` zero (verified via the chosen
+    5195	  composites).
+    5196	* Layer 3 (inner): `Fin 2 ⊕ Fin 3 ≃ Fin 5` via `finSumFinEquiv`, splits
+    5197	  the 5×5 into a top-left 2×2 (rows {2,4} × cols {2,8}, det = -1)
+    5198	  and a bottom-right 3×3 (rows {3,6,12} × cols {4,10,12}, det = -1).
+    5199	
+    ... (25 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/MPSBondDim/Basic.lean has been updated successfully.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "error|✔|Build" | head -20
+    Command running in background with ID: brz8fu06s. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/brz8fu06s.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>brz8fu06s</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    ✔ [8314/8315] Built MPSBondDim (6.6s)
+    Build completed successfully (8315 jobs).
+    </output>
+Build succeeds. Let me verify the new theorems don't introduce any sorry or axiom dependencies.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 > /tmp/lake_full.log
+grep -E "sorry|axiom" /tmp/lake_full.log | head -10
+    warning: MPSBondDim/Basic.lean:467:8: declaration uses `sorry`
+Excellent — only the pre-existing sorry at line 467 remains. My W=14 closure is sorry-free. Let me update the agenda and write the session synthesis.
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search_results.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_blocktriangular_search_results.md has been updated successfully.
+Now let me update the agenda's milestones with the new W=14 closure.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now update the next-action queue.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now let me update CLOSED_PATHS, EDGES (annotation), and write the session synthesis.
+  [Bash] tail -40 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md 2>&1 | head -40
+    <persisted-output>
+    Output too large (97.3KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tool-results/b9a07onml.txt
+    
+    Preview (first 2KB):
+    | §C9.b NOVELTY_CHALLENGES — Higher-moment composition: T_Q autocorrelation matches truncated Hardy-Littlewood twin-prime singular series at any squarefree-conductor cutoff Q? Test `<T_Q(n) T_Q(n+h)>_n,connected = (π(N)/N)² · (S_Q(h) − 1)` where `S_Q(h) = Σ_{q sqf ≤ Q} μ²(q)/φ²(q) c_q(h)` and `T_Q` is the S191 / C9 pointwise spike approximator. (cross-domain: NONE beyond S191 — Hardy-Littlewood 1923 *Acta Math.* 44 §4; Wintner 1944 *Eratosthenian averages* — used only as comparison textbook value) | BUILT | I | S205 construction-mode session composing E2.1 + E2.2 + E2.13 + E1.6 + C9 / S191. **Identity verified at d ∈ {16, 18, 20}** with precision ≈ 0.5 % uniformly across 14 shifts h ∈ {0, 1, ..., 12, 30, 210} × 8 conductors Q ∈ {2, 6, 13, 18, 30, 210, 1024 (= √N at d=20), 2310}. **F1 (identity) PASS within 0.6 %** — two orders of magnitude tighter than the pre-stated [0.85, 1.15] band. **F2 (HL recovery at Q = √N): PASS within 0.2 %** for all even h tested (h=2 ratio 1.00133 at d=20, Q=1024; h=6 0.99964; h=12 1.00004; h=30 1.00037; h=210 1.00168). **F3 (odd-h asymptote → 1) PASS within 0.03 %** (h=1 ratio 1.00019, h=3 1.00014, h=5 0.99977 at d=20, Q=1024). **F4 (h=0 self-consistency, recovers C9 / S191 single-point L²): PASS within 0.01 %** (Var(T_Q) = (π/N)² · (S_Q(0) − 1) holds at every Q to < 0.0001). **F5 (prime correlation matches HL): PASS within ~6 %** at d=20 (standard finite-N for the small absolute counts of (n, n+h) prime pairs at this scale). **Closed-form identity:** `R_h^conn(Q, N) := ⟨T_Q(n) T_Q(n+h)⟩_n − ⟨T_Q⟩² = (π(N)/N)² · (S_Q(h) − 1) + O(N^{-1+ε})` from Ramanujan-Fourier diagonal selection. **What's new beyond E2.13:** E2.13 is the **four-point cube** `U^2`/HL match with `S_2 = 2.300938`; this construction is the **two-point shift** companion, with explicit pointwise function realising the identity at any conductor Q at `O(N · |H| + Q · ω · N)` cost. The two-point identity is independent observable from the cube. **What's new beyond C9 / S191:** 
+    ...
+    </persisted-output>
+  [Bash] tail -3 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | §P.P1 batched-on-modulus q amortisation, slot 4 — composite-q multi-axis FFT primitive via CRT decomposition + end-to-end Dirichlet-L zero finder for squarefree odd composite q: does the multi-axis primitive (numpy.fft.ifftn over a CRT-tuple-indexed tensor) extend slot-3's structural lift to the practical AP regime, and does composite q introduce asymptotic improvement over prime q? | REFINEMENT (architecture extension + bounded constant lift preserved) | I (multi-axis FFT works; FFT vs DIRECT 1.75× at q=1001 vs slot-3's 2.04× at q=1009; no asymptotic gain at composite q) | Thread 6 commit step 4/5 (S230). Built `experiments/analytic/batched_q_amortisation/slot4_composite_q_multi_axis_fft.py` (~600 lines): CRT decomposition `crt_decomp(q)` returns (primes, group_orders [p_i-1], primitive_roots g_i mod p_i) for squarefree odd q; `build_crt_log_table(q, ...)` precomputes residue → CRT-tuple (k_1, ..., k_K) where n ≡ g_i^{k_i} (mod p_i); multi-axis FFT primitive `l_eval_multiaxis_fft` aggregates W of shape (p_1-1, ..., p_K-1, n_t) and applies `phi · numpy.fft.ifftn(W, axes=(0,...,K-1))` to recover L-values for ALL φ(q) characters via dual-group identity `χ_{j_1,...,j_K}(n) = Π_i ω_i^{j_i k_i}`; full AFE main + reflected via same `Σ χ̄(n)/n^{½-it} = conj(Σ χ(n)/n^{½+it})` simplification (holds for ALL primitive characters of finite abelian groups, not just prime q); Gauss sums τ(χ) via multi-axis FFT identity over e_a; χ(-1) parity formula (Σ_i j_i) mod 2 [BUG-FIX: initial implementation used wrong (j_i · (p_i-1)/2) mod 2 which only matched prime q; caught via mpmath cross-check]; primitive character flag (j_i ≠ 0 ∀ i for squarefree q); Hardy Z + sign-change bracketing identical to slot 3. **Cross-method correctness verified to 1e-15 relative error** at q ∈ {15, 35, 105, 1001} via direct per-character matmul `chi_table @ cp` reference. **mpmath ground-truth zero finder cross-check** at q=15 χ_index=(1,1) t_max=40: slot-4 (2.697, 5.229, 8.383, 10.232, 11.896) vs mpmath Hardy-Z ground truth (2.746, 5.238, 8.418, 10.194, 11.920), max abs diff 0.049; q=35 χ_index=(1,1) t_max=30: max abs diff 0.062 — consistent with slot-3's 0.033 at q=11. **End-to-end π(x; q, a) timing 3-run median (q, factors, φ, K, t_single)**: (15, [3,5], 8, 50, 3.96ms), (35, [5,7], 24, 50, 5.25ms), (105, [3,5,7], 48, 50, 6.94ms), (105, [3,5,7], 48, 200, 38.4ms), (1001, [7,11,13], 720, 200, 166.6ms). **HEADLINE COMPARISON**: q=1009 (prime, φ=1008, slot-3, K=200): 186.3ms vs q=1001 (composite, φ=720, slot-4, K=200): 166.6ms — 11% wall-clock drop at q=1001 attributable mostly to smaller φ (29% reduction), NOT multi-axis-FFT-specific; per-character cost essentially unchanged because N_AFE depends on q (not φ) and is comparable between q=1001 and q=1009. **FFT vs DIRECT (no FFT sharing) within slot-4 pipeline**: q=105 K=50 N_AFE=283 n_t=218: FFT 5.09ms vs DIRECT 4.24ms = 0.83× (FFT loses, small composite q); q=1001 K=200 N_AFE=1872 n_t=823: FFT 145.24ms vs DIRECT 254.39ms = **1.75× FFT speedup** (vs slot-3's 2.04× at prime q=1009). **Multi-axis FFT preserves slot-3's structural lift in composite-q regime; does NOT introduce asymptotic gain.** Crossover q ∈ [200, 500] same as slot-2/slot-3 prime-q. Multi-axis FFT slightly underperforms single-axis at comparable q because numpy.fft.ifftn calls 1D FFT routines per axis; small per-axis transforms (e.g., shape (6, 10, 12) at q=1001) have proportionally higher constant overhead than one large 1D FFT (size 1008 at q=1009). **Falsifiers F4.1-F4.4 framing slot 5**: F4.1 multi-axis FFT does not give asymptotic improvement over slot-3 single-axis at composite q (constant-factor lift in same crossover regime); F4.2 end-to-end wall-clock dominated by AFE eval (N_AFE · n_t depends on q not φ, composite q inherits same AFE cost as nearby prime q); F4.3 multi-axis FFT does not shrink AFE truncation requirement (balanced N = √(qt/(2π)) is q-only); F4.4 cross-conductor amortisation across Q-family NOT attempted in slot 4 (slot-3 leftover priority-a). **Cross-domain ingredient**: CRT-based multi-axis Dirichlet character DFT — generalisation of slot-2's cyclic-group DFT primitive (Bober-Hiary 2017) to direct-product groups (Z/p_1Z)* ⊕ ... ⊕ (Z/p_KZ)* via Chinese Remainder Theorem (Davenport "Multiplicative NT" §1). Implemented as numpy.fft.ifftn on multi-dimensional tensor indexed by CRT log-tuples. **NEW USED I** in this project; CROSS_DOMAIN_TECHNIQUES.md §10 extension "CRT multi-axis Dirichlet character DFT". Cites E1.5 (per-query bit-content barrier; multi-axis primitive affects setup + AFE eval but not partial-sum eval, exactly per E1.5), E2.1 (spectral / sieve interface; multi-axis DFT generalises slot-2's cyclic DFT to direct-product groups), E3.1 (CCM setup-vs-eval decoupling; multi-axis FFT lifts setup but not eval), E6.6 (Aggarwal — orthogonal, within-q vs cross-call), E6.7 (DR per-query Θ(x^{2/3}/log²) — orthogonal pillar), S224 (Correlation Dichotomy template; slot-4 wall-clock shape ~1.75× constant lift NOT Correlation-Dichotomy-shaped, same shape as slot-3 "real-zeros for synthetic-cost"), S227 (slot 1), S228 (slot 2 cyclic-DFT primitive that slot-4 generalises), S229 (slot 3 prime-q end-to-end pipeline that slot-4 extends). See `experiments/analytic/batched_q_amortisation/{slot4_composite_q_multi_axis_fft.py, slot4_composite_q_multi_axis_fft_results.md, slot4_composite_q_end_to_end.csv, slot4_composite_fft_vs_direct.csv}`, `archive/sessions/session230_commit_p1_composite_q_multi_axis_fft.md`. | 230 |
+    
+    | §1.C9.b.iv composition challenge — four-point identity for spike-pointwise pointwise approximator at primorial conductor: do the (S205, S208, S209) k=(2,1,3)-point HL singular series identities extend to k=4 with the same proof template? | REFINEMENT (closed-form 4-point identity proven analytically + verified empirically) | E | S234 construction-mode session (C9.b.iv). Built `experiments/constructions/spike_pointwise_HL_quad/tq_quad_correlation.py` (~370 lines) with seven pre-stated falsifiers (F1-F7). **Theorem (S234, proven analytically; verified to 0.06% across 5×11 admissible cells at d=20):** for every squarefree W ≥ 1 and integers (h_1, h_2, h_3), `<T_W^{div}(n) T_W^{div}(n+h_1) T_W^{div}(n+h_2) T_W^{div}(n+h_3)>_n = (π(N)/N)^4 · ∏_{p|W} (p − ν_p(0,h_1,h_2,h_3)) p^3/(p−1)^4 = (π(N)/N)^4 · S_HL^{(W)}(0,h_1,h_2,h_3)`. **Two independent proofs**: (a) direct from S208 pointwise collapse `T_W^{div} = (π/N)·(W/φ(W))·[gcd(n,W)=1]` + CRT density factorisation across primes p|W giving `<∏[gcd(n+h_i,W)=1]>_n = ∏_{p|W} (p−ν_p)/p`; (b) Ramanujan-Fourier 4-cumulant expansion `G_p^{(4)} = 1 + 1/(p-1)² Σ_{i<j} c_p(h_j-h_i) − 1/(p-1)³ Σ_{|S|=3} f_p^{(3)}(S) + 1/(p-1)^4 f_p^{(4)}(h_1,h_2,h_3)` algebraically equal to `(p−ν_p) p^3/(p-1)^4` across 78/78 cells (p ∈ {2,3,5,7,11,13} × 13 non-zero shift triples) at abs_err ≤ 4.44e-16. **Closed form by ν_p**: ν_p=1 → (p/(p-1))^3; ν_p=2 → (p-2)p^3/(p-1)^4; ν_p=3 → (p-3)p^3/(p-1)^4; ν_p=4 → (p-4)p^3/(p-1)^4; ν_p=p (inadmissible) → 0. **Reduction lemmas (F4/F5 algebraic)**: h_1=h_2=h_3=0 reduces to `<T_W^4>=(π/N)^4(W/φ(W))^3`; h_3=0 reduces to `(W/φ(W)) · S209-3pt`; h_2=h_3=0 reduces to `(W/φ(W))² · S205-2pt`. **Falsifier verdict**: F1 PASS dramatically (worst 0.060% at d=20 W=2310 cell (4,6,10), 100× tighter than pre-stated 0.5% band); F2 PARTIAL (4/6 admissible cells within pre-stated 2.5% at d=20 Q=2310, worst 5.7% at (6,10,12) — cross-conductor leakage at k=4 amplified by 4-6× vs S205 k=2 due to 3 disconnected pair contractions); F3 PARTIAL (4/6 within 3% at d=20, worst 3.79% at (2,8,14)); F4 PASS (1.00000); F5 PASS (1.00000 at h_3=0 reductions); F6 PASS (inadmissible (2,4,6)/(2,4,8) primorial-W ⊇ {3} → 0 exactly; (2,4,8) finite-N edge effect 1/N decay confirmed); F7 PASS (78/78 cells, machine precision). **Composes S205 (2-point) + S208 (1-point divisor collapse) + S209 (3-point) + E2.13 (Gowers U^2 cube — 4-tuple (0,h_1,h_2,h_1+h_2) at e.g. (2,6,8) gives U^2 norm closed form) + E2.16 (3-point HL prime factorisation extended to 4-tuples) + E1.6/E2.2 (parity bisection at q=2; admissibility forces all h_i even) + E2.1 (spike pointwise 4-point form). **Closes the (S205, S208, S209, S234) k = (1, 2, 3, 4) hierarchy.** General-k closed form `G_p^{(k)} = (p − ν_p) p^{k-1}/(p-1)^k` follows by induction (proposed C9.b.v). **NO polylog opening** (cost is `O(N · |H|^3)` for general k=4 sweep; closed-form prediction `O(ω(W))` per cell). **No new edge** — refines E2.1 inline; refinement of E2.13 (extends 2-point HL imprint to 4-point), E2.16 (positive identity from negative-shape DPP failure). **Cross-domain ingredient**: NONE NEW (project-internal: Ramanujan sums + Möbius inversion + HL singular series + CRT density factorisation). CROSS_DOMAIN_TECHNIQUES.md unchanged. **Successor challenges (proposed in S234)**: C9.b.iv.α (cross-conductor leakage at k=4 closed-form bound — explains the 5.7% F2 deviation); C9.b.iv.β (Lean formalisation of the 4-point identity at primorial W — three-line proof tractable); C9.b.v (general-k inductive closed form proof); C9.b.vii (Hoffman / triple-MZV interpretation of f_p^{(k)} per multiplicity profile). Cites E2.1 (annotated S234 inline), E2.13 (HL imprint at U^2 cube), E2.16 (3-point HL prime factorisation), E1.6/E2.2 (parity), S191 (C9 spike pointwise), S205 (2-point), S208 (divisor collapse), S209 (3-point). See `experiments/constructions/spike_pointwise_HL_quad/{tq_quad_correlation.py, tq_quad_correlation_results.md, tq_quad_correlation_results.json, definition.md, run.log}`, `archive/sessions/session234_c9biv_4point_HL_identity.md`. | 234 |
+Let me check EDGES.md to update the E2.1 annotation.
+  [Grep] E2\.1\b|orthogonal-corner|S159|S152
+    689:### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    905:`T_W(n) = (π(N)/N) · W/φ(W)` — pointwise restatement of E2.1's
+    934:finite-N). The two-point identity composes E2.1 (single-point spike
+    968:integers `≤ W` that fail to divide `W`). E2.1's `phi(W)/W` factor is
+    1122:E2.1 is fully formalised; only the prime-existence exhibit remains.
+    1135:the orthogonal-corner argument to `W = 3`** —
+    1141:verified. **S107 extended the orthogonal-corner argument to `W = 4`** —
+    1145:explicit primes `2, 3, 5, 7, 11`. **The first orthogonal-corner instance
+    1151:S143/S144/S152/S159 progressively extended the orthogonal corner to
+    1154:`Basic.lean`. **S152 introduced the `Matrix.det_fromBlocks_zero₂₁` route**
+    1156:obstructed); **S159 reused the same nested 1+(3+3) template at W=7**
+    1177:mechanism is the unfolding-rank lower bound ITSELF; E2.1 is no longer
+    1284:> E2.1) of the smooth/oscillatory bisection.
+    1297:matching E2.1's TT bond-dim 2^{N/2} and E2.7's communication rank
+    2532:This reflects the parity barrier (E2.1): the leading harmonic of the
+    2554:**Composes with.** E2.1 (parity barrier — the period-4 mod-4 oscillation
+    4102:(Same as E2.1.) Worth restating: every prime p added to the wheel
+    4561:realisation of E2.1 / E4.1's wheel-W = phi(W)/W bond-dim theorem** — a 4x
+    5533:> - E2.1 (Riemann-zeta + Möbius prime-zeta connection) — uses M_s as
+    5907:| MPS-base-W identity: rank = min(W^j, phi(W) W^{d-j-1} + 1) | exact | E2.1 |
+    5983:| E2.1 (MPS bond-dim) × free-probability | OPEN | C2 |
+    5995:- **E2.1 + E2.7 + E2.8** — three "structural rank" edges (MPS bond-dim,
+    5997:  φ(W)/W (E2.1), 1+2/2^{N/2} (E2.7), 0.65-0.75 (E2.8) might be facets of
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    1145	explicit primes `2, 3, 5, 7, 11`. **The first orthogonal-corner instance
+    1146	where `rank_le_width` is not tight** — column `3` is `chiP` at multiples
+    1147	of `4` (all zeros), so `R = 3 = φ(4)·4^0 + 1 < 4` and the upper bound
+    1148	must cite the general `upper_bound` lemma rather than the trivial column
+    1149	count. Four corners are now formally verified. See `mps_bond_dim_notes.md`
+    1150	for the routes still open on the general case. **S117/S122/S128/S129/S137/
+    1151	S143/S144/S152/S159 progressively extended the orthogonal corner to
+    1152	`W ∈ {5, 6, 8, 9, 10, 12, 18, 20, 7}`** (twelve wheels in total) —
+    1153	each is a sorry-free `mps_bond_dim_W_eq_X_d_eq_j_plus_1` theorem in
+    1154	`Basic.lean`. **S152 introduced the `Matrix.det_fromBlocks_zero₂₁` route**
+    1155	for the W=9 corner (where leading-row triangulation is structurally
+    1156	obstructed); **S159 reused the same nested 1+(3+3) template at W=7**
+    1157	with ZERO new prime helpers (helper library reached steady-state reuse)
+    1158	and `det = 2 ≠ ±1` (first instance closing via `Ne.isUnit` rather than
+    1159	`IsUnit 1`). The closed-W set for the orthogonal corner is now
+    1160	`{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 18, 20}`; remaining structurally-
+    1161	obstructed wheels at `R ≤ 22` (per S144 enumeration) are
+    1162	`{11, 13, 14, 15, 16, 17, 19, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33,
+    1163	34, 36, 38, 40, 42, 44, 48, 50, 54, 60, 66}`, each requiring its own
+    1164	pre-search to identify a BlockTriangular permutation.
+    1165	
+    1166	**S77 family-level scope refinement (N1):** the unfolding-rank lower
+    1167	bound `≥ φ(W)·W^(d-j-1)+1` is the *universal* half-cut bond dim across
+    1168	classical polynomial-spatial-locality tensor-network ansätze:
+    1169	**MPS / Tensor-Train, Hierarchical Tucker (root-children bond dim),
+    1170	Tensor Ring, PEPS (2D-reshape boundary), and CP-rank Kruskal lower
+    1171	bound**. Verified at 22 (W, d) pairs spanning W ∈ {2, 3, 4, 5, 6, 7},
+    1172	d ∈ {4, 6, 8, 10, 12}: half-cut bond dim is **identical** across all
+    1173	five ansätze in 21/22 cases, with a single finite-size deficit of 1 at
+    1174	(W=5, d=4, N=625). Tucker and MERA close by orthogonal mechanisms
+    ... (5 more lines)
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+Now let me write the session synthesis.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session235_arc2_w14_corner_closure.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session235_arc2_w14_corner_closure.md
+Let me also update SESSION_INSIGHTS.
+  [Bash] tail -10 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    C9.b.iv.β (Lean formalisation), C9.b.v (general-k inductive proof),
+    C9.b.vii (Hoffman / triple-MZV interpretation of f_p^{(4)} per
+    multiplicity profile — bridges to D38/E7.23).
+    
+    **Files.** `experiments/constructions/spike_pointwise_HL_quad/
+    {tq_quad_correlation.py, tq_quad_correlation_results.md, definition.md,
+    tq_quad_correlation_results.json, run.log}`. EDGES.md E2.1 inline
+    annotated. CLOSED_PATHS row added (S234). NOVELTY_CHALLENGES.md
+    C9.b.iv marked BUILT. RESEARCH_AGENDA.md Arc 4 milestone added.
+    Session synthesis at `archive/sessions/session234_c9biv_4point_HL_identity.md`.
+  [Bash] grep -n "^## Session 23[0-9]" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -10
+    10175:## Session 230 — Thread 6 commit step 4/5: composite-q multi-axis FFT primitive + end-to-end zero finder
+    10297:## Session 232 (2026-04-29) — D17 frontier attack: discrete-Morse complexity of the divisibility-poset Hasse diagram (B-grade)
+    10345:## Session 233 (2026-04-30) — D38 cross-domain attack: prime-restricted multiple zeta values vs Brown 2012 motivic Galois algebra (B-grade)
+    10422:## Session 234 — C9.b.iv: 4-point spike-pointwise = truncated HL prime quadruple singular series at primorial W (B-grade)
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    10466 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    10460	
+    10461	**Files.** `experiments/constructions/spike_pointwise_HL_quad/
+    10462	{tq_quad_correlation.py, tq_quad_correlation_results.md, definition.md,
+    10463	tq_quad_correlation_results.json, run.log}`. EDGES.md E2.1 inline
+    10464	annotated. CLOSED_PATHS row added (S234). NOVELTY_CHALLENGES.md
+    10465	C9.b.iv marked BUILT. RESEARCH_AGENDA.md Arc 4 milestone added.
+    10466	Session synthesis at `archive/sessions/session234_c9biv_4point_HL_identity.md`.
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now let me update the .run_state to advance to run 403.
+  [Bash] echo 403 > /apps/aplikacijos/prime-research/.run_state
+cat /apps/aplikacijos/prime-research/.run_state
+    403
+Let me do final cleanup checks per CLAUDE.md.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim && find . -name "__pycache__" -type d 2>&1 | head -5
+ls *.py *.md 2>&1 | head -30
+    leading_row_search.py
+    mps_bond_dim_notes.md
+    w11_blocktriangular_search.py
+    w11_blocktriangular_search_results.md
+    w11_general_search.py
+    w11_general_search_results.md
+    w11_inner_triangulation.py
+    w11_inner_triangulation_results.md
+    w11_nested_search.py
+    w11_nested_search_results.md
+    w11_odd_block_atomicity.py
+    w11_odd_block_atomicity_results.md
+    w14_blocktriangular_search.py
+    w14_blocktriangular_search_results.md
+    w14_j1_analysis.py
+    w14_j1_best_candidate.py
+    w14_j1_shape_search.py
+    w7_blocktriangular_search.py
+    w7_blocktriangular_search_results.md
+    w9_blocktriangular_search.py
+    w9_blocktriangular_search_results.md
+  [Bash] for f in *.py; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done
+    Exit code 1
+    MISSING: leading_row_search_results.md
+    MISSING: w14_j1_analysis_results.md
+    MISSING: w14_j1_best_candidate_results.md
+    MISSING: w14_j1_shape_search_results.md
+  [Bash] ls leading_row_search_results.* 2>&1 | head -5
+    leading_row_search_results.txt
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_analysis_results.md
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_shape_search_results.md
+  [Write] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_best_candidate_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/w14_j1_best_candidate_results.md
+  [Bash] for f in *.py; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; find . -name "__pycache__" -type d 2>&1
+    MISSING: leading_row_search_results.md
+  [Grep] Route A\^|S159|S152|S143
+    5:[Omitted long matching line]
+    6:[Omitted long matching line]
+    77:| `chiP_forty_seven_eq_one` *(S143)*                   | `chiP 47 = 1`                            | **done** |
+    78:| `chiP_one_hundred_forty_nine_eq_one` *(S143)*        | `chiP 149 = 1`                           | **done** |
+    79:| `chiP_one_hundred_ninety_nine_eq_one` *(S143)*       | `chiP 199 = 1`                           | **done** |
+    80:| `chiP_two_hundred_forty_one_eq_one` *(S143)*         | `chiP 241 = 1`                           | **done** |
+    81:| `chiP_three_hundred_thirty_seven_eq_one` *(S143)*    | `chiP 337 = 1`                           | **done** |
+    82:| `prod_univ_nine'` *(S143, private)*                  | local `Fin 9` product expansion          | **done** |
+    83:| `exists_invertible_submatrix_W_eq_20_d_eq_j_plus_1` *(S143)* | W=20 corner exhibit (R=9, BlockTriangular route, mixed leading/non-leading rows; `set_option maxHeartbeats 2000000`) | **done** |
+    84:| `mps_bond_dim_W_eq_20_d_eq_j_plus_1` *(S143)* | W=20 corner case `rank = 9` (sorry-free) | **done** |
+    88:| `chiP_thirteen_eq_one` *(S152)*           | `chiP 13 = 1`                                  | **done** |
+    89:| `chiP_forty_one_eq_one` *(S152)*          | `chiP 41 = 1`                                  | **done** |
+    90:| `chiP_fifty_three_eq_one` *(S152)*        | `chiP 53 = 1`                                  | **done** |
+    91:| `chiP_sixty_one_eq_one` *(S152)*          | `chiP 61 = 1`                                  | **done** |
+    92:| `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner exhibit (R=7, **first `det_fromBlocks_zero₂₁` route** — `(1+6)→(3+3)` nested block-DIAGONAL decomposition; permutation from S151 pre-search) | **done** |
+    93:| `mps_bond_dim_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner case `rank = 7` (sorry-free; closes the first S128/S129/S144 "block-triangular-required" wheel) | **done** |
+    417:* **Route A^{(8)} (orthogonal corner, `W = 12`). DONE S129.**
+    483:* **Route A^{(9)} (orthogonal corner, `W = 18`). DONE S137.**
+    559:* **Route A^{(10)} (orthogonal corner, `W = 20`). DONE S143.**
+    624:  **Why W ∈ {15, 16, 24, 30} are structurally obstructed (S143
+    646:* **Route A^{(11)} (orthogonal corner, `W = 10`). DONE S144.**
+    704:      `prod_univ_X` lemmas plus heartbeat-bumping (cf. S143's
+    713:* **Route A^{(12)} (orthogonal corner, `W = 9`, `det_fromBlocks_zero₂₁` route). DONE S152.**
+    785:  `chiP_X_eq_one` helpers for `X ∈ {13, 41, 53, 61}` (S152,
+    797:  implementation needs a separate session and ~600 lines. S152 confirms
+    803:  **Once-W=9 is closed (now actually true):** Route A^{(12)} becomes the
+    811:* **Route A^{(13)} (orthogonal corner, `W = 7`, `det_fromBlocks_zero₂₁` route). DONE S159.**
+    819:  S128, S152). `#print axioms` confirms only `propext, Classical.choice,
+    822:  **Pre-search: 2 candidates, both block-DIAGONAL.** The S159 pre-search
+    832:  the same Lean assembly as W=9 (S152). Layer-1 split via
+    ... (2 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    811	* **Route A^{(13)} (orthogonal corner, `W = 7`, `det_fromBlocks_zero₂₁` route). DONE S159.**
+    812	  Closed `exists_invertible_submatrix` for `(W = 7, d = j + 1)` via two
+    813	  new declarations: `exists_invertible_submatrix_W_eq_7_d_eq_j_plus_1` and
+    814	  `mps_bond_dim_W_eq_7_d_eq_j_plus_1 : (unfolding 7 (j+1) j).rank = 7`
+    815	  for every `j ≥ 1`. **Sorry-free; ZERO new prime helpers** —
+    816	  every prime in the 7×7 submatrix
+    817	  (`{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}`) was already
+    818	  declared from prior corner closures (S98, S99, S106, S117, S122,
+    819	  S128, S152). `#print axioms` confirms only `propext, Classical.choice,
+    820	  Quot.sound`.
+    821	
+    822	  **Pre-search: 2 candidates, both block-DIAGONAL.** The S159 pre-search
+    823	  (`w7_blocktriangular_search.py`) on the W=7 7×7 slab found exactly two
+    824	  valid `1+(3+3)` BlockTriangular decompositions; both block-diagonal,
+    825	  both needing zero new prime helpers. The chosen permutation is
+    826	  `ρ ↦ (0, 1, 3, 5, 2, 4, 6)` and `σ ↦ (6, 1, 3, 5, 0, 2, 4)`. The matrix
+    827	  is `7^j × 7`; live cols are `{0, 1, 2, 3, 4, 5}` (W=7 is prime, so all
+    828	  six are coprime to 7) plus dead col `6` (the self-prime witness `chiP 7
+    829	  = 1` at row 0). `R = φ(7) + 1 = 7`.
+    830	
+    831	  **Triangulation IMPOSSIBLE; block-DIAGONAL `(1 + 3 + 3)` works** with
+    832	  the same Lean assembly as W=9 (S152). Layer-1 split via
+    833	  `finSumFinEquiv : Fin 1 ⊕ Fin 6 ≃ Fin 7` gives `A : Matrix (Fin 1) (Fin
+    834	  1) ℚ = [[1]]`, `B : Matrix (Fin 1) (Fin 6) ℚ = [[1, 0, 0, 0, 1, 1]]`,
+    835	  and `D : Matrix (Fin 6) (Fin 6) ℚ` (the 6×6 block-diagonal core).
+    836	  Layer-2 split via `finSumFinEquiv : Fin 3 ⊕ Fin 3 ≃ Fin 6` gives `D₁
+    837	  = [[0,1,1],[1,0,0],[1,0,1]]` (det `-1`) and `D₂ =
+    838	  [[0,1,1],[1,1,0],[1,0,1]]` (det `-2`). Total
+    839	  `Mexp.det = 1 · ((-1) · (-2)) = 2`.
+    840	
+    ... (30 more lines)
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    85	| `chiP_ninety_seven_eq_one` *(S144)*                  | `chiP 97 = 1`                            | **done** |
+    86	| `exists_invertible_submatrix_W_eq_10_d_eq_j_plus_1` *(S144)* | W=10 corner exhibit (R=5, BlockTriangular route, ρ ↦ (1, 0, 4, 3, 9)) | **done** |
+    87	| `mps_bond_dim_W_eq_10_d_eq_j_plus_1` *(S144)* | W=10 corner case `rank = 5` (sorry-free; refutes S128/S129 obstruction claim) | **done** |
+    88	| `chiP_thirteen_eq_one` *(S152)*           | `chiP 13 = 1`                                  | **done** |
+    89	| `chiP_forty_one_eq_one` *(S152)*          | `chiP 41 = 1`                                  | **done** |
+    90	| `chiP_fifty_three_eq_one` *(S152)*        | `chiP 53 = 1`                                  | **done** |
+    91	| `chiP_sixty_one_eq_one` *(S152)*          | `chiP 61 = 1`                                  | **done** |
+    92	| `exists_invertible_submatrix_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner exhibit (R=7, **first `det_fromBlocks_zero₂₁` route** — `(1+6)→(3+3)` nested block-DIAGONAL decomposition; permutation from S151 pre-search) | **done** |
+    93	| `mps_bond_dim_W_eq_9_d_eq_j_plus_1` *(S152)* | W=9 corner case `rank = 7` (sorry-free; closes the first S128/S129/S144 "block-triangular-required" wheel) | **done** |
+    94	
+    95	(Note: `mps_bond_dim` itself contains no `sorry`; it is a 3-line
+    96	`Nat.le_antisymm` of the auxiliary lemmas. As of S83, `lower_bound` is
+    97	also `sorry`-free: its proof is a 6-line structural reduction citing
+    98	`exists_invertible_submatrix`. The single remaining `sorry` lives
+    99	entirely inside `exists_invertible_submatrix` and captures the
+  [Edit] /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md
+    The file /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/mps_bond_dim_notes.md has been updated successfully.
+Final build verification.
+  [Bash] PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "error|✔|Build" | head -10
+    Command running in background with ID: bwf748ze2. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/bwf748ze2.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>bwf748ze2</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    error: [root]: no configuration file with a supported extension:
+    </output>
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim && PATH="$HOME/.elan/bin:$PATH" lake build 2>&1 | grep -E "error|✔|Build" | head -10
+    Command running in background with ID: b0c8uqlw0. Output is being written to: /tmp/claude-0/-apps-aplikacijos-prime-research/eebb2829-3aef-4e04-9975-13792ef74957/tasks/b0c8uqlw0.output
+  [TaskOutput] 
+    <retrieval_status>success</retrieval_status>
+    
+    <task_id>b0c8uqlw0</task_id>
+    
+    <task_type>local_bash</task_type>
+    
+    <status>completed</status>
+    
+    <exit_code>0</exit_code>
+    
+    <output>
+    Build completed successfully (8315 jobs).
+    </output>
+Build succeeds cleanly (8315 jobs). The W=14 corner closure is verified. Session complete.
+
+## Session 235 summary
+
+**Arc 2 — Lean Formalisation Track: W=14 corner closed in Lean (sorry-free).**
+
+- **What's new**: Thirteenth unconditional `mps_bond_dim` instance. New theorems `exists_invertible_submatrix_W_eq_14_d_eq_j_plus_1` and `mps_bond_dim_W_eq_14_d_eq_j_plus_1`, plus 4 new prime helpers (chiP for 67, 113, 173, 181). Closed-W set now `{2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 18, 20}`.
+- **Proof technique novelty**: First three-level nested `det_fromBlocks_zero₂₁` decomposition (1 + (5 + 1) = 1 + ((2 + 3) + 1)). First use of `Matrix.det_fin_two` in the corner family.
+- **Structural finding**: Refutes S206's hypothesis that "composite W avoids W=11-style atomicity". W=14 j=1 inner 6×6 is *almost* atomic — `(2, 3, 1)` is the **unique** parts-≤-3 BT shape that works, forced by row 8's unique support-size-1 isolation.
+- **Lake build**: 8315 jobs successful, no new sorries.
+- **Grade**: B-grade (substantive refinement + new proof-technique pattern).
+- **Next-action queued**: W=15 / W=16 pre-search (R = 9, parts-≤-4 BT search), or W=11 j ≥ 2 partial closure via S206 Path A.
+
+Files: `MPSBondDim/Basic.lean` (~620 added lines), 4 pre-search Python scripts, comprehensive results doc, EDGES + RESEARCH_AGENDA + SESSION_INSIGHTS + mps_bond_dim_notes updated. Synthesis at `archive/sessions/session235_arc2_w14_corner_closure.md`. `.run_state` updated to 403.
+--- Session ended ---
+Sleeping 60 seconds before next run...

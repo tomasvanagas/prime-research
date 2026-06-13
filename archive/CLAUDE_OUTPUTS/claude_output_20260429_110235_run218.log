@@ -1,0 +1,691 @@
+=== Run #218 — Mode: novelty — Wed Apr 29 11:02:36 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    File content (42364 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+    1	- [Session numbering vs .run_state](session_numbering_vs_run_state.md) — sessionNN files use max(existing)+1, NOT .run_state value
+    2	
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/session_numbering_vs_run_state.md
+    1	---
+    2	name: Session numbering vs .run_state
+    3	description: In prime-research, .run_state tracks run.sh invocations (lags), while session NN files in archive/sessions/ are numbered consecutively across runs — pick max(existing) + 1.
+    4	type: project
+    5	originSessionId: c8940663-c50a-48f3-8bae-bcdf41d8e227
+    6	---
+    7	`.run_state` and session NN are DIFFERENT counters.
+    8	
+    9	- `.run_state` increments per `./run.sh` invocation.
+    10	- `archive/sessions/sessionNN_*.md` files are numbered consecutively
+    11	  across all runs (one run can produce multiple sessions via the
+    12	  rotation: novelty / construction / arc / lean / critique / verify).
+    13	- The two counters drift apart because most runs produce 1+ session.
+    14	
+    15	**Why:** Why this matters: when the prompt says "echo 130 > .run_state",
+    16	that is the next `run.sh` increment, NOT the next session number. The
+    17	session number must be `max(existing sessionNN files) + 1`.
+    18	
+    19	**How to apply:** Before writing `archive/sessions/sessionNN_*.md`, do
+    20	`ls archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -1` to
+    21	get the most recent session number, then increment. Use the same NN
+    22	inside the file (titles, references like "S<NN>") AND in EDGES.md
+    23	"S<NN>; …" stubs, CROSS_DOMAIN_TECHNIQUES.md "USED <mode> (S<NN>, …)"
+    24	cells, ATTACK_VECTORS.md "[CLOSED S<NN>]" markers, CLOSED_PATHS.md row
+    25	trailing " | <NN> |", and SESSION_INSIGHTS.md "## Session <NN> — …"
+    26	headers.
+    27	
+    28	When the session uses but is DIFFERENT FROM another session (e.g., my
+    29	session 133 closing a vector that S130 frontier_gen created), keep
+    30	references to the other session as-is — only your own session header
+    ... (2 more lines)
+  [Bash] wc -l /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md /apps/aplikacijos/prime-research/EDGES.md /apps/aplikacijos/prime-research/ATTACK_VECTORS.md /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+       1186 /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+       5583 /apps/aplikacijos/prime-research/EDGES.md
+       9551 /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+        855 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+      17175 total
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -20
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session213
+    session214
+    session215
+    session216
+    session217
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state /apps/aplikacijos/prime-research/.commit_state
+    218
+    thread:a7_plethysm_subframe
+    sessions_used:5_final
+    session_history:S211,S212,S213,S214,S215
+    status:DONE
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    last_synthesis:archive/sessions/session215_commit_a7_plethysm_WRAP.md
+    slot1_summary:S211 built SymPy plethysm machinery (Vandermonde-inversion of GL_n character) and tabulated Sym^k(Sym^d C^n) for n=4 (total deg <=9) and n=5 (total deg <=6); sanity-checked vs Macdonald-Stanley closed forms. Computed Lie-derivative tangent space T_{f_d} dim AND torus weight set per homogeneous degree of f_chi_P^(n) at n in {4, 5}; both fully match matched-support baselines exactly with std=0 across 120 cells (10 trials at n=4 + 5 trials at n=5, all degrees). Refines E2.26 part (iii') with new first-order tangent invariant. Mode E closure of first-order tangent sub-frame; second-order occurrence-obstruction sub-frame remains OPEN — slot 2 next-action: I_2(tilde f_chi_P) ideal computation.
+    slot2_summary:S212 built per-weight kernel computation of I_2(orbit-closure(f)) via M random orbit samples and SVD of (M x N(N+1)/2) evaluation matrix restricted to each torus-weight class (since I_2 is GL_n-equivariant, hence T-graded). Schur decomposition of I_2 and Sym^2/I_2 via Vandermonde inversion. **At (n, d) in {(4, 3), (5, 3), (5, 4)}: dim I_2 = 0 for chi_P_n4 (deg-3 component / homogenisations to deg 3 / deg 4) AND for det_2*y^(d-2), perm_2*y^(d-2), e_3, p_3, single-monomial x_1 x_2 x_3, AND for 9 matched-support random baselines — 36 cells total.** Veronese control x_1^d gives non-trivial I_2 = catalecticant ideal at every (n, d): dim 126 / 420 / 1990 at (4,3) / (5,3) / (5,4). Sanity at (n, d) = (2, 3) and (3, 3) reproduces classical 3 / 27 catalecticant-minor counts. Refines E2.26 part (iii''). Mode E closure of second-order ideal sub-frame; higher-order plethysm sub-frame (k >= 3) remains OPEN.
+    slot3_summary:S213 extended S212 per-weight kernel machinery from pairs to triples for I_3 at (n, d) = (4, 3); ambient Sym^3(Sym^3 V_4) has dim 1540 and decomposes as S_(9)+S_(7,2)+S_(6,3)+S_(5,2,2)+S_(4,4,1) (Weyl dims 220+540+480+160+140) per S211 plethysm table. **For all 7 chi_P-class polynomials (chi_P deg-3 component = x1 x2 x3 + x1 x2 x4 + x1 x3 x4, e_3, p_3, x_1 x_2 x_3 single triple monomial, and 3 matched-support random baselines): dim I_3 = 0 with full Schur multiplicity vector (b_λ) = (1, 1, 1, 1, 1) on the 5 partitions, identically matching the full plethysm decomposition.** Veronese control x_1^3 gives dim I_3 = 1320 (= S_(7,2)+S_(6,3)+S_(5,2,2)+S_(4,4,1), the catalecticant rank-1 ideal at k=3 in 4 vars; quotient = S_(9) of dim 220 = the Sym^9(V_4) Hilbert-function value matching Iarrobino-Kanev 1999). Sanity at (n,d) = (2,3): dim I_3(x_1^3) = 10; (n,d) = (3,3): dim I_3(x_1^3) = 165 — both match cubic-Veronese textbook tables. Verification at M=3000 with separate seed: largest weight block has all 24 SVs > tolerance by 10^10 (top SV 3.16e5, bottom 8.92e3, tol 2.1e-7). NO occurrence obstruction at level k=3 between chi_P and matched baselines. Refines E2.26 part (iii'''). Mode E closure of third-order ideal sub-frame; k>=4 plethysm sub-frame remains OPEN. Slot 4 next-action: PRIORITY = test BIP 2017 no-OCB theorem applicability to chi_P; FALLBACK = compute I_4 at (n,d)=(4,3) where ambient is dim 8855.
+    slot4_summary:S214 closed the chi_P-vs-matched-baseline plethysm sub-frame at ALL k >= 1 in one structural argument via a Chow-variety identification.  **Lemma (parity argument)**: for all n >= 2 and d >= 2, f_chi_P^(n)_d = x_1 * q_{d-1}^{(n-1)}(x_2,...,x_n), where q_{d-1}^{(n-1)} is a multilinear (d-1)-form in (n-1) variables.  Proof: |S| >= 2 and val(S) prime forces val(S) odd (sum of |S| distinct positive even powers-of-2 has value >= 6 and is even, hence not prime); val(S) odd forces 1 in S.  Verified symbolically (sp.factor) at all (n, d) in {(2..7, 2..n)}: 20/20 cells have predicted x_1-common-factor structure.  **Consequence**: closure(GL_n · chi_P^(n)_d) ⊆ V_{d,1}^{n,d}, the affine cone over the Chow variety of degree-d forms with at least one linear factor (Landsberg 2017 ch. 8).  Every matched-support random baseline shares the same factorization (its support sits in {S : 1 in S, val(S) prime}), and when the cofactor is non-degenerate (verified at (n,d)=(4,3) for 10/10 random baselines with rank-3 cofactor and discriminant in [3/2, 27]), all matched baselines lie in the SAME closed GL_n-orbit closure as chi_P_d.  **Punchline**: C[orbit-closure(chi_P^(n)_d)]_k = C[orbit-closure(matched-baseline)]_k as GL_n-modules at every k >= 1.  No occurrence obstruction can ever distinguish chi_P from a matched-support baseline at any k.  S211/S212/S213 closures are particular cases of this all-k structural identity.  **Verifications**: dim Stab(chi_P^(4)_d3) = 4 (predicted = 1 + dim O_3(C) = 4); orbit dim = 12; e_3, p_3 IRREDUCIBLE in n=4 (different orbit closure).  **Iterated factorization**: chi_P^(5)_d4 = x_1 x_3 x_5 (x_2+x_4) (4 linear factors); chi_P^(5)_d5 = x_1 x_2 x_3 x_4 x_5 (fully decomposable, val([5])=31 prime); chi_P^(7)_d7 = x_1...x_7 (val([7])=127 prime).  Refines E2.26 part (iii''''): all-k Chow-variety identification sub-frame.  **NOT A-grade**: factorization is one-line parity; orbit-closure-V_{d,1} identification is standard algebraic geometry, derivable in an afternoon by an algebraic geometer.  **NOT C-grade**: NEW structural theorem with clean proof; supersedes S211/S212/S213 by extending same conclusion to all k.  Slot 5 next-action: WRAP 5-session arc.
+    slot5_summary:S215 WRAP synthesis (C-grade by design). Consolidated S211–S214 into one unified theorem (I)–(IV) on chi_P-vs-matched-baseline plethysm sub-frame: (I) f_chi_P^(n)_d = x_1·q_{d-1} for all n,d≥2 (parity); (II) closure(GL_n·chi_P_d) ⊆ V_{d,1}^{n,d} (Chow); (III) under cofactor non-degeneracy (∗), closure(GL_n·chi_P_d) = closure(GL_n·matched-baseline); (IV) C[orbit-closure(chi_P_d)]_k ≅ C[orbit-closure(matched-baseline)]_k as GL_n-modules at every k≥1. No occurrence obstruction at any k separates chi_P from matched baselines. The 5-session arc is fully closed. **A7 thread DONE; 4th commit thread closed** after S82 invariant subspace (S190), Connes amortisation (S202), Galway frontier (S195+S196). The remaining open A7 sub-frame is `d_0(V_{d,1}^{n,d})` — the first non-trivial Chow-variety ideal degree, which is a CLASSICAL ALG-GEOM property of V_{d,1}^{n,d}, NOT chi_P-specific (S212/S213 ⇒ d_0 ≥ 4 at (4,3); fallback I_4 not run because by (IV) it would produce a property of V_{d,1}^{n,d}, not of chi_P). Recommended next commit thread: from `frontier_gen` queue (D44 BC endomotive Galois-orbit flagged S163 fallback; or new sources: TDA on pi(x), free-probability spectral, transfer-operator spectrum at Connes-Bost). Files: archive/sessions/session215_commit_a7_plethysm_WRAP.md, ATTACK_VECTORS.md A7 entry, EDGES.md E2.26 pointer, RESEARCH_AGENDA.md "Closed arcs", CROSS_DOMAIN_TECHNIQUES.md §2 GCT entry, status/CLOSED_PATHS.md row, status/SESSION_INSIGHTS.md S215 entry.
+    next_thread_recommendation:Per S215, all 4 commit threads are CLOSED. Next commit slot must pick a NEW thread, ideally from `frontier_gen` queue (auto-fire conditions per CLAUDE.md autonomy invariants: A-grade drought ≥ 20 sessions; all listed commit threads closed). Leading candidates: D44 BC endomotive Galois-orbit (flagged S163 as A7-alternative); or new ATTACK_VECTORS entries from TDA (persistent homology of pi(x) at fine scales), free-probability (free cumulants of zeta-zero spacings), or dynamical systems (transfer-operator spectrum at Connes-Bost-style automorphism). If frontier_gen does not auto-fire, escalate to user for manual thread selection.
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    1	# Novelty Challenges — Active Research Targets
+    2	
+    3	This file holds the active research questions for sessions targeting
+    4	**B-grade work** (substantive refinement or ambitious failure of a
+    5	single-session attack — see CLAUDE.md "Novelty Bar").
+    6	
+    7	**For A-grade work, read `ATTACK_VECTORS.md` first.** That file holds
+    8	the frontier targets — the only way to produce genuinely novel
+    9	mathematics. The challenges below are ranked B-grade because they are
+    10	single-session-tractable; the trade-off is that even when they succeed,
+    11	they produce refinements rather than discoveries.
+    12	
+    13	**Pick one challenge per session.** Time-budget the work. If you can't
+    14	finish, write the partial state into RESEARCH_AGENDA.md and halt.
+    15	
+    16	The framework's grading discipline (CLAUDE.md): a session that
+    17	completes a NOVELTY_CHALLENGES.md target with a clean refinement is
+    18	B-grade. A session that *attempts* an ATTACK_VECTORS.md target and
+    19	fails informatively is also B-grade. A session that completes 5
+    20	NOVELTY_CHALLENGES targets in one sitting is *not* A-grade — it's 5×B,
+    21	and a single A-grade attempt would have been more valuable.
+    22	
+    23	---
+    24	
+    25	## §0. Pointer to Frontier Attacks (A-grade work)
+    26	
+    27	**`ATTACK_VECTORS.md` §A through §F** holds the project's frontier
+    28	targets. If your session has 1+ hour available and you are not in
+    29	the middle of an arc, pick from there instead. The frontier sections:
+    30	
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    300	`archive/sessions/session95_d7_dpp_ppp_fit.md`.
+    301	
+    302	**Successor challenges (proposed in S95):**
+    303	
+    304	**§D7.b — Pfaffian point process fit on W-tricked χ_P.** A Pfaffian
+    305	PP has matrix-valued kernel `K(t) ∈ R^{2x2}` (block-anti-symmetric)
+    306	with k-point correlations as Pfaffians of a 2k×2k matrix. Strictly
+    307	extends DPP/PPP. Test on W=210 W-tricked χ_P (where pair correlations
+    308	S(0, t)_W ≈ 1, kernel near-zero) and on bare χ_P. Predicted: same
+    309	structural failure (admissibility is multi-body, not pairwise) but
+    310	the falsification mode is different — produces a structurally
+    311	distinct edge candidate. Cost: 1-2 sessions.
+    312	
+    313	**§D7.c — α-determinantal generalisation (Vere-Jones 1997)**: allow
+    314	`R_2(t) = ρ^2 + α(t) K(t)^2` with `α(t) ∈ ℝ` offset-dependent. Setting
+    315	`α(odd) = +1, α(even) = -1` immediately accommodates the parity sign
+    316	flip. The question: do the 3-point α-identities (which generalise
+    317	both DPP and PPP) match HL across admissible all-even triples? Build
+    318	an α-permanent solver, fit α(t) numerically to minimise 3-point
+    319	residual. **A-grade if** consistent fit across all triples (would be
+    320	a NEW arithmetic invariant of χ_P). **B-grade if** structural failure
+    321	shows the obstruction is prime-vs-pair factorisation independent of
+    322	α(t) flexibility. Cost: 1-2 sessions.
+    323	
+    324	**Tertiary backup:** L1 Lean — close `exists_invertible_submatrix` for
+    325	the corner case R ≤ 2 (Route A', single session) using `Nat.bertrand`
+    326	once at `n = W^(d-1)` plus the existing `chiP_two_eq_one` row-0 entry
+    327	to exhibit a 2×2 submatrix with determinant ±1. Note S90 audit:
+    328	Route A (full closure) requires Hoheisel-grade prime-density not in
+    329	mathlib — multi-session arc on its own.
+    ... (370 more lines)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    700	`experiments/constructions/spike_pointwise_HL_quad/`.
+    701	
+    702	**C9.b.v — General-Q off-diagonal calibration.** The F2 over-count
+    703	at non-primorial Q (predicted `prod_{p sqf primes ≤ Q} G_p` minus
+    704	empirical) is due to subsets of primes whose product exceeds Q being
+    705	absent from the squarefree-cap sum. Quantify analytically. Cost: 1
+    706	session. **Save under:** `experiments/constructions/spike_pointwise_HL_correlation/general_Q_calibration/`.
+    707	
+    708	**C9.b.vi — Lean formalisation of the 3-point identity.** ~30-line
+    709	target via S208's Möbius collapse + 3-coprimality factorisation. Add to
+    710	L1 / L6 queue after L1.a (S205 2-point) target. Cost: 1-2 sessions.
+    711	
+    712	**C9.b.iii — Lean formalisation of the two-point identity.** The
+    713	identity `<T_Q(n) T_Q(n+h)>_n = (π(N)/N)² · S_Q(h)` is a one-step
+    714	character-theoretic computation: Ramanujan-Fourier expansion +
+    715	diagonal-conductor selection. Tractable Lean 4 target; add to L1 / L6
+    716	queue. Cost: 2-3 sessions.
+    717	
+    718	---
+    719	
+    720	## §2. Frame-Shift Questions
+    721	
+    722	These are research-grade open questions that *re-frame* the project away
+    723	from "polylog π(x)" while remaining in the same neighbourhood. The point
+    724	is to escape the local minimum: 67+ sessions on one frame have been
+    725	exhaustive, but adjacent frames are essentially untouched.
+    726	
+    727	### F1 — Per-bit polylog extraction — **PARTIALLY CLOSED (S146, mode E, B-grade refinement of E1.3)**
+    728	**Question:** Find J such that the J-th bit of `p(n)` is computable in polylog *for fixed J independent of N*. E1.3 says bits 0..0.6N match `round(R^{-1}(n))`. So J = 0 is trivially polylog. What is the LARGEST J for which `bit_J(p(n))` is provably polylog?
+    729	**Why this is unblocked:** The whole-number question is closed; the per-bit question has an obvious YES answer for small J and an unknown answer for medium J. The boundary is the research target.
+    ... (458 more lines)
+I'll target §F1.a.i — Dip-depth scaling law across m ∈ {2..30}. Let me first verify the S199 experiment structure.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_cross_modulus/ 2>/dev/null && echo "---" && ls /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_polylog_map/ 2>/dev/null
+    bit_J_pn_cross_modulus.py
+    bit_J_pn_cross_modulus_results.json
+    bit_J_pn_cross_modulus_results.md
+    run_L2e8.log
+    scan_L1e7.json
+    ---
+    bit_J_pn_polylog_map.py
+    bit_J_pn_polylog_map_results.md
+    bit_J_pn_results.json
+    bit_J_pn_run.log
+    scan_L10000000.json
+    scan_L200000000.json
+    scan_L50000000.json
+  [Read] /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_cross_modulus/bit_J_pn_cross_modulus.py
+    1	#!/usr/bin/env python3
+    2	"""
+    3	F1.a refinement of E1.3 — cross-modulus generalisation of the bit-level
+    4	RH-scale anti-correlation valley discovered in S146.
+    5	
+    6	S146 measured bit_J(p(n)) ≟ bit_J(round(Li^{-1}(n))) in base m=2 and
+    7	found a deep agreement-rate valley at J* = floor(log_2(p(N))/2). The
+    8	mechanism: under PNT-RH the predictor `Li^{-1}(n)` undershoots `p(n)`
+    9	by ~sqrt(p(n)) on the practical range; at bit-position J ~ J* the
+    10	rounding error has typical size 2^{J*}, flipping bit J* via a carry
+    11	with consistent sign.
+    12	
+    13	This script measures the same predictor agreement in base m for
+    14	m ∈ {3, 5, 6, 30, 210}, asking whether the valley shifts to
+    15	J*(m) = floor(log_m(p(N))/2) — which would establish RH-shadow as
+    16	a generic predictor-mod-m-half-conductor phenomenon and refine E1.3.
+    17	
+    18	Pre-stated falsification: see bit_J_pn_cross_modulus_results.md.
+    19	"""
+    20	from __future__ import annotations
+    21	
+    22	import argparse
+    23	import json
+    24	import math
+    25	import time
+    26	from pathlib import Path
+    27	
+    28	import numpy as np
+    29	
+    30	HERE = Path(__file__).parent
+    ... (184 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_cross_modulus/bit_J_pn_cross_modulus_results.md
+    1	# F1.a — Cross-modulus generalisation of the bit-J RH-shadow valley
+    2	
+    3	**Session:** 199 (NOVELTY mode, B-grade target).
+    4	**Edges refined:** E1.3 (per-bit difficulty of p(n) — sharp 4-bit sigmoid).
+    5	**Successor of:** §F1 / S146 (B-grade refinement of E1.3).
+    6	
+    7	## Target (NOVELTY_CHALLENGES.md §F1.a)
+    8	
+    9	> Repeat the bit-J measurement on `p(n) mod m` for moduli m other than 2^k
+    10	> (e.g. 3^k, 5·2^k, primorial moduli W ∈ {6, 30, 210}). Hypothesis: the
+    11	> anti-correlation valley shifts to log_m(p(N))/2 (the bit-position scale
+    12	> becomes m-adic). If true, the RH-shadow phenomenon is a generic feature
+    13	> of the residue-class predictor at the half-modulus-scale.
+    14	
+    15	## Composition
+    16	
+    17	- **E1.3** (`novel/carry_propagation_boundary.md`, S40) — per-bit
+    18	  agreement between p(n) and `round(R^{-1}(n))`.
+    19	- **S146 refinement** (`bit_J_pn_polylog_map`) — bit-level RH-scale
+    20	  anti-correlation valley at `J* = floor(log_2(p(N))/2)` with stable
+    21	  magnitude `ag_Li(J*) ≈ 0.36 ≈ 0.72 × 0.5` across L ∈ {10⁷, 5·10⁷,
+    22	  2·10⁸}.
+    23	
+    24	The S146 valley was conjectured to arise from the Skewes-direction
+    25	sign of `Li(x) > π(x)`: the predictor `Li^{-1}(n)` undershoots `p(n)`
+    26	by approximately `√p(n)`, and at bit-position `J ≈ log_2(√p(N)) =
+    27	log_2(p(N))/2` the rounding error has typical size `2^{J*}` — large
+    28	enough to flip bit J via a carry with consistent sign. If this
+    29	mechanism is *m-adic universal*, the valley should appear at
+    30	`J*(m) = floor(log_m(p(N))/2)` for any modulus m, with comparable
+    ... (298 more lines)
+Now I understand the target. Let me pick **§F1.a.i — Dip-depth scaling law**, a B-grade refinement of E1.3 testing a closed-form Gaussian prediction for `rel(m) := ag_Li(J*(m)) · m` across m ∈ {2..30}.
+
+Let me first quickly check that this hasn't been closed yet, and create the new experiment.
+  [Bash] grep -i "f1.a.i\|dip.scaling\|dip_scaling" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md 2>/dev/null | head -20
+    (Bash completed with no output)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/wildcard/ 2>/dev/null | head -20
+    adelic_prime_count.py
+    adelic_prime_count_results.md
+    algebraic_shortcut.py
+    algebraic_shortcut_results.md
+    automata_prime_count.py
+    automata_prime_count_results.md
+    batch_mobius_sieve.py
+    batch_mobius_sieve_results.md
+    bbp_digit_freeze.py
+    bbp_digit_freeze_results.md
+    bit_J_pn_cross_modulus
+    bit_J_pn_polylog_map
+    borel_explicit_formula.py
+    borel_explicit_formula_results.md
+    carry_propagation_boundary.py
+    carry_propagation_boundary_results.md
+    causal_state_complexity.py
+    causal_state_complexity_results.md
+    cf_pi_over_li.py
+    cf_pi_over_li_results.md
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling && ls /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling
+    (Bash completed with no output)
+Now let me write the pre-stated falsifiers FIRST, before running.
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling_results.md
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling.py
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+First let me do a quick sanity check at L=10⁷ to validate the code, then run at full L=2·10⁸.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling && python3 bit_J_pn_dip_scaling.py --limit 10000000 --out scan_L1e7.json 2>&1 | tail -50
+    Sieving primes up to 10,000,000...
+      Sieved 664,579 primes in 0.0s. Last prime = 9,999,991
+      Computing Li^{-1}(n)...
+      Li^{-1} done in 0.6s
+    
+    Empirical e_n stats:
+      N = 664,579, mean = 2595.28, std = 1009.85, median = 2636.00, min = 0, max = 5478
+      skew = -0.226, P(e > 0) = 1.0000
+    
+    === Per-modulus dip-scaling table (J* = floor(log_m(p_N)/2)) ===
+      m φ(m) rad  J*    mu_Y   sig_Y     ag_emp rel_emp  rel_pY  rel_pR rel_pGR  errY%  errR% errGR%
+      2    1   2  11   1.767   0.571   0.461104  0.9222  0.8302  0.9224  0.8369  -10.0   +0.0   -9.2
+      3    2   3   7   1.687   0.545   0.117383  0.3521  0.3318  0.3516  0.3345   -5.8   -0.2   -5.0
+      4    2   2   5   3.034   1.028   0.211793  0.8472  0.6724  0.8471  0.6732  -20.6   -0.0  -20.5
+      5    4   5   5   1.330   0.433   0.231297  1.1565  1.1088  1.1567  1.1499   -4.1   +0.0   -0.6
+      6    2   6   4   2.503   0.831   0.040197  0.2412  0.2040  0.2407  0.2041  -15.4   -0.2  -15.4
+      7    6   7   4   1.581   0.510   0.138950  0.9726  0.8850  0.9716  0.9035   -9.0   -0.1   -7.1
+      8    4   2   3   5.569   1.993   0.102955  0.8236  0.6164  0.8254  0.6165  -25.2   +0.2  -25.2
+      9    6   3   3   4.060   1.415   0.012557  0.1130  0.1211  0.1132  0.1211   +7.2   +0.2   +7.1
+     10    4  10   3   3.095   1.050   0.023732  0.2373  0.2142  0.2357  0.2141   -9.7   -0.7   -9.8
+     11   10  11   3   2.450   0.812   0.042633  0.4690  0.3935  0.4658  0.3937  -16.1   -0.7  -16.0
+     12    4   6   3   2.002   0.652   0.072741  0.8729  0.7328  0.8685  0.7365  -16.0   -0.5  -15.6
+     13   12  13   3   1.681   0.543   0.116969  1.5206  1.3485  1.5156  1.3693  -11.3   -0.3   -9.9
+     14    6  14   3   1.446   0.468   0.181605  2.5425  2.3698  2.5392  2.4405   -6.8   -0.1   -4.0
+     15    8  15   2  12.035   4.498   0.079804  1.1971  1.0385  1.1983  1.0385  -13.2   +0.1  -13.2
+     16    8   2   2  10.638   3.955   0.052718  0.8435  0.6011  0.8466  0.6011  -28.7   +0.4  -28.7
+     17   16  17   2   9.480   3.506   0.003333  0.0567  0.2176  0.0562  0.2176 +284.0   -0.8 +284.0
+     18    6   6   2   8.510   3.130   0.002234  0.0402  0.1035  0.0397  0.1035 +157.4   -1.3 +157.4
+     19   18  19   2   7.689   2.812   0.002803  0.0533  0.1061  0.0526  0.1061  +99.2   -1.2  +99.2
+     20    8  10   2   6.988   2.541   0.003473  0.0695  0.1249  0.0686  0.1249  +79.8   -1.3  +79.8
+    ... (17 more lines)
+Sanity check passes. The empirical-R prediction tracks observations to ~1.5% mean absolute error — essentially exact. The Gaussian-Y overshoots at moderate-m cells (m=17: +284% error), suggesting the empirical e-distribution has sub-Gaussian tails. Now let me run at full L=2·10⁸.
+  [Bash] python3 bit_J_pn_dip_scaling.py 2>&1 | tee run_L2e8.log | tail -60
+    Sieving primes up to 200,000,000...
+      Sieved 11,078,937 primes in 1.5s. Last prime = 199,999,991
+      Computing Li^{-1}(n)...
+      Li^{-1} done in 50.1s
+    
+    Empirical e_n stats:
+      N = 11,078,937, mean = 10780.53, std = 4293.66, median = 11115.00, min = 0, max = 21648
+      skew = -0.108, P(e > 0) = 1.0000
+    
+    === Per-modulus dip-scaling table (J* = floor(log_m(p_N)/2)) ===
+      m φ(m) rad  J*    mu_Y   sig_Y     ag_emp rel_emp  rel_pY  rel_pR rel_pGR  errY%  errR% errGR%
+      2    1   2  13   1.816   0.598   0.469697  0.9394  0.8811  0.9396  0.8858   -6.2   +0.0   -5.7
+      3    2   3   8   2.143   0.715   0.180960  0.5429  0.4931  0.5426  0.4957   -9.2   -0.1   -8.7
+      4    2   2   6   3.132   1.087   0.208802  0.8352  0.7696  0.8356  0.7702   -7.9   +0.1   -7.8
+      5    4   5   5   3.950   1.404   0.175919  0.8796  0.8525  0.8795  0.8526   -3.1   -0.0   -3.1
+      6    2   6   5   1.886   0.623   0.086790  0.5207  0.4572  0.5206  0.4607  -12.2   -0.0  -11.5
+      7    6   7   4   4.990   1.811   0.111371  0.7796  0.6732  0.7796  0.6732  -13.7   -0.0  -13.6
+      8    4   2   4   3.132   1.087   0.023954  0.1916  0.1837  0.1916  0.1837   -4.1   -0.0   -4.1
+      9    6   3   4   2.143   0.715   0.062130  0.5592  0.4827  0.5590  0.4843  -13.7   -0.0  -13.4
+     10    4  10   4   1.578   0.517   0.140904  1.4090  1.3080  1.4089  1.3342   -7.2   -0.0   -5.3
+     11   10  11   3   8.600   3.239   0.076765  0.8444  0.9674  0.8440  0.9674  +14.6   -0.0  +14.6
+     12    4   6   3   6.739   2.501   0.011538  0.1385  0.2271  0.1384  0.2271  +64.0   -0.1  +64.0
+     13   12  13   3   5.407   1.976   0.007017  0.0912  0.1274  0.0909  0.1274  +39.7   -0.3  +39.7
+     14    6  14   3   4.429   1.591   0.010934  0.1531  0.1805  0.1528  0.1805  +17.9   -0.2  +17.9
+     15    8  15   3   3.694   1.305   0.016294  0.2444  0.2570  0.2442  0.2570   +5.2   -0.1   +5.1
+     16    8   2   3   3.132   1.087   0.023954  0.3833  0.3674  0.3833  0.3674   -4.1   -0.0   -4.1
+     17   16  17   3   2.694   0.920   0.034418  0.5851  0.5289  0.5851  0.5290   -9.6   -0.0   -9.6
+     18    6   6   3   2.349   0.791   0.048619  0.8751  0.7665  0.8745  0.7676  -12.4   -0.1  -12.3
+     19   18  19   3   2.072   0.689   0.068035  1.2927  1.1149  1.2921  1.1196  -13.7   -0.0  -13.4
+     20    8  10   3   1.848   0.609   0.091672  1.8334  1.6186  1.8325  1.6329  -11.7   -0.1  -10.9
+    ... (17 more lines)
+Excellent results. Let me verify some key F-verdicts before writing them up.
+  [Bash] python3 -c "
+import json
+with open('bit_J_pn_dip_scaling_results.json') as f:
+    r = json.load(f)
+e = r['e_stats']
+print(f'e stats: mu={e[\"mean\"]:.2f}, sigma={e[\"std\"]:.2f}, skew={e[\"skew\"]:.4f}, range=[{e[\"min\"]}, {e[\"max\"]}]')
+print()
+# F2 prime m check
+primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29}
+print('F2: prime m  errY%   pass?')
+for row in r['rows']:
+    if row['m'] in primes:
+        ok = abs(row['rel_err_pct_Y']) <= 25
+        print(f'  m={row[\"m\"]:>3}  err={row[\"rel_err_pct_Y\"]:+.1f}%  {\"PASS\" if ok else \"FAIL\"}')
+print()
+# F1 monotonicity primorials
+primorials = [2, 6, 30]
+print('F1: primorial monotone:')
+prev = None
+for m in primorials:
+    row = next(r for r in r['rows'] if r['m'] == m)
+    msg = 'OK' if prev is None or row['rel_emp'] < prev else 'BREAK'
+    print(f'  m={m}  rel_emp={row[\"rel_emp\"]:.4f}  {msg}')
+    prev = row['rel_emp']
+"
+
+    e stats: mu=10780.53, sigma=4293.66, skew=-0.1076, range=[0, 21648]
+    
+    F2: prime m  errY%   pass?
+      m=  2  err=-6.2%  PASS
+      m=  3  err=-9.2%  PASS
+      m=  5  err=-3.1%  PASS
+      m=  7  err=-13.7%  PASS
+      m= 11  err=+14.6%  PASS
+      m= 13  err=+39.7%  FAIL
+      m= 17  err=-9.6%  PASS
+      m= 19  err=-13.7%  PASS
+      m= 23  err=-4.0%  PASS
+      m= 29  err=+288.5%  FAIL
+    
+    F1: primorial monotone:
+      m=2  rel_emp=0.9394  OK
+      m=6  rel_emp=0.5207  OK
+      m=30  rel_emp=0.0347  OK
+  [Bash] python3 -c "
+import json
+with open('/apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling_results.json') as f:
+    r = json.load(f)
+# F5: m=5 local max
+def get(mm):
+    return next(r2 for r2 in r['rows'] if r2['m'] == mm)
+g4, g5, g6, g7 = get(4), get(5), get(6), get(7)
+print('F5 (m=5 local max in rel_emp):')
+print(f'  rel(4)={g4[\"rel_emp\"]:.4f}, rel(5)={g5[\"rel_emp\"]:.4f}, rel(6)={g6[\"rel_emp\"]:.4f}, rel(7)={g7[\"rel_emp\"]:.4f}')
+print(f'  rel(5) > rel(4)? {g5[\"rel_emp\"] > g4[\"rel_emp\"]}')
+print(f'  rel(5) > rel(6)? {g5[\"rel_emp\"] > g6[\"rel_emp\"]}')
+print(f'  rel(5) > rel(7)? {g5[\"rel_emp\"] > g7[\"rel_emp\"]}')
+print()
+print('F6 (Gaussian-Y also predicts m=5 local max):')
+print(f'  rel_pY(4)={g4[\"rel_pred_gaussian_Y\"]:.4f}, rel_pY(5)={g5[\"rel_pred_gaussian_Y\"]:.4f}, rel_pY(6)={g6[\"rel_pred_gaussian_Y\"]:.4f}, rel_pY(7)={g7[\"rel_pred_gaussian_Y\"]:.4f}')
+print()
+# F7 composite vs prime parent
+print('F7 (composite m vs prime parent within 30% of rel_emp):')
+def relerr(c, p):
+    rc = get(c)['rel_emp']
+    rp = get(p)['rel_emp']
+    return abs(rc - rp) / rp * 100
+for c, p in [(4,2),(8,2),(9,3),(16,2),(25,5),(27,3)]:
+    e = relerr(c, p)
+    print(f'  m={c} (rad {p}): rel_emp={get(c)[\"rel_emp\"]:.4f}, parent rel_emp={get(p)[\"rel_emp\"]:.4f}, diff={e:.1f}%  {\"PASS\" if e <= 30 else \"FAIL\"}')
+
+# Peak structure check
+print()
+print('PEAK structure (rel_emp > 1):')
+for row in r['rows']:
+    if row['rel_emp'] > 1.0:
+        print(f'  m={row[\"m\"]:>3}  J*={row[\"J_star\"]}  mu_Y={row[\"mu_Y\"]:.3f}  rel_emp={row[\"rel_emp\"]:.4f}  rel_pY={row[\"rel_pred_gaussian_Y\"]:.4f}')
+"
+
+    F5 (m=5 local max in rel_emp):
+      rel(4)=0.8352, rel(5)=0.8796, rel(6)=0.5207, rel(7)=0.7796
+      rel(5) > rel(4)? True
+      rel(5) > rel(6)? True
+      rel(5) > rel(7)? True
+    
+    F6 (Gaussian-Y also predicts m=5 local max):
+      rel_pY(4)=0.7696, rel_pY(5)=0.8525, rel_pY(6)=0.4572, rel_pY(7)=0.6732
+    
+    F7 (composite m vs prime parent within 30% of rel_emp):
+      m=4 (rad 2): rel_emp=0.8352, parent rel_emp=0.9394, diff=11.1%  PASS
+      m=8 (rad 2): rel_emp=0.1916, parent rel_emp=0.9394, diff=79.6%  FAIL
+      m=9 (rad 3): rel_emp=0.5592, parent rel_emp=0.5429, diff=3.0%  PASS
+      m=16 (rad 2): rel_emp=0.3833, parent rel_emp=0.9394, diff=59.2%  FAIL
+      m=25 (rad 5): rel_emp=0.8343, parent rel_emp=0.8796, diff=5.2%  PASS
+      m=27 (rad 3): rel_emp=0.2190, parent rel_emp=0.5429, diff=59.7%  FAIL
+    
+    PEAK structure (rel_emp > 1):
+      m= 10  J*=4  mu_Y=1.578  rel_emp=1.4090  rel_pY=1.3080
+      m= 19  J*=3  mu_Y=2.072  rel_emp=1.2927  rel_pY=1.1149
+      m= 20  J*=3  mu_Y=1.848  rel_emp=1.8334  rel_pY=1.6186
+      m= 21  J*=3  mu_Y=1.664  rel_emp=2.5479  rel_pY=2.3279
+      m= 22  J*=3  mu_Y=1.512  rel_emp=3.5017  rel_pY=3.2907
+      m= 23  J*=3  mu_Y=1.386  rel_emp=4.7282  rel_pY=4.5399
+      m= 24  J*=3  mu_Y=1.280  rel_emp=6.3242  rel_pY=6.0809
+All key findings established. Now let me write the outcome section into the results file.
+  [Edit] /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling_results.md
+    The file /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/bit_J_pn_dip_scaling_results.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now let me update EDGES.md with the inline refinement of E1.3.
+  [Bash] grep -n "E1\.3\|carry_propagation\|sharp 4-bit\|RH-shadow\|F1\.a" /apps/aplikacijos/prime-research/EDGES.md | head -30
+    28:    `novel/carry_propagation_boundary.md`). Any chain that only delivers
+    90:### E1.3 — Per-bit difficulty of p(n) is a sharp 4-bit sigmoid    [EVS H]
+    92:`novel/carry_propagation_boundary.md`; S40
+    93:`experiments/wildcard/carry_propagation_boundary.py`.
+    110:Kt_b ∈ {5..8}; for J < J*(N) — including E1.3's "easy zone"
+    113:transition E1.3 detects via Fourier weight is invisible to bounded-Kt
+    130:For N ∈ {4, 5} at L_max = 24, the cut shifts **fully** to E1.3's
+    178:produces three findings refining E1.3:
+    218:**Cross-modulus generalisation of the RH-shadow valley (S199, F1.a).**
+    237:(a) The RH-shadow valley is *m-adic universal*, not a base-2 artefact.
+    4213:HKM with E5.1 (BPSW-TC^0) and E1.3 (carry-boundary) is the closest the
+    4272:> not depending on log x. Combined with E1.3 (4-bit sigmoid carry boundary)
+    4435:attacks (E1.3 sigmoid) cannot reduce to "compute one bit each, get O(1)
+    5487:  `novel/carry_propagation_boundary.md`, `novel/delta_spectrum.md`.
+    5514:| E5.8 (Brandt obstructions) × E1.3 (per-bit difficulty) | OPEN | C3 |
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    200	the rounding error magnitude ~2^{J*} flips bit J via carry-borrow,
+    201	with a consistent sign — yielding anti-correlation Δ ≈ 0.14 below
+    202	random. **First quantitative evidence of a bit-level Skewes shadow
+    203	in p(n) vs Li⁻¹(n).**
+    204	
+    205	(iii) **PNT first-order is bit-level inferior to Li⁻¹.** F6
+    206	"PNT (n log n) ≈ Li⁻¹ at top bits" is REJECTED: at L=2·10⁸, top bit
+    207	J=27 gives ag_PNT = 0.927 vs ag_Li = 1.000. The next-order PNT terms
+    208	(captured in Li⁻¹) are needed for bit-level top-bit prediction.
+    209	
+    210	**Lag-1 sign change at J ≈ 4.** bit_J(p(n)) has lag-1 autocorrelation
+    211	that is NEGATIVE for J ∈ {1, 2, 3, 4} (Dirichlet equidistribution:
+    212	consecutive primes alternate residue classes mod 4/8/16) and rises
+    213	to POSITIVE for J ≥ 5 (consecutive primes are close in value, sharing
+    214	high-bit values). At J=1, lag1 = -0.110 at L=2·10⁸. Quantitative
+    215	content: the bit_1(p(n)) sequence is more "balanced" than IID would
+    216	predict — close primes prefer different residues mod 4.
+    217	
+    218	**Cross-modulus generalisation of the RH-shadow valley (S199, F1.a).**
+    219	The S146 base-2 anti-correlation valley extends to base-m universal,
+    220	verified at L = 2·10⁸ for m ∈ {3, 5, 6, 30, 210}
+    221	(`experiments/wildcard/bit_J_pn_cross_modulus/`). Define
+    222	`digit_J(x) := ⌊x / m^J⌋ mod m` and `ag_Li(m, J) := P[digit_J(p(n)) =
+    223	digit_J(round(Li⁻¹(n)))]`. The dip position
+    224	`J*(m) = argmin_J ag_Li(m, J)` matches `⌊log_m(L)/2⌋` **exactly**
+    225	(Δ = 0) for all five cross-modulus bases at L = 2·10⁸:
+    226	
+    227	| m   | log_m(L) | J*_pred | J*_obs | ag(J*) | 1/m    | rel = ag · m |
+    228	|-----|----------|---------|--------|--------|--------|--------------|
+    229	| 2   | 27.58    | 14      | 14     | 0.361  | 0.500  | 0.722        |
+    ... (250 more lines)
+Now I'll add the S218 refinement to E1.3:
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Edit] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    The file /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md has been updated successfully.
+Now SESSION_INSIGHTS.md:
+  [Bash] head -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md && echo "..." && tail -10 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    # Session-by-Session Key Insights
+    
+    Detailed findings from each research session. Read the relevant session
+    if you need deep context on a specific topic. For a quick overview,
+    see the Status section of CLAUDE.md.
+    
+    ---
+    
+    ## Session 12
+    - "Is pi(x) in NC?" is EQUIVALENT to our target.
+      All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    
+    ## Session 13
+    (a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+        PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+        Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    (b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+        No GF(2) algebraic shortcut for counting primes.
+    (c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    (d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    (e) No new algorithmic breakthroughs in 2025-2026 literature.
+    
+    ## Session 14
+    (a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+        PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+        NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    (b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+        smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+        A GapL algorithm MUST avoid floor functions entirely.
+    (c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (11 more lines)
+  [Bash] tail -150 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | head -50
+    `frontier_gen` queue: D44 BC endomotive Galois-orbit (flagged S163
+    as fallback) is the leading explicit candidate; alternative new
+    sources include TDA on `pi(x)` fine scales, free-probability spectral
+    constructions on zeta-zero spacings, and transfer-operator spectrum
+    at a Connes-Bost automorphism.  If `frontier_gen` is auto-fired, it
+    should produce 3–5 new ATTACK_VECTORS entries grounded in cross-domain
+    techniques NOT yet exhausted.
+    
+    **Why C-grade not B.**  WRAP slots that produce no new content beyond
+    consolidation are C-grade by design.  The structural theorem is from
+    S214; the proof is from S214; the verifications are from S211–S214.
+    S215 only consolidates and files closure.
+    
+    **Why C-grade not F.**  The synthesis is non-trivial: the unified
+    theorem statement makes the non-degeneracy condition (∗) explicit,
+    maps slots 1–3 to particular k of the all-k identity, and registers
+    thread closure across all canonical project files.  This is the
+    intended slot-5 activity per CLAUDE.md commit-protocol.
+    
+    **Files:**
+    - archive/sessions/session215_commit_a7_plethysm_WRAP.md
+    - ATTACK_VECTORS.md A7 entry — thread CLOSED at S215; commit-thread-4
+      marked DONE
+    - EDGES.md E2.26 — pointer to S211–S215 sessions appended
+    - CROSS_DOMAIN_TECHNIQUES.md §2 GCT entry — promoted to "USED FULLY E"
+      for chi_P-vs-matched-baseline plethysm
+    - RESEARCH_AGENDA.md — A7 plethysm sub-frame moved to "Closed arcs"
+    - status/CLOSED_PATHS.md — new row S215 (thread WRAP / SYNTHESIS+CLOSURE)
+    - .commit_state — sessions_used:5_final; thread DONE;
+      prev_thread_4:a7_plethysm_subframe_DONE; next thread recommendation
+    ... (19 more lines)
+  [Bash] grep -n "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -5
+    8349:## Session 206 — W=11 corner pre-search: ATOMIC odd 5×5 block invalidates `1+5+5` route (2026-04-29)
+    8463:## Session 207 — Wild swing on §D.D9 (Bourgain-Glibichuk-Konyagin sum-product gain on the prime set in F_p) (2026-04-29)
+    8579:## Session 208 — C9.a divisor-only restriction of M_Q at squarefree W
+    9136:## Session 216 — Wild swing §D8: DARTS for TC^0 PRIMES at N=12
+    9204:## Session 217 (re-verify-closure on E6.6, 2026-04-29) — closure stands
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    9250 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    9240	content.
+    9241	
+    9242	**Why C and not F:** this IS the right outcome for a re-verify-closure
+    9243	session that fails to find an opening. The adversarial probe was
+    9244	genuine, the equation is correctly stated, and the empirical
+    9245	verification is reproducible.
+    9246	
+    9247	**Files:** `experiments/sieve/aggarwal_inexact_oracle/{aggarwal_inexact_oracle.py,
+    9248	aggarwal_inexact_oracle_results.md, run.log}`. EDGES.md E6.6 inline
+    9249	S217 annotation. CLOSED_PATHS row appended. Synthesis:
+    9250	`archive/sessions/session217_reverify_e6_6.md`.
+    9251	
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session218_f1ai_dip_scaling.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session218_f1ai_dip_scaling.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now cleanup checks per CLAUDE.md.
+  [Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "*.py" | while read f; do
+  r="${f%.py}_results.md"
+  if [ ! -f "$r" ]; then
+    # Check if this experiment is in a subdir with shared results
+    d=$(dirname "$f")
+    name=$(basename "$f" .py)
+    fallback="$d/${name}_results.md"
+    if [ ! -f "$fallback" ]; then
+      echo "MISSING: $r"
+    fi
+  fi
+done 2>&1 | head -20
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream-tags_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/combine_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/measure_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/fake-root/bin/lean_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/build/lakeprof_report_upload_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/size/run_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/bench/repeatedly_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lint-style_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/lake-build-wrapper_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/rm_set_option_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/githelper_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/dag_traversal_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_unused_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/fix_deprecations_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/user_activity_report_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/verify_version_tags_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/migrate_to_fork_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/add_set_option_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/set_option_utils_results.md
+    MISSING: experiments/formalisations/E2_1_mps_bond_dim/MPSBondDim/.lake/packages/mathlib/scripts/downstream_dashboard_results.md
+  [Bash] find /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling -name "__pycache__" -type d 2>/dev/null
+    (Bash completed with no output)
+The "MISSING" results are all inside the vendored mathlib `.lake/` directory (pre-existing, not mine). Let me verify my experiment files are complete.
+  [Bash] ls -la /apps/aplikacijos/prime-research/experiments/wildcard/bit_J_pn_dip_scaling/
+    total 100
+    drwxr-xr-x 2 root root  4096 Apr 29 11:19 .
+    drwxr-xr-x 5 root root 12288 Apr 29 11:09 ..
+    -rw-r--r-- 1 root root 11080 Apr 29 11:12 bit_J_pn_dip_scaling.py
+    -rw-r--r-- 1 root root 21610 Apr 29 11:14 bit_J_pn_dip_scaling_results.json
+    -rw-r--r-- 1 root root 19246 Apr 29 11:19 bit_J_pn_dip_scaling_results.md
+    -rw-r--r-- 1 root root  3494 Apr 29 11:14 run_L2e8.log
+    -rw-r--r-- 1 root root 21590 Apr 29 11:12 scan_L1e7.json
+All files present. Now write the run_state.
+  [Bash] echo 219 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    219
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Session 218 complete (B-grade).
+
+**What was produced (refines E1.3 inline):**
+
+1. **EXACT identity** for `ag_emp(m, J*)` in terms of the empirical residual `e_n = p_n − round(Li⁻¹(n))` and a uniform-r residue assumption — verified to mean abs error 0.0003 across 29 moduli at L = 2·10⁸:
+   `ag_emp = E_n[(1−frac_n)·𝟙[q_n ≡ 0 (mod m)] + frac_n·𝟙[q_n ≡ m−1 (mod m)]]`.
+
+2. **REFUTATION of the S199 Gaussian-RH-shadow conjecture** in the strong "exact" sense. The Gaussian-Y closed form is approximate (mean abs err 0.0962, fails by 30 %–530 % on σ_Y ≥ 2 cells where empirical e is bounded outside the Gaussian support).
+
+3. **PEAK structure (new finding):** `rel_emp(m)` is non-monotone, ranging from 0.025 (m = 28) to **6.32** (m = 24). E1.3's "RH-shadow valley" reframes as **"RH-shadow phase alignment"**: agreement = m·P[⌊Y⌋ ≡ 0 mod m], controlled by μ_Y(m) mod m relative to the integer lattice.
+
+F-verdicts: F1, F4, F5, F6 HOLD; F2, F3, F7 PARTIAL. Three successor challenges proposed (F1.a.i.α tail-corrected closed form; F1.a.i.β Cramér asymptotic; F1.a.i.γ phase-vs-rel diagram). `.run_state` advanced to 219.
+--- Session ended ---
+Sleeping 60 seconds before next run...

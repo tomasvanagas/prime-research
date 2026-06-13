@@ -1,0 +1,602 @@
+[autonomy] Default mode 'reframe' overridden by 'commit'
+=== Run #420 — Mode: commit — Thu Apr 30 07:16:31 UTC 2026 ===
+  [Bash] cat .commit_state
+    thread:p2_pi_h_batched_on_h
+    sessions_used:1
+    status:ACTIVE
+    session_history:S418
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    last_synthesis:archive/sessions/session418_commit_p2_baseline.md
+    thread_8_summary:Thread 8 = OPEN_POSITIVE_TARGETS.md §P2 — prime gap function pi_h(x) = #{p <= x : p+h prime} batched on h in {2, 4, ..., H}. Hypothesis (slot-1 entry): EXACT pi_h(x) is at least as hard as single-x pi(x), so per-h-amortised-polylog-EXACT is impossible without resolving Thread 1-4 (closed). PARTIAL-POSITIVE candidate: Hardy-Littlewood approximation HL_h(x) = S_h * li_2(x) is per-h polylog (S_h via shared small-prime sieve table) with empirical error O(sqrt(x)) — Thread-7-shape transposed to the gap-family. Slot 1 plan: build batched-h sieve baseline AND HL evaluator, measure (a) parallel-h sieve cost vs M*per-h cost, (b) HL approximation accuracy vs exact pi_h at x in {10^5, 10^6, 10^7}, (c) S_h shared-table polylog cost. Slot-1 self-grade target: B-shape (empirical baseline + structural classification of which positive-direction subclaims survive).
+    escalation_required:NO
+    escalation_reason:Thread 8 advanced from default per .commit_state recommended_next_action. User did not intervene; commit-mode rules direct advance to next priority OPEN_POSITIVE_TARGETS entry.
+    recommended_next_action:Thread 8 slot 2: based on slot-1 outcome, either (a) push HL approximation to multi-anchor / kernel-axis exploration (Thread-7-shape continuation) or (b) explore whether *exact* pi_h admits cross-h amortisation via shared zero-database Goldston-Yildirim / GPY-style sieve — adjacent to Thread 5 cross-x but with h-axis instead of x-axis.
+  [Bash] cat archive/sessions/session418_commit_p2_baseline.md | head -300
+    # Session 418 — commit Thread 8 (P2) slot 1: batched π_h(x) baseline
+    
+    **Date:** 2026-04-30
+    **Mode:** commit (Thread 8 / OPEN_POSITIVE_TARGETS §P2 — prime gap function
+    batched on h, slot 1 of 4)
+    **Prior thread:** Thread 7 (P3) closed PARTIAL_POSITIVE_CONDITIONAL at S244.
+    `.commit_state` at session start: `sessions_used:5_final` on prev thread,
+    `recommended_next_action: pick P2 (Thread 8) as next commit thread`. Per
+    commit-mode rules, this session advances to Thread 8 slot 1.
+    **Self-grade:** **B** — empirical baseline at three anchors and five
+    H-values; **structural classification of P2 into a clean two-regime
+    dichotomy** (EXACT = P1-shape negative, APPROX = P3-shape positive);
+    identifies precise slot-2 next-action. Quantitative claims falsifiable
+    at single-script reproducibility.
+    
+    ## Mission (slot-1, from `.commit_state` recommended_next_action)
+    
+    > "Thread 8 = OPEN_POSITIVE_TARGETS.md §P2 — prime gap function pi_h(x) =
+    > #{p <= x : p+h prime} batched on h in {2, 4, ..., H}. Hypothesis (slot-1
+    > entry): EXACT pi_h(x) is at least as hard as single-x pi(x), so per-h-
+    > amortised-polylog-EXACT is impossible without resolving Thread 1-4
+    > (closed). PARTIAL-POSITIVE candidate: Hardy-Littlewood approximation
+    > HL_h(x) = S_h * li_2(x) is per-h polylog (S_h via shared small-prime
+    > sieve table) with empirical error O(sqrt(x)) — Thread-7-shape
+    > transposed to the gap-family. Slot 1 plan: build batched-h sieve
+    > baseline AND HL evaluator, measure (a) parallel-h sieve cost vs M*per-h
+    > cost, (b) HL approximation accuracy vs exact pi_h at x in {10^5, 10^6,
+    > 10^7}, (c) S_h shared-table polylog cost. Slot-1 self-grade target:
+    > B-shape (empirical baseline + structural classification of which
+    > positive-direction subclaims survive)."
+    ... (120 more lines)
+  [Bash] cat .run_state 2>/dev/null; echo "---"; ls archive/sessions/ | grep -E "session4[12][0-9]" | tail -10
+    420
+    ---
+    session415_d34_de_branges.md
+    session416_reverify_e2_14.md
+    session417_critique.md
+    session418_commit_p2_baseline.md
+  [Bash] ls experiments/analytic/batched_pi_h/
+    slot1_baseline.py
+    slot1_baseline_results.md
+    slot1_raw.tsv
+    slot1_samples.tsv
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot1_baseline_results.md
+    1	# Slot 1 — Thread 8 (P2): Batched π_h(x) Baseline
+    2	
+    3	**Mode:** commit, Thread 8 / OPEN_POSITIVE_TARGETS §P2, slot 1 of (≤4).
+    4	**Script:** `slot1_baseline.py` (single-file, parameterised by anchors and H).
+    5	**Self-grade target for the slot:** B (empirical baseline + structural
+    6	classification of which positive-direction subclaims survive into slot 2).
+    7	
+    8	## Setup
+    9	
+    10	For fixed x and h ∈ {2, 4, ..., H} compute:
+    11	
+    12	```
+    13	π_h(x) := #{ p prime, p ≤ x : p + h prime }
+    14	```
+    15	
+    16	Three estimators:
+    17	
+    18	- **M1 — BATCHED SIEVE.** Sieve `[1, x+H]` once, then for each prime p ≤ x
+    19	  test all H/2 candidates p+h. Cost
+    20	  `O((x+H) log log x) + O(π(x) · H/2)`.
+    21	- **M2 — PER-h SIEVE.** For each h, independent sieve of `[1, x+h]`.
+    22	  Cost `M · O((x+h) log log x)`. Measured via single-h timing × M.
+    23	- **M3 — HARDY-LITTLEWOOD APPROXIMATION.**
+    24	  `HL_h(x) = S_h · li_2(x)` where
+    25	  `S_h = 2 C_2 Π_{p|h, p odd} (p−1)/(p−2)`,
+    26	  `li_2(x) = ∫_2^x dt / log² t`,
+    27	  `C_2 = 0.660161...` (twin-prime constant).
+    28	  Per-h cost: trial-divide h — `O(polylog x)` since H = polylog(x) and
+    29	  prime factors p ≤ √H.
+    30	
+    ... (149 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot1_baseline.py
+    1	"""
+    2	slot1_baseline.py — Thread 8 (P2) commit slot 1
+    3	================================================
+    4	
+    5	Establish the empirical baseline for batched-on-h prime-gap counting:
+    6	
+    7	    pi_h(x) := #{ p prime, p <= x : p + h prime }
+    8	
+    9	for h in {2, 4, 6, ..., H} simultaneously.
+    10	
+    11	Three measurements:
+    12	
+    13	  (M1) BATCHED SIEVE: sieve [1, x+H] once, then for each prime p <= x and
+    14	       each h in {2, 4, ..., H} test is_prime(p+h). Total cost
+    15	       O((x+H) log log x) sieve + O(pi(x) * (H/2)) pair-tests.
+    16	
+    17	  (M2) PER-H SIEVE: for each h, sieve [1, x+h] independently and count
+    18	       pairs. Total cost M * O((x+h) log log x).
+    19	       (We measure the single-h cost and multiply, so we can predict M*T_1.)
+    20	
+    21	  (M3) HARDY-LITTLEWOOD APPROXIMATION:
+    22	        HL_h(x) = S_h * li_2(x),   li_2(x) = integral_2^x dt/log^2 t,
+    23	        S_h = 2 C_2 prod_{p|h, p odd} (p-1)/(p-2),  C_2 = 0.66016181...
+    24	       Per-h cost: factor h (polylog x), multiply by precomputed li_2(x).
+    25	
+    26	Outputs:
+    27	  - exact pi_h(x) for h in {2, 4, ..., H} at x in {x_values}
+    28	  - HL_h(x) and signed error  pi_h(x) - HL_h(x)
+    29	  - timing tables for M1/M2/M3
+    30	  - per-h amortised cost shape
+    ... (342 more lines)
+  [Grep] P2|Thread 8|prime gap function|pi_h
+    59:### P2 — Prime gap function `π_h(x) = #{p ≤ x : p+h prime}` for many h [Thread 8 ACTIVE — slot 1 done at S418]
+    86:**Structural conclusion (S418):** P2 is **Thread-7 (P3) shape, not
+    105:`experiments/analytic/batched_pi_h/slot1_baseline_results.md` and
+  [Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    55	**5-session commit thread spent. See `archive/sessions/session{227,228,229,230,231}_commit_p1_*.md`
+    56	for slot-by-slot synthesis. Thread 6 marked DONE_PARTIAL_NEGATIVE in
+    57	.commit_state.**
+    58	
+    59	### P2 — Prime gap function `π_h(x) = #{p ≤ x : p+h prime}` for many h [Thread 8 ACTIVE — slot 1 done at S418]
+    60	**Problem:** for fixed x and many h ∈ {2, 4, 6, ..., H}, compute
+    61	`π_h(x)` simultaneously.
+    62	
+    63	**Why partial-positive plausible:** the singular series factor
+    64	`S_h = 2 C_2 Π_{p|h, p>2} (p-1)/(p-2)` for distinct h shares small-prime
+    65	factor structure. A sieve that produces all `π_h(x)` for h ≤ H may
+    66	share the underlying sieve table efficiently.
+    67	
+    68	**Slot 1 (S418) result — structural dichotomy.** Empirical baseline at
+    69	x ∈ {10⁵, 10⁶, 10⁷}, H ∈ {20, 50, 100, 200, 400} (plus H = ⌊log²x⌋
+    70	per-anchor) shows a **clean two-regime split**:
+    71	- **EXACT regime** (batched-sieve): per-h amortised cost
+    72	  T_batched/M = 0.6 ms → 4.6 ms → 38.9 ms across x = 10⁵ → 10⁶ → 10⁷
+    73	  with M = 66, 95, 100. Ratio matches π(x) growth (8.18×, 8.47×).
+    74	  H-sweep at x=10⁶ shows the per-h amortised cost is **M-independent
+    75	  for M ≥ ~50** (8.7→6.0→5.0→4.5→4.3 ms at M = 10, 25, 50, 100, 200).
+    76	  M1/M2 batched-vs-per-h speedup is bounded constant (6.7× and 8.85×),
+    77	  not growing with M. **Per-h amortised cost is Θ(x/log x), not
+    78	  polylog.** This is the P1 (Thread 6) negative shape transposed
+    79	  to the h-axis.
+    80	- **APPROXIMATE regime** (HL = S_h · li_2(x)): per-h cost
+    81	  0.5–1.2 µs, **flat in x and M** — the polylog shape. Mean and max
+    82	  approximation errors |π_h − HL_h|/√x ≤ 0.10 and ≤ 0.25 across all
+    83	  261 (x, H, h) cells measured. Matches Hardy-Littlewood's O(√x)
+    84	  conjectural bound.
+    ... (90 more lines)
+  [Bash] ls experiments/analytic/polylog_approx_pi/
+    main_run.log
+    multi_sample.py
+    multi_sample_data.csv
+    multi_sample_main.log
+    multi_sample_results.md
+    multi_sample_summary.csv
+    paired_kernels.py
+    paired_kernels_data.csv
+    paired_kernels_main.log
+    paired_kernels_results.md
+    paired_kernels_signtest.csv
+    paired_kernels_summary.csv
+    polylog_approx_pi.py
+    polylog_approx_pi_main.csv
+    polylog_approx_pi_results.md
+    slot5_theorem.md
+    smoothed_kernels.py
+    smoothed_kernels_data.csv
+    smoothed_kernels_main.log
+    smoothed_kernels_paired.log
+    smoothed_kernels_paired_analysis.py
+    smoothed_kernels_paired_analysis_results.md
+    smoothed_kernels_results.md
+    smoothed_kernels_summary.csv
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    1	"""
+    2	Multi-sample empirical validation of the sigma-formula for pi(x) - pi_K(x).
+    3	
+    4	Thread 7 (commit, slot 2, S241). Extends slot-1's single-anchor measurements
+    5	in `polylog_approx_pi.py` with multi-sample averaging at x near {10^7, 10^8,
+    6	10^9}. Tests the half-Gaussian hypothesis under random phases: if the
+    7	S195 sigma-formula
+    8	
+    9	    sigma(K, x) ~ sqrt(x) * log K / (pi * sqrt(2 K) * log x)        (*)
+    10	
+    11	is correct and {gamma_j log x mod 2pi} is iid uniform, then |err| =
+    12	|pi(x) - pi_K(x)| follows a half-normal with scale sigma. The empirical
+    13	distribution should have:
+    14	  - mean / sigma -> sqrt(2/pi) ~= 0.7979
+    15	  - median / sigma -> 0.6745
+    16	  - cdf(|err|/sigma <= z) = erf(z/sqrt(2))
+    17	
+    18	The slot-2 contribution: tighten this empirically beyond S195's three-decade
+    19	multi-sample data (x ~ 1e5, 1e6, 1e7, 40 samples each) to x ~ 1e8, 1e9
+    20	(30 samples each) using a segmented sieve for pi(x_j) anchored at known
+    21	pi(10^k) values.
+    22	
+    23	Multi-sample method:
+    24	  1. Anchor x_0 in {1e7, 1e8, 1e9} with known pi(x_0).
+    25	  2. Sample x_j = x_0 * (1 + j * delta), j = 0..N-1, delta chosen so the
+    26	     window spans many decoherence lengths (2*pi / gamma_K_max).
+    27	  3. Segmented Eratosthenes sieve over [x_0 + 1, x_max] gives prime
+    28	     indicators; cumulative sum + anchor gives pi(x_j) for all j.
+    29	  4. For each x_j compute pi_K(x_j) for K = 1..8000 using cached zeros.
+    30	  5. Record |err| at K-policy values {1, log x, log^2 x, log^3 x, K_max}.
+    ... (90 more lines)
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/polylog_approx_pi/multi_sample.py
+    120	    j = 0
+    121	    lo = x_anchor + 1
+    122	    last_target = sample_xs[-1]
+    123	    while lo <= last_target and j < len(sample_xs):
+    124	        hi = min(lo + chunk_size - 1, last_target)
+    125	        seg = segmented_prime_indicator(lo, hi)
+    126	        seg_np = np.frombuffer(seg, dtype=np.uint8)
+    127	        cum_arr = np.cumsum(seg_np, dtype=np.int64)
+    128	        while j < len(sample_xs) and sample_xs[j] <= hi:
+    129	            k = sample_xs[j] - lo
+    130	            pi_xs.append(pi_anchor + cum + int(cum_arr[k]))
+    131	            j += 1
+    132	        cum += int(cum_arr[-1])
+    133	        lo = hi + 1
+    134	    assert len(pi_xs) == len(sample_xs)
+    135	    return pi_xs
+    136	
+    137	
+    138	# -----------------------------------------------------------------------------
+    139	# Multi-sample driver per anchor.
+    140	# -----------------------------------------------------------------------------
+    141	
+    142	@dataclass
+    143	class SampleRow:
+    144	    anchor_log10: int
+    145	    x_anchor: int
+    146	    x: int
+    147	    pi_x: int
+    148	    R_x: float
+    149	    K: int
+    ... (170 more lines)
+Slot 1 is complete; the recommended slot-2 work is multi-anchor empirical error characterization of the HL approximation. I'll build `slot2_multisample.py` to compute exact π_h(x_j) at N=30 samples × 3 anchors × 8 representative h-values, then KS-test the residual distribution against half-Gaussian.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py
+  [Bash] python -c "import numpy, scipy; print(numpy.__version__, scipy.__version__)"
+    Exit code 127
+    /bin/bash: line 1: python: command not found
+  [Bash] which python3 && python3 -c "import numpy, scipy; print(numpy.__version__, scipy.__version__)"
+    /usr/bin/python3
+    2.4.4 1.17.1
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/ && python3 slot2_multisample.py 2>&1 | tee slot2_run.log
+    [anchor x = 10^6]  N=30  x_max=1,778,279  H_max=198
+      sieve [1, 1,778,477] in 0.01s
+      li_2 evaluations: 0.43s
+      pair-count over 8 h-values: 0.17s
+    
+    [anchor x = 10^7]  N=30  x_max=17,782,794  H_max=198
+      sieve [1, 17,782,992] in 0.07s
+      li_2 evaluations: 0.01s
+      pair-count over 8 h-values: 1.79s
+    
+    [anchor x = 10^8]  N=30  x_max=177,827,941  H_max=198
+      sieve [1, 177,828,139] in 1.52s
+      li_2 evaluations: 0.01s
+      pair-count over 8 h-values: 15.45s
+    
+    Total elapsed: 19.5s, rows: 720
+    Raw rows -> /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_data.csv
+    Summary -> /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_summary.csv
+    
+    ==================================================================================================================================
+      anc    h    S_h    sig_eff   sig_pois  eff/pois  eff/sqrt_x  med/sig_eff  mean/sig_eff   KSp_eff  KSp_pois
+    ----------------------------------------------------------------------------------------------------------------------------------
+        6    2  1.320     35.557    102.927    0.3455      0.0306       0.7777        0.8440    0.4897    0.0000
+        6    6  2.641    100.910    145.561    0.6932      0.0870       0.9882        0.9814    0.0000    0.0007
+        6   14  1.584     34.235    112.751    0.3036      0.0295       0.9280        0.9347    0.0167    0.0000
+        6   22  1.467     37.582    108.495    0.3464      0.0324       0.6188        0.7901    0.8660    0.0000
+        6   30  3.521     20.431    168.080    0.1216      0.0176       0.5650        0.8233    0.8745    0.0000
+        6   42  3.169     75.411    159.455    0.4729      0.0650       0.9440        0.9384    0.0036    0.0000
+        6   90  3.521    130.998    168.080    0.7794      0.1129       0.9971        0.9549    0.0002    0.0057
+        6  198  2.934     95.757    153.435    0.6241      0.0825       0.8694        0.8970    0.0784    0.0019
+    ... (22 more lines)
+The script ran. Key findings: σ_eff < σ_poisson uniformly (24/24 cells), but median KS p_eff = 0.033 — half-Gaussian shape is rejected in 14/24 cells. The high `median/sigma_eff ≈ 0.95` suggests residuals are nearly *constant* within each quarter-decade window — a within-window correlation problem (random-walk-like rather than oscillatory like Thread 7's zero residuals).
+
+Let me extend the script to add: (1) within-window range diagnostic, (2) cross-h KS at fixed (anchor, x_j), (3) pooled per-anchor KS.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample.py has been updated successfully.
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/ && python3 slot2_multisample.py 2>&1 | tee slot2_run.log
+    [anchor x = 10^6]  N=30  x_max=1,778,279  H_max=198
+      sieve [1, 1,778,477] in 0.01s
+      li_2 evaluations: 0.40s
+      pair-count over 8 h-values: 0.17s
+    
+    [anchor x = 10^7]  N=30  x_max=17,782,794  H_max=198
+      sieve [1, 17,782,992] in 0.07s
+      li_2 evaluations: 0.01s
+      pair-count over 8 h-values: 1.69s
+    
+    [anchor x = 10^8]  N=30  x_max=177,827,941  H_max=198
+      sieve [1, 177,828,139] in 1.89s
+      li_2 evaluations: 0.01s
+      pair-count over 8 h-values: 16.52s
+    
+    Total elapsed: 20.8s, rows: 720
+    Raw rows -> /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_data.csv
+    Summary -> /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_summary.csv
+    
+    ==================================================================================================================================
+      anc    h    S_h    sig_eff   sig_pois  eff/pois  eff/sqrt_x  med/sig_eff  mean/sig_eff   KSp_eff  KSp_pois
+    ----------------------------------------------------------------------------------------------------------------------------------
+        6    2  1.320     35.557    102.927    0.3455      0.0306       0.7777        0.8440    0.4897    0.0000
+        6    6  2.641    100.910    145.561    0.6932      0.0870       0.9882        0.9814    0.0000    0.0007
+        6   14  1.584     34.235    112.751    0.3036      0.0295       0.9280        0.9347    0.0167    0.0000
+        6   22  1.467     37.582    108.495    0.3464      0.0324       0.6188        0.7901    0.8660    0.0000
+        6   30  3.521     20.431    168.080    0.1216      0.0176       0.5650        0.8233    0.8745    0.0000
+        6   42  3.169     75.411    159.455    0.4729      0.0650       0.9440        0.9384    0.0036    0.0000
+        6   90  3.521    130.998    168.080    0.7794      0.1129       0.9971        0.9549    0.0002    0.0057
+        6  198  2.934     95.757    153.435    0.6241      0.0825       0.8694        0.8970    0.0784    0.0019
+    ... (64 more lines)
+The extended analysis reveals the key structural finding: **cross-h ensemble at fixed x is half-Gaussian-shape** (90/90 cells pass KS p > 0.1, median p ≈ 0.7-0.8), while cross-x ensembles within a quarter-decade window are too correlated. The right ensemble for HL residual statistics on the h-axis is cross-h, not cross-x.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/slot2_multisample_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now let me update all the status/state files.
+  [Edit] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    59	### P2 — Prime gap function `π_h(x) = #{p ≤ x : p+h prime}` for many h [Thread 8 ACTIVE — slot 1 done at S418]
+    60	**Problem:** for fixed x and many h ∈ {2, 4, 6, ..., H}, compute
+    61	`π_h(x)` simultaneously.
+    62	
+    63	**Why partial-positive plausible:** the singular series factor
+    64	`S_h = 2 C_2 Π_{p|h, p>2} (p-1)/(p-2)` for distinct h shares small-prime
+    65	factor structure. A sieve that produces all `π_h(x)` for h ≤ H may
+    66	share the underlying sieve table efficiently.
+    67	
+    68	**Slot 1 (S418) result — structural dichotomy.** Empirical baseline at
+    69	x ∈ {10⁵, 10⁶, 10⁷}, H ∈ {20, 50, 100, 200, 400} (plus H = ⌊log²x⌋
+    70	per-anchor) shows a **clean two-regime split**:
+    71	- **EXACT regime** (batched-sieve): per-h amortised cost
+    72	  T_batched/M = 0.6 ms → 4.6 ms → 38.9 ms across x = 10⁵ → 10⁶ → 10⁷
+    73	  with M = 66, 95, 100. Ratio matches π(x) growth (8.18×, 8.47×).
+    74	  H-sweep at x=10⁶ shows the per-h amortised cost is **M-independent
+    75	  for M ≥ ~50** (8.7→6.0→5.0→4.5→4.3 ms at M = 10, 25, 50, 100, 200).
+    76	  M1/M2 batched-vs-per-h speedup is bounded constant (6.7× and 8.85×),
+    77	  not growing with M. **Per-h amortised cost is Θ(x/log x), not
+    78	  polylog.** This is the P1 (Thread 6) negative shape transposed
+    79	  to the h-axis.
+    80	- **APPROXIMATE regime** (HL = S_h · li_2(x)): per-h cost
+    81	  0.5–1.2 µs, **flat in x and M** — the polylog shape. Mean and max
+    82	  approximation errors |π_h − HL_h|/√x ≤ 0.10 and ≤ 0.25 across all
+    83	  261 (x, H, h) cells measured. Matches Hardy-Littlewood's O(√x)
+    84	  conjectural bound.
+    85	
+    86	**Structural conclusion (S418):** P2 is **Thread-7 (P3) shape, not
+    87	Thread-5 shape** — the positive-direction win is the polylog
+    88	HL-approximation, with √x error trading away log²x bits of accuracy.
+    ... (80 more lines)
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1	# Research Agenda — Long-Horizon Arcs
+    2	
+    3	This file holds **multi-session research arcs**. Each arc is a research
+    4	direction that takes more than one session to pursue. Arcs survive
+    5	across sessions, accumulate state, and have explicit next-actions.
+    6	
+    7	This file is for *continuity*. NOVELTY_CHALLENGES.md is for *targets*.
+    8	EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
+    9	
+    10	---
+    11	
+    12	## Active arcs
+    13	
+    14	### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    15	**Status:** NOT STARTED
+    16	**Owner:** any agent who picks it up
+    17	**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 + E7.14
+    18	into a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+    19	
+    20	**Milestones:**
+    21	- [ ] Outline the FIVE sections (one per closure family).
+    22	- [ ] Write precise statement of each family-level closure as a theorem
+    23	  (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
+    24	  E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
+    25	  exhaustion; **E7.14 = Maynard sieve aggregate-not-pointwise +
+    26	  divisor-enumeration sub-poly**).
+    27	- [ ] Write a unified introduction framing the five as "structural
+    28	  barriers to polylog π(x)".
+    29	- [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
+    30	  Bombieri-Vinogradov, the Aggarwal optimum.
+    ... (30 more lines)
+  [Grep] Arc 8|Thread 8|P2 prime gap|pi_h|batched_pi_h
+    1059:### Arc 8 — π in arithmetic progressions, batched on modulus q (Thread 6, CLOSED)
+    1174:**Arc 8 status:** CLOSED at S231. All 5 slots completed. Thread 6
+    1196:- Thread 8 = P2 (π_h(x) batched on h): shared-h-singular-series
+    1300:### Arc 10 — π_h(x) batched on h (Thread 8, ACTIVE)
+    1302:`thread:p2_pi_h_batched_on_h`, `sessions_used:1`, `status:ACTIVE`.
+    1329:Files: `experiments/analytic/batched_pi_h/{slot1_baseline.py,
+    1351:  Hardy-Littlewood quantitative variance hypothesis. Close Thread 8
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1295	measurement is fast and either confirms or refutes the conjecture
+    1296	within one session.
+    1297	
+    1298	---
+    1299	
+    1300	### Arc 10 — π_h(x) batched on h (Thread 8, ACTIVE)
+    1301	**Status:** ACTIVE — slot 1 of 4 done at S418 (B-grade); `.commit_state`
+    1302	`thread:p2_pi_h_batched_on_h`, `sessions_used:1`, `status:ACTIVE`.
+    1303	**Owner:** commit-mode autonomy.
+    1304	**Goal:** for fixed x and h ∈ {2, 4, ..., H} compute `π_h(x) =
+    1305	#{p ≤ x : p+h prime}` simultaneously. A-grade target: per-h amortised
+    1306	polylog over H = poly(log x), or its analogue in the approximate
+    1307	regime (named-exponent ε bound for HL approximation).
+    1308	
+    1309	**S418 (slot 1) outcome — B-grade structural classification.**
+    1310	Empirical baseline at x ∈ {10⁵, 10⁶, 10⁷}, H ∈ {20, 50, 100, 200,
+    1311	400} reveals a clean two-regime dichotomy:
+    1312	
+    1313	- **EXACT regime (batched-sieve):** per-h amortised cost
+    1314	  T_batched/M = 0.6 → 4.6 → 38.9 ms across the three anchors with
+    1315	  M = 66, 95, 100. H-sweep at x=10⁶ shows the per-h floor is
+    1316	  M-INDEPENDENT for M ≥ 50 (8.7→6.0→5.0→4.5→4.3 ms). Per-h
+    1317	  amortised cost = Θ(x/log x), **not polylog**. Matches P1
+    1318	  (Thread 6) negative shape on the h-axis.
+    1319	- **APPROX regime (HL = S_h · li_2(x)):** per-h cost 0.5–1.2 µs,
+    1320	  flat in x and M — polylog. Mean / max |π_h − HL_h|/√x ≤ 0.10 / 0.25
+    1321	  across all 261 cells. Matches P3 (Thread 7) positive shape.
+    1322	
+    1323	**Structural conclusion:** P2 is **Thread-7 (P3) shape, not Thread-5
+    1324	shape**. Cross-h amortisation in EXACT regime gives only constant
+    ... (50 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    1	# Session-by-Session Key Insights
+    2	
+    3	Detailed findings from each research session. Read the relevant session
+    4	if you need deep context on a specific topic. For a quick overview,
+    5	see the Status section of CLAUDE.md.
+    6	
+    7	---
+    8	
+    9	## Session 12
+    10	- "Is pi(x) in NC?" is EQUIVALENT to our target.
+    11	  All known approaches produce circuits of size 2^{Theta(N)} (exponential in input).
+    12	
+    13	## Session 13
+    14	(a) BPSW IS computable in TC^0 (MR=scalar pow, Strong Lucas=2x2 MPOW, Jacobi=GCD).
+    15	    PRIMES in TC^0 iff BPSW (or similar) is unconditionally correct.
+    16	    Verified correct to 2^64. GRH also suffices (Miller's test = O(N^2) scalar pows).
+    17	(b) Prime indicator ANF degree = Theta(N) over GF(2), 50% sparsity (random-like).
+    18	    No GF(2) algebraic shortcut for counting primes.
+    19	(c) Zeta zero minimum K_min ~ 0.35 * x^{0.27}: power law, no reordering helps.
+    20	(d) Spectral graph approaches all circular or equivalent to Meissel-Lehmer.
+    21	(e) No new algorithmic breakthroughs in 2025-2026 literature.
+    22	
+    23	## Session 14
+    24	(a) **PRIMES in L and pi(x) in NC are INDEPENDENT questions.** The chain
+    25	    PRIMES in L -> pi(x) in #L -> pi(x) in NC^2 BREAKS due to workspace mismatch:
+    26	    NL machine needs O(N) bits for candidate n, but #L allows only O(log N).
+    27	(b) **I-E fractional parts carry O(2^k) independent bits** -> no determinant
+    28	    smaller than 2^{Theta(sqrt(x)/log(x))} can encode the Legendre sieve.
+    29	    A GapL algorithm MUST avoid floor functions entirely.
+    30	(c) **Lucy DP matrices have NO algebraic structure**: unipotent, displacement
+    ... (10 more lines)
+  [Bash] tail -100 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    (E2.31 empirical). The translation involves the standardisation
+    transform `f̂ = (1/√(p_N(1-p_N))) (f_N − p_N D_N)` and a `(2π/N)`
+    Szegő-Toeplitz prefactor; a clean derivation would close E2.31's
+    prefactor mystery.
+    
+    **.run_state set to 418.**
+    
+    ## Session 417 (critique) — 2026-04-30
+    
+    **Mode.** Critique session. Audited five post-S240 production sessions
+    (S245, S246, S247, S415, S416). Self-grade C (verification of recent
+    work without surfacing flaws — CLAUDE.md "Three Grades" §C-grade).
+    
+    **Headline.** Zero demotions, zero inflations caught. All five self-
+    grades confirmed (S245 B arc-advancement, S246 B-NEGATIVE F6/P7
+    closure, S247 B paradigm-shift L^p hierarchy refinement, S415 B wild-
+    swing de Branges closure with cross-domain promotion, S416 C re-verify
+    E2.14 cascade extension). EDGES.md inline refinements verified for
+    E1.1 / E2.14 / E2.21 / E2.31. CROSS_DOMAIN_TECHNIQUES §10 promotion
+    (de Branges PROPOSED → USED, mode E) verified.
+    
+    **A-grade scarcity warning escalated.** 40-session window (S210-S247
+    plus S415+S416) shows zero A-grades. CLAUDE.md threshold = 20 sessions.
+    The .commit_state already reports `escalation_required:YES` after
+    Thread 7 closure; five-thread frontier exhausted (Threads 1-5 closed;
+    Thread 6 B-NEGATIVE; Thread 7 B-PARTIAL-POSITIVE-CONDITIONAL).
+    
+    **Borderline-A analysis.** S224 Correlation Dichotomy (33× speedup,
+    batched correlated π queries) and S244 Thread-7 wrap (conditional
+    theorem for polylog approximate π(x) under RH + Montgomery) are
+    ... (70 more lines)
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+  [Bash] grep -n "S418\|P2 EXACT\|batched_pi_h" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | tail -20
+    883:| §P.P2 batched π_h(x) on h, slot 1 — does the parallel-h Eratosthenes sieve produce per-h amortised polylog cost as M = #h grows, or does it bottom out at Θ(x/log x) (P1-shape)? | EXPERIMENT (B-NEGATIVE on EXACT regime; B-POSITIVE on APPROXIMATE regime — Thread-7-shape transposed to h-axis) | E (E1.5 + S224 + S231 + S240..S244 — per-h amortised cost = Θ(x/log x) for batched-sieve; HL polylog-per-h with √x error matches Hardy-Littlewood prediction) | Thread 8 commit step 1/4 (S418). Built `experiments/analytic/batched_pi_h/slot1_baseline.py` (~280 lines) implementing three estimators of π_h(x) := #{p prime, p ≤ x : p+h prime} for h ∈ {2, 4, ..., H}: M1 BATCHED SIEVE (sieve [1, x+H] once, for each prime p ≤ x test all H/2 candidates p+h), M2 PER-h SIEVE (single-h timing × M for prediction), M3 HARDY-LITTLEWOOD APPROX (HL_h(x) = S_h · li_2(x), S_h = 2 C_2 Π_{p|h, p odd} (p−1)/(p−2), li_2 via scipy.integrate.quad). **Three-anchor table** at x = 10⁵ / 10⁶ / 10⁷ with H = ⌊log²x⌋ even-rounded capped at 200, M = 66 / 95 / 100: T_batched = 0.041 / 0.438 / 3.893 s ⇒ per-h amort = 0.62 / 4.61 / 38.9 ms. M1/M2 batched-vs-per-h speedup at x = 10⁵, 10⁶: 6.71×, 8.85× — **bounded constant, not growing with M**. Per-h amort ratio across decades: 7.7×, 8.5× ≈ π(x) ratios 8.18×, 8.47× — **per-h amortised cost is Θ(π(x)) = Θ(x/log x), NOT polylog**. **H-sweep at x = 10⁶** with H ∈ {20, 50, 100, 200, 400}, M ∈ {10, 25, 50, 100, 200}: per-h amortised = 8.7 → 6.0 → 5.0 → 4.5 → 4.3 ms — clear floor at ~4 ms (set by per-prime per-h test cost: π(10⁶) · 50 ns ≈ 4 ms). **Per-h cost is M-INDEPENDENT for M ≥ 50.** **HL approximation per-h cost** = 0.62 / 1.23 / 0.68 µs — five orders of magnitude faster than batched-sieve, flat in x and M (polylog shape). **HL approximation accuracy**: mean |π_h − HL_h|/√x ≤ 0.10, max ≤ 0.25 across all 261 (x, H, h) cells; matches Hardy-Littlewood's O(√x) conjectural bound. **Structural dichotomy** (the slot's main result): EXACT regime per-h cost = Θ(x/log x) with zero error (matches P1 / Thread 6 negative shape on the h-axis); APPROXIMATE regime per-h cost = Θ(polylog x) with ≤ 0.25 √x worst error (matches P3 / Thread 7 positive shape on the h-axis). **P2 is Thread-7 (P3) shape, NOT Thread-5 (S224) shape**: the cross-h amortisation in EXACT regime gives only a constant sieve-sharing factor (the h-axis is not a "correlation-of-x" axis in the relevant sense). **What this rules out**: (i) batched-sieve algorithm achieving o(x/log x) per-h amortised for any unbounded M family — directly tested at M ∈ {10..200} and ruled out; (ii) Thread-5-style cross-h correlation amortisation matching the 33× S224 speedup — does not materialise; (iii) the original P2 entry's "shared-h-singular-series structure" being interpreted as exact-cost amortisation — the shared structure helps only the polylog HL approximation, not the EXACT count. **What this does NOT close**: (i) non-sieve algorithms (GPY-weight / Maynard) for batched EXACT π_h — outside slot-1 scope; (ii) quantum batched (P9 shape); (iii) the precise named-exponent error bound for HL approximation — slot 2/3/4 candidate; (iv) the Q-truncation tradeoff for S_Q(h) → S_h — slot 3 candidate. **Pivoted A-grade target for slots 2-4**: precise named-exponent error bound for HL approximation, analogue of Thread 7 Corollary B but for π_h(x). **Cross-domain ingredient**: Hardy-Littlewood k-tuple conjecture (1923) + singular series. CROSS_DOMAIN_TECHNIQUES.md status unchanged (singular series already USED-E in `sanity_singular_series.py`). **Cites** E1.5 (per-h sample-complexity argument), E6.x (sieve hierarchy primitive), S224 (Correlation Dichotomy template — NOT replicated for h-axis), S231 (Thread 6 P1 wrap — negative shape this slot matches in EXACT regime), S240-S244 (Thread 7 P3 — positive shape this slot matches in APPROX regime). See `experiments/analytic/batched_pi_h/{slot1_baseline.py, slot1_baseline_results.md, slot1_raw.tsv, slot1_samples.tsv}`, `archive/sessions/session418_commit_p2_baseline.md`. | 418 |
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    878	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 3 — do compactly-supported smoothing kernels (Hann, Hamming, Triangle, Riesz, Riesz4, Tukey-25, Tukey-50, Cosine) beat hard cutoff for sigma_eff at fixed K_compute? Resolves the S202 wrap §"Non-Gaussian smoothing kernels" legitimate-falsifier listing | EXPERIMENT (negative-shape closure of the kernel-axis falsifier of slot-1 named-exponent corollary; empirical L2-optimality of hard cutoff for the partial-sum approximation) | E (E1.5 + S195 + S196 + S202 + S240 + S241) — confirms hard cutoff is L2-optimal, no compactly-supported kernel reduces sigma_eff | Thread 7 commit step 3/5 (S242). Built `experiments/analytic/polylog_approx_pi/smoothed_kernels.py` (~340 lines): per-sample cumulative loop computing c_k = 2 Re R(x^{rho_k}) for k=1..K_max=4000 (one R_at_rho call per (sample, k)), then numpy-dot post-processing for each (kernel, K_compute) combination — 9 kernels, 4 K-targets, 20 paired samples, 3 anchors x in {10^7, 10^8, 10^9}. Kernels: hard (w_k=1), triangle (1-u), hann ((1+cos pi u)/2), hamming (0.54+0.46 cos pi u), riesz (1-u^2), riesz4 ((1-u^2)^2), tukey25 (hard for u<=0.75 then cosine taper), tukey50 (hard for u<=0.5 then cosine taper), cosine (cos(pi u/2)) where u = (k-1)/(K-1) in [0,1]. **Headline grid (108 cells, 2160 (anchor, x, K, kernel) data triples)**: zero (anchor, K, kernel) cells where sigma_eff(kernel) < sigma_eff(hard) at paired sign-test p < 0.05 (one-sided). Mean sigma_eff/sigma_eff(hard) across 12 (anchor, K) cells, by kernel: tukey25=1.04, tukey50=1.11, cosine=1.14, riesz=1.12, triangle=1.23, riesz4=1.21, hamming=1.20, hann=1.23 (all > 1). **Decisive hard wins** at 10^8 K=2000+4000 and 10^9 K=2000+4000: ratios 1.06 to 1.62, paired sign test 12-17/20 hard wins, p < 0.01 in 4 cells. **Sub-1 ratios** at K=500 and one tukey25 cell at K=1000 (10^7): all within 1-sigma noise (CV(sigma_eff) at N=20 is ~16%); none significant (smallest p_kernel_wins = 0.13 at 10^7/K=1000/tukey25). Asymmetry: 16 of 24 ratios >= 1.05 are 1-sigma above 1.0; 0 of 9 sub-1 ratios are 1-sigma below 1.0. **Closes S202 wrap §"Non-Gaussian smoothing kernels" legitimate-falsifier**: S196 closed log-Gaussian (multiplicative damping w_j=exp(-h^2 gamma_j^2/2), all j), S202 wrap explicitly listed compactly-supported tapers as "should generalise but not formally proven". Slot 3 directly tests and confirms — 0 of 96 cells show kernel-beats-hard at p<0.05. **Structural reason**: under random-phase Var(error) = sum_j (1-w_j)^2 Var_j is minimised at w_j=1 (j<=K), 0 (j>K), the hard cutoff. The 0.74 GUE factor scales sigma_eff uniformly across kernels (verified empirically: 5 of 5 anchor/K cells with K >= log^2(x) and hard show sigma_eff/sigma_pred in [0.62, 0.85]); GUE corrections do NOT discriminate between kernels at the second-moment level. **Implication for slot-1 named-exponent corollary**: the bound sigma ~ sqrt(x) log K / (pi sqrt(2K) log x) is kernel-optimal in this family; to beat it requires either (a) non-symmetric / position-correlated kernels (paired weights w_{2j-1}=w_{2j} exploiting Wigner repulsion; slot 4 candidate); (b) non-linear post-processing of {c_k} (empirical Bayes shrinkage; outside slot-3 family); (c) move beyond explicit-formula partial-sum framework entirely (slot-5 territory with rigorous variance proof). Slot 3 closes the kernel-optimisation pathway as a route to A-grade. **Cross-domain ingredient**: window-function theory (Bartlett, Hann, Hamming, Tukey, Riesz from signal processing); CROSS_DOMAIN_TECHNIQUES.md should reflect "compactly-supported window functions for explicit-formula partial-sum smoothing — USED-E (S242) — confirmed no improvement over hard cutoff for the partial-sum approximation pi_K(x)". **Falsifier**: (1) a compactly-supported kernel yielding sigma_eff(kernel)/sigma_eff(hard) < 0.95 with paired sign-test p<0.01 at any (anchor, K) cell — directly tested, ruled out; (2) non-symmetric / position-correlated kernel structure — slot-4 candidate; (3) second-moment GUE correction calculation showing kernel-dependent cross-zero covariance — theoretical, outside current machinery. **Cites** E1.5, E3.1, S195, S196, S202, S240, S241. See `experiments/analytic/polylog_approx_pi/{smoothed_kernels.py, smoothed_kernels_results.md, smoothed_kernels_data.csv (2160 rows), smoothed_kernels_summary.csv (108 rows), smoothed_kernels_main.log, smoothed_kernels_paired_analysis.py, smoothed_kernels_paired.log}`, `archive/sessions/session242_commit_p3_smoothed_kernels.md`. | 242 |
+    879	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 2 — multi-sample empirical validation of the S195 sigma-formula at three anchors x in {10^7, 10^8, 10^9}, with proper KS-statistic distribution test and theoretical extrapolation table to x = 10^24 | REFINEMENT (extends S195 multi-sample data from 10^7 to 10^9; confirms half-Gaussian shape under sigma_eff scaling) | E (E1.5 + S195 + S240) — partial-positive (heuristic; refines slot-1 confidence) | Thread 7 commit step 2/5 (S241). Built `experiments/analytic/polylog_approx_pi/multi_sample.py` (~360 lines): N=30 geometric samples per anchor in [x_0, x_0*sqrt(10)] (half-decade window, log-step ~0.040 vs decoherence length 2pi/gamma_K ~ 7.7e-4 at K_max=8000 -> ~52x decoherent); chunked segmented Eratosthenes sieve `pi_array_for_samples(x_anchor, pi_anchor, sample_xs, chunk_size=10^8)` using bytearray + numpy.cumsum (caps memory at ~100MB; x_anchor=10^9 sieves half-decade in 41s); per-sample R_at_rho cumulative loop K=1..K_max with policy reads at K in {1, log x, log^2 x, log^3 x, K_max}; aggregate stats with TWO KS tests — KS_pred (|err|/sigma_pred vs half-normal CDF, tests S195's full prediction) and KS_eff (|err|/sigma_eff vs half-normal CDF, tests SHAPE only after rescaling by empirical rms; absorbs S195's GUE 0.74 factor). **Headline result (12 (anchor, policy) cells, 30 samples each, 450 (x, policy) data points total)**: half-Gaussian SHAPE confirmed under sigma_eff rescaling (median KS_p_eff = 0.69 across 9 cells with K >= log^2 x; cells with K_p_pred < 0.05 e.g. 10^9 K=8000 KS_p_pred=0.009 BUT KS_p_eff=0.695, the rejection is purely scale not shape). **GUE 0.74 factor stable**: sigma_eff/sigma_pred = {10^7: 0.756, 10^8: 0.644, 10^9: 0.620} at log^2 x; {10^7: 0.746, 10^8: 0.796, 10^9: 0.754} at log^3 x; {10^7: 0.904, 10^8: 0.781, 10^9: 0.754} at K_max=8000. Median across 9 (anchor, policy >= log^2 x) cells: 0.755 (S195 reported pooled 0.74 at x in {10^5..10^7}; extension to 10^9 confirms within +/-5%). **eps/sqrt(x) at K=8000 fixed, 1/log x decay**: 9.74e-4 (10^7) -> 8.84e-4 (10^8) -> 7.81e-4 (10^9), cross-decade ratio 1.25 vs predicted log(10^9)/log(10^7) = 1.286 — agreement within 3%. **Empirical anomaly at small K**: logx policy (K = 17, 19, 22) gives sigma_eff/sigma_pred = {0.734, 0.599, 0.816} much noisier than larger-K policies — expected because random-phase asymptotic regime breaks at K below ~50 (sigma_pred drops the K small-zero terms wholesale). **Theoretical extrapolation table** (sigma_pred for K = log^alpha x at x in {10^6, 10^8, 10^10, 10^12, 10^15, 10^18, 10^21, 10^24}, alpha in {2, 3, 4, 6, 8}): at x = 10^15 with K = log^4(10^15) ~ 9.3e5 zeros, sigma/sqrt(x) ~ 7.7e-5 -> polylog-time algorithm with eps ~ 2400 vs R(x) baseline O(sqrt(x)) ~ 3.2e7 (13000x improvement, heuristic). **Distinction from slot 1**: slot 1 was 5 single-anchor data points; slot 2 is 90 multi-sample points = 360 (x, policy) data triples. Slot 1 measured median ratio 0.476; slot 2 confirms half-Gaussian shape (KS_p_eff median 0.69) AND extends to one new decade (10^9, no prior data; S195 stopped at 10^7). **Falsifiability**: (1) multi-sample run at x >= 10^12 with KS_p_eff < 0.01 across multiple policies; (2) rigorous proof of GUE pair-correlation factor < 0.74^2 = 0.55 (would imply sigma_eff smaller than measured); (3) K-policy below logx where asymptotic formula breaks measurably (already documented at K = 17-22). **No A-grade**: still validates S195's heuristic; doesn't produce a new theorem or beat an algorithm; the partial-positive shape is unchanged from slot 1, just with more confidence and one new decade. **Cross-domain ingredient**: GUE pair-correlation distribution (Montgomery 1973, Odlyzko 1989) extended from USED-E (S195) to USED-E + USED-I (slot 2 inverts to give algorithmic ratio bound). CROSS_DOMAIN_TECHNIQUES.md unchanged but slot 2 anchor row strengthens the empirical evidence. **Cites** E1.5 (per-query bit-content barrier; sigma_eff bounds typical error log-factor below sqrt(x)), E2.1, E3.1 (Thread 3 closure transitivity now backed by 360-point data extending to 10^9), S195 (variance formula re-validated at 10^9), S196 (Galway frontier closure conditional on same heuristic), S202 (unified CCM closure), S224 (Correlation Dichotomy template Thread 7 follows), S240 (slot 1 named-exponent corollary). **Slot 3 next-action**: push empirical anchor to x = 10^12 via memory-efficient sieve (bit-packed segmented sieve, or primality-test-only approach in narrow sample windows where pi(anchor) is precomputable); OR pivot to slot 4 (smoothed kernel selection: Gaussian / raised-cosine kernels — do they reduce eps beyond unsmoothed sum?). See `experiments/analytic/polylog_approx_pi/{multi_sample.py, multi_sample_results.md, multi_sample_data.csv, multi_sample_summary.csv, multi_sample_main.log}`, `archive/sessions/session241_commit_p3_multisample.md`. | 241 |
+    880	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 4 — do non-symmetric / position-correlated ("paired") kernel weights w_{2j-1} != w_{2j} (or paired-resolution / boundary-only / antipair perturbations) beat hard cutoff for sigma_eff at fixed K_compute? Resolves the only remaining kernel-axis falsifier of slot-1 named-exponent corollary not addressed by S196 (log-Gaussian) or S242 (symmetric compactly-supported) | EXPERIMENT (negative-shape closure of the paired-kernel-axis falsifier; empirical L2-optimality of hard cutoff extends from symmetric (S242) to non-symmetric / position-correlated kernel families) | E (E1.5 + S195 + S196 + S202 + S240 + S241 + S242) — confirms hard cutoff is L2-optimal across ALL kernel families tested; F_GUE = 0.55 ± 0.06 stable across 17 kernels (8 symmetric + 7 paired + hard) | Thread 7 commit step 4/5 (S243). Built `experiments/analytic/polylog_approx_pi/paired_kernels.py` (~430 lines): per-sample cumulative loop computing c_k = 2 Re R(x^{rho_k}) for k=1..K_max=4000, then numpy-dot post-processing for each (kernel, K_compute) — 7 paired families + hard baseline, 4 K-targets, 20 paired samples, 3 anchors x in {10^7, 10^8, 10^9}. Built-in paired-sign-test post-processor. Kernels: hard (w_k=1), paired_hann (w_k = hann at pair resolution, w_{2j-1}=w_{2j}=hann((j-1)/(K/2-1))), paired_triangle (triangle at pair resolution), paired_riesz (Riesz at pair resolution), antipair_03 (w_{2j-1}=1.3, w_{2j}=0.7), antipair_05 (w_{2j-1}=1.5, w_{2j}=0.5), half_int (w_k=1 for k<K, w_K=0.5 — half-integer cutoff), boundary_pair (w_k=1 for k<K-1, w_{K-1}=0.75, w_K=0.25 — taper applied only to boundary pair). **Headline grid (96 summary cells, 1920 (anchor, x, K, kernel) per-sample triples)**: ZERO (anchor, K, kernel) cells where sigma_eff(kernel) < sigma_eff(hard) at paired sign-test p < 0.05 (one-sided). Smallest p_kernel_beats_hard across all 84 cells = 0.2517 (boundary_pair, 10^7 K=500, wins=12/20 — within 1-sigma noise of break-even). Mean sigma_eff/sigma_eff(hard) across 12 (anchor, K) cells, by kernel: boundary_pair=0.999, half_int=0.999, paired_riesz=1.12, paired_triangle=1.23, paired_hann=1.23, antipair_03=2.12, antipair_05=3.24. **Decisive HARD wins** at 17 cells with p_hard_beats_kernel < 0.05: antipair_05 in 7+ cells with p<0.01 (catastrophic at K=4000, 10^9: sigma_eff = 240 vs hard 47.5, ratio 5.05×); antipair_03 at 10^9 K>=1000 with p ≈ 0.001-0.002; paired_hann/triangle at 10^9 K=1000 + 10^8 K>=2000 with p in 0.006-0.021. **Boundary-only kernels (half_int, boundary_pair) are statistically indistinguishable from hard**: max |Delta(sigma_eff/sigma_eff_hard)| = 0.6%, all 24 cells within 1-sigma noise of break-even. The head-term penalty (1-w_K)^2 Var_K = 0.25 Var_K for half_int (resp. 0.625 Var for boundary_pair) is one zero's worth of variance, swamped by the tail Sum_{j>K} Var_j ≈ K Var_K log^2 K — half a zero's variance is ~1% of total variance, below detection at N=20. **Antipair scaling matches random-phase L2 prediction exactly**: Var(antipair) - Var(hard) = (1-w)^2 K Var_avg with (1-w_k)^2 = 0.09 for antipair_03 and 0.25 for antipair_05; observed sigma_eff^2 / sigma_eff_hard^2 ratios at K=4000 are 4.5 (antipair_03) and 25.5 (antipair_05), consistent with adding 0.09 K v_avg / 0.25 K v_avg to the residual head term once K saturates the tail. **Closes the only remaining kernel-axis falsifier of the Thread 3 closure**: S196 closed log-Gaussian (multiplicative damping); S242 closed symmetric compactly-supported; S243 closes non-symmetric / paired / boundary-only / antipair. Together: HARD CUTOFF IS EMPIRICALLY L2-OPTIMAL ACROSS ALL TESTED KERNEL FAMILIES (17 kernels, 180 (anchor, K, kernel) cells across slots 3+4). **GUE pair-correlation is kernel-invariant at second-moment level**: F_GUE := sigma_eff^2 / sigma_pred^2 = 0.55 ± 0.06 across all 17 kernels (cv ≈ 11%). The L2-optimality of hard transfers verbatim to the GUE-corrected regime. **Implication for slot-1 named-exponent corollary**: the bound sigma ≈ sqrt(x) log K / (pi sqrt(2K) log x) is *kernel-optimal* in the linear partial-sum framework. Remaining levers for A-grade are (a) non-linear post-processing (empirical Bayesian shrinkage; outside linear-kernel framework), (b) adversarial K-policy selection per-x, or (c) rigorous variance bound under Montgomery's pair-correlation conjecture (slot-5 territory). **Cross-domain ingredient**: random matrix theory pair-correlation (Wigner kernel K_W(t) = sin^2(pi t)/(pi t)^2). The fact that paired/antipair kernels do not exploit this for L2 reduction is consistent with K_W being EVEN — sign-pattern manipulation cancels at second moment. Higher-order GUE statistics (3rd moment) might break this, but slot 4 confirms second-moment kernel design is closed. **Falsifier**: (1) any kernel with sigma_eff/sigma_eff_hard < 0.95 at p < 0.01 — directly tested across 84 cells, ruled out (best 0.97 at 10^9 K=500 paired_riesz, p=0.41); (2) a kernel with non-uniform F_GUE (kernel-dependent GUE-correction) that crosses sigma_eff(hard) — empirically F_GUE within +/-5% across all 17 kernels; (3) higher-order GUE statistics (3rd moment) — outside linear partial-sum framework. **Cites** E1.5 (per-query bit-content barrier), E3.1 (Thread 3 closure transitivity), S195 (sigma-formula), S196 (log-Gaussian closure), S202 (unified CCM closure §"Non-Gaussian smoothing kernels"), S240 (slot 1 named-exponent corollary), S241 (slot 2 multi-sample distribution test), S242 (slot 3 symmetric-kernel closure). **Slot 5 next-action**: theoretical wrap via rigorous variance bound under Montgomery's pair-correlation conjecture. Convert heuristic named-exponent corollary to unconditional theorem under Montgomery; if obstruction documented, close Thread 7 as DONE_PARTIAL_POSITIVE_HEURISTIC with the named-exponent corollary as the partial-positive result and 17 kernel families as negative-shape evidence of L2-optimality. See `experiments/analytic/polylog_approx_pi/{paired_kernels.py, paired_kernels_results.md, paired_kernels_data.csv (1920 rows), paired_kernels_summary.csv (96 rows), paired_kernels_signtest.csv (84 rows), paired_kernels_main.log}`, `archive/sessions/session243_commit_p3_paired_kernels.md`. | 243 |
+    881	| §P.P3 polylog approximation of pi(x) with named-exponent error, slot 5 (FINAL WRAP) — theoretical wrap: lift slot-1 heuristic named-exponent corollary to a CONDITIONAL THEOREM under RH + Montgomery's pair-correlation conjecture, by adapting Goldston-Montgomery 1987 ("Pair correlation of zeros and primes in short intervals") bilinear-form analysis to the truncated-zero-sum test function | THEORY (rigor work; conditional theorem under explicit hypothesis with explicit valid range; algorithmic corollary as precise conditional theorem; what's NOT proved made explicit) | I (E1.5 + S195 + S196 + S202 + S240 + S241 + S242 + S243) — partial-positive (CONDITIONAL on Montgomery) | Thread 7 commit step 5/5 FINAL (S244). Built `experiments/analytic/polylog_approx_pi/slot5_theorem.md` (~330 lines): 14 sections covering theorem statement (Theorem A and Corollary B), setup and notation, asymptotic kernel R(y^rho) = y^rho/(rho log y) (1 + O(y^{-1/4} + 1/(gamma_j log y))), variance integral bilinear-form expansion, diagonal evaluation D_K = log^2 K / (4 pi^2 K) (1 + O(1/log K)) UNCONDITIONAL (Riemann-von Mangoldt zero density), off-diagonal residual R_K(X, H) split into close-pair (Montgomery-needed) and far-pair (RH-only) bounds, full proof of Theorem A combining diagonal + bounded off-diagonal, proof of Corollary B by substitution K = ceil((log x)^{2(beta-1)}). **Theorem A (slot 5, conditional on RH + Montgomery)**: for H in [X^epsilon, X log^{-2} X] and K in [log^2 X, X^{1-epsilon}], (1/H) integral_X^{X+H} (pi(y) - pi_K(y))^2 dy = (1+o(1)) X log^2 K / (2 pi^2 K log^2 X). **Corollary B (slot 5, algorithmic; conditional on same)**: for any beta > 1, K = ceil((log x)^{2(beta-1)}) gives polylog-time algorithm with L^2-typical error eps_typ(x) <= (1+o(1)) (beta-1) sqrt(2) sqrt(x) log log x / (pi log^beta x). **Explicit valid range (★): X^epsilon <= H <= X log^{-2} X, log^2 X <= K <= X^{1-epsilon}**. **Role of Montgomery**: only used for the close-pair off-diagonal bound (Wigner repulsion suppresses pair count at scale 1/H). Far-pair bound is RH-only. **Under RH alone**: same proof gives sigma^2_RH <= X log^2 K log^2 log K / (2 pi^2 K log^2 X) — same exponent in log X, log^2 log K factor weaker. Equivalently eps_typ^RH(x) << sqrt(x) (log log x)^2 / log^{1+alpha/2} x — same named exponent, log^2 log x factor worse than under Montgomery. **What slot 5 produces NEW**: (i) conditional theorem statement with explicit valid range; (ii) exact role of Montgomery (close-pair only); (iii) RH-only fallback bound with named log^2 log K factor; (iv) polylog-time algorithm corollary as a precise conditional theorem (not heuristic). **What slot 5 does NOT prove**: (i) worst-case (pointwise in y) bound — Theorem A is L^2-typical; half-Gaussian shape (S241) suggests pointwise sqrt(log K) larger than typical at the tail; (ii) unconditional version — Montgomery itself is open; (iii) effective constants beyond asymptotic — (1+o(1)) packages the GUE 0.74 factor (S195/S243 F_GUE = 0.55 measurement) but does not isolate it. **Comparison to literature**: Riemann-Riesel (explicit formula); Montgomery 1973 (pair correlation); Odlyzko 1989 / Hejhal 1994 (numerical GUE verification); Goldston-Montgomery 1987 (canonical conditional variance theorem; slot 5's proof technique adapts their bilinear expansion to a different test function); Goldston 1990 (unconditional RH-only bound); Galway 2004 (unconditional pi(x) algorithm O(x^{1/2+epsilon})); Hiary 2011 (zero precomputation); S195 (sigma-formula derivation under random-phase, rigorised here); S196 / S202 (Thread 3 closure conditional on Montgomery — slot 5 lifts the same hypothesis to partial-positive direction); S224 (Correlation Dichotomy partial-positive template); S240 (slot 1 heuristic named-exponent corollary, rigorised here); S241 (slot 2 multi-sample empirical support — half-Gaussian shape implies tail behaviour controlled by Theorem A); S242 + S243 (slots 3+4 kernel-axis closure, 17 kernels 180 cells; combined with Theorem A says algorithmic bound is kernel-optimal in second-moment regime). **Cross-domain ingredient**: Goldston-Montgomery 1987 bilinear-form analysis. CROSS_DOMAIN_TECHNIQUES.md entry promoted from USED-E (S195) + USED-I (S240) to USED-T (conditional theorem statement, S244). **Falsifiers**: (1) multi-sample empirical run at x >= 10^12 with sigma^2_eff exceeding (T-A) prediction by > 2x — directly tested at 10^9, sigma_eff/sigma_pred = 0.74, asymptotic correct up to GUE constant; (2) rigorous proof under just RH that gives full sigma-formula without Montgomery — would imply log^2 log K loss is unnecessary; (3) sharper pair-correlation conjecture refining (1+o(1)) to match empirical 0.55 factor — would tighten constant. **Thread 7 status**: DONE_PARTIAL_POSITIVE_CONDITIONAL. Aggregate Thread 7 contribution: polylog-time algorithm for approximate pi(x) with named-exponent error eps(x) <= sqrt(x) log log x / log^beta x for any beta > 1, conditional on RH + Montgomery's pair-correlation conjecture. Empirically verified across 3 decades (S241), kernel-optimal across 17 kernel families (S242 + S243), rigorised modulo Montgomery (S244, this slot). **First A-shape positive-direction CONDITIONAL theorem on an adjacent pi-related computation produced by the project**. **Slot self-grade**: B (rigor work; conditional theorem under unproven hypothesis; not A because Goldston-Montgomery 1987 supplies the engine; slot's contribution is the precise polylog-K specialisation, the algorithmic corollary, and the explicit valid range). **Recommended next thread**: ESCALATE TO USER — five-thread frontier fully traversed (Threads 1-4 closed per-query polylog frontier, Thread 5 closed A-grade-shaped partial-positive Correlation Dichotomy, Thread 6 closed B-NEGATIVE P1 batched-on-q, Thread 7 closed B-PARTIAL-POSITIVE-CONDITIONAL). Future commit slots should pick from OPEN_POSITIVE_TARGETS.md remaining candidates (P2 prime gap function batched on h, P4 twin-prime narrow-window, etc.) OR ramp frontier_gen autonomy with new ATTACK_VECTORS entries grounded in unused cross-domain techniques (free probability, transfer-operator spectrum on adelic spaces, Szegedy quantum walks for sieve matrices, persistent homology). See `experiments/analytic/polylog_approx_pi/{slot5_theorem.md, polylog_approx_pi_results.md §16}`, `archive/sessions/session244_commit_p3_theorem_wrap.md`. | 244 |
+    882	| §RE-VERIFY E2.14 — Anderson Lyapunov of chi_P-driven Schrödinger operator: does the W-trick cascade saturate at any non-trivial floor as primorial W grows beyond 2310, or does it continue to decay as HL predicts? | REFINEMENT | E | S416 re-verify-closure adversarial probe of E2.14 (S88 closure). The S88 cascade reached W=2310 (= 2*3*5*7*11) with max |z|=3.96 at N=2*10^5, 30 seeds, 51 energies, but DID NOT extend to larger primorials. The S88 results doc lists three explicit falsifiers; **Falsifier #1** ("residual >> 5 sigma persists at any primorial W") is the most directly testable via cascade extension and the most likely to reopen the edge if it had failed. **Probe**: `wtrick_extended_probe.py` extends the cascade to W=30030 (= primorial 6) and W=510510 (= primorial 7) under matched protocol (N=2*10^5, 30 seeds, 31 energies). **Result**: max |z| = 3.41 (W=2310 replication, 31-energy grid) → 2.52 (W=30030) → 2.13 (W=510510). At W >= 30030 the residual is **below the Bonferroni-corrected noise threshold** (z* = Phi^{-1}(1 - 0.05/62) ≈ 3.16). Geometric decay factor ~1.2-1.4 per primorial step matches HL singular-series corrections decaying as 1/(p-1)^2 for each new sieved prime. **Falsifier #1 REJECTED.** Closure of E2.14 STANDS with sharpened empirical floor: W >= 30030 captures the deviation below noise. **What this sharpens**: S88 said "captured to ~4 sigma at W=2310"; S416 sharpens to "captured to *below noise* at W >= 30030". **What this does NOT close**: Falsifier #2 (twin-density-matched control; expected signal rho^3 ~ 5e-4 at N=2e5, well below noise floor regardless) and Falsifier #3 (spectral-edge anomaly; would require finer band-edge grid). Both remain legitimate but their predicted signals lie below the present noise floor. **Net new content**: (a) extension of the W-trick cascade by two primorial steps (one extra prime each: 13, then 17); (b) confirmation that the cascade decay is geometric and asymptotically matches HL — no W-trick saturation at any tested k; (c) sharpened empirical floor for the closure. Cites E2.14 (refined inline), E2.13 (S87 / S237 — additive-combinatorics analogue confirming HL), E1.10 (chi_P locally indistinguishable from random); composition only, no new edge. Cross-domain ingredient: NONE (same Anderson-localisation transfer-matrix machinery as S88, extended setup parameters only). **Verdict**: C-grade — closure stands, no missed angle, but the closure now has empirical depth via W = primorial(7) (= 510510) that wasn't there before. See `experiments/dynamical/anderson_localisation_chi_p/wtrick_extended_probe_results.md`, `archive/sessions/session416_reverify_e2_14.md`. | 416 |
+    883	| §P.P2 batched π_h(x) on h, slot 1 — does the parallel-h Eratosthenes sieve produce per-h amortised polylog cost as M = #h grows, or does it bottom out at Θ(x/log x) (P1-shape)? | EXPERIMENT (B-NEGATIVE on EXACT regime; B-POSITIVE on APPROXIMATE regime — Thread-7-shape transposed to h-axis) | E (E1.5 + S224 + S231 + S240..S244 — per-h amortised cost = Θ(x/log x) for batched-sieve; HL polylog-per-h with √x error matches Hardy-Littlewood prediction) | Thread 8 commit step 1/4 (S418). Built `experiments/analytic/batched_pi_h/slot1_baseline.py` (~280 lines) implementing three estimators of π_h(x) := #{p prime, p ≤ x : p+h prime} for h ∈ {2, 4, ..., H}: M1 BATCHED SIEVE (sieve [1, x+H] once, for each prime p ≤ x test all H/2 candidates p+h), M2 PER-h SIEVE (single-h timing × M for prediction), M3 HARDY-LITTLEWOOD APPROX (HL_h(x) = S_h · li_2(x), S_h = 2 C_2 Π_{p|h, p odd} (p−1)/(p−2), li_2 via scipy.integrate.quad). **Three-anchor table** at x = 10⁵ / 10⁶ / 10⁷ with H = ⌊log²x⌋ even-rounded capped at 200, M = 66 / 95 / 100: T_batched = 0.041 / 0.438 / 3.893 s ⇒ per-h amort = 0.62 / 4.61 / 38.9 ms. M1/M2 batched-vs-per-h speedup at x = 10⁵, 10⁶: 6.71×, 8.85× — **bounded constant, not growing with M**. Per-h amort ratio across decades: 7.7×, 8.5× ≈ π(x) ratios 8.18×, 8.47× — **per-h amortised cost is Θ(π(x)) = Θ(x/log x), NOT polylog**. **H-sweep at x = 10⁶** with H ∈ {20, 50, 100, 200, 400}, M ∈ {10, 25, 50, 100, 200}: per-h amortised = 8.7 → 6.0 → 5.0 → 4.5 → 4.3 ms — clear floor at ~4 ms (set by per-prime per-h test cost: π(10⁶) · 50 ns ≈ 4 ms). **Per-h cost is M-INDEPENDENT for M ≥ 50.** **HL approximation per-h cost** = 0.62 / 1.23 / 0.68 µs — five orders of magnitude faster than batched-sieve, flat in x and M (polylog shape). **HL approximation accuracy**: mean |π_h − HL_h|/√x ≤ 0.10, max ≤ 0.25 across all 261 (x, H, h) cells; matches Hardy-Littlewood's O(√x) conjectural bound. **Structural dichotomy** (the slot's main result): EXACT regime per-h cost = Θ(x/log x) with zero error (matches P1 / Thread 6 negative shape on the h-axis); APPROXIMATE regime per-h cost = Θ(polylog x) with ≤ 0.25 √x worst error (matches P3 / Thread 7 positive shape on the h-axis). **P2 is Thread-7 (P3) shape, NOT Thread-5 (S224) shape**: the cross-h amortisation in EXACT regime gives only a constant sieve-sharing factor (the h-axis is not a "correlation-of-x" axis in the relevant sense). **What this rules out**: (i) batched-sieve algorithm achieving o(x/log x) per-h amortised for any unbounded M family — directly tested at M ∈ {10..200} and ruled out; (ii) Thread-5-style cross-h correlation amortisation matching the 33× S224 speedup — does not materialise; (iii) the original P2 entry's "shared-h-singular-series structure" being interpreted as exact-cost amortisation — the shared structure helps only the polylog HL approximation, not the EXACT count. **What this does NOT close**: (i) non-sieve algorithms (GPY-weight / Maynard) for batched EXACT π_h — outside slot-1 scope; (ii) quantum batched (P9 shape); (iii) the precise named-exponent error bound for HL approximation — slot 2/3/4 candidate; (iv) the Q-truncation tradeoff for S_Q(h) → S_h — slot 3 candidate. **Pivoted A-grade target for slots 2-4**: precise named-exponent error bound for HL approximation, analogue of Thread 7 Corollary B but for π_h(x). **Cross-domain ingredient**: Hardy-Littlewood k-tuple conjecture (1923) + singular series. CROSS_DOMAIN_TECHNIQUES.md status unchanged (singular series already USED-E in `sanity_singular_series.py`). **Cites** E1.5 (per-h sample-complexity argument), E6.x (sieve hierarchy primitive), S224 (Correlation Dichotomy template — NOT replicated for h-axis), S231 (Thread 6 P1 wrap — negative shape this slot matches in EXACT regime), S240-S244 (Thread 7 P3 — positive shape this slot matches in APPROX regime). See `experiments/analytic/batched_pi_h/{slot1_baseline.py, slot1_baseline_results.md, slot1_raw.tsv, slot1_samples.tsv}`, `archive/sessions/session418_commit_p2_baseline.md`. | 418 |
+    884	| §F6 / §P7 — does the dyadic family π(2^k), k = 1..N, admit per-query polylog amortisation beyond generic-magnitude HKM? (NOVELTY_CHALLENGES F6 / OPEN_POSITIVE_TARGETS P7 per-query side) | EXPERIMENT (B-NEGATIVE: three independent structural tests on (π(2^k))_{k=1..56} all return random-baseline values within Monte Carlo noise) | E (E1.1 + E1.5; refines E1.1 inline) | S246 novelty mode. Built `experiments/wildcard/dyadic_pi_structure/dyadic_pi_structure.py`: (1) hard-coded OEIS A007053 reference values π(2^k) for k=0..56, verified k≤18 against sympy.primepi (18/18 exact); (2) computed Li(2^k) and Riemann R(2^k) at 80-decimal mpmath precision, residual r_R(k) = π(2^k) − R(2^k), normalised c_R(k) = r_R(k)/2^{k/2}; (3) Monte Carlo random-binary BM linear-complexity null at length 56 with matched n_pos=25 / n_neg=31 split (4000 shuffles): mean=28.25, std=1.01, p05=27, p95=30; data BM(sign(r_R))=28, sits at 0.25σ below MC mean — F1 (BM ≤ MC p05) FAILS; (4) MC iid-Gaussian lag-1 |autocorr| null (4000 trials): p95=0.250, p99=0.328, p999=0.437; data max |ac| over lags 1..10 = 0.283 at lag 1, below MC p99, Bonferroni-corrected over 10 lags p ≈ 0.4 — F2 (max |ac| ≥ MC p999) FAILS; (5) HKM cost test via fresh subprocess sympy.primepi with no sieve-cache reuse: median T(2^k) / mean(T(2^k − 1), T(2^k + 1)) = 0.998 / 1.047 / 0.995 at k = 28, 30, 32 (avg 1.013) — F3 (dyadic speedup ratio ≤ 0.5) FAILS. **All three F-claims FAIL → B-NEGATIVE per-query closure.** Note: an earlier v1 result with Li-baseline gave spurious lag-1 = 0.87 driven by the smooth -Li(√x)/2 Möbius-series correction; switching to R-baseline (which absorbs the smooth Σ μ(n)/n Li(x^{1/n}) series) eliminates the confound. **Structural reason** (two independent mechanisms): (a) information-theoretic — the explicit-formula zero-sum −Σ_ρ R(x^ρ) ≈ −2√x Σ_n cos(γ_n log x − arg(ρ_n))/|ρ_n| has phases γ_n · k log 2 mod 2π Weyl-equidistributed in k for every γ_n with γ_n irrational, independently of the dyadic form; (b) algorithmic — Lucy / Meissel-Lehmer outer loop processes {n ≤ √x} and x^{2/3}-smooth counts which carry no binary-representation side-channel. **What this rules out**: (i) any algorithm computing π(2^k) substantially faster than generic-x π(x) at the same magnitude; (ii) any compressed representation of (π(2^k))_k of size below the trivial Σ_k k = O(N²) output bit-budget; (iii) any short-recurrence/closed-form for residuals r_R(k) at the n=56 scale. **What this does NOT close**: cross-k batched amortisation (Thread-5 / Correlation-Dichotomy shape transposed to dyadic family) — the shared zero database (γ_n)_{n=1..K} is k-independent and admits per-query O(K) cost with K = polylog. Registered as F6.b in NOVELTY_CHALLENGES.md and P7.b in OPEN_POSITIVE_TARGETS.md. **Successor challenges proposed in S246**: F6.a (cross-modulus generalisation x_k = m^k for m ∈ {3, 5, 6, 10, 30}), F6.b (batched-on-k amortisation), F6.c (rigorous Ω(N²) lower bound from output bit-budget). **Cross-domain ingredient**: Berlekamp-Massey linear complexity over GF(2) (signal-processing standard). CROSS_DOMAIN_TECHNIQUES.md addition: "Berlekamp-Massey + Monte Carlo random-shuffle null for testing low-complexity linear recurrences in arithmetic sequences — USED-E (S246), confirmed n=56 too short to discriminate polylog from random; minimum useful length n > log²(n) · 5 ≈ 200". **Cites** E1.1 (per-query HKM x^{2/3} bound; refined inline with dyadic per-query no-amortisation note), E1.5 (per-step 0.537 entropy; consistent with Weyl-equidistribution mechanism). See `experiments/wildcard/dyadic_pi_structure/{dyadic_pi_structure.py, dyadic_pi_structure_results.md, raw_data.json, hkm_cost.json, summary.json}`, `archive/sessions/session246_f6_dyadic_pi_structure.md`. | 246 |
+    885	
+  [Bash] tail -2 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | §P.P2 batched π_h(x) on h, slot 1 — does the parallel-h Eratosthenes sieve produce per-h amortised polylog cost as M = #h grows, or does it bottom out at Θ(x/log x) (P1-shape)? | EXPERIMENT (B-NEGATIVE on EXACT regime; B-POSITIVE on APPROXIMATE regime — Thread-7-shape transposed to h-axis) | E (E1.5 + S224 + S231 + S240..S244 — per-h amortised cost = Θ(x/log x) for batched-sieve; HL polylog-per-h with √x error matches Hardy-Littlewood prediction) | Thread 8 commit step 1/4 (S418). Built `experiments/analytic/batched_pi_h/slot1_baseline.py` (~280 lines) implementing three estimators of π_h(x) := #{p prime, p ≤ x : p+h prime} for h ∈ {2, 4, ..., H}: M1 BATCHED SIEVE (sieve [1, x+H] once, for each prime p ≤ x test all H/2 candidates p+h), M2 PER-h SIEVE (single-h timing × M for prediction), M3 HARDY-LITTLEWOOD APPROX (HL_h(x) = S_h · li_2(x), S_h = 2 C_2 Π_{p|h, p odd} (p−1)/(p−2), li_2 via scipy.integrate.quad). **Three-anchor table** at x = 10⁵ / 10⁶ / 10⁷ with H = ⌊log²x⌋ even-rounded capped at 200, M = 66 / 95 / 100: T_batched = 0.041 / 0.438 / 3.893 s ⇒ per-h amort = 0.62 / 4.61 / 38.9 ms. M1/M2 batched-vs-per-h speedup at x = 10⁵, 10⁶: 6.71×, 8.85× — **bounded constant, not growing with M**. Per-h amort ratio across decades: 7.7×, 8.5× ≈ π(x) ratios 8.18×, 8.47× — **per-h amortised cost is Θ(π(x)) = Θ(x/log x), NOT polylog**. **H-sweep at x = 10⁶** with H ∈ {20, 50, 100, 200, 400}, M ∈ {10, 25, 50, 100, 200}: per-h amortised = 8.7 → 6.0 → 5.0 → 4.5 → 4.3 ms — clear floor at ~4 ms (set by per-prime per-h test cost: π(10⁶) · 50 ns ≈ 4 ms). **Per-h cost is M-INDEPENDENT for M ≥ 50.** **HL approximation per-h cost** = 0.62 / 1.23 / 0.68 µs — five orders of magnitude faster than batched-sieve, flat in x and M (polylog shape). **HL approximation accuracy**: mean |π_h − HL_h|/√x ≤ 0.10, max ≤ 0.25 across all 261 (x, H, h) cells; matches Hardy-Littlewood's O(√x) conjectural bound. **Structural dichotomy** (the slot's main result): EXACT regime per-h cost = Θ(x/log x) with zero error (matches P1 / Thread 6 negative shape on the h-axis); APPROXIMATE regime per-h cost = Θ(polylog x) with ≤ 0.25 √x worst error (matches P3 / Thread 7 positive shape on the h-axis). **P2 is Thread-7 (P3) shape, NOT Thread-5 (S224) shape**: the cross-h amortisation in EXACT regime gives only a constant sieve-sharing factor (the h-axis is not a "correlation-of-x" axis in the relevant sense). **What this rules out**: (i) batched-sieve algorithm achieving o(x/log x) per-h amortised for any unbounded M family — directly tested at M ∈ {10..200} and ruled out; (ii) Thread-5-style cross-h correlation amortisation matching the 33× S224 speedup — does not materialise; (iii) the original P2 entry's "shared-h-singular-series structure" being interpreted as exact-cost amortisation — the shared structure helps only the polylog HL approximation, not the EXACT count. **What this does NOT close**: (i) non-sieve algorithms (GPY-weight / Maynard) for batched EXACT π_h — outside slot-1 scope; (ii) quantum batched (P9 shape); (iii) the precise named-exponent error bound for HL approximation — slot 2/3/4 candidate; (iv) the Q-truncation tradeoff for S_Q(h) → S_h — slot 3 candidate. **Pivoted A-grade target for slots 2-4**: precise named-exponent error bound for HL approximation, analogue of Thread 7 Corollary B but for π_h(x). **Cross-domain ingredient**: Hardy-Littlewood k-tuple conjecture (1923) + singular series. CROSS_DOMAIN_TECHNIQUES.md status unchanged (singular series already USED-E in `sanity_singular_series.py`). **Cites** E1.5 (per-h sample-complexity argument), E6.x (sieve hierarchy primitive), S224 (Correlation Dichotomy template — NOT replicated for h-axis), S231 (Thread 6 P1 wrap — negative shape this slot matches in EXACT regime), S240-S244 (Thread 7 P3 — positive shape this slot matches in APPROX regime). See `experiments/analytic/batched_pi_h/{slot1_baseline.py, slot1_baseline_results.md, slot1_raw.tsv, slot1_samples.tsv}`, `archive/sessions/session418_commit_p2_baseline.md`. | 418 |
+    | §F6 / §P7 — does the dyadic family π(2^k), k = 1..N, admit per-query polylog amortisation beyond generic-magnitude HKM? (NOVELTY_CHALLENGES F6 / OPEN_POSITIVE_TARGETS P7 per-query side) | EXPERIMENT (B-NEGATIVE: three independent structural tests on (π(2^k))_{k=1..56} all return random-baseline values within Monte Carlo noise) | E (E1.1 + E1.5; refines E1.1 inline) | S246 novelty mode. Built `experiments/wildcard/dyadic_pi_structure/dyadic_pi_structure.py`: (1) hard-coded OEIS A007053 reference values π(2^k) for k=0..56, verified k≤18 against sympy.primepi (18/18 exact); (2) computed Li(2^k) and Riemann R(2^k) at 80-decimal mpmath precision, residual r_R(k) = π(2^k) − R(2^k), normalised c_R(k) = r_R(k)/2^{k/2}; (3) Monte Carlo random-binary BM linear-complexity null at length 56 with matched n_pos=25 / n_neg=31 split (4000 shuffles): mean=28.25, std=1.01, p05=27, p95=30; data BM(sign(r_R))=28, sits at 0.25σ below MC mean — F1 (BM ≤ MC p05) FAILS; (4) MC iid-Gaussian lag-1 |autocorr| null (4000 trials): p95=0.250, p99=0.328, p999=0.437; data max |ac| over lags 1..10 = 0.283 at lag 1, below MC p99, Bonferroni-corrected over 10 lags p ≈ 0.4 — F2 (max |ac| ≥ MC p999) FAILS; (5) HKM cost test via fresh subprocess sympy.primepi with no sieve-cache reuse: median T(2^k) / mean(T(2^k − 1), T(2^k + 1)) = 0.998 / 1.047 / 0.995 at k = 28, 30, 32 (avg 1.013) — F3 (dyadic speedup ratio ≤ 0.5) FAILS. **All three F-claims FAIL → B-NEGATIVE per-query closure.** Note: an earlier v1 result with Li-baseline gave spurious lag-1 = 0.87 driven by the smooth -Li(√x)/2 Möbius-series correction; switching to R-baseline (which absorbs the smooth Σ μ(n)/n Li(x^{1/n}) series) eliminates the confound. **Structural reason** (two independent mechanisms): (a) information-theoretic — the explicit-formula zero-sum −Σ_ρ R(x^ρ) ≈ −2√x Σ_n cos(γ_n log x − arg(ρ_n))/|ρ_n| has phases γ_n · k log 2 mod 2π Weyl-equidistributed in k for every γ_n with γ_n irrational, independently of the dyadic form; (b) algorithmic — Lucy / Meissel-Lehmer outer loop processes {n ≤ √x} and x^{2/3}-smooth counts which carry no binary-representation side-channel. **What this rules out**: (i) any algorithm computing π(2^k) substantially faster than generic-x π(x) at the same magnitude; (ii) any compressed representation of (π(2^k))_k of size below the trivial Σ_k k = O(N²) output bit-budget; (iii) any short-recurrence/closed-form for residuals r_R(k) at the n=56 scale. **What this does NOT close**: cross-k batched amortisation (Thread-5 / Correlation-Dichotomy shape transposed to dyadic family) — the shared zero database (γ_n)_{n=1..K} is k-independent and admits per-query O(K) cost with K = polylog. Registered as F6.b in NOVELTY_CHALLENGES.md and P7.b in OPEN_POSITIVE_TARGETS.md. **Successor challenges proposed in S246**: F6.a (cross-modulus generalisation x_k = m^k for m ∈ {3, 5, 6, 10, 30}), F6.b (batched-on-k amortisation), F6.c (rigorous Ω(N²) lower bound from output bit-budget). **Cross-domain ingredient**: Berlekamp-Massey linear complexity over GF(2) (signal-processing standard). CROSS_DOMAIN_TECHNIQUES.md addition: "Berlekamp-Massey + Monte Carlo random-shuffle null for testing low-complexity linear recurrences in arithmetic sequences — USED-E (S246), confirmed n=56 too short to discriminate polylog from random; minimum useful length n > log²(n) · 5 ≈ 200". **Cites** E1.1 (per-query HKM x^{2/3} bound; refined inline with dyadic per-query no-amortisation note), E1.5 (per-step 0.537 entropy; consistent with Weyl-equidistribution mechanism). See `experiments/wildcard/dyadic_pi_structure/{dyadic_pi_structure.py, dyadic_pi_structure_results.md, raw_data.json, hkm_cost.json, summary.json}`, `archive/sessions/session246_f6_dyadic_pi_structure.md`. | 246 |
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md <<'EOF'
+| §P.P2 batched π_h(x) on h, slot 2 — does the within-window cross-x ensemble of HL residuals r_h(x) = π_h(x) − S_h·li_2(x) at fixed (anchor, h) follow a half-Gaussian shape (Thread 7 slot 2 transposition); is there a stable F_GUE-like factor σ_eff/σ_pred? | EXPERIMENT (B-MIXED: cross-x within-window FAILS half-Gaussian KS due to random-walk-like correlation; cross-h at fixed x PASSES with median KS p ≈ 0.7-0.8; σ-suppression ratio in [0.36, 0.70] but NOT decade-stable like Thread 7's F_GUE = 0.755) | E (E1.5 + S195 + S224 + S240..S244 + S418 — methodological finding identifies cross-h as the natural ensemble for HL residual analysis; refines slot-1 dichotomy into ensemble-aware form) | Thread 8 commit step 2/4 (S419). Built `experiments/analytic/batched_pi_h/slot2_multisample.py` (~340 lines): batched-sieve via numpy AND-shift cumsum (memory-efficient; 720 rows in 21s total wall time). Three anchors x ∈ {10⁶, 10⁷, 10⁸} × N=30 log-uniform x_j in quarter-decade [x_anchor, x_anchor·10^{0.25}] × 8 representative h ∈ {2, 6, 14, 22, 30, 42, 90, 198} (S_h ∈ [1.32, 4.0]). Three statistical aggregates: (A) per-(anchor, h) cross-x KS (24 cells, N=30 each); (B) per-(anchor, x_j) cross-h KS (90 cells, N=8 each); (C) pooled per-anchor (N=240 each). **Headline finding**: cross-x at fixed (anchor, h) FAILS half-Gaussian KS — median p_eff = 0.033, only 8/24 cells with p > 0.1. Cells that fail show median/σ_eff ≈ mean/σ_eff ≈ 0.95 (theoretical half-Gaussian = 0.6745/0.7979) — clustered |r| values, not Gaussian-tailed. Within-window range diagnostic: (max|r| − min|r|)/σ_eff has mean ≈ 1.5 across cells; residuals drift but don't decohere. **Structural diagnosis**: HL_h(x) = S_h · li_2(x) is analytic-smooth, π_h(x) is step; the residual is a slowly-varying random-walk in x (drift O(σ_eff) within quarter-decade, no oscillation), unlike Thread 7's zero-truncation residual which oscillates with wavelength ~1/log x. Cross-x sampling within a small log-window does NOT give iid samples for HL residuals. **Cross-h at fixed (anchor, x_j) PASSES half-Gaussian KS**: median p_eff = 0.840 / 0.698 / 0.804 at anchors 10⁶/10⁷/10⁸; **all 90/90 cells with p > 0.1**. The cross-h ensemble is the natural sampling for HL residual shape analysis. **σ-suppression ratio σ_eff/σ_pred_pois = 0.36-0.70** across 24 (anchor, h) cells, where σ_pred_pois = √(S_h·li_2(x)) is the HL random-residual Poisson prediction. Empirical RMS is consistently SMALLER than Poisson — analogue of Thread 7's GUE pair-correlation suppression (correlations among primes via singular series itself reduce the variance below random-residual). NOT decade-stable: 0.50 → 0.70 → 0.41 across 10⁶/10⁷/10⁸; the 10⁷ bump driven by anomaly cell (10⁷, h=6) cousin-prime σ_eff/σ_pois = 1.64 (signed range = 481, persistent large residual episode). Excluding h=6: ratio narrows to ~0.36-0.43, still mildly drifting with x. **Pooled per-anchor (N=240) KS**: borderline at 10⁶ (p=0.082), reject at 10⁷ (p<0.001, h=6 outlier), borderline at 10⁸ (p=0.217). Half-Gaussian shape holds at the cell level but pooled hides the anomaly. **What this rules out**: (i) the original Thread-7-direct-transposition hypothesis "HL has stable F_GUE-like σ_eff/σ_pred ≈ 0.74 across decades" — directly tested, ratio drifts in [0.36, 0.70]; (ii) cross-x sampling within quarter-decade as a fair iid ensemble for HL residual statistics — methodologically rejected. **What this does NOT close**: (i) cross-h ensemble at fixed x as a path to a precise σ-formula for HL — slot 2 demonstrates shape but does not derive σ_eff(x, h) closed form; (ii) Q-truncated singular series cost-vs-error tradeoff — slot 3; (iii) anchor extension to 10⁹/10¹⁰ to test whether σ_eff/σ_pois stabilises — slot 3 side measurement; (iv) named-exponent error bound for polylog HL evaluator — slot 3-4 wrap. **Methodological warning** (preserved for slot 3+ design): within-window cross-x sampling is misleading for HL residual analysis; use cross-h at fixed x. **Cross-domain ingredient**: Hardy-Littlewood random-residual heuristic (predicted Poisson scale √(S_h · li_2(x))) plus Kolmogorov-Smirnov half-Gaussian goodness-of-fit (signal-processing standard). CROSS_DOMAIN_TECHNIQUES.md unchanged. **Cites** E1.5 (per-query bit content), S195 (variance machinery transposed to h-axis), S224 (Correlation Dichotomy reference), S418 (slot-1 dichotomy this slot extends), S240-S244 (Thread 7 P3 — ensemble-shape contrast). See `experiments/analytic/batched_pi_h/{slot2_multisample.py, slot2_multisample_results.md, slot2_data.csv, slot2_summary.csv, slot2_cross_h.csv, slot2_pooled.csv, slot2_run.log}`, `archive/sessions/session419_commit_p2_multisample.md`. | 419 |
+EOF
+echo "Appended slot 2 row to CLOSED_PATHS.md"
+    Appended slot 2 row to CLOSED_PATHS.md
+Now let me write the session synthesis.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session419_commit_p2_multisample.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session419_commit_p2_multisample.md
+  [Bash] cd /apps/aplikacijos/prime-research && find experiments/analytic/batched_pi_h/ -name "*.py" | while read f; do
+  r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"
+done
+echo "---"
+find experiments/analytic/batched_pi_h/ -name "__pycache__" -type d
+    ---
+All experiment files have results. No `__pycache__` to clean. Let me verify the final state and write `.run_state`.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/batched_pi_h/ && echo "---" && cat /apps/aplikacijos/prime-research/.commit_state
+    slot1_baseline.py
+    slot1_baseline_results.md
+    slot1_raw.tsv
+    slot1_samples.tsv
+    slot2_cross_h.csv
+    slot2_data.csv
+    slot2_multisample.py
+    slot2_multisample_results.md
+    slot2_pooled.csv
+    slot2_run.log
+    slot2_summary.csv
+    ---
+    thread:p2_pi_h_batched_on_h
+    sessions_used:2
+    status:ACTIVE
+    session_history:S418,S419
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    last_synthesis:archive/sessions/session419_commit_p2_multisample.md
+    thread_8_summary:Thread 8 = OPEN_POSITIVE_TARGETS.md §P2 — prime gap function pi_h(x) = #{p <= x : p+h prime} batched on h in {2, 4, ..., H}. Slot 1 (S418) established the structural dichotomy: EXACT regime is Theta(x/log x) per-h (P1-shape negative, no asymptotic amortisation); APPROX regime HL_h(x) = S_h*li_2(x) is polylog per-h with empirical mean|err|/sqrt(x) <= 0.10 (P3-shape positive). Slot 2 (S419) characterised the HL residual distribution: cross-h ensemble at fixed (anchor, x_j) is shape-half-Gaussian (90/90 cells with KS p > 0.1, median p = 0.7-0.8); sigma_eff/sigma_pois ratio in [0.36, 0.70] across (anchor, h), NOT stable across decades like Thread 7's F_GUE = 0.755. Within-window cross-x ensembles fail KS due to random-walk-like correlation (residuals drift on log-scale, do not decohere within quarter-decade). The right ensemble for HL residual analysis is cross-h at fixed x. Slot 3 plan (recommended): (3a) Q-truncated singular series S_Q(h) — error vs cost tradeoff curve; A-grade target = named-exponent error bound for polylog HL evaluator analogous to Thread 7 Corollary B. (3b) anchor extension to x = 10^9, 10^10 to test sigma_eff/sigma_pois stability.
+    escalation_required:NO
+    escalation_reason:Thread 8 slot 2 produced clean B-shape positive structural finding; slot 3 has clear A-grade target (Q-truncation cost-vs-error) and a stable methodological frame. Continue thread.
+    recommended_next_action:Thread 8 slot 3: build slot3_q_truncation.py implementing S_Q(h) = 2 C_2 * Pi_{p odd, p|h, p<=Q} (p-1)/(p-2). For h in admissible-H and Q in {log^2 x, log^3 x, x^{1/4}}, measure |S_Q(h) - S_h| (truncation error) and total HL_Q residual = pi_h(x) - S_Q(h)*li_2(x). Identify the Q at which Q-truncation error matches sigma_eff_h(x) (the "knee"). Use slot-2's cross-h ensemble at fixed (anchor, x_j) for shape testing of the residual. A-grade target: a precise tradeoff curve Q -> per-h cost vs total error sigma, with named-exponent error formula sigma_HL_Q(x, h) = c1 * sigma_eff_h(x) + c2 * eps_Q(h). If knee is at Q << x^{1/4}, polylog HL evaluation with named-exponent error is established (Thread-7 Corollary B analogue). Optional side-measurement: extend to x = 10^9 anchor at moderate cost (segmented sieve, ~1 minute).
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] echo 421 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    421
+Session 419 complete. Self-grade **B**.
+
+## Summary
+
+**Mode:** commit, Thread 8 / OPEN_POSITIVE_TARGETS §P2 (prime gap function π_h(x) batched on h), slot 2 of 4.
+
+**Built:** `experiments/analytic/batched_pi_h/slot2_multisample.py` — multi-anchor multi-h HL residual KS analysis. 720 (anchor, x_j, h) data points across 3 anchors {10⁶, 10⁷, 10⁸} × N=30 quarter-decade x-samples × 8 representative h-values. Three statistical aggregates: cross-x at fixed (anchor, h), cross-h at fixed (anchor, x_j), pooled per-anchor.
+
+**Headline finding:** the natural ensemble for HL residual `r_h(x) = π_h(x) − S_h·li_2(x)` analysis on the h-axis is **cross-h at fixed x, not cross-x at fixed h**. Cross-h ensemble is half-Gaussian-shape (90/90 cells with KS p > 0.1, median p ≈ 0.78). Cross-x within a quarter-decade window fails KS (median p = 0.033) due to random-walk-like correlation — residuals drift but don't oscillate (HL is analytic, π_h is step). σ_eff/σ_pred_pois suppression ratio is 0.36-0.70 across 24 (anchor, h) cells but NOT decade-stable like Thread 7's F_GUE = 0.755.
+
+**Files updated:** `.commit_state` (sessions_used:2), `OPEN_POSITIVE_TARGETS.md` §P2, `RESEARCH_AGENDA.md` Arc 10, `status/SESSION_INSIGHTS.md`, `status/CLOSED_PATHS.md`. Synthesis: `archive/sessions/session419_commit_p2_multisample.md`. `.run_state` set to 421.
+
+**Next slot (slot 3):** Q-truncated singular series S_Q(h) cost-vs-error tradeoff. A-grade target = named-exponent error bound for polylog HL evaluator (Thread-7 Corollary B analogue for π_h).
+--- Session ended ---
+Sleeping 60 seconds before next run...

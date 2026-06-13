@@ -1,0 +1,778 @@
+[autonomy] Default mode 'construction' overridden by 'commit'
+=== Run #434 — Mode: commit — Thu Apr 30 14:08:22 UTC 2026 ===
+  [Bash] cat /apps/aplikacijos/prime-research/.commit_state
+    thread:p4_k_tuple_narrow_window_batched_on_x
+    sessions_used:4
+    status:ACTIVE
+    session_history:S429,S430,S431,S432
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_8:p2_pi_h_batched_on_h_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    last_synthesis:archive/sessions/session432_commit_p4_alpha_derivation.md
+    thread_9_summary:Thread 9 = OPEN_POSITIVE_TARGETS.md §P4 — twin-prime / k-tuple narrow-window count batched on x. Slots 1-4 done. Slot 1 (S429): sieve-shared batched-x evaluator vs naive; correlated dichotomy 5-8x speedup at M=64 across 10^6/10^7. Slot 2 (S430): cross-x HL residual distribution at fixed H, N=200 disjoint windows per cell, 18 cells, 3 decades; F_HL_kt = sigma_eff/sigma_pois = 0.87 +/- 0.03 for k=2 decade-stable. Slot 3 (S431): pair-correlation derivation. Cancellation identity <S_4 factor at p>_uniform_m = S_2^2 factor at p verified to bit precision for first 168 primes; <S_4>_admissible = 24 C_2^2 ≈ 10.4596. Theorem 1 (windowed-twin Gallagher-Poisson under HL): Var[N_2]/E[N_2] -> 1 as x -> ∞. Empirical fit Δ(w) ≈ -5.7165·w·log(w) + 10.4958·w on 6 cells w∈[190, 4071]. Slot 4 (S432): EXTENDED T(w) computation to K=200000 (w=1.2M), 22 cells across log w∈[5.7, 14.0]. (i) Identified slot 3 software bug: off-by-one in tail-handling skipped first prime > diam(H), biasing S_4 high by 1/(1-4/p_tail)≈1+4/p² (1.07x at m=6, <1.01x at m≥100); fast eval validated to bit precision against Hardy-Littlewood prime quadruplet constant 4.1511 (vs slot 3's 4.4571). (ii) Slot 3 α≈5.72 REFUTED as finite-w artefact: rolling-band α(log w) grows from 6.43 (K=50..200) to 9.73 (K=50000..200000), monotonically. (iii) Best 3-param fit Δ/w ≈ -5.36 log(w) log log(w) + 9.30 log(w) - 22.37, RMS rel err 1.5%. log² model rejected (coefficient flips sign as K_min↑). (iv) Structural candidate Δ(w) ∼ -12 C_2² · w · log(w) · log log(w) with -12 C_2² = -5.230 matching empirical -5.36 to 2.4%. (v) Single-prime heuristic via Mertens-style sum captures 32% of magnitude; cross-prime + boundary primes account for remaining 68% (analytic derivation incomplete). (vi) Slot 3 cells recomputed with corrected S_4: |Δ| 4-6% larger than slot 3 reported; F_pred at 10^8 wide cell shifts from 0.9137 (slot 3) to 0.9080 (slot 4 corrected) vs F_emp = 0.9113, |F_diff| stays <0.5% but flips sign (F_pred undershoots slot 4 vs overshoots slot 3). The unaccounted residual F_pred-F_emp ≈ ±0.003 is plausibly Goldston-Montgomery zeros contribution.
+    recommended_next_action:Slot 5 of Thread 9 (FINAL slot). Highest-yield: rigorous derivation of -12 C_2² log·log log coefficient via Goldston-Yıldırım 2007 partial-sum machinery on HL 4-tuple singular series. If derived rigorously, slots 3+4+5 produce closed-form F²(x;w) theorem under HL with Δ(w) ∼ -12 C_2² · w · log(w) · log log(w). Alternative slot 5: (b) Goldston-Montgomery zero-residual analysis of F_pred - F_emp ≈ ±0.003 (slot 3 candidate, slot 4 refines values); (c) wrap synthesizing the 5-slot Thread 9 arc as a partial-positive Correlation-Dichotomy-shape result (analogous to Thread 5 S224, Thread 7 S260, Thread 8 P2). (a) is highest yield if rigorous derivation is feasible; (c) is the natural fallback closing Thread 9 with explicit theorem statement and falsifiers.
+    escalation_required:NO
+Slot 5 (FINAL) of Thread 9 — P4 k-tuple narrow-window batched on x. Let me read the recent commit syntheses to understand the state.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session4(29|30|31|32)" | head -20
+    session429_commit_p4_baseline.md
+    session430_commit_p4_cross_x_shape.md
+    session431_commit_p4_pair_correlation.md
+    session432_commit_p4_alpha_derivation.md
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/ | head -30
+    algebraic
+    analytic
+    circuit_complexity
+    constructions
+    dynamical
+    formalisations
+    information_theory
+    ml
+    other
+    proposals
+    quantum
+    sieve
+    topological
+    wildcard
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session432_commit_p4_alpha_derivation.md
+    1	# Session 432 — commit Thread 9 (P4) slot 4: asymptotic shape correction + slot 3 bug fix (B-grade)
+    2	
+    3	**Date:** 2026-04-30
+    4	**Mode:** commit (Thread 9 / OPEN_POSITIVE_TARGETS.md §P4 — twin-
+    5	prime / k-tuple narrow-window count batched on x — slot 4 of 5)
+    6	**Slot:** 4 of 5 of Thread 9
+    7	**Self-grade:** **B** — slot 4 produces (a) a direct numerical
+    8	correction to slot 3's S₄ values via a tail-handling bug fix in the
+    9	slot 3 evaluator; (b) a conclusion that slot 3's empirical α ≈ 5.72
+    10	fit was a *finite-w artefact* (refuted by extension to w = 1.2 ×
+    11	10⁶); and (c) a structural candidate for the leading asymptotic of
+    12	Δ(w): **Δ(w) ∼ −12 C₂² · w · log(w) · log log(w)**, with −12 C₂² =
+    13	−5.230 matching the empirical 3-param fit −5.36 to 2.4%. The
+    14	closed-form rigorous derivation is *not* completed (single-prime
+    15	Mertens heuristic captures 32% of magnitude; cross-prime and
+    16	boundary-prime contributions account for the remaining 68%
+    17	empirically). Slot 3's wide-regime F²_pred match to F²_emp is
+    18	*preserved* under the corrected calculation (still <0.5%) but
+    19	sign-flipped (overshoot → undershoot). Not A because the rigorous
+    20	derivation of the −12 C₂² coefficient is incomplete; the slow
+    21	asymptotic convergence of Δ/(w log w log log w) → −5.23 makes
+    22	empirical verification at w → ∞ infeasible.
+    23	
+    24	See `experiments/analytic/k_tuple_batched/slot4_alpha_derivation_results.md`
+    25	for the full mathematical write-up, hypothesis-status table,
+    26	falsifiability statements, and slot-5 recommendation.
+    27	
+    28	## Mission (slot 4, from `.commit_state` recommended_next_action)
+    29	
+    30	> "Slot 4 of Thread 9. Highest-yield: derive closed form for α ≈
+    ... (364 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_alpha_derivation_results.md
+    1	# Thread 9 (P4) slot 4 — Asymptotic shape of Δ(w) and slot 3 bug correction
+    2	
+    3	**Session:** S432
+    4	**Date:** 2026-04-30
+    5	**Code:** `slot4_alpha_derivation.py`
+    6	**Outputs:**
+    7	  - `slot4_h_residual.csv`        62 sampled (K, N, H(N), residual, log N)
+    8	  - `slot4_t_delta.csv`           22 cells: T(w), Δ(w), log w, alpha_emp
+    9	  - `slot4_alpha_fits.csv`        7 rolling-band α(K_lo, K_hi) fits
+    10	  - `slot4_slot3_comparison.csv`  6 slot-3 cells with corrected Δ
+    11	  - `slot4_run.log`
+    12	**Self-grade:** **B** — slot 4 produces (a) a direct numerical
+    13	correction to slot 3's S₄ values via a tail-handling bug fix, (b) a
+    14	conclusion that slot 3's α ≈ 5.72 was a *finite-w artefact*, and (c)
+    15	a structural candidate for the leading asymptotic of Δ(w):
+    16	**Δ(w) ∼ −12 C₂² · w · log w · log log w**, the empirical
+    17	log·log log coefficient matching 12 C₂² = 5.230 to 2.5%. The closed-
+    18	form derivation is *not* completed (single-prime heuristic captures
+    19	~32% of the leading magnitude); higher-order cross-prime
+    20	contributions and boundary-prime corrections account for the rest
+    21	empirically. Slot 3's wide-regime F²_pred match to F²_emp is
+    22	*preserved* (within <0.5%) under the corrected calculation; the
+    23	slot 3 narrative for narrow-regime cells is essentially unchanged.
+    24	Not A because the closed-form structural derivation is heuristic
+    25	only, and the empirical convergence to −12 C₂² is slow enough that
+    26	verification at w → ∞ is computationally inaccessible.
+    27	
+    28	## Mission (slot 4, from `.commit_state` recommended_next_action)
+    29	
+    30	> "Slot 4 of Thread 9. Highest-yield: derive closed form for α ≈
+    ... (299 more lines)
+Let me read slot 3 to get the precise singular-series setup, then plan the final slot.
+  [Read] /apps/aplikacijos/prime-research/archive/sessions/session431_commit_p4_pair_correlation.md
+    1	# Session 431 — commit Thread 9 (P4) slot 3: pair-correlation derivation of F_HL_kt (B-grade)
+    2	
+    3	**Date:** 2026-04-30
+    4	**Mode:** commit (Thread 9 / OPEN_POSITIVE_TARGETS.md §P4 — twin-prime
+    5	/ k-tuple narrow-window count batched on x — slot 3 of (≥3))
+    6	**Slot:** 3 of (≥3) of Thread 9
+    7	**Self-grade:** **B** — calibrated theoretical prediction under HL
+    8	4-tuple conjecture for the slot 2 empirical constant F_HL_kt = 0.87 ±
+    9	0.03; cancellation identity ⟨S_4 factor at p⟩_uniform_m = S_2² factor
+    10	at p verified prime-by-prime to floating-point precision (max
+    11	deviation 4×10⁻¹⁶ for first 168 primes); F²_pred matches slot 2
+    12	F²_emp to **0.24% at the cleanest cell (x = 10⁸ wide regime)**, 1.51%
+    13	at 10⁷ wide, 4.10% at 10⁶ wide; monotone improvement with x
+    14	confirming Theorem 1 (windowed-twin Gallagher-Poisson under HL).
+    15	First explicit conditional quantitative prediction of cross-x k-tuple
+    16	variance factor in the project. Not A because the cancellation
+    17	identity is essentially Gallagher 1976 re-derived prime-by-prime, the
+    18	leading log(w) coefficient α ≈ 5.72 in Δ(w) ≈ -α·w·log(w) + 24C_2²·w
+    19	is empirical not closed-form (slot 4 target — structural candidate
+    20	α = 24C_2²/log(6) = 5.838 within 2% of fit), and narrow-regime cells
+    21	deviate 4-7%. Slot 3 is a substantive theory-empirical agreement, not
+    22	a wholly new theorem.
+    23	
+    24	See `experiments/analytic/k_tuple_batched/slot3_pair_correlation_results.md`
+    25	for full mathematical write-up, hypothesis-status table, falsifiability
+    26	statements, and slot-4 recommendation.
+    27	
+    28	## Mission (slot 3, from `.commit_state` recommended_next_action)
+    29	
+    30	> "Slot 3 of Thread 9. Highest-yield: derive closed-form prediction for
+    ... (326 more lines)
+Now let me look at the slot 4 code briefly and check files structure.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/
+    slot1_baseline.csv
+    slot1_baseline.py
+    slot1_baseline_results.md
+    slot1_hl_compare.csv
+    slot1_run.log
+    slot2_cross_x.py
+    slot2_cross_x_results.md
+    slot2_data.csv
+    slot2_pooled.csv
+    slot2_run.log
+    slot2_summary.csv
+    slot3_identity.csv
+    slot3_pair_correlation.py
+    slot3_pair_correlation_results.md
+    slot3_predictions.csv
+    slot3_run.log
+    slot3_s4_profile.csv
+    slot4_alpha_derivation.py
+    slot4_alpha_derivation_results.md
+    slot4_alpha_fits.csv
+    slot4_h_residual.csv
+    slot4_run.log
+    slot4_slot3_comparison.csv
+    slot4_t_delta.csv
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_t_delta.csv
+    1	w,K,T_w,leading,Delta,log_w,alpha_emp
+    2	305,50,74293.960200,81083.186229,-6789.226030,5.720312,3.891354
+    3	605,100,302920.776872,319037.605370,-16116.828498,6.405228,4.159006
+    4	1205,200,1228163.090458,1265625.514478,-37462.424020,7.094235,4.382312
+    5	1805,300,2778607.876791,2839785.518023,-61177.641231,7.498316,4.520139
+    6	3005,500,7759224.354104,7870821.808421,-111597.454317,8.008033,4.637500
+    7	4205,700,15245501.486451,15412146.476566,-166644.990114,8.344030,4.749528
+    8	6005,1000,31177770.429354,31430924.187055,-253153.757701,8.700348,4.845457
+    9	9005,1500,70271801.615177,70680328.926600,-408527.311423,9.105535,4.982323
+    10	12005,2000,125045479.539776,125619036.027055,-573556.487278,9.393079,5.086348
+    11	18005,3000,281647620.899479,282564357.310697,-916736.411217,9.798405,5.196321
+    12	30005,5000,783071197.336129,784726628.208907,-1655430.872778,10.309119,5.351750
+    13	45005,7500,1762802796.271348,1765438769.952156,-2635973.680808,10.714529,5.466473
+    14	60005,10000,3134710016.527091,3138383470.718170,-3673454.191079,11.002183,5.564272
+    15	90005,15000,7055118222.601637,7060970549.318486,-5852326.716849,11.407621,5.699895
+    16	120005,20000,12544358050.804205,12552487864.009857,-8129813.205652,11.695289,5.792557
+    17	180005,30000,28229448090.202641,28242313201.665764,-12865111.463123,12.100740,5.906321
+    18	240005,40000,50190038893.922821,50207859483.685883,-17820589.763062,12.388415,5.993576
+    19	300005,50000,78426210280.007675,78449126710.070221,-22916430.062546,12.611554,6.056892
+    20	420005,70000,153725338911.237518,153758823995.931549,-33485084.694031,12.948022,6.157345
+    21	600005,100000,313741341995.601990,313791277007.455139,-49935011.853149,13.304693,6.255261
+    22	900005,150000,705948021893.602173,706026450913.945557,-78429020.343384,13.710156,6.356082
+    23	1200005,200000,1255046791532.202881,1255154648429.541260,-107856897.338379,13.997836,6.421019
+    24	
+  [ToolSearch] 
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_alpha_derivation.py
+    1	"""
+    2	slot4_alpha_derivation.py — Thread 9 (P4) commit slot 4
+    3	
+    4	Goal: derive (or pin down) the closed-form leading-log coefficient alpha in
+    5	
+    6	    Delta(w) = T(w) - 2 C_2^2 w^2  ~  -alpha * w * log(w) + beta * w + o(w)
+    7	
+    8	where T(w) = sum_{m in A, m <= w-1} (w-m) S_4(0,2,m,m+2) is the HL
+    9	4-tuple singular-series triangular sum (slot 3 result F9 / F10).
+    10	
+    11	Slot 3's empirical fit: alpha ~ 5.72, beta ~ 10.50 (intercept matches
+    12	24 C_2^2 = 10.4596 to 0.35%). Slot 3 proposed structural candidate
+    13	alpha = 24 C_2^2 / log(6) = 5.838 (within 2% of empirical fit).
+    14	
+    15	Slot 4 strategy:
+    16	
+    17	  1. Compute S_4(0, 2, m, m+2) for all admissible m up to M_MAX ~ 200,000
+    18	     (~33,000 admissible terms) using one-shot tail-cached singular series
+    19	     evaluation. Cache the per-m values for ALL downstream sums.
+    20	
+    21	  2. Compute H(N) = sum_{m in A, m <= N} S_4(m) for N = 60, 120, ..., M_MAX.
+    22	     Tabulate H(N) - 4 C_2^2 * N (the "leading-cancellation residual").
+    23	
+    24	  3. Compute T(w) = sum_{m=1}^{w-1} H(m) for w = 100, 200, ..., M_MAX.
+    25	     Tabulate Delta(w) = T(w) - 2 C_2^2 w^2.
+    26	
+    27	  4. Extract alpha and beta via the integral relation:
+    28	        Delta(w) = ∫_0^w (H(u) - 4 C_2^2 u) du  +  edge.
+    29	     If H(u) - 4 C_2^2 u ~ a log(u) + b + o(1), then
+    30	        Delta(w) ~ a (w log w - w) + b w
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_alpha_derivation.py
+    100	# ---------------------------------------------------------------------------
+    101	# Fast singular-series for tuple {0, 2, m, m+2}, m admissible (m % 6 == 0)
+    102	# ---------------------------------------------------------------------------
+    103	#
+    104	# At each prime p:
+    105	#   p = 2: factor = 8 (m even, ν=1)
+    106	#   p = 3: factor = 27/16 (m ≡ 0 mod 3, ν=2)
+    107	#   p >= 5: factor depends on m mod p as
+    108	#       m mod p == 0:        f_p(0) = (1 - 2/p) / (1-1/p)^4
+    109	#       m mod p == 2 or p-2: f_p(2) = (1 - 3/p) / (1-1/p)^4
+    110	#       otherwise:           f_p(other) = (1 - 4/p) / (1-1/p)^4
+    111	#
+    112	# For large p, f_p(other) ~ 1 - 4/p^2 + O(1/p^3).  We cache f_p(other) for
+    113	# every prime up to PRIME_BOUND, and only update factors for primes that
+    114	# divide m, m-2, or m+2 (the "special" primes for that m).  The "other"
+    115	# product at every prime is a fixed constant for all m; it is precomputed
+    116	# once.
+    117	#
+    118	# Concretely we write
+    119	#     S_4(m) = OTHER_PRODUCT * prod_{p | m, p>=5} (f_p(0)/f_p(other))
+    120	#                            * prod_{p | m-2 or p | m+2, p>=5}
+    121	#                                            (f_p(2)/f_p(other))
+    122	# for m admissible with m >= 6.
+    123	#
+    124	# OTHER_PRODUCT = factor at p=2 (=8) * factor at p=3 (=27/16) *
+    125	#                 prod_{p>=5} f_p(other).
+    126	
+    127	# Precompute per-prime factors and ratios.
+    128	F_OTHER: dict[int, float] = {}       # f_p(other), p >= 5
+    129	RATIO_F0_OVER_FOTHER: dict[int, float] = {}   # f_p(0)/f_p(other)
+    ... (270 more lines)
+Let me check the H residual data and slot 4 alpha fits to understand the actual asymptotic.
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_h_residual.csv
+    1	K,N,H_N,leading,residual,log_N
+    2	10,60,94.302798,104.595349,-10.292551,4.094345
+    3	20,120,189.965387,209.190698,-19.225311,4.787492
+    4	30,180,295.699329,313.786047,-18.086719,5.192957
+    5	40,240,405.560556,418.381396,-12.820840,5.480639
+    6	50,300,502.335785,522.976745,-20.640960,5.703782
+    7	60,360,599.708898,627.572094,-27.863196,5.886104
+    8	70,420,715.792557,732.167444,-16.374887,6.040255
+    9	80,480,817.319298,836.762793,-19.443494,6.173786
+    10	90,540,913.327415,941.358142,-28.030726,6.291569
+    11	100,600,1022.234760,1045.953491,-23.718731,6.396930
+    12	150,900,1544.658988,1568.930236,-24.271248,6.802395
+    13	200,1200,2055.194580,2091.906981,-36.712402,7.090077
+    14	250,1500,2586.700555,2614.883727,-28.183172,7.313220
+    15	300,1800,3102.069219,3137.860472,-35.791254,7.495542
+    16	350,2100,3629.600065,3660.837218,-31.237153,7.649693
+    17	400,2400,4150.988603,4183.813963,-32.825360,7.783224
+    18	450,2700,4668.760907,4706.790708,-38.029801,7.901007
+    19	500,3000,5198.180369,5229.767454,-31.587085,8.006368
+    20	550,3300,5711.922265,5752.744199,-40.821934,8.101678
+    21	600,3600,6243.172896,6275.720944,-32.548048,8.188689
+    22	650,3900,6757.058061,6798.697690,-41.639629,8.268732
+    23	700,4200,7285.962495,7321.674435,-35.711941,8.342840
+    24	750,4500,7807.356770,7844.651180,-37.294411,8.411833
+    25	800,4800,8326.526054,8367.627926,-41.101872,8.476371
+    26	850,5100,8854.438875,8890.604671,-36.165797,8.536996
+    27	900,5400,9367.563817,9413.581417,-46.017599,8.594154
+    28	950,5700,9900.688473,9936.558162,-35.869689,8.648221
+    29	1000,6000,10410.189644,10459.534907,-49.345263,8.699515
+    30	1500,9000,15641.242972,15689.302361,-48.059389,9.104980
+    ... (49 more lines)
+I have a clear picture. This is the FINAL slot of Thread 9. Slot 4 left us with the empirical fit Δ(w) ∼ −5.36 · w · log(w) · log log(w), structural candidate −12 C₂² = −5.23 (2.4% match), but only 32% of magnitude derived from single-prime heuristic. Slot 5 needs to either close the analytical gap or wrap.
+
+Let me first plan the slot 5 attack. I'll attempt: (1) push numerics to larger K to confirm/refute slot 4's structural candidate; (2) attempt the Goldston-Yıldırım style closed-form derivation as far as possible; (3) Thread 9 wrap as partial-positive.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -5; ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E "session(43[0-9]|44[0-9])" | head -20
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+    session430_commit_p4_cross_x_shape.md
+    session431_commit_p4_pair_correlation.md
+    session432_commit_p4_alpha_derivation.md
+  [Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    1	# Open Positive Targets — π-Related Problem Variants Where Algorithmic Wins Are Plausible
+    2	
+    3	After 200+ sessions and five closed commit threads, the headline
+    4	polylog π(x) goal is provably blocked along every path the project has
+    5	explored. **But the Correlation Dichotomy (S224, Thread 5) showed that
+    6	adjacent problems CAN admit partial-positive results** — a 33× speedup
+    7	for batched correlated π queries, conditional batch-polylog for narrow
+    8	windows.
+    9	
+    10	This file catalogues additional adjacent problems where similar
+    11	partial-positives are plausible. Each entry is shaped as a candidate
+    12	Correlation-Dichotomy-style attack: a problem distinct from single-x
+    13	polylog π(x), with a falsifiable empirical-first attack plan, and a
+    14	measurable A-grade outcome.
+    15	
+    16	**These are the framework's current highest-EV positive-direction
+    17	targets.** When `commit` mode is invoked without an active thread, or
+    18	when `reframe` mode fires, agents pick from this list.
+    19	
+    20	---
+    21	
+    22	## §1. Batched & Windowed Variants
+    23	
+    24	### P1 — π in arithmetic progressions, batched on modulus q [CLOSED-B at S231]
+    25	**Problem:** for fixed x and a fixed family of moduli `Q = {q_1, ..., q_M}`
+    26	with q_i ≤ x^c, compute `π(x; q_i, a_i)` for all i. Single-(q, a)
+    27	queries are well-studied; *batched* on Q is not.
+    28	
+    29	**Status: CLOSED-B at S231 (Thread 6 final wrap).** P1 closes
+    30	negatively across all four amortisation axes:
+    ... (90 more lines)
+  [Grep] ### P4 —|## §|P4 — twin-prime|narrow-window count batched on x
+    22:## §1. Batched & Windowed Variants
+    329:### P4 — Twin-prime / k-tuple count in narrow windows [Thread 9 ACTIVE since S429; slots 1+2+3+4 done]
+    451:## §2. Conditional / Heuristic Variants
+    492:## §3. Restricted / Sparse Variants
+    563:## §4. Side-channel / Quantum Variants
+  [Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    329	### P4 — Twin-prime / k-tuple count in narrow windows [Thread 9 ACTIVE since S429; slots 1+2+3+4 done]
+    330	**Problem:** `π_H(x; w) = #{p ∈ [x, x+w] : p+h prime for all h ∈ H}`
+    331	for admissible H = {0, h_1, ..., h_{k-1}} ⊂ ℕ and narrow window
+    332	w = polylog(x). Batched on x_i.
+    333	
+    334	**Status: ACTIVE — Thread 9 slot 1 done at S429 (B-grade empirical
+    335	baseline); slot 2 done at S430 (B-grade cross-x distribution shape);
+    336	slot 3 done at S431 (B-grade pair-correlation derivation matching slot 2 to <0.5% in wide regime); slot 4 done at S432 (B-grade asymptotic-shape correction + slot 3 bug fix).**
+    337	
+    338	Slot 1 (S429): sieve-shared batched-x k-tuple primitive verified correct
+    339	at 72/72 cells; speedup ratio T_batched/T_naive at M = 64 measured at
+    340	0.188-0.213 at x = 10⁶ (5×) and 0.119-0.135 at x = 10⁷ (8×) for
+    341	correlated narrow-window distributions, k-independent across k ∈ {2
+    342	twin, 3, 4 admissible} within ±10%. Uncorrelated distribution gives
+    343	9-49× WORSE than naive (anti-amortising shared-sieve over Θ(x_max/2)
+    344	range — same structural shape as Thread 5). HL approximation
+    345	HL_H(x; w) = C(H)·w/log^k x matches empirical at 6 cells within
+    346	≤ 0.34σ_Pois.
+    347	
+    348	Slot 2 (S430): cross-x HL residual distribution at fixed admissible H,
+    349	N=200 disjoint windows per cell, 18 cells (3 anchors × 3 H × 2 w-regimes).
+    350	**F_HL_kt = σ_eff/σ_pois = 0.87 ± 0.03 for k=2 across 3 decades**
+    351	(range 0.09 wide / 0.045 narrow), MORE decade-stable than Thread 8's
+    352	F_HL ∈ [0.36, 0.70] (range 0.34) by ~5×. Half-Gaussian KS passes at
+    353	k=2 wide regime: 2/3 anchors p > 0.1, 3/3 p > 0.05. For k≥3 wide:
+    354	F → 1.0 (Poisson-exact at variance level, range 0.025 across 3 decades).
+    355	**Methodological correction to S419**: cross-x at fixed H IS iid-like
+    356	for *windowed* counts, where Thread 8 cross-x at fixed h FAILED for
+    357	*cumulative* π_h.
+    358	
+    ... (120 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session428
+    session429
+    session430
+    session431
+    session432
+Let me start writing the slot 5 attack. I'll create a script that pushes numerics further, tries multiple structural models, and attempts a cleaner Fourier-based derivation of the cross-prime contribution.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot4_alpha_derivation.py
+    395	    tail_rows = [r for r in H_residual_rows if r["K"] >= 1000]
+    396	    if len(tail_rows) >= 3:
+    397	        n = len(tail_rows)
+    398	        sx = sum(r["log_N"] for r in tail_rows)
+    399	        sy = sum(r["residual"] for r in tail_rows)
+    400	        sxx = sum(r["log_N"] ** 2 for r in tail_rows)
+    401	        sxy = sum(r["log_N"] * r["residual"] for r in tail_rows)
+    402	        a_h = (n * sxy - sx * sy) / (n * sxx - sx * sx)
+    403	        b_h = (sy - a_h * sx) / n
+    404	        log(f"  Fit: H_resid(N) ~ a * log(N) + b")
+    405	        log(f"     a = {a_h:.6f}    (=> alpha = -a = {-a_h:.6f})")
+    406	        log(f"     b = {b_h:.6f}")
+    407	        log(f"  fit data: K = {tail_rows[0]['K']}..{tail_rows[-1]['K']}, n={n}")
+    408	        # residuals
+    409	        max_dev = 0.0
+    410	        for r in tail_rows:
+    411	            pred = a_h * r["log_N"] + b_h
+    412	            dev = abs(r["residual"] - pred)
+    413	            max_dev = max(max_dev, dev)
+    414	        log(f"  max|residual - fit| over tail = {max_dev:.4f}")
+    415	    else:
+    416	        a_h = b_h = float("nan")
+    417	        log("  (insufficient tail data for fit)")
+    418	    log("")
+    419	
+    420	    # ------------------------------------------------------------------
+    421	    # Step 4: compute T(w) for many w; fit alpha, beta
+    422	    # ------------------------------------------------------------------
+    423	    log("-" * 78)
+    424	    log("Step 4: T(w) = sum_{admissible m <= w-1} (w-m) S_4(m); Delta = T - 2 C_2^2 w^2")
+    ... (170 more lines)
+Now I'll write the slot 5 attack code. Strategy: (1) extend numerics to K ≈ 500K-1M to test if slot 4's empirical fit holds, (2) numerically decompose H residual into single-prime + cross-prime contributions to validate the structural claim, (3) test Goldston-Montgomery zero residual hypothesis using slot 2 / slot 3 data.
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+Let me check runtime concerns and adjust the script - the cross-prime decomposition needs care.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+Now let me run the script to check it executes correctly.
+  [Bash] timeout 600 python3 experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py 2>&1 | head -150
+    ==============================================================================
+    Thread 9 / P4 slot 5 (FINAL): structural decomposition + extension
+    ==============================================================================
+      C_2          = 0.660161836123
+      C_2^2        = 0.435813649873
+      4  C_2^2     = 1.743254599494
+      24 C_2^2     = 10.459527596962
+      12 C_2^2     = 5.229763798481    (slot 4 structural candidate -A)
+      M_TERMS      = 350000 (m up to 2100000)
+      PRIME_BOUND  = 2100000
+      P_DECOMP_MAX = 200
+      K_DECOMP     = 100000
+      OTHER_PRODUCT = 4.151182
+    
+    ------------------------------------------------------------------------------
+    PART A: precompute S_4 for 350000 admissible m's
+    ------------------------------------------------------------------------------
+      computed 350000 S_4 values in 7.02s (49885 evals/sec)
+        k=   100: <S_4>_cum = 10.222326  rel_err vs 24C2^2 = 2.268e-02
+        k=  1000: <S_4>_cum = 10.410168  rel_err vs 24C2^2 = 4.719e-03
+        k= 10000: <S_4>_cum = 10.452364  rel_err vs 24C2^2 = 6.849e-04
+        k=100000: <S_4>_cum = 10.458687  rel_err vs 24C2^2 = 8.034e-05
+        k=200000: <S_4>_cum = 10.459065  rel_err vs 24C2^2 = 4.419e-05
+        k=350000: <S_4>_cum = 10.459243  rel_err vs 24C2^2 = 2.722e-05
+    
+    ------------------------------------------------------------------------------
+    PART A: T(w), Δ(w), Model B fit at extended K range
+    ------------------------------------------------------------------------------
+          K     log_w            Delta     Delta/w   -D/(w·logw)  -D/(w·logw·llw)
+        100    6.4052      -16117.2407    -26.6401        4.1591           2.2396
+    ... (96 more lines)
+The PART B decomposition only captures 30% with P_DECOMP_MAX=200. Let me extend single-prime sum to ALL primes ≤ K (not just ≤ 200), and add additional model fits to clarify the asymptotic shape.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    The file /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py has been updated successfully.
+  [Bash] timeout 900 python3 experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py 2>&1 | tail -120
+      P_DECOMP_MAX = 200
+      K_DECOMP     = 100000
+      OTHER_PRODUCT = 4.151182
+    
+    ------------------------------------------------------------------------------
+    PART A: precompute S_4 for 350000 admissible m's
+    ------------------------------------------------------------------------------
+      computed 350000 S_4 values in 6.81s (51396 evals/sec)
+        k=   100: <S_4>_cum = 10.222326  rel_err vs 24C2^2 = 2.268e-02
+        k=  1000: <S_4>_cum = 10.410168  rel_err vs 24C2^2 = 4.719e-03
+        k= 10000: <S_4>_cum = 10.452364  rel_err vs 24C2^2 = 6.849e-04
+        k=100000: <S_4>_cum = 10.458687  rel_err vs 24C2^2 = 8.034e-05
+        k=200000: <S_4>_cum = 10.459065  rel_err vs 24C2^2 = 4.419e-05
+        k=350000: <S_4>_cum = 10.459243  rel_err vs 24C2^2 = 2.722e-05
+    
+    ------------------------------------------------------------------------------
+    PART A: T(w), Δ(w), Model B fit at extended K range
+    ------------------------------------------------------------------------------
+          K     log_w            Delta     Delta/w   -D/(w·logw)  -D/(w·logw·llw)
+        100    6.4052      -16117.2407    -26.6401        4.1591           2.2396
+       1000    8.7003     -253197.1623    -42.1644        4.8463           2.2402
+      10000   11.0022    -3677833.4481    -61.2921        5.5709           2.3231
+     100000   13.3047   -50373537.2803    -83.9552        6.3102           2.4381
+     200000   13.9978  -109611177.1787    -91.3423        6.5255           2.4728
+     250000   14.2210  -140641768.7014    -93.7609        6.5931           2.4836
+     300000   14.4033  -172339269.8115    -95.7438        6.6473           2.4920
+     350000   14.5575  -204654334.9775    -97.4542        6.6945           2.4997
+    
+      extended T/Δ table -> /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_extended_t.csv
+    
+    ... (90 more lines)
+Substantive findings: PART A reveals that Model B fit is UNSTABLE under K_min variation (A varies -5.5 to -8.9), refuting slot 4's structural identification with -12 C₂² as a *unique* fit. PART B decomposition shows S_1 + S_2(p,q≤200) = 41% accounted at K=100K. Now let me write the slot 5 results document and Thread 9 wrap.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Write] /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap_results.md
+Now let me write the session synthesis:
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session433_commit_p4_thread9_wrap.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session433_commit_p4_thread9_wrap.md
+Now let me update the status files. First .commit_state to mark Thread 9 done:
+  [Read] /apps/aplikacijos/prime-research/.commit_state
+    1	thread:p4_k_tuple_narrow_window_batched_on_x
+    2	sessions_used:4
+    3	status:ACTIVE
+    4	session_history:S429,S430,S431,S432
+    5	prev_thread:s82_invariant_subspace_DONE
+    6	prev_thread_2:connes_amortisation_DONE
+    7	prev_thread_3:galway_frontier_DONE
+    8	prev_thread_4:a7_plethysm_subframe_DONE
+    9	prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    10	prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    11	prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    12	prev_thread_8:p2_pi_h_batched_on_h_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    13	last_synthesis:archive/sessions/session432_commit_p4_alpha_derivation.md
+    14	thread_9_summary:Thread 9 = OPEN_POSITIVE_TARGETS.md §P4 — twin-prime / k-tuple narrow-window count batched on x. Slots 1-4 done. Slot 1 (S429): sieve-shared batched-x evaluator vs naive; correlated dichotomy 5-8x speedup at M=64 across 10^6/10^7. Slot 2 (S430): cross-x HL residual distribution at fixed H, N=200 disjoint windows per cell, 18 cells, 3 decades; F_HL_kt = sigma_eff/sigma_pois = 0.87 +/- 0.03 for k=2 decade-stable. Slot 3 (S431): pair-correlation derivation. Cancellation identity <S_4 factor at p>_uniform_m = S_2^2 factor at p verified to bit precision for first 168 primes; <S_4>_admissible = 24 C_2^2 ≈ 10.4596. Theorem 1 (windowed-twin Gallagher-Poisson under HL): Var[N_2]/E[N_2] -> 1 as x -> ∞. Empirical fit Δ(w) ≈ -5.7165·w·log(w) + 10.4958·w on 6 cells w∈[190, 4071]. Slot 4 (S432): EXTENDED T(w) computation to K=200000 (w=1.2M), 22 cells across log w∈[5.7, 14.0]. (i) Identified slot 3 software bug: off-by-one in tail-handling skipped first prime > diam(H), biasing S_4 high by 1/(1-4/p_tail)≈1+4/p² (1.07x at m=6, <1.01x at m≥100); fast eval validated to bit precision against Hardy-Littlewood prime quadruplet constant 4.1511 (vs slot 3's 4.4571). (ii) Slot 3 α≈5.72 REFUTED as finite-w artefact: rolling-band α(log w) grows from 6.43 (K=50..200) to 9.73 (K=50000..200000), monotonically. (iii) Best 3-param fit Δ/w ≈ -5.36 log(w) log log(w) + 9.30 log(w) - 22.37, RMS rel err 1.5%. log² model rejected (coefficient flips sign as K_min↑). (iv) Structural candidate Δ(w) ∼ -12 C_2² · w · log(w) · log log(w) with -12 C_2² = -5.230 matching empirical -5.36 to 2.4%. (v) Single-prime heuristic via Mertens-style sum captures 32% of magnitude; cross-prime + boundary primes account for remaining 68% (analytic derivation incomplete). (vi) Slot 3 cells recomputed with corrected S_4: |Δ| 4-6% larger than slot 3 reported; F_pred at 10^8 wide cell shifts from 0.9137 (slot 3) to 0.9080 (slot 4 corrected) vs F_emp = 0.9113, |F_diff| stays <0.5% but flips sign (F_pred undershoots slot 4 vs overshoots slot 3). The unaccounted residual F_pred-F_emp ≈ ±0.003 is plausibly Goldston-Montgomery zeros contribution.
+    15	recommended_next_action:Slot 5 of Thread 9 (FINAL slot). Highest-yield: rigorous derivation of -12 C_2² log·log log coefficient via Goldston-Yıldırım 2007 partial-sum machinery on HL 4-tuple singular series. If derived rigorously, slots 3+4+5 produce closed-form F²(x;w) theorem under HL with Δ(w) ∼ -12 C_2² · w · log(w) · log log(w). Alternative slot 5: (b) Goldston-Montgomery zero-residual analysis of F_pred - F_emp ≈ ±0.003 (slot 3 candidate, slot 4 refines values); (c) wrap synthesizing the 5-slot Thread 9 arc as a partial-positive Correlation-Dichotomy-shape result (analogous to Thread 5 S224, Thread 7 S260, Thread 8 P2). (a) is highest yield if rigorous derivation is feasible; (c) is the natural fallback closing Thread 9 with explicit theorem statement and falsifiers.
+    16	escalation_required:NO
+    17	
+  [Write] /apps/aplikacijos/prime-research/.commit_state
+    The file /apps/aplikacijos/prime-research/.commit_state has been updated successfully.
+Now let me update CLOSED_PATHS.md with a slot-5 row:
+  [Grep] P\.P4|## P\.|§P\.P4
+    893:[Omitted long matching line]
+    895:[Omitted long matching line]
+    897:[Omitted long matching line]
+    899:[Omitted long matching line]
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    File content (36829 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Bash] awk 'NR>=880 && NR<=905' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    <persisted-output>
+    Output too large (75.2KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/ec99d6d2-df37-4b01-983f-f10f5e7dab97/tool-results/b83ks08d9.txt
+    
+    Preview (first 2KB):
+    | §P.P3 polylog approximation of pi(x) with named-exponent error, slot 1 — partial-sum evaluator pi_K(x) = R(x) - 2 sum_{j<=K} Re R(x^{rho_j}) + named-exponent corollary: under Montgomery random-phase, what is the smallest eps(x) achievable in polylog time, named to explicit log-power exponent? | REFINEMENT (polylog-time partial-positive shape, named-exponent formula corrected from P3 entry, empirical extension S195 -> 5 decades) | E (E1.5 + S195 variance formula) — partial-positive (heuristic) | Thread 7 commit step 1/5 (S240). Built `experiments/analytic/polylog_approx_pi/polylog_approx_pi.py` (parameterised K-policy evaluator across {1, log x, log^2 x, log^3 x, log^4 x, log^6 x, x^{1/4}, x^{1/2}}; uses S195's R_at_rho machinery at mp.dps=25, M=8 Mobius truncation). **Named-exponent corollary (heuristic, under Montgomery random-phase):** sigma(x, K = log^alpha x) ~ alpha * sqrt(x) * log log x / (pi sqrt(2) * log^{1 + alpha/2} x). Inverting: for any beta > 1, K = log^{2(beta-1)} x zeros yield polylog-time eps(x) <= sqrt(x) * log log x / log^beta x. **Empirical confirmation across 5 decades** at x in {10^5, 10^6, 10^7, 10^8, 10^10} with single-anchor canonical pi(10^k) values; full table of 35 (x, K) data points; median ratio empirical/sigma_pred = 0.476, mean 0.554 (consistent with half-Gaussian sqrt(2/pi) = 0.798 modulated by GUE pair-correlation reduction ~0.74 measured at S195); single-sample spread 0.07-1.66 within Gaussian-quantile band; no row exceeds 2sigma. **Headline polylog-better-than-sqrt(x) row**: at x=10^10, K=8000 (~ log^3 x), |err|=48.126 vs sqrt(x)=100000, ratio eps/sqrt(x) = 4.81e-4 — predicted 9.82e-4, ratio 0.49. Two new decades (10^8, 10^10) verify sigma-prediction beyond S195's 10^5-10^7 range. **Corrects** OPEN_POSITIVE_TARGETS.md §P3 formula: P3 originally claimed K=log^2 x gives eps ~ sqrt(x) * log log x / log^4 x (used K instead of sqrt(K) in denominator). Correct formula: K=log^2 x gives eps ~ sqrt(x) * log log x / log^2 x; to attain eps 
+    ...
+    </persisted-output>
+  [Bash] grep -n "P\.P4" /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -10
+    893:| §P.P4 batched-x k-tuple narrow-window count, slot 1 — empirical baseline. Build sieve-shared batched-x evaluator pi_H(x_i; w) = #{n in [x_i, x_i+w] : n+h prime for all h in H}; measure per-x amortised cost vs M for k in {2 (twin H=(0,2)), 3 (admissible H=(0,2,6)), 4 (admissible H=(0,2,6,8))} at x in {10^6, 10^7}; check whether the Thread-5 / S224 Correlation Dichotomy 33x speedup transposes to k-tuple counts. | EMPIRICAL (B-PARTIAL-POSITIVE: dichotomy direction transposes, magnitude smaller — 5x at 10^6 / 8x at 10^7 vs Thread-5's 33x — k-independent within +/-10% across k=2,3,4) | E (E1.5 + S224 + S418..S421 — first cross-x-axis experiment for narrow-window k-tuple counts in the project; positive direction) | Thread 9 commit step 1/(>=3) (S429). Built `experiments/analytic/k_tuple_batched/slot1_baseline.py`: naive_ktuples (per-x segmented sieve) + batched_ktuples (single sieve over [min(x), max(x)+w+h_max], walk M offsets) + singular_series (HL constant) + hl_estimate_window (linear-w HL approximation) + verify_small (sympy cross-check) + harness over (x_max in {10^6, 10^7}) x (k in {2, 3, 4}) x (distribution in {uncorrelated Uniform[x_max/2, x_max], corr_w=M consecutive integers, corr_w=polylog [x_anchor, x_anchor+log^2 x]}) x (M in {1, 4, 16, 64}). 72/72 cells counts_match=1. **Headline ratio T_batched/T_naive at M=64**: corr_w=M / corr_w=polylog rows are 0.188-0.213 at 10^6 (5x speedup) and 0.119-0.135 at 10^7 (8x speedup), k-independent within +/-10% across k=2,3,4. Uncorrelated rows are 9-49x (worse than naive — anti-amortising shared-sieve over Theta(x_max/2) range; structural finding, not bug; same as Thread 5's uncorrelated finding after fixing algorithm-side reduction to naive). **Why magnitude smaller than Thread 5's 33x**: per-query naive cost is O(sqrt(x) * log log x * w) segmented-sieve, NOT O(x^{2/3}) Lucy DP — amortisation ceiling is lower since baseline is already polylog-in-w. Speedup grows with x as predicted-and-confirmed sqrt(x) * log log x scaling across the 10^6 -> 10^7 measurement (extrapolation: ~25x at 10^9). **HL approximation polylog by construction, matches within 0.34 sigma_Pois at 6 cells**: HL_H(x;w) = C(H) * w / log^k(x) at (x_max, k) cells, mean |err/sigma_Pois| = 0.137 across 6 cells. Positive-direction polylog primitive on the k-tuple axis, analogous to Thread 7's R_K(x) and Thread 8's HL_inf(h, x). **What this rules out**: (i) strong H1 hypothesis "Thread-5-shape FAILS to transpose" — refuted, dichotomy transposes (REFINED to H1' bounded-by-sieve-baseline); (ii) hypothesis that speedup is x-independent within polylog regime — refuted, speedup grows with sqrt(x) / log scaling. **What this does NOT close**: (i) worst-case (pointwise) HL error bound — slot 2 target via cross-x ensemble; (ii) decade scaling beyond 10^7 — slot 2 target at 10^8 / 10^9; (iii) named-exponent error bound for HL_H(x; w) — slot 3+ target (cross-x analogue of Thread 8 HLRH); (iv) non-narrow windows w = x^delta. **Cites** E1.5 (cross-x analogue on k-tuple narrow-window axis), S195 (random-phase frame), S224 (Correlation Dichotomy template), S418 / S421 (Thread 8 EXACT/APPROX dichotomy + HL evaluator template transposed h-axis -> x-axis), Hardy-Littlewood 1923 k-tuple conjecture (singular-series formula), Tarjan 1985 amortised-analysis decomposition (T_per_x_amort = T_anchor/M + per-query floor — USED final at S224). **Cross-domain ingredient**: no new technique; reuses Thread-5 amortised-analysis decomposition. **Slot 2 recommendation** (highest yield): cross-x HL residual distribution analysis at fixed admissible H, varying x in narrow window — analogue of Thread 8 slot 2's cross-h ensemble at fixed x. Targets: half-Gaussian KS shape, sigma_eff/sigma_pois suppression factor, decade-stability check; building toward Thread-8-shape conditional named-exponent theorem on cross-x k-tuple axis at slot 4/5. See `experiments/analytic/k_tuple_batched/{slot1_baseline.py, slot1_baseline.csv (72 rows), slot1_hl_compare.csv (6 rows), slot1_run.log, slot1_baseline_results.md}`, `archive/sessions/session429_commit_p4_baseline.md`. | 429 |
+    895:| §P.P4 asymptotic shape correction of Δ(w) + slot 3 bug fix, slot 4 — extend T(w) computation to K=200,000 (w=1.2×10⁶) to test slot 3's α ≈ 5.72 closed-form fit at the asymptotic limit, and identify the structural form of the leading log-divergent correction. | EXPERIMENT+THEORY (B-REFINEMENT: slot 3's α ≈ 5.72 REFUTED as finite-w artefact; α(log w) grows monotonically from 6.43 (K=50..200) to 9.73 (K=50000..200000); 3-param fit Δ/w ≈ -5.36 log(w) log log(w) + 9.30 log(w) - 22.37 at RMS rel err 1.5%; structural candidate Δ(w) ∼ -12 C₂² · w · log(w) · log log(w) with -12 C₂² = -5.230 matching empirical -5.36 to 2.4%; single-prime Mertens-style heuristic captures 32% of magnitude. Also: slot 3 software bug identified — off-by-one in tail handling biased S_4 high by 1/(1-4/p_tail), 4-6% impact on Δ values; corrected fast eval matches Hardy-Littlewood prime quadruplet constant 4.1511 to bit precision.) | E+I (E1.5 + Hardy-Littlewood 1923 + Mertens 1874 + Gallagher 1976 + Goldston-Yıldırım 2007 + S429..S431 — first multi-decade extension of slot 3's data, first identification of log·log log scaling in HL 4-tuple Cesaro sum) | Thread 9 commit step 4/5 (S432). Built `experiments/analytic/k_tuple_batched/slot4_alpha_derivation.py` (~590 lines): tail-cached fast S_4 evaluator (110k evals/sec, 50-100× faster than slot 3 slow eval) + small_prime_factors_ge5 trial divider + lazy ratio cache for primes > PRIME_BOUND + S4_admissible(m) factored as OTHER_PRODUCT × prime corrections + slow_singular_series (corrected reference) + validation step (max rel err 8e-13) + step 1 (precompute 200k S_4 values) + step 2 (sample H residuals at 62 K's) + step 3 (linear fit on H residual) + step 4 (T(w) for 22 cells) + step 4b (recompute slot-3 cells with corrected S_4) + step 5 (linear fit Δ/w) + step 5b (3-param log² fit) + step 6 (structural candidate test) + step 7 (rolling-band α). **Slot 3 bug**: off-by-one in tail-handling, slot 3 code at line `remaining = [q for q in primes_up_to() if q > p and q <= P_max]` excluded p itself when transitioning to tail-product mode; should be `q >= p`. Bug biases S_4 HIGH by 1/(1-4/p_tail) where p_tail = first prime > diam(H). Verified S_4(0,2,6,8) = 4.1511 (slot 4 fast eval) matches Hardy-Littlewood prime quadruplet constant to 8 digits; slot 3 had 4.4571 (1.0738× too high). Bug impact: slot 3 Δ values were 4-6% LESS negative than truth. **Slot 3 cells corrected** at 6 (anchor, w_lab, w) cells: w=190, K=31: Δ slot3=-3775 → slot4=-3955.6 (+4.8%); w=4071, K=678: Δ slot3=-150,672 → slot4=-159,959.7 (+6.2%). At x=10⁸ wide w=4071: F_pred slot3 0.9137 → slot4 0.9080 vs F_emp 0.9113; |F_diff| stays <0.5% but FLIPS SIGN (overshoot becomes undershoot). **Slot 3 α ≈ 5.72 REFUTED**: extending to K=200k shows rolling-band α(log w) monotonically increases — 6.43 → 6.61 → 7.25 → 8.08 → 9.11 → 9.44 → 9.73 across bands K=[50..200] to [50000..200000], log w_mid 6.4 to 13.3. Linear fit α = 5.07 log log w - 3.31; α/log log w → 3.76 at finite K=200k. **3-parameter fits**: Model A (log² w) coefficient unstable (-0.281 → -0.233 → -0.143 → -0.081 → +0.188 as K_min ↑ from 100 to 50,000) — REJECTED. Model B (log w log log w): coefficient -5.36 stable across fit ranges, RMS rel err 1.5%. **Structural candidate Δ(w) ∼ -12 C₂² · w · log(w) · log log(w)**: -12 C₂² = -5.2298 vs empirical -5.36, rel diff 2.4%. **Single-prime heuristic**: D_p = ∑_j δ(j)·H_p(j) = p/(p-2) where δ(j) = j·6⁻¹ mod p in {1,...,p}; for primes p ≤ K with full blocks q = ⌊K/p⌋, A_p(w) ≈ -6 D_p · q ≈ -w/(p-2); ∑_{5≤p≤K} 1/(p-2) ≈ log log K (Mertens); single-prime contribution to Δ ≈ -24 C₂² · w · log log K = -10.46 · 1.2M · 2.51 = -3.16e7 at K=200k vs empirical -1.08e8. Captures only 32%. **Cross-prime + boundary primes account for 68%** (analytic derivation incomplete; slot 5 GY 2007 target). **Hypothesis status**: H11 (slot 3 bug) CONFIRMED via HL prime quadruplet constant; H12 (slot 3 α=5.72 closed-form) REFUTED by extension; H13 (Δ ~ -12 C₂² w log w log log w) CONFIRMED to 2.4% via 3-param fit, slow asymptotic convergence; H14 (single-prime captures full magnitude) REFUTED, only 32%. **What this closes (slot 4)**: the slot 3 narrative "α ≈ 5.72 closed-form, slot 4 will rigorise α=24C₂²/log(6)=5.838" is closed AS REFUTED — the linear-in-log-w model is incompatible with the asymptotic. **What this does NOT close**: (i) rigorous derivation of -12 C₂² coefficient (slot 5 GY target); (ii) the remaining 68% from cross-prime/boundary contributions; (iii) Goldston-Montgomery zero residual (slot 5 alternative); (iv) cross-H universality. **Cites** E1.5 (cross-x analogue), Hardy-Littlewood 1923 (k-tuple), Hardy-Littlewood prime quadruplet constant (Brent 1975, Forbes 1998 = 4.15118 — slot 4 bug detection), Mertens 1874 (single-prime heuristic), Gallagher 1976 (slot 3 Theorem 1, refined to log·log log rate of approach), Goldston-Yıldırım 2007 (slot 5 derivation candidate), Goldston-Montgomery 1987 (slot 5 alternative), S429/S430/S431 (Thread 9 prior slots). **Cross-domain ingredient**: Selberg-Delange partial-sum machinery for multiplicative arithmetic functions — added to CROSS_DOMAIN_TECHNIQUES.md as PROPOSED for slot 5 use. **Closure mode**: REFINEMENT (B-grade ambitious-failure: slot 3's narrative refuted; new structural candidate identified; single-prime mechanism explains 32% of magnitude with cross-prime accounting for the rest, derivation incomplete). **Next-action (slot 5 FINAL)**: rigorous GY 2007 derivation of -12 C₂² log·log log coefficient OR Goldston-Montgomery zero residual analysis OR Thread 9 wrap synthesizing the 5-slot arc as partial-positive Correlation-Dichotomy-shape result. See `experiments/analytic/k_tuple_batched/{slot4_alpha_derivation.py, slot4_h_residual.csv (62 rows), slot4_t_delta.csv (22 cells), slot4_alpha_fits.csv (7 bands), slot4_slot3_comparison.csv (6 cells), slot4_run.log, slot4_alpha_derivation_results.md}`, `archive/sessions/session432_commit_p4_alpha_derivation.md`. | 432 |
+    897:| §P.P4 pair-correlation derivation of F_HL_kt under HL, slot 3 — derive closed-form prediction for slot 2 empirical F_HL_kt = 0.87 ± 0.03 via Hardy-Littlewood 4-tuple singular-series sum. Verify prime-by-prime cancellation identity ⟨S_4 factor at p⟩_uniform_m = S_2² factor at p (Bombieri-Davenport-shape mean-value identity); compute T(w) and Δ(w) = T(w) - 2C_2²w² for slot 2 cells; predict F²(x;w) and compare to slot 2 empirical. | THEORETICAL/COMPUTATIONAL (B-PARTIAL-POSITIVE: cancellation identity verified to floating-point precision for first 168 primes; F²_pred matches slot 2 F²_emp to **0.2% at x=10⁸ wide regime**, 1.3% at 10⁷ wide, 3.4% at 10⁶ wide; narrow-regime 4-7% deviation due to discrete-count quantization at mean ≲ 1.3) | E (E1.5 + Hardy-Littlewood 1923 + Gallagher 1976 + Goldston-Montgomery 1987 + Bombieri-Davenport + S429/S430 — first conditional quantitative prediction of cross-x k-tuple variance factor in the project) | Thread 9 commit step 3/(≥3) (S431). Built `experiments/analytic/k_tuple_batched/slot3_pair_correlation.py`: singular_series (with tail-truncation optimization for primes > diam(H)) + factor_S4_at_p / factor_S2_squared_at_p + verify_cancellation_identity + T_for_w + predict_F_squared + load_slot2_summary + main driver. **Cancellation identity** ⟨S_4 factor at p⟩_uniform_m / S_2² factor at p = 1 EXACTLY for all p ≥ 5 (verified max deviation 4×10⁻¹⁶ for 168 primes p ∈ [5, 997]); ratios 2 (p=2 with m even) and 3 (p=3 with m≡0 mod 3) from admissibility constraint. Combined: ⟨S_4⟩_admissible = 6·S_2² = 24·C_2² ≈ 10.4596. **Theorem 1 (windowed-twin Gallagher-Poisson):** under HL 4-tuple, Var[N_2(x;w)]/E[N_2] → 1 as x → ∞ with w/x → 0. Empirically confirmed: F_emp 0.822 (10⁶) → 0.877 (10⁷) → 0.911 (10⁸) wide regime, monotone toward 1. **Sub-leading Δ(w):** T(w) = ∑_{m∈A,m≤w}(w-m)·S_4(0,2,m,m+2) computed for 6 slot-2 cells; Δ = T(w) - 2C_2²w² ranges from -3775 (w=190) to -150671 (w=4071). Empirical fit Δ(w) ≈ -5.7165·w·log(w) + 10.4958·w; intercept matches 24C_2² = 10.4596 to **0.35%**. **F_pred match:** at x=10⁸ wide w=4071, F_pred = 0.9137 vs F_emp = 0.9113 (diff 0.24%); at 10⁷ wide w=3117 0.8907 vs 0.8774 (diff 1.51%); at 10⁶ wide w=2290 0.8552 vs 0.8215 (diff 4.10%). Narrow-regime cells (mean count ≲ 1.3) deviate 4-7% (discrete-count quantization). **Residual F_pred − F_emp > 0** in all 6 cells (0.002 to 0.07), indicating Goldston-Montgomery zeros contribution beyond HL singular series. **What this closes (slot 3):** the slot 2 empirical F_HL_kt = 0.87 question is now structurally explained — leading-order Poisson cancellation (Theorem 1 / Gallagher 1976) plus sub-leading Δ(w) computed from singular-series sum, matching empirical to <0.5% in the cleanest cell. **What this does NOT close:** (i) closed-form value of α ≈ 5.72 in the log(w) coefficient (slot 4 target — structural candidate α = 24C_2²/log(6) = 5.838); (ii) GM zeros residual contribution (~0.002-0.07 systematic positive residual; slot 5 target); (iii) cross-H universality (vary H over (0, 2g), g ∈ [2, 15]; slot 4-5 target); (iv) narrow-regime higher-moment correction. **Cites** E1.5 (Poisson baseline), Hardy-Littlewood 1923 (asymptotic E[Z_iZ_{i+m}] = S_4/log⁴x), Gallagher 1976 (windowed Poisson), Goldston-Montgomery 1987 (pair-correlation for short-interval variance — applied here to HL singular series; CROSS-DOMAIN move from PROPOSED to USED with mode I), Bombieri-Davenport (mean-value identity shape), S429 (slot 1) / S430 (slot 2) baselines. **Cross-domain ingredient:** pair-correlation analysis applied to HL 4-tuple singular series — NEW USE in CROSS_DOMAIN_TECHNIQUES.md (mode I, will promote to E if slot 4 closes). **Closure mode:** NOT a closure — slot 3 is positive-direction theoretical extension validating slot 2's empirical constant. **Next-action (slot 4):** derive closed form for α ≈ 5.72 from second moment of S_4(0,2,m,m+2) across admissible m. If derived rigorously, slots 3+4 produce a fully closed-form F²(x;w) theorem under HL → A-grade. See `experiments/analytic/k_tuple_batched/{slot3_pair_correlation.py, slot3_identity.csv (168 primes), slot3_predictions.csv (6 cells), slot3_s4_profile.csv (678 admissible m), slot3_run.log, slot3_pair_correlation_results.md}`, `archive/sessions/session431_commit_p4_pair_correlation.md`. | 431 |
+    899:| §P.P4 cross-x HL residual distribution at fixed admissible H, slot 2 — measure σ_eff/σ_pois suppression factor and half-Gaussian KS shape over N=200 disjoint windows per (anchor, H, w-regime), 18 cells across x ∈ {10⁶, 10⁷, 10⁸} × H ∈ {(0,2), (0,2,6), (0,2,6,8)} × w ∈ {log²x, 12·log²x}; methodological question: is cross-x at fixed H iid-like (where Thread 8 cross-x at fixed h FAILED for cumulative π_h)? | EMPIRICAL (B-PARTIAL-POSITIVE: cross-x at fixed H IS iid-like for windowed counts; F_HL_kt = 0.87 ± 0.03 for k=2 decade-stable across 3 decades, MORE stable than Thread 8 F_HL ∈ [0.36, 0.70] by ~5× in range; for k≥3 F → 1.0 Poisson-exact) | E (E1.5 + S195 variance + S418..S421 cross-h template + S429 slot-1 baseline + S240..S244 Thread 7 F_GUE comparison) | Thread 9 commit step 2/(≥3) (S430). Built `experiments/analytic/k_tuple_batched/slot2_cross_x.py`: stratified-disjoint-window sampler (spacing ≥ w + h_max for iid-like residuals) + numpy AND-array pair builder + per-cell KS test against half-Gaussian + decade-stability aggregator. **Headline σ_eff/σ_pois at k=2 wide regime**: 0.822, 0.877, 0.911 across 10⁶/10⁷/10⁸ — F_HL_kt = 0.870 ± 0.030 (3-decade range 0.090). **Half-Gaussian KS at k=2 wide passes**: KSp_eff = 0.624, 0.967, 0.064 at three anchors (2/3 at p > 0.1, 3/3 at p > 0.05). **For k=3 wide regime**: F = 1.020, 1.017, 1.042 (Poisson-exact at variance level, range 0.025). **Methodological correction to S419**: the "within-window cross-x is misleading" finding holds only for *cumulative* counts (π_h(x)); for *windowed* counts (π_H(x; w)) with disjoint x_i, cross-x is the natural iid-like ensemble — slot 2 establishes this distinction. **F-factor comparison**: Thread 7 (cross-x π zero-truncation) F_GUE = 0.755 ± 0.06 (range 0.06); Thread 8 (cross-h π_h at fixed x) F_HL ∈ [0.36, 0.70] (range 0.34); **Thread 9 (cross-x π_H at fixed H) F_HL_kt = 0.87 ± 0.03 (range 0.09)** — Thread 9 axis is more decade-stable than Thread 8. **What this rules out**: (i) hypothesis that windowed and cumulative counts share the same shape-test ensemble (refuted: windowed admits cross-x, cumulative does not); (ii) hypothesis F_HL_kt is k-independent (refuted: F(k=2) = 0.87 < F(k=3) ≈ 1.0 — Poissonian higher-order kicks in at k ≥ 3). **What this does NOT close**: (i) closed-form prediction for F_HL_kt = 0.87 (slot 3 target via Goldston-Montgomery 1987 pair correlation); (ii) cross-H stability across different admissible H at fixed k=2; (iii) pointwise tail bound max|r|/sqrt(HL); (iv) named-exponent error formula for HL_H(x; w). **Closure mode**: NOT a closure — slot 2 is positive-direction empirical extension on a NEW axis. **Next-action (slot 3)**: derive closed-form F_HL_kt prediction via Goldston-Montgomery pair correlation; compare to empirical 0.87 ± 0.03; if matches, slot 3 is A-grade-shaped (new conditional theorem). See `experiments/analytic/k_tuple_batched/{slot2_cross_x.py, slot2_data.csv (3600 rows), slot2_summary.csv (18 cells), slot2_pooled.csv (3 anchors), slot2_run.log, slot2_cross_x_results.md}`, `archive/sessions/session430_commit_p4_cross_x_shape.md`. | 430 |
+  [Bash] awk '/^##/{print NR": "$0}' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | tail -10
+    373: ## Other / Miscellaneous
+    446: ## Session 17: Communication Complexity, Fourier Analysis, New Literature
+    460: ## Session 18: Preprocessing / Succinct Data Structures
+    470: ## Session 18: Streaming / Space Complexity
+    483: ## Session 18: Self-Correction / Amplification / Boosting
+    495: ## Session 19: Communication Complexity, SVD Spectral, Identity Search
+    512: ## Summary Statistics
+    521: ### By Failure Mode
+    528: ## Session 20: Fresh Perspective (10 wildcard experiments)
+    560: ## Kt Complexity / Information Theory (Session 20 Deep Focus)
+  [Bash] grep -n "^| §P\." /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -10
+    <persisted-output>
+    Output too large (49.9KB). Full output saved to: /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/ec99d6d2-df37-4b01-983f-f10f5e7dab97/tool-results/bffxue2qa.txt
+    
+    Preview (first 2KB):
+    872:| §P.P1 batched-on-modulus q amortisation, slot 1 — per-(q, a) explicit-formula evaluator with three-axis decoupled cost (zero-database setup ⊥ per-χ partial-sum eval ⊥ orthogonal χ̄(a) sum): does the zero database admit cross-character sharing for χ of the same conductor q, and is per-character evaluation cost x-independent? | REFINEMENT (architecture + empirical baseline) | I (slot-1 baseline; slot 2-5 attack the χ-amortisation question) | Thread 6 commit step 1/5 (S227). Built `experiments/analytic/batched_q_amortisation/per_q_a_explicit_formula_profile.py` — three-axis decoupled evaluator: `time_zero_db_setup(q, K)` (per-character cache build), `time_per_chi_eval(zeros, x)` (vectorised numpy partial sum Σ_ρ x^ρ/ρ for one χ at one x), `time_orthogonality(q)` (χ̄(a) · ψ_χ vector dot of length φ(q)). Profiled at q ∈ {101, 1009, 10007} for x ∈ {1e6, 1e8} and K ∈ {50, 200, 800}. Synthetic non-principal-χ zeros via Riemann-von Mangoldt density inversion (numpy-vectorised Newton); principal-χ zeros from cached ζ-zeros. **Q1 — T_zero_db_setup shape**: linear in φ(q)·K with constant ~2.7µs per (χ, K-zero), held to within 5% across three decades of q. **No naive cross-character zero sharing** at the database level — zeros for distinct χ of the same conductor are structurally independent (block-GUE statistics with O(1/T) cross-character correlation, asymptotically negligible at K = 800 / x = 10⁶). **Q2 — T_per_chi_eval x-dependence**: x-independent within measurement noise (10⁶ vs 10⁸ identical to µs); ~50ns per zero asymptotically (numpy K=800 vectorised). Same scaling as Thread 5 ζ-zero primitive. **Q3 — Orthogonality vs evaluation**: orthogonality is 2-4 orders of magnitude subdominant for q ≤ 10⁴ (3.8 µs at q=101, 336 µs at q=10007 vs full_per_x of 1.9 ms / 268 ms respectively). Per-(q, a) cost is dominated by φ(q)·T_per_chi_eval. **a-direction batching amortisation**: at q=1009, K=200, x=10⁶, varying a with M ∈ {1, 4, 16, 64, 256}: T_amort/a goes 188 → 64 → 33 → 2
+    ...
+    </persisted-output>
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    888	| §P.P2 batched π_h(x) on h, slot 2 — does the within-window cross-x ensemble of HL residuals r_h(x) = π_h(x) − S_h·li_2(x) at fixed (anchor, h) follow a half-Gaussian shape (Thread 7 slot 2 transposition); is there a stable F_GUE-like factor σ_eff/σ_pred? | EXPERIMENT (B-MIXED: cross-x within-window FAILS half-Gaussian KS due to random-walk-like correlation; cross-h at fixed x PASSES with median KS p ≈ 0.7-0.8; σ-suppression ratio in [0.36, 0.70] but NOT decade-stable like Thread 7's F_GUE = 0.755) | E (E1.5 + S195 + S224 + S240..S244 + S418 — methodological finding identifies cross-h as the natural ensemble for HL residual analysis; refines slot-1 dichotomy into ensemble-aware form) | Thread 8 commit step 2/4 (S419). Built `experiments/analytic/batched_pi_h/slot2_multisample.py` (~340 lines): batched-sieve via numpy AND-shift cumsum (memory-efficient; 720 rows in 21s total wall time). Three anchors x ∈ {10⁶, 10⁷, 10⁸} × N=30 log-uniform x_j in quarter-decade [x_anchor, x_anchor·10^{0.25}] × 8 representative h ∈ {2, 6, 14, 22, 30, 42, 90, 198} (S_h ∈ [1.32, 4.0]). Three statistical aggregates: (A) per-(anchor, h) cross-x KS (24 cells, N=30 each); (B) per-(anchor, x_j) cross-h KS (90 cells, N=8 each); (C) pooled per-anchor (N=240 each). **Headline finding**: cross-x at fixed (anchor, h) FAILS half-Gaussian KS — median p_eff = 0.033, only 8/24 cells with p > 0.1. Cells that fail show median/σ_eff ≈ mean/σ_eff ≈ 0.95 (theoretical half-Gaussian = 0.6745/0.7979) — clustered |r| values, not Gaussian-tailed. Within-window range diagnostic: (max|r| − min|r|)/σ_eff has mean ≈ 1.5 across cells; residuals drift but don't decohere. **Structural diagnosis**: HL_h(x) = S_h · li_2(x) is analytic-smooth, π_h(x) is step; the residual is a slowly-varying random-walk in x (drift O(σ_eff) within quarter-decade, no oscillation), unlike Thread 7's zero-truncation residual which oscillates with wavelength ~1/log x. Cross-x sampling within a small log-window does NOT give iid samples for HL residuals. **Cross-h at fixed (anchor, x_j) PASSES half-Gaussian KS**: median p_eff = 0.840 / 0.698 / 0.804 at anchors 10⁶/10⁷/10⁸; **all 90/90 cells with p > 0.1**. The cross-h ensemble is the natural sampling for HL residual shape analysis. **σ-suppression ratio σ_eff/σ_pred_pois = 0.36-0.70** across 24 (anchor, h) cells, where σ_pred_pois = √(S_h·li_2(x)) is the HL random-residual Poisson prediction. Empirical RMS is consistently SMALLER than Poisson — analogue of Thread 7's GUE pair-correlation suppression (correlations among primes via singular series itself reduce the variance below random-residual). NOT decade-stable: 0.50 → 0.70 → 0.41 across 10⁶/10⁷/10⁸; the 10⁷ bump driven by anomaly cell (10⁷, h=6) cousin-prime σ_eff/σ_pois = 1.64 (signed range = 481, persistent large residual episode). Excluding h=6: ratio narrows to ~0.36-0.43, still mildly drifting with x. **Pooled per-anchor (N=240) KS**: borderline at 10⁶ (p=0.082), reject at 10⁷ (p<0.001, h=6 outlier), borderline at 10⁸ (p=0.217). Half-Gaussian shape holds at the cell level but pooled hides the anomaly. **What this rules out**: (i) the original Thread-7-direct-transposition hypothesis "HL has stable F_GUE-like σ_eff/σ_pred ≈ 0.74 across decades" — directly tested, ratio drifts in [0.36, 0.70]; (ii) cross-x sampling within quarter-decade as a fair iid ensemble for HL residual statistics — methodologically rejected. **What this does NOT close**: (i) cross-h ensemble at fixed x as a path to a precise σ-formula for HL — slot 2 demonstrates shape but does not derive σ_eff(x, h) closed form; (ii) Q-truncated singular series cost-vs-error tradeoff — slot 3; (iii) anchor extension to 10⁹/10¹⁰ to test whether σ_eff/σ_pois stabilises — slot 3 side measurement; (iv) named-exponent error bound for polylog HL evaluator — slot 3-4 wrap. **Methodological warning** (preserved for slot 3+ design): within-window cross-x sampling is misleading for HL residual analysis; use cross-h at fixed x. **Cross-domain ingredient**: Hardy-Littlewood random-residual heuristic (predicted Poisson scale √(S_h · li_2(x))) plus Kolmogorov-Smirnov half-Gaussian goodness-of-fit (signal-processing standard). CROSS_DOMAIN_TECHNIQUES.md unchanged. **Cites** E1.5 (per-query bit content), S195 (variance machinery transposed to h-axis), S224 (Correlation Dichotomy reference), S418 (slot-1 dichotomy this slot extends), S240-S244 (Thread 7 P3 — ensemble-shape contrast). See `experiments/analytic/batched_pi_h/{slot2_multisample.py, slot2_multisample_results.md, slot2_data.csv, slot2_summary.csv, slot2_cross_h.csv, slot2_pooled.csv, slot2_run.log}`, `archive/sessions/session419_commit_p2_multisample.md`. | 419 |
+    889	| §P.P2 batched π_h(x) on h, slot 3 — Q-truncated singular series S_Q(h) = 2 C₂ · Π_{p odd, p|h, p≤Q} (p−1)/(p−2): what is the Q at which truncation error matches σ_eff_h(x) (the "knee"), and what named-exponent formula governs the cost-vs-error tradeoff? | EXPERIMENT (B-POSITIVE: precise variance decomposition σ²_HL_Q = σ²_∞ + (1/N)·Σ_{trunc}(ε_Q·li_2)² verified at 16 (anchor, x_j, Q) cells; knee scaling Q* ≈ √x/log x with empirical match at both decades; sharp half-Gaussian shape transition Q=100→200) | E (E1.5 + S195 + S224 + S240..S244 + S418 + S419 — sharpens slot-2 cross-h-ensemble characterisation by adding the Q-axis tradeoff curve; provides the empirical foundation for slot-4 conditional-theorem wrap) | Thread 8 commit step 3/4 (S420). Built `experiments/analytic/batched_pi_h/slot3_q_truncation.py` (~370 lines): 26-h ensemble with max-prime-factor spanning [3, 2003] (slot-2 set + 18 additions covering h=2p for p ∈ {19, 23, 29, 31, 41, 53, 79, 109, 151, 199, 251, 401, 503, 599, 1009, 2003} plus mixed h=606=2·3·101 and h=3030=2·3·5·101) × 9 Q-values {30, 50, 100, 200, 500, 1000, 2000, 5000, ∞} × 2 anchors x ∈ {10⁷, 10⁸} × 5 log-uniform x_j in quarter-decade. Single 16s run, 260 raw rows + 90 cross-h aggregates + 26 truncation rows + 10 knee rows. **Headline: named-exponent variance decomposition** σ²_HL_Q(x, h-ensemble) = σ²_∞(x, h-ensemble) + (1/N) · Σ_{h: max_p_h > Q} (ε_Q(h) · li_2(x))² where ε_Q(h) = |S_∞(h) − S_Q(h)|. Empirical-vs-predicted comparison at 16 (anchor, x_j, Q) cells: 5–25% of σ_emp across all cells, closest at and above the knee. Decomposition is intrinsic-noise (slot-2's σ_∞) + h-deterministic truncation, treated as quadrature-additive (mild anti-correlation observed at low Q). **Knee scaling Q* ≈ √x/log x** verified at both anchors: x=10⁷ empirical knee_Q=200, knee_max_p=199 (predicted √x/log x = 196); x=10⁸ empirical knee_Q ∈ {1000, 2000}, knee_max_p ∈ {599, 1009} (predicted 543, off-grid between 500/1000). Knee defined as smallest Q with σ_HL_Q ≤ 1.05·σ_HL_∞. **Sharp half-Gaussian shape transition Q=100 → Q=200**: cross-h KS median p_eff jumps from 0.0015 (Q=100, 0/10 cells pass p>0.1) to 0.96 (Q=200, 10/10 cells pass), tracking the σ-knee. Below the knee, truncation contamination dominates intrinsic noise and breaks the slot-2 half-Gaussian profile; above the knee, cross-h shape recovers across all 10 cells. **σ_HL_Q values across (anchor, x_j, Q)**: at x=10⁷, σ drops from 638→446→357→174→168→171→172→173→173 across Q={30, 50, 100, 200, 500, 1000, 2000, 5000, ∞}; at x=10⁸, 5163→3615→2996→528→441→419→405→409→409. Plateau at Q ≥ 2000 (all max_p_h in our set ≤ 2003). **Per-h cost dimension**: S_Q(h) by trial division costs min(Q, √h) odd integers tested. For h_max=4006, full S_∞ is 31 steps, Q=30 is 15 steps (50% saving). Average cost across 26-h ensemble: 7.0 (Q=30) → 8.5 (Q=∞), 18% saving. **Q-truncation gives no asymptotic cost saving in original P2 polylog regime** (h ≤ poly log x ⇒ √h ≤ poly log x ≤ Q* = √x/log x); knee Q* is *algebraic* in x, not polylog. **What this rules out**: (i) Q-truncation as an algorithmic novelty for original P2 — knee Q* is asymptotically larger than √h_max in the polylog-h regime; (ii) the hypothesis that σ_HL_Q decreases monotonically with Q across all measured Q (no plateau) — directly REJECTED, clean knee at Q=200/1000-2000; (iii) the hypothesis that σ_HL_Q at Q = max_p_h(h_set) exceeds σ_HL_∞ by > 10% — directly REJECTED, σ_HL_5000 = σ_HL_∞ exactly at 5 decimal places. **What this does NOT close**: (i) conditional theorem rigorising the variance decomposition — slot 4 (4a) target; (ii) third-decade scaling validation at x=10⁹ — slot 4 (4b) candidate; (iii) worst-case (per-h) tail bound — half-Gaussian-shape implies √(log N) worst-case scaling but not formally derived; (iv) effective constant F (slot-2's 0.36-0.70) as part of the named exponent — packaged in (1+o(1)). **Cross-domain ingredient**: same as Goldston-Montgomery 1987 bilinear-form decomposition of L²-typical zero-truncation variance (S244), here transposed from the K-axis (Thread 7) to the Q-axis (Thread 8); intrinsic-vs-truncation split mirrors diagonal-vs-off-diagonal structure with Q's role analogous to K. CROSS_DOMAIN_TECHNIQUES.md unchanged (Goldston-Montgomery already USED-T at S244). **Cites** E1.5 (sample-complexity scaling σ_∞ ~ √li_2), S195 (variance formula machinery transposed), S224 (Correlation Dichotomy template), S240/S244 (Thread 7 K-axis analogue), S418 (slot-1 dichotomy), S419 (slot-2 cross-h ensemble identification this slot extends). **Slot 4 (FINAL) plan**: (4a) rigorise variance decomposition under cross-h Hardy-Littlewood random-residual hypothesis via Goldston-Montgomery bilinear-form analogue → conditional theorem "σ_HL_Q*(x, h-ensemble) ≤ (1+o(1)) F · √(S̄·li_2(x)) for max_p_h ≤ Q* = √x/log x" + algorithmic Corollary B "polylog-time HL evaluator with named-exponent error ε(x) ~ √x/log x in cross-h L² sense"; (4b) optional x=10⁹ third-decade scaling check (predicted knee_max_p ≈ 1525). After slot 4, mark thread DONE_PARTIAL_POSITIVE_CONDITIONAL or DONE_PARTIAL_POSITIVE_HEURISTIC. See `experiments/analytic/batched_pi_h/{slot3_q_truncation.py, slot3_q_truncation_results.md, slot3_data.csv, slot3_truncation.csv, slot3_cross_h.csv, slot3_knee.csv, slot3_run.log}`, `archive/sessions/session420_commit_p2_q_truncation.md`. | 420 |
+    890	| §P.P2 batched π_h(x) on h, slot 4 (FINAL WRAP) — rigorise the slot-3 named-exponent variance decomposition σ²_HL_Q = σ²_∞ + (1/N)·Σ_{trunc}(ε_Q·li_2)² under a precise hypothesis on the cross-h ensemble; produce a conditional theorem and a polylog-time HL-evaluator algorithmic corollary analogous to S244's Theorem A / Corollary B for Thread 7. | THEORY (B-PARTIAL-POSITIVE-CONDITIONAL: Theorem A' (T-A') under HLRH, Corollary B' (C-B') polylog-time HL evaluator with named-exponent cross-h L²-typical error ε ≍ F_H·√(S̄_H·x)/log x, Knee Corollary Q* ≍ √x/log x; Thread 8 closes DONE_PARTIAL_POSITIVE_CONDITIONAL) | T (E1.5 + S195 + S224 + S240..S244 + S418..S420 — second project A-shape positive-direction CONDITIONAL theorem on adjacent π-related computation, first on h-axis; named-hypothesis HLRH identified as cross-h analogue of RH+Montgomery for Thread 7) | Thread 8 commit step 4/4 FINAL (S421). Wrote `experiments/analytic/batched_pi_h/slot4_theorem.md` (~440 lines, 14 sections): Theorem A' statement with explicit Q ∈ ℕ ∪ {∞} validity range; Knee Corollary Q* ≍ √x/log x derived from quadrature equality of intrinsic vs truncation contributions; Corollary B' polylog-time HL evaluator with named-exponent cross-h L²-typical error; full proof structure (4 steps: decomposition, intrinsic via HLRH(b), cross via HLRH(a)+HLRH(c), combining); §5 discussion of HLRH role vs Cramér model; §6 knee corollary derivation; §7 algorithmic complexity analysis; §8 K-axis ↔ h-axis analogy table mapping S244 proof structure to slot 4; §9 falsifiability statements; §10 status table of new vs existing content; §11 edges; §12 cross-domain ingredient (Goldston-Montgomery 1987 USED-T transposed K → h); §13 self-grade B; §14 next-thread recommendation. **Headline result — Theorem A' (T-A')**: for admissible h-ensemble H with N → ∞ under HLRH(H), (1/N)·Σ_h(π_h(x)−S_Q(h)·li_2(x))² = (1+o(1))·F²_H·S̄_H·li_2(x) + (1/N)·Σ_{h:max_p_h>Q}ε_Q(h)²·li_2(x)² + o(S̄_H·li_2(x)) for any Q ∈ ℕ ∪ {∞}. **HLRH = Hardy-Littlewood Random-Residual Hypothesis**: three asymptotic statements on cross-h ensembles at fixed x — (a) first-moment vanishing (1/N)Σr_∞(x,h_i) = o(√li_2), (b) second-moment asymptotic to F²_H·S̄_H·li_2(x), (c) cross-h decoherence E_x[r_∞(h_i)·r_∞(h_j)] = o(S̄_H·li_2). HLRH is the cross-h analogue of S195 random-phase + S244 Montgomery pair-correlation transposed K-axis → h-axis; implied by strong k-tuple HL conjecture (k=4) plus GUE-side correlations on prime-pair-count joint distributions; currently unproven beyond Bombieri-Davenport linear-bound levels. **Corollary B' (C-B')**: for h-batches with max h ≤ (log x)^β and |H| ≤ poly(log x), the full HL_∞ evaluator costs O(N·√(max h)) ⊆ poly(log x) per batch with cross-h L²-typical error ε_typ(x, H) ≤ (1+o(1))·F_H·√(S̄_H·li_2(x)) ≍ F_H·√(S̄_H·x)/log x. **Knee Corollary**: under truncation profile ⟨ε_Q²⟩_H ≍ C(H)/Q² (slot-3 ensemble: C(H) ≈ S̄²_H·h_max/Q_max), Q* = √(C(H)·li_2(x)/(F²_H·S̄_H)) ≍ √x/log x. Empirical validation: 10⁷ predicted 196, knee 199-200; 10⁸ predicted 543, knee 599-1009. **Direct K↔h analogy (slot 4 §8)**: bilinear form Σ_{j,k>K}y^{ρ_j+ρ̄_k}/(ρ_j ρ̄_k) ↔ (1/N)Σ_{i,j∈[N]}r_∞(x,h_i)r_∞(x,h_j); diagonal "j=k → 1/|ρ_j|² sum" ↔ "i=j → r²_∞ average"; off-diagonal close-pair (Montgomery suppression) ↔ HLRH(c) cross-h decoherence; far-pair (RH-only Riemann-von Mangoldt) ↔ k-tuple HL for k=4. **Two structural weakenings** vs Thread 7: (i) F_H ensemble-dependent in [0.36, 0.70] vs Thread 7's universal F_GUE = 0.755 ± 0.06 across decades; (ii) HLRH (k-tuple HL + prime-pair-count joint distribution correlations) is less-studied than RH + Montgomery (the canonical analytic-NT conditional setting). **What this rules out**: (i) a Cramér-model F_H = 1 prediction for cross-h variance — empirically rejected at 0.36-0.70 across slot 2/3 cells; (ii) the hypothesis that cross-h decoherence is automatic from unbiasedness alone (HLRH(a) suffices without HLRH(c)) — the proof requires both for Q ≪ Q*. **What this does NOT close**: (i) HLRH itself (named hypothesis); (ii) pointwise (worst-case in h ∈ H) bound (half-Gaussian tail expected, √log N factor); (iii) decade-stability of F_H (slot-2 evidence shows ensemble-dependence); (iv) effective F_H constant from first principles (named ensemble-dependent constant); (v) k-tuple HL conjecture for k = 4. **Aggregate Thread 8 contribution**: polylog-time HL_∞(h, x) evaluator for h-batches, cross-h L²-typical error ε ≤ F_H·√(S̄_H·x)/log x conditional on HLRH(H); empirically verified across two decades (S419+S420); structurally parallel to Thread 7 / S244 wrap. **Cross-domain ingredient**: Goldston-Montgomery 1987 bilinear-form analysis transposed from K-axis to h-axis; technique already USED-T at S244, now USED-T on second axis (no new technique imported). CROSS_DOMAIN_TECHNIQUES.md updated to reflect dual-axis applicability. **Cites** E1.5 (cross-h L²-typical version of per-query barrier), S195 (random-phase frame transposed h-axis), S224 (Correlation Dichotomy template), S240 (Thread 7 K-axis heuristic analogue), S244 (Thread 7 K-axis conditional theorem direct template), S418 (slot-1 dichotomy), S419 (slot-2 cross-h ensemble identification — F_H ∈ [0.36, 0.70] calibration), S420 (slot-3 named-exponent decomposition rigorised here). **Optional 4b (in-slot extension)**: ran slot4_x9_extension.py at x=10⁹ third anchor for third-decade knee_max_p scaling validation (predicted 1525); see slot4_x9_run.log for empirical knee. **Recommendation for next thread**: Thread 9 = OPEN_POSITIVE_TARGETS.md §P4 (twin-prime / k-tuple narrow-window count batched on x — Thread 5 Correlation Dichotomy shape transposed to k-tuples) as default; or escalate to user for ramp `frontier_gen` autonomy with new ATTACK_VECTORS entries. See `experiments/analytic/batched_pi_h/{slot4_theorem.md, slot4_x9_extension.py, slot4_x9_data.csv, slot4_x9_cross_h.csv, slot4_x9_knee.csv, slot4_x9_run.log}`, `archive/sessions/session421_commit_p2_theorem_wrap.md`. | 421 |
+    891	| §RE-VERIFY E2.28 — Baker-Norine q-reduced form of D_P^N: was the S161 closure conservative? Specifically, does the divisor `D_Ω₁(n) = 1[Ω(n)=1]` (chips at primes AND prime powers `p^k`, `k ≥ 2`) — NOT tested in S161 — admit a q-reduction identity beyond S161's `{1} ∪ {primes}` support hypothesis? | REFINEMENT (B-grade case (i): two new identities S425.1 and S425.2 extend E2.28's scope; sharpened closure mechanism articulated as graph-topological depth-1 / leaf collection) | E (refines E2.28 inline) | S425 re-verify-closure adversarial probe of E2.28 (S161). **Probe**: `s425_inverse_chipfiring_probe.py` runs q-reduction on six divisors {D_P, D_uniform, D_sink_K=N, D_τ, D_μ², D_Ω₁} × {Γ_N, H_N} × N ∈ {16, 32, 64, 128} (48 runs). Companion `s425_verify_omega1_identity.py` extends to N=256 and prints full chip distribution. **Identity S425.1 (new)**: on H_N with sink q=1, q-reduce(D_Ω₁)·(1) = π(N) exactly. Σ_{v≠1} D'_Ω₁(v) = π(√N) + π(N^{1/3}) + π(N^{1/4}) + ⋯ = #{prime powers p^k : k ≥ 2, p^k ≤ N}. Verified at N ∈ {16, 32, 64, 128, 256} (5/5). Off-sink chips are scattered (NOT confined to prime powers themselves) but their TOTAL is the prime-power-k≥2 count by chip conservation. **Identity S425.2 (new)**: on Γ_N with sink q=1, q-reduce(D_Ω₁)·(1) = π(N) − π(N/2), identical to D_P. Verified at N ∈ {16, 32, 64, 128} (4/4). **Sharpened closure mechanism**: S161 said "building D_P^N requires knowing primes" (input-divisor-level closure). S425 sharpens to extraction-mechanism-level: on H_N, D'(1) reads off the *prime-restricted chip total* via depth-1 collection (q's depth-1 neighbours in H_N are exactly primes ≤ N; chips at depth ≥ 2 are graph-topologically blocked from single-step lending to q and contribute 0 to sink). On Γ_N, sink reads #{leaves of Γ_N with chips} = #{primes p : N/2 < p ≤ N}. **Decomposition lemma**: D_Ω₁ = D_P + D_higher (higher prime powers). q-reduce(D_higher)(1) = 0 because chips at p^k, k ≥ 2, are not adjacent to q in H_N. So q-reduce(D_Ω₁)(1) = q-reduce(D_P)(1) + q-reduce(D_higher)(1) = π(N) + 0 = π(N). **Why closure persists**: identifying H_N's depth-1 neighbours of q is polylog-equivalent to enumerating primes ≤ N; identifying Γ_N's leaves is polylog-equivalent to enumerating primes in (N/2, N]. Graph construction itself costs Ω(N) and includes prime detection. **What this rules out**: (i) D_Ω₁ as an algorithmic-novelty input that bypasses S161's "input requires primes" — BUILDING D_Ω₁ across [1, N] still costs Ω(N polylog) for prime-power testing; (ii) the hypothesis that S161's identity-class is restricted to {1} ∪ {primes} support — refuted by D_Ω₁; (iii) the hypothesis that chips at higher prime powers contribute non-zero to sink under q-reduction on H_N — directly tested, contributes exactly 0. **What this does NOT close**: (i) alternative reduction mechanisms (multi-sink reduction, weighted chip-firing) — outside slot scope; (ii) divisors supported on graph-topologically distinguished sets that DON'T coincide with primes — none currently known. **Verdict**: B-grade case (i) — refinement of E2.28 with precise new statements (S425.1 and S425.2) extending the scope of S161's generalised identity, plus sharpened closure mechanism (depth-1 / leaf collection). Closure stands. **Cites** E2.28 (refined inline), E2.29 (graph-topological closure analogue cross-reference), S161 (parent closure). Cross-domain technique: chip-firing on arithmetic graphs (Baker-Norine 2007 + Dhar 1990) — already USED-I via E2.28; this slot REFINES the scope without importing new technique. See `experiments/algebraic/baker_norine_chi_p/{s425_inverse_chipfiring_probe.py, s425_verify_omega1_identity.py, s425_inverse_chipfiring_results.md, s425_inverse_chipfiring_results.json}`, `archive/sessions/session425_reverify_e2_28.md`. | 425 |
+    892	| §F6.a — does the dyadic per-query no-amortisation closure (S246, B-NEGATIVE) generalise to other parametric families x_k = m^k for m > 2? (NOVELTY_CHALLENGES F6.a successor of S246) | EXPERIMENT (B-NEGATIVE-universal: F1 BM-compressibility AND F2 max-lag-autocorr above MC p999 FAIL for every m ∈ {3, 5, 6, 10, 30}) | E (E1.1 + E1.5; refines E1.1 inline) | S426 novelty mode. Built `experiments/wildcard/cross_modulus_pi_structure/` + ran on m ∈ {3, 5, 6, 10, 30} with K-budgets {22, 15, 14, 28, 8} (m=10 uses OEIS A006880 verified vs sympy.primepi for k ≤ 9; other m via sympy.primepi at k_max ≤ 30^8 = 6.6e11). Three structural tests on residual `c_R(k) = (π(m^k) − R(m^k)) / m^{k/2}`: (i) BM linear complexity of sign(r_R(k)) over GF(2) vs MC random-shuffle null; (ii) max |autocorr(c_R, lag ℓ)| over `1 ≤ ℓ ≤ min(10, K_m/3)` vs MC iid-Gaussian null. Per-m verdicts (BM/MC.p05, max\|ac\|/MC.p999): m=3 (11/10, 0.319/0.616); m=5 (9/6, 0.343/0.717); m=6 (8/6, 0.529/0.687); m=10 (14/13, 0.342/0.574); m=30 (5/3, 0.336/0.832). All inside MC null bands; F1 + F2 fail 5/5. Aggregate verdict B_NEGATIVE_universal_cross_modulus — Weyl equidistribution of `(γ_n · k log m mod 2π)` (`log m` transcendental for every integer m ≥ 2 by Lindemann-Weierstrass) forces the same null-baseline shape across moduli. Bonus γ_1-cosine ceiling: `\|emp_lag1_ac(m)\| ≤ \|cos(γ_1·log(m) mod 2π)\| + 0.05` saturates 5/5 cross-modulus cases (and 6/6 retroactively including m=2); m=6 identified as near-resonance (`φ_1(6) = 0.193 rad`, ceiling +0.981, empirical lag-1 = 0.529 = 54% of ceiling). Sign agreement of `cos(φ_1)` vs `emp_lag1`: 3/5 m. Refines E1.1 inline. Successor challenges proposed: §F6.a.i (γ_1 ceiling tightness scan over m ∈ {2..50}), §F6.a.ii (γ_2 decoherence rate as K_m → ∞), §F6.a.iii (higher-lag ceiling breakdown). Files: `experiments/wildcard/cross_modulus_pi_structure/{cross_modulus_pi_structure.py, cross_modulus_pi_structure_results.md, gamma1_phase_diagnostic.py, gamma1_phase_diagnostic.json, raw_data.json, summary.json}`, `archive/sessions/session426_f6a_cross_modulus.md`. | 426 |
+    893	| §P.P4 batched-x k-tuple narrow-window count, slot 1 — empirical baseline. Build sieve-shared batched-x evaluator pi_H(x_i; w) = #{n in [x_i, x_i+w] : n+h prime for all h in H}; measure per-x amortised cost vs M for k in {2 (twin H=(0,2)), 3 (admissible H=(0,2,6)), 4 (admissible H=(0,2,6,8))} at x in {10^6, 10^7}; check whether the Thread-5 / S224 Correlation Dichotomy 33x speedup transposes to k-tuple counts. | EMPIRICAL (B-PARTIAL-POSITIVE: dichotomy direction transposes, magnitude smaller — 5x at 10^6 / 8x at 10^7 vs Thread-5's 33x — k-independent within +/-10% across k=2,3,4) | E (E1.5 + S224 + S418..S421 — first cross-x-axis experiment for narrow-window k-tuple counts in the project; positive direction) | Thread 9 commit step 1/(>=3) (S429). Built `experiments/analytic/k_tuple_batched/slot1_baseline.py`: naive_ktuples (per-x segmented sieve) + batched_ktuples (single sieve over [min(x), max(x)+w+h_max], walk M offsets) + singular_series (HL constant) + hl_estimate_window (linear-w HL approximation) + verify_small (sympy cross-check) + harness over (x_max in {10^6, 10^7}) x (k in {2, 3, 4}) x (distribution in {uncorrelated Uniform[x_max/2, x_max], corr_w=M consecutive integers, corr_w=polylog [x_anchor, x_anchor+log^2 x]}) x (M in {1, 4, 16, 64}). 72/72 cells counts_match=1. **Headline ratio T_batched/T_naive at M=64**: corr_w=M / corr_w=polylog rows are 0.188-0.213 at 10^6 (5x speedup) and 0.119-0.135 at 10^7 (8x speedup), k-independent within +/-10% across k=2,3,4. Uncorrelated rows are 9-49x (worse than naive — anti-amortising shared-sieve over Theta(x_max/2) range; structural finding, not bug; same as Thread 5's uncorrelated finding after fixing algorithm-side reduction to naive). **Why magnitude smaller than Thread 5's 33x**: per-query naive cost is O(sqrt(x) * log log x * w) segmented-sieve, NOT O(x^{2/3}) Lucy DP — amortisation ceiling is lower since baseline is already polylog-in-w. Speedup grows with x as predicted-and-confirmed sqrt(x) * log log x scaling across the 10^6 -> 10^7 measurement (extrapolation: ~25x at 10^9). **HL approximation polylog by construction, matches within 0.34 sigma_Pois at 6 cells**: HL_H(x;w) = C(H) * w / log^k(x) at (x_max, k) cells, mean |err/sigma_Pois| = 0.137 across 6 cells. Positive-direction polylog primitive on the k-tuple axis, analogous to Thread 7's R_K(x) and Thread 8's HL_inf(h, x). **What this rules out**: (i) strong H1 hypothesis "Thread-5-shape FAILS to transpose" — refuted, dichotomy transposes (REFINED to H1' bounded-by-sieve-baseline); (ii) hypothesis that speedup is x-independent within polylog regime — refuted, speedup grows with sqrt(x) / log scaling. **What this does NOT close**: (i) worst-case (pointwise) HL error bound — slot 2 target via cross-x ensemble; (ii) decade scaling beyond 10^7 — slot 2 target at 10^8 / 10^9; (iii) named-exponent error bound for HL_H(x; w) — slot 3+ target (cross-x analogue of Thread 8 HLRH); (iv) non-narrow windows w = x^delta. **Cites** E1.5 (cross-x analogue on k-tuple narrow-window axis), S195 (random-phase frame), S224 (Correlation Dichotomy template), S418 / S421 (Thread 8 EXACT/APPROX dichotomy + HL evaluator template transposed h-axis -> x-axis), Hardy-Littlewood 1923 k-tuple conjecture (singular-series formula), Tarjan 1985 amortised-analysis decomposition (T_per_x_amort = T_anchor/M + per-query floor — USED final at S224). **Cross-domain ingredient**: no new technique; reuses Thread-5 amortised-analysis decomposition. **Slot 2 recommendation** (highest yield): cross-x HL residual distribution analysis at fixed admissible H, varying x in narrow window — analogue of Thread 8 slot 2's cross-h ensemble at fixed x. Targets: half-Gaussian KS shape, sigma_eff/sigma_pois suppression factor, decade-stability check; building toward Thread-8-shape conditional named-exponent theorem on cross-x k-tuple axis at slot 4/5. See `experiments/analytic/k_tuple_batched/{slot1_baseline.py, slot1_baseline.csv (72 rows), slot1_hl_compare.csv (6 rows), slot1_run.log, slot1_baseline_results.md}`, `archive/sessions/session429_commit_p4_baseline.md`. | 429 |
+    894	
+    895	| §P.P4 asymptotic shape correction of Δ(w) + slot 3 bug fix, slot 4 — extend T(w) computation to K=200,000 (w=1.2×10⁶) to test slot 3's α ≈ 5.72 closed-form fit at the asymptotic limit, and identify the structural form of the leading log-divergent correction. | EXPERIMENT+THEORY (B-REFINEMENT: slot 3's α ≈ 5.72 REFUTED as finite-w artefact; α(log w) grows monotonically from 6.43 (K=50..200) to 9.73 (K=50000..200000); 3-param fit Δ/w ≈ -5.36 log(w) log log(w) + 9.30 log(w) - 22.37 at RMS rel err 1.5%; structural candidate Δ(w) ∼ -12 C₂² · w · log(w) · log log(w) with -12 C₂² = -5.230 matching empirical -5.36 to 2.4%; single-prime Mertens-style heuristic captures 32% of magnitude. Also: slot 3 software bug identified — off-by-one in tail handling biased S_4 high by 1/(1-4/p_tail), 4-6% impact on Δ values; corrected fast eval matches Hardy-Littlewood prime quadruplet constant 4.1511 to bit precision.) | E+I (E1.5 + Hardy-Littlewood 1923 + Mertens 1874 + Gallagher 1976 + Goldston-Yıldırım 2007 + S429..S431 — first multi-decade extension of slot 3's data, first identification of log·log log scaling in HL 4-tuple Cesaro sum) | Thread 9 commit step 4/5 (S432). Built `experiments/analytic/k_tuple_batched/slot4_alpha_derivation.py` (~590 lines): tail-cached fast S_4 evaluator (110k evals/sec, 50-100× faster than slot 3 slow eval) + small_prime_factors_ge5 trial divider + lazy ratio cache for primes > PRIME_BOUND + S4_admissible(m) factored as OTHER_PRODUCT × prime corrections + slow_singular_series (corrected reference) + validation step (max rel err 8e-13) + step 1 (precompute 200k S_4 values) + step 2 (sample H residuals at 62 K's) + step 3 (linear fit on H residual) + step 4 (T(w) for 22 cells) + step 4b (recompute slot-3 cells with corrected S_4) + step 5 (linear fit Δ/w) + step 5b (3-param log² fit) + step 6 (structural candidate test) + step 7 (rolling-band α). **Slot 3 bug**: off-by-one in tail-handling, slot 3 code at line `remaining = [q for q in primes_up_to() if q > p and q <= P_max]` excluded p itself when transitioning to tail-product mode; should be `q >= p`. Bug biases S_4 HIGH by 1/(1-4/p_tail) where p_tail = first prime > diam(H). Verified S_4(0,2,6,8) = 4.1511 (slot 4 fast eval) matches Hardy-Littlewood prime quadruplet constant to 8 digits; slot 3 had 4.4571 (1.0738× too high). Bug impact: slot 3 Δ values were 4-6% LESS negative than truth. **Slot 3 cells corrected** at 6 (anchor, w_lab, w) cells: w=190, K=31: Δ slot3=-3775 → slot4=-3955.6 (+4.8%); w=4071, K=678: Δ slot3=-150,672 → slot4=-159,959.7 (+6.2%). At x=10⁸ wide w=4071: F_pred slot3 0.9137 → slot4 0.9080 vs F_emp 0.9113; |F_diff| stays <0.5% but FLIPS SIGN (overshoot becomes undershoot). **Slot 3 α ≈ 5.72 REFUTED**: extending to K=200k shows rolling-band α(log w) monotonically increases — 6.43 → 6.61 → 7.25 → 8.08 → 9.11 → 9.44 → 9.73 across bands K=[50..200] to [50000..200000], log w_mid 6.4 to 13.3. Linear fit α = 5.07 log log w - 3.31; α/log log w → 3.76 at finite K=200k. **3-parameter fits**: Model A (log² w) coefficient unstable (-0.281 → -0.233 → -0.143 → -0.081 → +0.188 as K_min ↑ from 100 to 50,000) — REJECTED. Model B (log w log log w): coefficient -5.36 stable across fit ranges, RMS rel err 1.5%. **Structural candidate Δ(w) ∼ -12 C₂² · w · log(w) · log log(w)**: -12 C₂² = -5.2298 vs empirical -5.36, rel diff 2.4%. **Single-prime heuristic**: D_p = ∑_j δ(j)·H_p(j) = p/(p-2) where δ(j) = j·6⁻¹ mod p in {1,...,p}; for primes p ≤ K with full blocks q = ⌊K/p⌋, A_p(w) ≈ -6 D_p · q ≈ -w/(p-2); ∑_{5≤p≤K} 1/(p-2) ≈ log log K (Mertens); single-prime contribution to Δ ≈ -24 C₂² · w · log log K = -10.46 · 1.2M · 2.51 = -3.16e7 at K=200k vs empirical -1.08e8. Captures only 32%. **Cross-prime + boundary primes account for 68%** (analytic derivation incomplete; slot 5 GY 2007 target). **Hypothesis status**: H11 (slot 3 bug) CONFIRMED via HL prime quadruplet constant; H12 (slot 3 α=5.72 closed-form) REFUTED by extension; H13 (Δ ~ -12 C₂² w log w log log w) CONFIRMED to 2.4% via 3-param fit, slow asymptotic convergence; H14 (single-prime captures full magnitude) REFUTED, only 32%. **What this closes (slot 4)**: the slot 3 narrative "α ≈ 5.72 closed-form, slot 4 will rigorise α=24C₂²/log(6)=5.838" is closed AS REFUTED — the linear-in-log-w model is incompatible with the asymptotic. **What this does NOT close**: (i) rigorous derivation of -12 C₂² coefficient (slot 5 GY target); (ii) the remaining 68% from cross-prime/boundary contributions; (iii) Goldston-Montgomery zero residual (slot 5 alternative); (iv) cross-H universality. **Cites** E1.5 (cross-x analogue), Hardy-Littlewood 1923 (k-tuple), Hardy-Littlewood prime quadruplet constant (Brent 1975, Forbes 1998 = 4.15118 — slot 4 bug detection), Mertens 1874 (single-prime heuristic), Gallagher 1976 (slot 3 Theorem 1, refined to log·log log rate of approach), Goldston-Yıldırım 2007 (slot 5 derivation candidate), Goldston-Montgomery 1987 (slot 5 alternative), S429/S430/S431 (Thread 9 prior slots). **Cross-domain ingredient**: Selberg-Delange partial-sum machinery for multiplicative arithmetic functions — added to CROSS_DOMAIN_TECHNIQUES.md as PROPOSED for slot 5 use. **Closure mode**: REFINEMENT (B-grade ambitious-failure: slot 3's narrative refuted; new structural candidate identified; single-prime mechanism explains 32% of magnitude with cross-prime accounting for the rest, derivation incomplete). **Next-action (slot 5 FINAL)**: rigorous GY 2007 derivation of -12 C₂² log·log log coefficient OR Goldston-Montgomery zero residual analysis OR Thread 9 wrap synthesizing the 5-slot arc as partial-positive Correlation-Dichotomy-shape result. See `experiments/analytic/k_tuple_batched/{slot4_alpha_derivation.py, slot4_h_residual.csv (62 rows), slot4_t_delta.csv (22 cells), slot4_alpha_fits.csv (7 bands), slot4_slot3_comparison.csv (6 cells), slot4_run.log, slot4_alpha_derivation_results.md}`, `archive/sessions/session432_commit_p4_alpha_derivation.md`. | 432 |
+  [Bash] awk 'NR>=895 && NR<=897 {print NR": "(length($0)>200 ? substr($0,1,200)"..." : $0)}' /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    895: | §P.P4 asymptotic shape correction of Δ(w) + slot 3 bug fix, slot 4 — extend T(w) computation to K=200,000 (w=1.2×10⁶) to test slot 3's α ≈ 5.72 closed-form fit at the asymptotic limit, and...
+    896: 
+    897: | §P.P4 pair-correlation derivation of F_HL_kt under HL, slot 3 — derive closed-form prediction for slot 2 empirical F_HL_kt = 0.87 ± 0.03 via Hardy-Littlewood 4-tuple singular-series sum. Verify ...
+  [Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    The file /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md has been updated successfully.
+Now update SESSION_INSIGHTS, OPEN_POSITIVE_TARGETS, RESEARCH_AGENDA, and CROSS_DOMAIN_TECHNIQUES:
+  [Bash] tail -20 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+      (22 cells), slot4_alpha_fits.csv (7 bands), slot4_slot3_comparison.
+      csv (6 cells), slot4_run.log, slot4_alpha_derivation_results.md}` — new.
+    - `OPEN_POSITIVE_TARGETS.md` §P4 — slot 4 status added; recommended
+      next-action updated to slot 5 (FINAL).
+    - `status/CLOSED_PATHS.md` §P.P4 — slot-4 row appended.
+    - `.commit_state` — sessions_used 3 → 4, session_history += S432,
+      thread_9_summary updated, recommended_next_action updated.
+    - `status/SESSION_INSIGHTS.md` — this entry.
+    
+    **Slot-5 (FINAL) recommendation.** (a) Goldston-Yıldırım 2007
+    partial-sum derivation of -12 C₂² log·log log coefficient on HL
+    4-tuple singular series — if rigorous, slots 3+4+5 produce closed-
+    form F²(x;w) theorem under HL. (b) Goldston-Montgomery zero-residual
+    analysis of the F_pred − F_emp ≈ ±0.003 residual after slot 4's
+    correction (slot 3's slot-5 candidate, refined with corrected Δ
+    values). (c) Thread 9 wrap synthesizing the 5-slot arc as partial-
+    positive Correlation-Dichotomy-shape result. (a) is highest yield;
+    (c) is the natural fallback.
+    
+    **.run_state set to 434.**
+  [Bash] grep -n "^## Session" /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md | tail -5
+    12023:## Session 426 — F6.a cross-modulus generalisation of S246's dyadic closure (B-grade refinement of E1.1)
+    12128:## Session 429 — commit Thread 9 (P4) slot 1: k-tuple narrow-window batched-on-x baseline (B-grade)
+    12188:## Session 430 — commit Thread 9 (P4) slot 2: cross-x HL residual distribution at fixed H
+    12285:## Session 431 — commit Thread 9 (P4) slot 3: pair-correlation derivation of F_HL_kt (B-grade)
+    12396:## Session 432 (commit Thread 9 / P4 slot 4 — asymptotic shape correction + slot 3 bug fix, B-grade)
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    12492 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+  [Bash] tail -1 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    **.run_state set to 434.**
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    12485	form F²(x;w) theorem under HL. (b) Goldston-Montgomery zero-residual
+    12486	analysis of the F_pred − F_emp ≈ ±0.003 residual after slot 4's
+    12487	correction (slot 3's slot-5 candidate, refined with corrected Δ
+    12488	values). (c) Thread 9 wrap synthesizing the 5-slot arc as partial-
+    12489	positive Correlation-Dichotomy-shape result. (a) is highest yield;
+    12490	(c) is the natural fallback.
+    12491	
+    12492	**.run_state set to 434.**
+    12493	
+  [Edit] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    The file /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md has been updated successfully.
+Now update OPEN_POSITIVE_TARGETS.md §P4:
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+    The file /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md has been updated successfully.
+Now update RESEARCH_AGENDA.md and CROSS_DOMAIN_TECHNIQUES.md:
+  [Grep] Arc 11|Arc 9|Thread 9|^## Arc
+    1268:- Thread 9 = P9 (quantum batched primes-in-AP): possibly different
+    1273:### Arc 9 — Approximate π(x) ± ε in polylog with named ε (Thread 7, CLOSED at S244)
+    1370:### Arc 11 — π_H(x; w) k-tuple narrow-window count batched on x (Thread 9, ACTIVE since S429; slots 1+2+3+4 done)
+    1487:  (c) **Thread 9 wrap** synthesizing the 5-slot arc as partial-
+    1501:  Thread 8 (cross-h for π_h at fixed x), and Thread 9 (cross-x for π_H
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1370	### Arc 11 — π_H(x; w) k-tuple narrow-window count batched on x (Thread 9, ACTIVE since S429; slots 1+2+3+4 done)
+    1371	**Status:** ACTIVE — slots 1 + 2 + 3 + 4 of 5 done (S429 B, S430 B,
+    1372	S431 B, S432 B); `.commit_state` `thread:p4_k_tuple_narrow_window_batched_on_x`,
+    1373	`sessions_used:4`, `status:ACTIVE`.
+    1374	**Owner:** commit-mode autonomy.
+    1375	**Goal:** for fixed admissible H = {0, h_1, ..., h_{k-1}} ⊂ ℕ and varying
+    1376	x_i, compute π_H(x_i; w) = #{n ∈ [x_i, x_i + w] : n+h prime for all
+    1377	h ∈ H} for narrow window w = polylog(x). Tests whether the Thread-5 /
+    1378	S224 Correlation Dichotomy 33× speedup transposes to k-tuple counts.
+    1379	
+    1380	**S429 (slot 1) outcome — B-grade empirical baseline.** Built
+    1381	sieve-shared batched-x k-tuple count primitive: single segmented sieve
+    1382	over [min(x_i), max(x_i) + w + h_max], walk M offsets vs naive per-x
+    1383	segmented sieve at each x_i. 72/72 cells counts_match. Plus HL
+    1384	singular-series + linear-w approximation HL_H(x; w) = C(H)·w/log^k x.
+    1385	
+    1386	Headline numbers (T_batched / T_naive at M = 64):
+    1387	- corr_w=M (consecutive integers) / corr_w=polylog: ratio 0.188-0.213 at
+    1388	  10⁶ (5× speedup), 0.119-0.135 at 10⁷ (8×), k-independent within ±10%
+    1389	  for k ∈ {2 twin, 3, 4 admissible}.
+    1390	- uncorrelated Uniform[x_max/2, x_max]: 9-49× *worse* than naive —
+    1391	  shared-sieve over Θ(x_max/2) range is anti-amortising. Same shape as
+    1392	  Thread 5's uncorrelated finding after fixing algorithm.
+    1393	- HL approximation: polylog by construction, matches at 6 cells within
+    1394	  ≤ 0.34σ_Pois (mean |err/σ_Pois| = 0.137).
+    1395	
+    1396	Three structural findings:
+    1397	- F1: dichotomy transposes; magnitude smaller (5×, 8×) than Thread 5's
+    1398	  33× because per-query baseline is segmented-sieve √x · log log x · w
+    1399	  (not Lucy DP O(x^{2/3})). Predicted-and-confirmed √x scaling.
+    ... (110 more lines)
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+  [Edit] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    The file /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md has been updated successfully.
+Now CROSS_DOMAIN_TECHNIQUES.md:
+  [Grep] Pair-correlation|Selberg-Delange|Fourier|HL singular series
+    41:[Omitted long matching line]
+    69:[Omitted long matching line]
+    72:[Omitted long matching line]
+    88:[Omitted long matching line]
+    132:| Decoupling (Bourgain-Demeter-Guth) | PROPOSED (D15) | Bourgain-Demeter 2015 *Annals* 182 = arXiv:1403.5335; Bourgain-Demeter-Guth 2015 *Annals* 184 = arXiv:1512.02384; Demeter 2020 *Fourier Restriction, Decoupling and Applications* CUP | D15 (S103 frontier_gen) |
+    292:  global Fourier-norm test of prime exponential sums; structurally
+    361:  specific Fourier decay. Pseudodifferential / FIO machinery for
+  [Bash] awk 'NR>=85 && NR<=100' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    | Hairer regularity structures (singular SPDE limits) / KPZ universality / Tracy-Widom β=2 on `t^{1/3}` scale | USED PARTIAL E (S157, edge E2.27) | Hairer 2014 "A theory of regularity structures" *Inventiones Math.* 198, 269 = arXiv:1303.5113 https://arxiv.org/abs/1303.5113 (Fields Medal); Corwin 2012 "The Kardar-Parisi-Zhang equation and universality class" *Random Matrices Theory Appl.* 1, 1130001 = arXiv:1106.1596 https://arxiv.org/abs/1106.1596; Tracy-Widom 1994 "Level spacing distributions and the Airy kernel" *Comm. Math. Phys.* 159, 151; Hairer-Quastel 2018 *Forum Math. Pi* 6, e3 = arXiv:1512.07845; https://en.wikipedia.org/wiki/Kardar%E2%80%93Parisi%E2%80%93Zhang_equation; https://en.wikipedia.org/wiki/Tracy%E2%80%93Widom_distribution | D43 (PARTIAL CLOSURE S157, mode E, B-grade case (i): wavelet Hölder α(D) ≈ 0.85 stable across logX ∈ {18..24} with r²>0.998, far above KPZ ceiling 1/2; pre-stated falsifiers F1–F4 reject KPZ; Tracy-Widom β=2 skewness +0.224 rejected by detrended Z_d skew |z|>3 wrong sign in 5/7 windows; right-tail Gauss r²=0.977 ≥ KPZ r²=0.952; structural reason — D is deterministic almost-periodic explicit-formula sum, not stochastic SPDE-driven; FIRST project test of any non-`√x` scaling of PNT error term; FIRST project Hölder regularity / wavelet test on any arithmetic function. Sub-frames D43.b (logX-extension to 28) and D43.c (K-truncated explicit-formula residual) remain OPEN.) |
+    | Concentration of measure | PARTIAL | Boucheron-Lugosi-Massart 2013 | mentioned only |
+    | Stochastic loop equations / Eynard-Orantin topological recursion | PROPOSED (D24) | Eynard-Orantin 2007 *Comm. Number Theory Phys.* 1 = arXiv:math-ph/0702045 https://arxiv.org/abs/math-ph/0702045; Eynard 2016 *Counting Surfaces* Birkhäuser; Borot-Eynard 2011 arXiv:1107.5028; Keating-Snaith 2000 *Comm. Math. Phys.* 214 | D24 (S121 frontier_gen) |
+    | Möbius / nilsequence orthogonality (Sarnak conjecture, GT 2012, Tao logarithmic-Chowla) | USED E (S100, edge E2.18; S153, edge E2.25) | **Green-Tao 2012 *Annals* 175 = arXiv:0807.1736** (Möbius nilsequence orthogonality); **Sarnak 2010 IAS lectures** (Möbius randomness conjecture); **Tao 2016 Forum Math Pi 4 e8 = arXiv:1509.05422** (logarithmic-Chowla for two-point); Tao-Teräväinen 2017 arXiv:1708.02610; **GT-Ziegler 2012 *Annals* 176 = arXiv:1009.3998** (U^{s+1} inverse theorem) | G1 (CLOSED: gamma_lambda matches Rademacher Lyapunov within 2.2σ across 51 energies and 3 orders of N; Σ Chowla-z² = 4.77 vs χ²_16 = 16; first non-W-tricked spectral measure at noise floor); **G2 (CLOSED S153, mode E, B-grade**: ||λ||_{U^k}^{2^k} = ||IID||_{U^k}^{2^k} · (1 ± O(1/√N)) for k ∈ {2,3} at N ≤ 2^20; ||μ||_{U^2}^4 → 0.7392/N matched-variance prediction; max single Fourier coefficient matches CLT √(N log N) law within ±3σ — no 1-step nilsequence correlation; first project Gowers-norm measurement on multiplicative functions, paired with G1 to give two orthogonal multiplicative-regime confirmations of GT orthogonality) |
+    
+    ## §4. Topological / Geometric
+    
+    | Technique | Status | Survey ref | Linked vector / edge |
+    |-----------|--------|------------|----------------------|
+    | Persistent homology | USED I (S96, edge E2.17) | Carlsson 2009 BAMS 46(2); Edelsbrunner-Harer 2010 textbook; Bauer 2021 *J. Appl. Comput. Topol.* 5 = arXiv:1908.02518; Cohen-Steiner-Edelsbrunner-Harer 2007 (PH stability) | D2 (CLOSED: total H_0 and H_1 persistence of Takens-embedded normalised prime gaps deviate ≥ 5σ from BOTH IID Exp(1) AND gap-permuted control across d ∈ {2,3,4} and M ∈ {500..4000}; primes more clustered + fewer loops than Poisson; fifth orthogonal HL-detection category after Gowers/Anderson/AlgImmunity/DPP) |
+    | Discrete Ricci curvature (Ollivier optimal-transport / Lin-Lu-Yau / Bakry-Émery `CD(K, ∞)`) | PROPOSED (D39) | Ollivier 2009 *J. Funct. Anal.* 256 = arXiv:math/0701886 https://arxiv.org/abs/math/0701886; Lin-Lu-Yau 2011 *Tohoku Math. J.* 63 = arXiv:1010.4337 https://arxiv.org/abs/1010.4337; Bakry-Émery 1985 LNM 1123; Erbar-Maas 2012 *Arch. Ration. Mech. Anal.* 206 = arXiv:1111.2687; Münch-Wojciechowski 2019 *Adv. Math.* 356 = arXiv:1712.10160; https://en.wikipedia.org/wiki/Ricci_curvature | D39 (S148 frontier_gen) — `κ_LLY(x, y) := 1 − W_1(m_x, m_y) / d(x, y)` on `Cay(Z/NZ, primes)` and on coprimality complex `K_N`; nonlinear optimal-transport invariant orthogonal to D20 spectral gap (CLOSED) and D22 Hodge L_1 (CLOSED) |
+    | Mapper algorithm | PROPOSED (D19) | Singh-Mémoli-Carlsson 2007 *Eurographics Symp. PBG* (Stanford TR) https://research.math.osu.edu/tgda/mapperPBG.pdf; Lum et al. 2013 *Sci. Rep.* 3, 1236 https://www.nature.com/articles/srep01236; KeplerMapper https://kepler-mapper.scikit-tda.org/; https://en.wikipedia.org/wiki/Mapper_(topological_data_analysis) | D19 (S119 frontier_gen) |
+    | Reeb graphs of arithmetic height functions on Z | PROPOSED (D21) | Edelsbrunner-Harer 2010 *Computational Topology* AMS, ch. VI.3; Carr-Snoeyink-Axen 2003 *Comput. Geom.* 24, 75; Wikipedia: Reeb graph https://en.wikipedia.org/wiki/Reeb_graph | D21 (S121 frontier_gen) |
+    | Cellular sheaf cohomology over divisibility poset (Curry framework) | PROPOSED (D14) | Curry 2014 PhD thesis = arXiv:1303.3255; Hansen-Ghrist 2019 *J. Appl. Comput. Topol.* 3; Robinson 2014 *Topological Signal Processing* Springer | D14 (S103 frontier_gen) |
+    | Sheaf cohomology of sequences (general — non-cellular) | UNUSED | Curry 2014 thesis | candidate |
+    | Discrete Morse theory | USED E (S232) | Forman 1998 *Adv. Math.* 134, 90; Forman 2002 "A user's guide to discrete Morse theory" Sém. Lothar. Combin. 48 https://www.emis.de/journals/SLC/wpapers/s48forman.pdf; Benedetti-Lutz 2014 *Exp. Math.* 23, 66 https://arxiv.org/abs/1303.6422; Bjorner-Wachs 2005 *Trans. AMS* 357; https://en.wikipedia.org/wiki/Discrete_Morse_theory | D17 (CLOSED S232 mode E: greedy random Morse on Hasse diagram of (Z, |) ∩ [1, N] is order-deterministic; m_0(H_N) = N − π(N) + π(N/2) − Π_pow(N) − 1, no polylog compression; closes mode E by reduction to primes-in-(N/2, N] count) |
+  [Grep] Pair-correlation analysis applied to HL|Selberg-Delange|Fourier expansion of singular
+    69:[Omitted long matching line]
+  [Bash] awk 'NR==69' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | head -c 2000
+    | Selberg-Delange machinery for partial sums of multiplicative arithmetic functions on the HL singular-series Cesaro sum | PROPOSED (slot 5 candidate, Thread 9) — slot 4 (S432) identified that ∑_{m∈A, m≤w}(w-m)·S_4(0,2,m,m+2) has leading sub-leading correction Δ(w) ∼ -12 C_2² · w · log(w) · log log(w) empirically to 2.4%, but closed-form derivation requires Goldston-Yıldırım 2007 partial-sum machinery on multiplicative G(m) = ∏_p h_p(m mod p). Cross-prime and boundary-prime contributions account for 68% of magnitude in single-prime heuristic (Mertens captures 32%); rigorously deriving the multiplicative constant via Selberg-Delange would close the slot-3+4+5 conditional theorem | Selberg 1954 *J. Indian Math. Soc.* 18 (sieve theory); Delange 1971 *Acta Arith.* 19 ("Sur la distribution des entiers ayant certaines propriétés"); Goldston-Yıldırım 2007 arXiv:math/0510565 (higher correlations of divisor sums); Iwaniec-Kowalski 2004 *Analytic Number Theory* AMS Coll. Pub. 53 ch.5 (multiplicative sums); Shiu 1980 *J. reine angew. Math.* 313 (Brun-Titchmarsh-type bound) | Thread 9 slot 5 candidate (rigorous derivation of -12 C_2² log·log log coefficient on HL 4-tuple Cesaro sum, would promote pair-correlation entry to mode E) |
+  [Bash] awk 'NR==41' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | head -c 1500
+    | Microlocal analysis / wavefront sets / pseudodifferential operators / FIO calculus | PROPOSED (D35) | Hörmander 1971 "Fourier integral operators I" *Acta Math.* 127, 79; Hörmander 1985 *The Analysis of Linear Partial Differential Operators III* Springer Grundlehren 274 (Ch. 18); Treves 1980 *Introduction to Pseudodifferential and Fourier Integral Operators* Plenum; Sjöstrand 1982 "Singularités analytiques microlocales" *Astérisque* 95; Melrose 1995 *Geometric Scattering Theory* CUP; https://en.wikipedia.org/wiki/Wave_front_set | D35 (S142 frontier_gen) — wavefront set `WF(χ_P) ⊂ T*R \ {0}` of prime indicator as tempered distribution; conic Fourier-decay measurement |
+  [Bash] awk 'NR==72' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | head -c 1500
+    | Compactly-supported window functions (Bartlett/triangle, Hann, Hamming, Tukey, Riesz, raised-cosine) for explicit-formula partial-sum smoothing | USED E (S242, Thread 7 slot 3) — confirmed no improvement over hard cutoff for the partial-sum approximation π_K(x) = R(x) − 2 Σ_{j≤K} w_j Re R(x^{ρ_j}). 9 kernels × 4 K-values × 3 anchors × 20 paired samples (108 cells, 2160 data triples): zero (anchor, K, kernel ≠ hard) cells show σ_eff(kernel) < σ_eff(hard) at paired sign-test p < 0.05. Mean σ_eff(kernel)/σ_eff(hard) by kernel: tukey25=1.04, tukey50=1.11, cosine=1.14, riesz=1.12, triangle=1.23, riesz4=1.21, hamming=1.20, hann=1.23. Decisive hard wins (p < 0.01) at 10⁸/K=2000+4000 and 10⁹/K=2000+4000. The structural reason — under random-phase Var(error) = Σ_j (1−w_j)² Var_j is minimised at hard cutoff (L2-optimality at fixed K_compute) — was predicted in S202 wrap §"Non-Gaussian smoothing kernels" but not empirically verified until slot 3. Closes the kernel-axis falsifier of the S240 named-exponent corollary | Bartlett 1948 (triangle window); Hann window (Julius von Hann ca. 1900s, formalised in mid-20th-century spectral estimation); Hamming 1989 *Digital Filters* 3rd ed.; Tukey 1967 *Sci. Am.* (cosine taper); Harris 1978 "On the Use of Windows for Harmonic Analysis with the Discrete Fourier Transform" *Proc. IEEE* 66; Riesz means (M. Riesz 1909); the GUE variance bound entry above | Thread 7 / P3 partial-positive named-exponent corollary kernel-o
+  [Bash] grep -n "Pair-correlation analysis applied to HL" /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    (Bash completed with no output)
+  [Grep] pair-correlation|Pair-correlation
+    68:[Omitted long matching line]
+    69:[Omitted long matching line]
+  [Bash] awk 'NR==68' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | head -c 2000
+    | Hardy-Littlewood pair-correlation analysis on k-tuple singular series for windowed-count variance | USED I (S431+S432, Thread 9 slots 3+4) — applied Goldston-Montgomery 1987 pair-correlation methodology to the HL 4-tuple singular series for windowed twin-prime counts. **Cancellation identity (slot 3)** verified prime-by-prime: ⟨S_4 factor at p⟩_uniform_m / S_2(0,2)² factor at p = 1 EXACTLY for every p ≥ 5 (Bombieri-Davenport-shape mean-value identity, max deviation 4×10⁻¹⁶ for first 168 primes). With admissibility ratios 2 (p=2 with m even) and 3 (p=3 with m≡0 mod 3), this gives ⟨S_4⟩_admissible = 6·S_2² = 24C_2² ≈ 10.4596. **Theorem 1 (windowed-twin Gallagher-Poisson):** under HL 4-tuple, Var[N_2(x;w)]/E[N_2] → 1 as x → ∞ with w/x → 0. **F²_pred(x;w) = 1 + Δ(w)/(C_2·w·log²x)** where Δ(w) = T(w) - 2C_2²w², matches slot 2 empirical F² to **0.24% at x=10⁸ wide regime** under slot 3 fit, refined to <0.5% under slot 4 corrected calculation. **Slot 4 (S432) refinement**: slot 3's α ≈ 5.72 closed-form fit was REFUTED as a finite-w artefact — extending T(w) to w=1.2×10⁶ shows α(log w) grows monotonically; new structural candidate **Δ(w) ∼ -12 C_2² · w · log(w) · log log(w)** with -12 C_2² = -5.230 matching empirical 3-param fit -5.36 to 2.4%. Single-prime Mertens-style heuristic via D_p = p/(p-2) and ∑_{5≤p≤K} 1/(p-2) ≈ log log K captures 32% of magnitude; cross-prime + boundary primes account for 68% (slot 5 GY 2007 target). Slot 4 also identified slot 3 software bug (off-by-one in tail handling); slot 4 fast eval validated against Hardy-Littlewood prime quadruplet constant 4.15118 to bit precision. **Mode I** (remains I — closed-form derivation of -12 C_2² coefficient incomplete pending slot 5 GY 2007) | Hardy-Littlewood 1923 (k-tuple conjecture); Gallagher 1976 *Mathematika* 23, 4; Goldston-Montgomery 1987 in *Analytic Number Theory and Diophantine Problems*, Birkhäuser; Bombieri-Davenport 1966
+  [Bash] awk 'NR==68' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md | wc -c
+    2740
+  [Bash] awk 'NR==68 {print substr($0, length($0)-200)}' /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    ; slot 4: log·log log scaling not log w, structural candidate -12 C_2², slot 3 software bug fix, single-prime heuristic captures 32%; E1.5 (Poisson baseline informed by); refines slot 2 measurement |
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    <tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>
+  [Read] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    68	| Hardy-Littlewood pair-correlation analysis on k-tuple singular series for windowed-count variance | USED I (S431+S432, Thread 9 slots 3+4) — applied Goldston-Montgomery 1987 pair-correlation methodology to the HL 4-tuple singular series for windowed twin-prime counts. **Cancellation identity (slot 3)** verified prime-by-prime: ⟨S_4 factor at p⟩_uniform_m / S_2(0,2)² factor at p = 1 EXACTLY for every p ≥ 5 (Bombieri-Davenport-shape mean-value identity, max deviation 4×10⁻¹⁶ for first 168 primes). With admissibility ratios 2 (p=2 with m even) and 3 (p=3 with m≡0 mod 3), this gives ⟨S_4⟩_admissible = 6·S_2² = 24C_2² ≈ 10.4596. **Theorem 1 (windowed-twin Gallagher-Poisson):** under HL 4-tuple, Var[N_2(x;w)]/E[N_2] → 1 as x → ∞ with w/x → 0. **F²_pred(x;w) = 1 + Δ(w)/(C_2·w·log²x)** where Δ(w) = T(w) - 2C_2²w², matches slot 2 empirical F² to **0.24% at x=10⁸ wide regime** under slot 3 fit, refined to <0.5% under slot 4 corrected calculation. **Slot 4 (S432) refinement**: slot 3's α ≈ 5.72 closed-form fit was REFUTED as a finite-w artefact — extending T(w) to w=1.2×10⁶ shows α(log w) grows monotonically; new structural candidate **Δ(w) ∼ -12 C_2² · w · log(w) · log log(w)** with -12 C_2² = -5.230 matching empirical 3-param fit -5.36 to 2.4%. Single-prime Mertens-style heuristic via D_p = p/(p-2) and ∑_{5≤p≤K} 1/(p-2) ≈ log log K captures 32% of magnitude; cross-prime + boundary primes account for 68% (slot 5 GY 2007 target). Slot 4 also identified slot 3 software bug (off-by-one in tail handling); slot 4 fast eval validated against Hardy-Littlewood prime quadruplet constant 4.15118 to bit precision. **Mode I** (remains I — closed-form derivation of -12 C_2² coefficient incomplete pending slot 5 GY 2007) | Hardy-Littlewood 1923 (k-tuple conjecture); Gallagher 1976 *Mathematika* 23, 4; Goldston-Montgomery 1987 in *Analytic Number Theory and Diophantine Problems*, Birkhäuser; Bombieri-Davenport 1966 *Proc. Roy. Soc. London* A293; Goldston-Yıldırım 2007 "Higher correlations of divisor sums related to primes II" arXiv:math/0510565 https://arxiv.org/abs/math/0510565; Mertens 1874 (∑_{p ≤ x} 1/p ∼ log log x — slot 4 heuristic); Hardy-Littlewood prime quadruplet constant S_4(0,2,6,8) = 4.15118 (Brent 1975, Forbes 1998 — slot 4 bug detection reference) | Thread 9 slots 3+4 (S431, S432) — slot 3: first quantitative theory-empirical match of cross-x k-tuple variance factor F_HL_kt = 0.87 ± 0.03 to <0.5% at cleanest cell; slot 4: log·log log scaling not log w, structural candidate -12 C_2², slot 3 software bug fix, single-prime heuristic captures 32%; E1.5 (Poisson baseline informed by); refines slot 2 measurement |
+    69	| Selberg-Delange machinery for partial sums of multiplicative arithmetic functions on the HL singular-series Cesaro sum | PROPOSED (slot 5 candidate, Thread 9) — slot 4 (S432) identified that ∑_{m∈A, m≤w}(w-m)·S_4(0,2,m,m+2) has leading sub-leading correction Δ(w) ∼ -12 C_2² · w · log(w) · log log(w) empirically to 2.4%, but closed-form derivation requires Goldston-Yıldırım 2007 partial-sum machinery on multiplicative G(m) = ∏_p h_p(m mod p). Cross-prime and boundary-prime contributions account for 68% of magnitude in single-prime heuristic (Mertens captures 32%); rigorously deriving the multiplicative constant via Selberg-Delange would close the slot-3+4+5 conditional theorem | Selberg 1954 *J. Indian Math. Soc.* 18 (sieve theory); Delange 1971 *Acta Arith.* 19 ("Sur la distribution des entiers ayant certaines propriétés"); Goldston-Yıldırım 2007 arXiv:math/0510565 (higher correlations of divisor sums); Iwaniec-Kowalski 2004 *Analytic Number Theory* AMS Coll. Pub. 53 ch.5 (multiplicative sums); Shiu 1980 *J. reine angew. Math.* 313 (Brun-Titchmarsh-type bound) | Thread 9 slot 5 candidate (rigorous derivation of -12 C_2² log·log log coefficient on HL 4-tuple Cesaro sum, would promote pair-correlation entry to mode E) |
+  [Edit] /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md
+    The file /apps/aplikacijos/prime-research/CROSS_DOMAIN_TECHNIQUES.md has been updated successfully.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Run cleanup verification:
+  [Bash] find /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched -name "*.py" | while read f; do
+  r="${f%.py}_results.md"
+  [ ! -f "$r" ] && echo "MISSING: $r"
+done
+find /apps/aplikacijos/prime-research/experiments -name "__pycache__" -type d 2>/dev/null | head -5
+    (Bash completed with no output)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5*
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_decomposition.csv
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_extended_t.csv
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_gm_residual.csv
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_run.log
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap.py
+    /apps/aplikacijos/prime-research/experiments/analytic/k_tuple_batched/slot5_thread9_wrap_results.md
+All files present. Now set .run_state and verify final state:
+  [Bash] echo 435 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.commit_state | head -15
+    435
+    thread:NONE_AWAITING_USER_ESCALATION
+    sessions_used:0
+    status:DONE
+    session_history:
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    prev_thread_3:galway_frontier_DONE
+    prev_thread_4:a7_plethysm_subframe_DONE
+    prev_thread_5:cross_x_amortisation_DONE_PARTIAL_POSITIVE
+    prev_thread_6:p1_pi_in_arithmetic_progressions_batched_on_q_DONE_PARTIAL_NEGATIVE
+    prev_thread_7:p3_polylog_approx_pi_named_eps_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_8:p2_pi_h_batched_on_h_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    prev_thread_9:p4_k_tuple_narrow_window_batched_on_x_DONE_PARTIAL_POSITIVE_CONDITIONAL
+    last_synthesis:archive/sessions/session433_commit_p4_thread9_wrap.md
+    thread_9_summary:Thread 9 = OPEN_POSITIVE_TARGETS.md §P4 — twin-prime / k-tuple narrow-window count batched on x. ALL 5 SLOTS DONE. Slot 1 (S429): sieve-shared batched-x evaluator, correlated dichotomy 5-8x speedup at M=64. Slot 2 (S430): F_HL_kt = sigma_eff/sigma_pois = 0.87 ± 0.03 for k=2, 18 cells, 3 decades, decade-stable to ±0.045 wide. Slot 3 (S431): cancellation identity verified to bit precision (168 primes); Theorem 1 (windowed-twin Gallagher-Poisson under HL); F_pred matches F_emp <0.5% at 10^8 wide cell; empirical fit Δ ≈ -5.72·w·log(w) + 24C_2²·w. Slot 4 (S432): identified slot 3 software bug (off-by-one in tail handling); slot 3 α≈5.72 REFUTED as finite-w artefact; structural candidate Δ ∼ -12 C_2² · w · log(w) · log log(w) with -12 C_2² = -5.230 matching empirical -5.36 to 2.4% on 22 cells (K up to 200K); single-prime captures 32% of magnitude. Slot 5 (S433, FINAL/WRAP): Extended numerics to K=350K (1.75x slot 4); REFUTED slot 4's -12 C_2² identification as a unique fit — Model B coefficient A varies -5.5 to -8.9 across reasonable K_min (slot 4's -5.36 was 16-cell local minimum). Fit collinearity between log w and log w·log log w over data range. Full single-prime decomposition S_1 (analytic n-spike formula): captures 25-29% (refining slot 4's heuristic 32%). Cross-prime second-order S_2 (Fourier expansion, primes ≤ 200): 16-35% with K-dependent fluctuations. Combined S_1 + S_2(p,q≤200) captures 41-61%; remainder 39-58% from cross-prime tail + higher-order. GM zero residual UNDERTESTED (only 1 corrected F_pred cell). Thread 9 wrap: PARTIAL-POSITIVE_CONDITIONAL — slots 1+2+3 deliver algorithmic 5-8x speedup (slot 1), measured constant F_HL_kt = 0.87 ± 0.03 (slot 2), conditional Theorem 1 (slot 3 windowed-twin Gallagher-Poisson under HL); slots 4+5 sub-leading asymptotic shape OPEN — empirical leading coefficient interval [5.0, 9.0] not closed-form-identified; closed-form derivation requires Goldston-Yıldırım 2007 / Selberg-Delange machinery beyond project's current toolkit.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Slot 5 (FINAL) of Thread 9 complete. Self-grade: **B**.
+
+## Summary
+
+**Slot 5 outcome.** Extended slot 4's T(w) numerics from K=200K → K=350K (1.75×) and re-fitted Model B (Δ/w = A·log w·log log w + B·log w + C) on multiple K_min windows. Slot 4's structural identification of the leading coefficient with **−12 C₂² ≈ −5.230 was REFUTED as a unique fit** — Model B coefficient A varies −5.5 (K_min=50K) to −8.9 (K_min=200K) across reasonable fit ranges, because the 3-parameter fit basis is collinear over log w ∈ [6, 15].
+
+Slot 5 also produced the project's **first exact** full single-prime decomposition S_1(K) via analytic n-spike formula (capturing 25–29% at K=10K..100K, refining slot 4's heuristic 32%) and **first explicit cross-prime second-order S_2** measurement (primes ≤ 200, 946 pairs, capturing 16–35% via Fourier-style direct partial-cycle iteration). Combined S_1 + S_2(≤200) accounts for 41–61%, remainder 39–58% from cross-prime tail + higher-order.
+
+**Thread 9 wrapped DONE_PARTIAL_POSITIVE_CONDITIONAL.** Achievement: slot 1 algorithmic 5–8× speedup at M=64 + slot 2 measured F_HL_kt = 0.87 ± 0.03 + slot 3 conditional Theorem 1 (Gallagher-Poisson under HL). Open: slot 4/5 sub-leading asymptotic, leading coefficient interval refined to [5.0, 9.0]. Six explicit falsifiers documented.
+
+**Pattern across slots 3, 4, 5:** each slot REFUTED the previous slot's structural conjecture at higher K — strongly suggesting the asymptotic shape requires analytic-NT machinery (GY 2007 / Selberg-Delange) beyond the project's current toolkit.
+
+**Threads 1–9 ALL CLOSED.** `.commit_state` thread:NONE_AWAITING_USER_ESCALATION, status:DONE, escalation_required:YES. Per CLAUDE.md autonomy invariants, escalation to user required for next thread selection.
+--- Session ended ---
+Sleeping 60 seconds before next run...

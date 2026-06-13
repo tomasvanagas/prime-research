@@ -1,4 +1,4 @@
-# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 35 Measures
+# Novel Finding: Pseudorandomness of pi(x) mod 2 Under 36 Measures
 
 **Status:** Novel synthesis. Individual measures from Sessions 17-56 plus
 four adjacent representations (S48 Dirichlet character spectrum of chi_P;
@@ -82,6 +82,7 @@ pseudorandom under all known structural tests.
 | 33 | Regular continued-fraction quotients of prime constant alpha = sum_{p prime} 2^{-p} (depth 1500) | K_0 = 2.7336 (Khintchine 2.6854), Levy = 1.2056 (1.1866), max\|AC[1..10]\| = 0.013, 1/f^{-0.09} (white), k-automaticity ratio < 0.012 for k in {2,3,5,7,10}, Shannon entropy 3.26 b/quotient | Khintchine-typical | S51 |
 | 34 | Bessel-basis PSLQ identity test for f(x) = pi(x) - R(x) (10-element basis with K_0, I_0, J_0, Y_0 at log x, gamma_1*log x, 2*pi*sqrt(log x); mp 50 dps) | residuals 1.9e-36 .. 4.0e-35 at fit (always tight by overfit), but ALL fail cross-validation (cross-check residuals 1.10e+04 .. 6.03e+04); same-sigma Gaussian random control gives 8.5e-37 .. 6.4e-35 fit / 1.77e+04 .. 1.60e+05 cross-check — statistically indistinguishable | Gaussian-random-comparable | S68 |
 | 35 | delta(pi(p)) conditioned on smoothness of p-1 (largest-prime-factor quartiles + Sophie-Germain p=2q+1 sub-class + omega(p-1), N=9592 primes ≤ 10^5) | Pearson(s_ratio, delta) = +0.0049 (p=0.634); KS class-0-vs-3 D=0.016 (p=0.91); Sophie-Germain KS p=0.95; only "significant" hit is omega(p-1) vs \|delta\| at r=+0.054 (0.3% variance) which is fully explained by both quantities co-scaling with p (Erdős-Kac log log p, \|delta\|~p^{0.57}) | independent | S57 |
+| 36 | DARTS (Liu-Simonyan-Yang ICLR 2019) continuous-relaxation BCE on (n, χ_P(n)) at depth 3 / N=12, gate library {AND, OR, XOR, MAJ_3/5/7, ID, NOT}, G_1=G_2=12, 100 epochs, 3 seeds | final BCE 0.2969 ± 0.0000 (= 1-bit oddness baseline 0.2961); calibrated-1-bit random control with parity-conditional density of PRIMES randomly placed converges to 0.2963 ± 0.0004 (Welch t=+2.3, p=0.14 — indistinguishable from PRIMES); argmax discretisation collapses to constant zero (MAJ_k with empty selected set) → discrete circuit accuracy = majority-class baseline at every n-window. **Mode I**: cross-domain DARTS technique imports cleanly but signal reduces fully to S84's parity-mod-2 mechanism | matched-density random control plateaus at entropy floor 0.3967 ± 0.0113 | S216 |
 
 ### Notes on Individual Measures
 

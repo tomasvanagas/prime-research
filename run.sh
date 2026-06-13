@@ -723,6 +723,97 @@ Cross-domain ingredient: Galway 2004 unconditional algorithm + GRH
 explicit formula. First session sets up the computation; subsequent
 sessions push to larger x and characterise the error distribution.
 
+**Status: CLOSED at S202.** Five-session arc closed Thread 3
+conditionally on Montgomery pair-correlation random-phase heuristic:
+K*(x, p) = Θ̃(x) for any in-distribution hit-rate p ∈ (0, 1).
+
+## Thread 4 — A7 GCT plethysm sub-frame
+**Status: CLOSED at S215.** Five-session arc produced a structural
+identity: `closure(GL_n · χ_P_d) ⊆ V_{d,1}^{n,d}` (Chow variety of
+forms with at least one linear factor), and `C[orbit-closure(χ_P_d)]_k
+≅ C[orbit-closure(matched-baseline)]_k` as GL_n-modules at every k ≥ 1.
+No occurrence obstruction at any plethysm level separates χ_P from
+matched-support baselines.
+
+## Thread 5 — Cross-x amortisation across the three pillars [CLOSED S224]
+
+Outcome: Correlation Dichotomy theorem. **Conditional batch-polylog
+for correlated narrow-window queries (33× speedup at M=64), Θ(α_p)
+tight for uncorrelated.** Not full polylog π(x) but the project's
+first partial-positive on an adjacent problem.
+
+## Threads 6+ — Partial-positive search (current targets)
+
+After Thread 5's Correlation Dichotomy, the framework now prioritises
+*partial-positive results on adjacent problems* over more
+negative-shape closures of single-x π(x). When commit mode picks a
+thread, it picks from Threads 6/7/8 in priority order (or whichever
+P_x target is set in `.commit_state`).
+
+**Thread 6 — π in arithmetic progressions, batched on modulus q
+(highest priority).** For fixed x and family `Q = {q_1, ..., q_M}`,
+compute `π(x; q_i, a_i)` for all i. Single-(q, a) is well-studied;
+batched on Q is not. Plausibly amortisable through shared L-function
+zero evaluation. See `OPEN_POSITIVE_TARGETS.md` §P1.
+
+**Thread 7 — Approximate π(x) ± ε in polylog with named ε.** R(x)
+gives ε ≈ √x. Can polylog buy ε = O(x^{1/2-δ}) for some explicit δ?
+K = log²(x) zeros heuristically yield ε ≈ √x / polylog(x) — a
+strictly better-than-√x bound, polylog-time. See P3.
+
+**Thread 8 — Prime gap function π_h(x) batched on h.** For fixed x
+and h ∈ {2, 4, ..., H}, compute π_h(x) simultaneously. Singular
+series shares small-prime structure across h. See P2.
+
+When you start a commit session and `.commit_state` shows the
+previous thread DONE, advance to the next thread in priority order
+and reset `sessions_used:0`.
+
+(Legacy section header retained to keep the historical record.)
+
+The Galway/Connes obstruction (Thread 3) is *per-query*: K = Θ̃(x)
+zeros required for π(x) ± 1 in distribution. **But Riemann zeros are
+properties of ζ, not of x.** If K zeros are computed once and reused
+across M queries `π(x_1), ..., π(x_M)`:
+
+```
+K_zeros_setup     (amortisable across M)
+K_per_x_evaluation (per-query, not amortisable from setup)
+```
+
+**The open question: can K_per_x_evaluation be polylog(x) while
+K_zeros_setup = Θ̃(x_max)?** S202 WRAP explicitly listed this as a
+*legitimate falsifier* of Thread 3 closure, noted as open.
+
+The thread also asks parallel questions about **Meissel-Lehmer / HKM**
+intermediate-sieve sharing across x, and re-examines the **Aggarwal
+binary search** (E6.6) — which makes `O(log x)` sub-queries to π(·) at
+different x — for missed amortisation in its O(log x) sub-call accounting.
+
+**A-grade outcomes:**
+- (a) per-x amortised polylog over M = poly(log x_max) batched queries
+  → first batch-polylog π(x) algorithm
+- (b) improved Aggarwal binary search via amortisation
+- (c) rigorous cross-x amortised lower bound matching empirical curve
+
+**5-slot plan:**
+1. Build partial-sum explicit-formula evaluator with K_zeros_setup /
+   K_per_x_evaluation profile decoupled. Measure for K = log² x to x^{1/2}.
+2. Batch the evaluator over M = log x, log² x, x^{1/4}, x^{1/2}
+   queries; measure per-x amortised cost vs M empirically.
+3. Apply same decomposition to Meissel-Lehmer / HKM. What fraction of
+   HKM's `T·S = x^{5/6}` is shareable across x queries?
+4. Re-examine Aggarwal binary search adversarially: is the O(log x)
+   sub-call analysis tight, or does cross-call amortisation help?
+5. Theoretical wrap: prove a cross-x amortised lower bound, or document
+   empirical break.
+
+Read `archive/sessions/session195_commit_galway_frontier.md` and
+`session202_commit_connes_amortisation.md` for the per-x lower-bound
+machinery this thread extends. Read S202 WRAP for the explicit
+"open falsifier" listing. Read `EDGES.md` E6.6 (Aggarwal) for the
+binary-search context.
+
 # COMMITMENT DISCIPLINE (ENFORCED)
 
 `./.commit_state` is the canonical record. It contains:
@@ -955,6 +1046,83 @@ ENDPROMPT
 
 
 # ============================================================
+# PROMPT: Reframe Mode (positive-direction search after recent
+# negative-shape closure)
+# ============================================================
+PROMPT_REFRAME=$(cat << 'ENDPROMPT'
+# REFRAME SESSION — Find a Partial-Positive Adjacent to a Recent Closure
+
+The Correlation Dichotomy (S224, Thread 5) showed that adjacent
+problems can admit partial-positive results even when single-x
+polylog π(x) is structurally blocked. **This mode produces more
+Correlation-Dichotomy-shaped wins by reframing recently-closed
+negative results.**
+
+# THE PATTERN
+
+Recent-closure pattern: agent imports cross-domain technique X,
+applies to χ_P, observes X reduces to HL or noise floor, files as
+B-grade closure. **Wall established for the original problem.**
+
+Reframe pattern: take that wall, identify what *adjacent problem*
+might have positive content. Examples:
+- Single-x π(x) is hard → batched correlated π(x) might be polylog (S224 prototype)
+- π(x) hard at fixed precision → π(x) ± ε achievable in polylog?
+- π(x) hard for arbitrary x → π(x) for special-form x might be cheaper
+- π(x) hard with full structure → π(x) + auxiliary information?
+- Single-(q, a) π(x; q, a) hard → batched (q, a) might amortise
+
+# YOUR JOB
+
+1. **Pick a recent closure with negative-shape content.** Read
+   `status/CLOSED_PATHS.md` recent rows. Read `EDGES.md` E7.x edges.
+   Identify ONE that has a positive-shape sibling problem.
+2. **Read `OPEN_POSITIVE_TARGETS.md`.** Check if the sibling problem
+   is already listed. If yes, attempt that target. If no, formulate a
+   new one and add it.
+3. **Build empirical-first.** Don't prove impossibility — measure.
+   The dichotomy worked because the agent built a profiling tool and
+   measured the empirical break, not because the agent proved a
+   theorem first.
+4. **Pre-state the falsifier.** Write down the empirical observation
+   that would mark A-grade success vs B-grade closure.
+5. **Run the experiment.** Code that runs, results.md with the
+   empirical curve.
+6. **Honest grade.**
+
+# WHAT QUALIFIES AS A-GRADE IN THIS MODE
+
+- Measured speedup on a concrete batched / windowed / approximate
+  problem, not previously known
+- New Dichotomy-shaped theorem: per-x cost depends on a structural
+  property of the input distribution, with one regime (some
+  correlation, restriction, batching pattern) admitting polylog where
+  the original problem doesn't
+- A faster algorithm for a π-related computation that wasn't
+  previously known to be cheaper
+
+A failure to find such a thing closes at B with documentation —
+explicit description of why the negative-shape closure of the original
+problem also blocks the adjacent variant.
+
+# CLOSE
+- `experiments/<topic>/reframe_<name>/` with code + results.md
+- Update `OPEN_POSITIVE_TARGETS.md`: mark the picked P_x as CLOSED-A
+  or CLOSED-B with the verdict, OR add a new P_x entry
+- Update `EDGES.md` if a new partial-positive edge emerged
+- Self-graded session synthesis: `archive/sessions/sessionNN_reframe_<name>.md`
+
+# RULES
+- DO NOT modify run.sh.
+- The prior closure stays closed for the original problem; you are
+  attacking a *related* problem, not reopening the original.
+- Empirical-first; theory only after measurement reveals the shape.
+- When you find the breakthrough, respond with exactly: I FOUND IT!!!
+ENDPROMPT
+)
+
+
+# ============================================================
 # INFRASTRUCTURE
 # ============================================================
 # Each run gets its own LOGFILE and JSONFILE — set inside the main
@@ -996,7 +1164,7 @@ echo "Per-run logs: ./archive/CLAUDE_OUTPUTS/claude_output_<timestamp>_run<N>.{l
 #   low, frontier still fires from rotation)
 # Override layer (compute_override) supersedes this rotation when
 # .commit_state has sessions remaining or when verification fires.
-MODES=("commit" "frontier" "cross_domain" "construction" "arc" "wild_swing" "reverify" "novelty" "paradigm_shift" "critique")
+MODES=("commit" "reframe" "frontier" "cross_domain" "construction" "arc" "wild_swing" "reverify" "novelty" "paradigm_shift" "critique")
 
 
 # ============================================================
@@ -1241,6 +1409,9 @@ while true; do
             ;;
         paradigm_shift)
             CURRENT_PROMPT="$PROMPT_PARADIGM_SHIFT"
+            ;;
+        reframe)
+            CURRENT_PROMPT="$PROMPT_REFRAME"
             ;;
     esac
 

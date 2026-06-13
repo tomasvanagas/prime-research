@@ -1,0 +1,711 @@
+=== Run #208 — Mode: novelty — Wed Apr 29 06:46:05 UTC 2026 ===
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    File content (39826 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+    1	- [Session numbering vs .run_state](session_numbering_vs_run_state.md) — sessionNN files use max(existing)+1, NOT .run_state value
+    2	
+  [Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/session_numbering_vs_run_state.md
+    1	---
+    2	name: Session numbering vs .run_state
+    3	description: In prime-research, .run_state tracks run.sh invocations (lags), while session NN files in archive/sessions/ are numbered consecutively across runs — pick max(existing) + 1.
+    4	type: project
+    5	originSessionId: c8940663-c50a-48f3-8bae-bcdf41d8e227
+    6	---
+    7	`.run_state` and session NN are DIFFERENT counters.
+    8	
+    9	- `.run_state` increments per `./run.sh` invocation.
+    10	- `archive/sessions/sessionNN_*.md` files are numbered consecutively
+    11	  across all runs (one run can produce multiple sessions via the
+    12	  rotation: novelty / construction / arc / lean / critique / verify).
+    13	- The two counters drift apart because most runs produce 1+ session.
+    14	
+    15	**Why:** Why this matters: when the prompt says "echo 130 > .run_state",
+    16	that is the next `run.sh` increment, NOT the next session number. The
+    17	session number must be `max(existing sessionNN files) + 1`.
+    18	
+    19	**How to apply:** Before writing `archive/sessions/sessionNN_*.md`, do
+    20	`ls archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -1` to
+    21	get the most recent session number, then increment. Use the same NN
+    22	inside the file (titles, references like "S<NN>") AND in EDGES.md
+    23	"S<NN>; …" stubs, CROSS_DOMAIN_TECHNIQUES.md "USED <mode> (S<NN>, …)"
+    24	cells, ATTACK_VECTORS.md "[CLOSED S<NN>]" markers, CLOSED_PATHS.md row
+    25	trailing " | <NN> |", and SESSION_INSIGHTS.md "## Session <NN> — …"
+    26	headers.
+    27	
+    28	When the session uses but is DIFFERENT FROM another session (e.g., my
+    29	session 133 closing a vector that S130 frontier_gen created), keep
+    30	references to the other session as-is — only your own session header
+    ... (2 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | tail -20
+    session83_l1_lean_lower_bound_reduction.md
+    session84_a1_sat_tc0_primes.md
+    session85_frontier_gen.md
+    session86_critique.md
+    session87_d6_gowers_uk_chi_p.md
+    session88_c4_anderson_localisation_chi_p.md
+    session89_c7_calibrated_d2_primes.md
+    session90_l1_lean_trivial_floor.md
+    session91_frontier_gen.md
+    session92_b1_algebraic_immunity_chi_p.md
+    session93_d6b_lambda_vs_chi_p_uk.md
+    session94_critique.md
+    session95_d7_dpp_ppp_fit.md
+    session96_d2_persistent_homology_chi_p.md
+    session97_frontier_gen.md
+    session98_l1_lean_corner_case.md
+    session99_l1_lean_orthogonal_corner.md
+    session_critique46.md
+    session_critique50.md
+    session_critique60_fresh.md
+  [Bash] cat /apps/aplikacijos/prime-research/.run_state 2>/dev/null; echo "---"; cat /apps/aplikacijos/prime-research/.commit_state 2>/dev/null
+    208
+    ---
+    thread:connes_amortisation
+    sessions_used:5_final
+    status:DONE
+    session_history:S193,S194,S195,S196,S202
+    prev_thread:s82_invariant_subspace_DONE
+    prev_thread_2:connes_amortisation_DONE
+    last_synthesis:archive/sessions/session202_commit_connes_amortisation.md
+    slot1_summary:S193 sharper closure of E3.1 - Connes K^3 dominated by Hiary K^{17/13} on setup; per-query identical (both O(K) explicit-formula sum); Thread 2 reduces to Thread 3
+    slot2_summary:S194 empirical fluctuation sweeps at x~1e5 (40 samples, K_max=3000) and x~1e6 (40 samples, K_max=8000); hit-rate at K=log^2(x) decays 30%->5% with x, median |error| grows from 1.58 to 4.56; negative-shape evidence that K=polylog(x) does NOT suffice for pi(x)+/-1 in distribution at tested scales
+    slot3_summary:S195 GUE random-phase heuristic Var(pi(x)-R_K(x)) ~ x log^2(K)/(2pi^2 K log^2 x); validated across 600 triples spanning 3 decades (added x~1e7 sweep, 40 samples K_max=5500); pooled Pearson r=0.62, slope-through-origin ratio 0.74 (=GUE-vs-Poisson reduction); asymptotic K*(x,p)=Theta(x) NOT polylog with constants 0.09x for p=50% and 1.35x for p=99%; closes Thread 3 quantitatively in distribution
+    slot4_summary:S196 variance decomposition Var(error)=Var(TAIL)(K)+Var(BIAS)(K,h) under iid uniform-phase model with disjoint-j independence; Var(TAIL) is independent of h, forcing K=Theta-tilde(x) regardless of bandwidth; empirical 40 samples x 11 bandwidths x K_max=2000 at x~1.78e5 confirms K*_50 unchanged at 1782-1783 for h<=3e-4 and unreachable within K_max for h>=5e-4; bias variance prediction matches empirical 5-15% across active regime; smoothing strictly does NOT help, optimal h=0; eliminates slot-3 follow-up (b)
+    slot5_summary:S202 WRAP - unified conditional theorem covering 5 regimes (per-query unsmoothed; amortised; CCM-spectral; in-distribution; log-Gaussian-smoothed) all giving K*(x,p)=Theta-tilde(x) for any positive in-distribution hit-rate p in (0,1); Connes route adds setup K^{22/13} cost over Galway/Hiary with identical per-query cost; no regime breaks the floor; closure conditional on Montgomery pair-correlation random-phase heuristic; legitimate falsifiers (non-Gaussian kernels, x>=10^9, GUE pair correlation, cross-x amortisation) noted as open but not needed for Thread 2 closure
+    recommended_next_action:All three commit threads (S82, Connes, Galway) now CLOSED. Next commit slot should NOT pick from existing thread list. Recommend frontier_gen mode (auto-fire conditions met: Thread 1 + Thread 2 + Thread 3 all closed; A-grade drought S162-S201 = 40 sessions). Fall-back to A7 plethysm sub-frame (S192 flagged) or D44 BC endomotive Galois-orbit (S163 flagged) as direct A-grade attempts if frontier_gen does not auto-fire.
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+' | sort -V | tail -5
+    session203
+    session204
+    session205
+    session206
+    session207
+  [Bash] wc -l /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md /apps/aplikacijos/prime-research/EDGES.md /apps/aplikacijos/prime-research/ATTACK_VECTORS.md /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+      1101 /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+      5254 /apps/aplikacijos/prime-research/EDGES.md
+      9385 /apps/aplikacijos/prime-research/ATTACK_VECTORS.md
+       989 /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+     16729 total
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -oE 'session[0-9]+_[a-z_0-9]+' | sort -V | tail -10
+    session198_reverify_e1_5
+    session199_f1a_cross_modulus
+    session200_paradigm_shift_spike_specificity
+    session201_critique
+    session202_commit_connes_amortisation
+    session203_d48_bc_endomotive_galois
+    session204_d3_bdj_toeplitz_hankel
+    session205_c9b_tq_
+    session206_lean_w11_atomicity
+    session207_d9_bgk_sum_product
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    1	# Novelty Challenges — Active Research Targets
+    2	
+    3	This file holds the active research questions for sessions targeting
+    4	**B-grade work** (substantive refinement or ambitious failure of a
+    5	single-session attack — see CLAUDE.md "Novelty Bar").
+    6	
+    7	**For A-grade work, read `ATTACK_VECTORS.md` first.** That file holds
+    8	the frontier targets — the only way to produce genuinely novel
+    9	mathematics. The challenges below are ranked B-grade because they are
+    10	single-session-tractable; the trade-off is that even when they succeed,
+    11	they produce refinements rather than discoveries.
+    12	
+    13	**Pick one challenge per session.** Time-budget the work. If you can't
+    14	finish, write the partial state into RESEARCH_AGENDA.md and halt.
+    15	
+    16	The framework's grading discipline (CLAUDE.md): a session that
+    17	completes a NOVELTY_CHALLENGES.md target with a clean refinement is
+    18	B-grade. A session that *attempts* an ATTACK_VECTORS.md target and
+    19	fails informatively is also B-grade. A session that completes 5
+    20	NOVELTY_CHALLENGES targets in one sitting is *not* A-grade — it's 5×B,
+    21	and a single A-grade attempt would have been more valuable.
+    22	
+    23	---
+    24	
+    25	## §0. Pointer to Frontier Attacks (A-grade work)
+    26	
+    27	**`ATTACK_VECTORS.md` §A through §F** holds the project's frontier
+    28	targets. If your session has 1+ hour available and you are not in
+    29	the middle of an arc, pick from there instead. The frontier sections:
+    30	
+    ... (270 more lines)
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    300	`archive/sessions/session95_d7_dpp_ppp_fit.md`.
+    301	
+    302	**Successor challenges (proposed in S95):**
+    303	
+    304	**§D7.b — Pfaffian point process fit on W-tricked χ_P.** A Pfaffian
+    305	PP has matrix-valued kernel `K(t) ∈ R^{2x2}` (block-anti-symmetric)
+    306	with k-point correlations as Pfaffians of a 2k×2k matrix. Strictly
+    307	extends DPP/PPP. Test on W=210 W-tricked χ_P (where pair correlations
+    308	S(0, t)_W ≈ 1, kernel near-zero) and on bare χ_P. Predicted: same
+    309	structural failure (admissibility is multi-body, not pairwise) but
+    310	the falsification mode is different — produces a structurally
+    311	distinct edge candidate. Cost: 1-2 sessions.
+    312	
+    313	**§D7.c — α-determinantal generalisation (Vere-Jones 1997)**: allow
+    314	`R_2(t) = ρ^2 + α(t) K(t)^2` with `α(t) ∈ ℝ` offset-dependent. Setting
+    315	`α(odd) = +1, α(even) = -1` immediately accommodates the parity sign
+    316	flip. The question: do the 3-point α-identities (which generalise
+    317	both DPP and PPP) match HL across admissible all-even triples? Build
+    318	an α-permanent solver, fit α(t) numerically to minimise 3-point
+    319	residual. **A-grade if** consistent fit across all triples (would be
+    320	a NEW arithmetic invariant of χ_P). **B-grade if** structural failure
+    321	shows the obstruction is prime-vs-pair factorisation independent of
+    322	α(t) flexibility. Cost: 1-2 sessions.
+    323	
+    324	**Tertiary backup:** L1 Lean — close `exists_invertible_submatrix` for
+    325	the corner case R ≤ 2 (Route A', single session) using `Nat.bertrand`
+    326	once at `n = W^(d-1)` plus the existing `chiP_two_eq_one` row-0 entry
+    327	to exhibit a 2×2 submatrix with determinant ±1. Note S90 audit:
+    328	Route A (full closure) requires Hoheisel-grade prime-density not in
+    329	mathlib — multi-session arc on its own.
+    ... (370 more lines)
+  [ToolSearch] 
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    700	**§F1.a.ii — Higher m primorial extension.** Extend to m ∈ {2310,
+    701	30030} where `J*(m) ∈ {0, 1}` at L = 2·10⁸. Test whether the dip
+    702	is resolvable at J = 0 (where the predictor and truth are *both*
+    703	on the full conductor scale) — a regime where E1.3's per-bit
+    704	decomposition breaks down because the "digit" is the entire
+    705	conductor's reduced-residue class. Cost: 1 session.
+    706	
+    707	**§F1.a.iii — Cross-zero-truncation.** Compose with §D43.c (S160
+    708	K-truncated explicit-formula residual). Hypothesis: subtracting
+    709	the first K explicit-formula zero contributions from Li⁻¹(n) should
+    710	*cancel* the RH-shadow valley at every base m once K is large
+    711	enough. Empirical test: re-measure m-ary dip on R_K predictor
+    712	agreement for K ∈ {0, 1, 5, 25, 100, 1000}. Direct cross-validation
+    713	of S195/S160's explicit-formula picture at the cross-modulus bit-
+    714	shadow level. Cost: 1-2 sessions.
+    715	
+    716	**§F1.b — Magnitude scaling.** The dip magnitude (ag_Li(J*) ≈ 0.36)
+    717	is stable at L ∈ {10⁷, 5·10⁷, 2·10⁸}. Test up to L = 10⁹ (sympy or
+    718	primecount) to see whether the magnitude tracks (or saturates at)
+    719	the Skewes-region transition. Predicted: magnitude stable until
+    720	the first sign-change of `Li(x) - π(x)` at x ≈ 10^316 (Bays-Hudson)
+    721	which is unreachable. So the valley should be **a fixed empirical
+    722	constant** in the practical regime. Verifying this constancy at
+    723	larger L is direct and tractable. Cost: 1 session.
+    724	
+    725	### F2 — π_+(x) := π(x) mod p^k for fixed prime p, growing k — **PARTIALLY CLOSED (S69)**
+    726	**Question:** π(x) mod 2 is pseudorandom (35 measures). Is π(x) mod 4 also pseudorandom in 35 measures? Mod 8? At what point does the "free-bit" argument break, if ever? Is the *information rate* of π(x) mod 2^k the constant 0.537·k bits per step (E1.5 says yes) or does it saturate?
+    727	**Why novel:** E1.5 was tested only at small q. The saturation behaviour is not in the literature.
+    728	**First step:** Extend E1.5's measurement to q = 2^k for k = 1..10.
+    729	
+    ... (370 more lines)
+Let me read EDGES.md to ground the work properly and check the C9 directory structure.
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/ | head -30
+    README.md
+    acsv_pi_diagonal
+    bdj_toeplitz_hankel_chi_p
+    brandt_mktp
+    brandt_per_bit
+    brandt_per_bit_arith_vm
+    brandt_per_bit_arith_vm_ablation
+    d2_sign_threshold_w_m_tradeoff
+    free_cumulants_chi_p
+    g_q_bisection_invariant
+    n_over_2_universality_class
+    pillar_tradeoff_diagram
+    primes_dpp_ppp_fit
+    ramanujan_spike_pointwise
+    s166_squarefree_extension
+    s182_asymptote_extrapolation
+    s183_d24_svd_verify
+    s184_asymptote_robustness
+    s185_cluster_boundary_kstar
+    s186_character_alignment_kstar
+    spike_block_21pct_test
+    spike_eigenvalue_l_squared
+    spike_eigenvectors_chi_p
+    spike_gallagher_proof
+    spike_indicator_specificity
+    spike_pointwise_HL_correlation
+    tensor_compression_family_closure
+  [Grep] ^### E2\.1 |^### E2\.2 |^### E2\.13|^## E2\.1 |\| E2\.1\b|\| E2\.13\b
+    505:### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    849:### E2.2 — Liouville/parity identity                                [EVS M (was H, downgraded S55)]
+    1112:### E2.13 — Gowers U^k norm of chi_P matches Hardy-Littlewood {0,1}^k-cube singular series; universal across multiplicative-indicator family  [EVS M]
+    5108:| MPS-base-W identity: rank = min(W^j, phi(W) W^{d-j-1} + 1) | exact | E2.1 |
+    5184:| E2.1 (MPS bond-dim) × free-probability | OPEN | C2 |
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    505	### E2.1 — TT (MPS) bond-dim identity at every primorial cut       [EVS H]
+    506	
+    507	`novel/mps_bond_dimension.md`; S41/S42; `experiments/wildcard/mps_bond_dimension*.md`.
+    508	
+    509	For the prime indicator chi_P : [1, W^d] → {0,1} reshaped in base W:
+    510	
+    511	```
+    512	   rank M^{(j)} = min( W^j , phi(W) * W^{d-j-1} + 1 )
+    513	```
+    514	
+    515	at *every* cut 1 ≤ j < d, *every* primorial W ≥ 2. Empirically saturated to
+    516	strict equality for W ∈ {2, 6, 30, 210}, d up to 20.
+    517	
+    518	The +1 row is exactly row-0 (the trivial "all integers > W are coprime to
+    519	W constraint"). The rest of the rank reduction is **exactly the Mertens
+    520	product prod_{p ≤ W}(1 - 1/p)** in disguise.
+    521	
+    522	> Why this is an edge: it is the **only known closed-form identity of any
+    523	> kind** for the entanglement-theoretic compressibility of chi_P. The
+    524	> savings is only constant-factor phi(W)/W, so on its own it doesn't break
+    525	> sqrt(x), but it gives an exact algebraic handle on the wheel-W sieve in
+    526	> tensor-network language.
+    527	
+    528	**S74 free-probability refinement (C2):** the squared-singular-value
+    529	distribution of `M^(j)` decomposes as **MP(c = φ(W)/W) bulk + O(N^{0.42})
+    530	spike outliers + finite structural peak**. The MP-bulk rate equals
+    531	`φ(W)/W = ∏_{p≤W}(1 − 1/p)` (the Mertens product). After projecting out
+    532	the spike band (`k* ∝ R^{0.85}` on W=2 d=14..22), the bulk free cumulants
+    533	match the MP standardized identity `κ_r = c^{r-1}` within 5–10% across
+    534	W ∈ {2, 3, 5, 6, 30}. Matched-active iid Bernoulli baseline matches MP
+    ... (30 more lines)
+  [Bash] ls /apps/aplikacijos/prime-research/experiments/constructions/spike_pointwise_HL_correlation/ /apps/aplikacijos/prime-research/experiments/constructions/ramanujan_spike_pointwise/
+    /apps/aplikacijos/prime-research/experiments/constructions/ramanujan_spike_pointwise/:
+    definition.md
+    run.log
+    sanity_holder.py
+    sanity_holder_results.md
+    spike_pointwise.py
+    spike_pointwise_results.json
+    spike_pointwise_results.md
+    
+    /apps/aplikacijos/prime-research/experiments/constructions/spike_pointwise_HL_correlation/:
+    definition.md
+    run.log
+    sanity_singular_series.py
+    sanity_singular_series_results.md
+    tq_correlation.py
+    tq_correlation_results.json
+    tq_correlation_results.md
+I'll target **§C9.a — Divisor-only restriction at primorial Q**. The closed-form identity decomposes cleanly: I can derive it analytically and verify pointwise. Single-session B-grade refinement of E2.1/C9.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Read] /apps/aplikacijos/prime-research/experiments/constructions/ramanujan_spike_pointwise/definition.md
+    1	# Pointwise Ramanujan-spike approximator T_Q(n)
+    2	
+    3	## Object
+    4	
+    5	For positive integer N and integer cutoff Q ≥ 1, define the
+    6	**Mertens–Ramanujan spike intensity** at level Q,
+    7	
+    8	```
+    9	    M_Q(n) := Σ_{q ≤ Q, q squarefree}  mu(gcd(q, n)) / phi(q / gcd(q, n))
+    10	```
+    11	
+    12	and the **pointwise spike approximator** of chi_P at scale Q,
+    13	
+    14	```
+    15	    T_Q(n) := (pi(N) / N) · M_Q(n).
+    16	```
+    17	
+    18	`mu` is the Möbius function and `phi` is Euler's totient. The right-hand
+    19	side depends on n through the divisor structure `gcd(q, n)`, and on the
+    20	ambient scale N only through the prefactor `pi(N) / N` (the prime
+    21	density on `[1, N]`).
+    22	
+    23	## Identity used (proven from definitions)
+    24	
+    25	**Hölder reduction.** For squarefree q and any integer n, let
+    26	`d = gcd(q, n)` (then d | q, hence d squarefree). Then
+    27	
+    28	```
+    29	    c_q(n)  =  mu(q/d) · phi(d)        (standard for Ramanujan sums)
+    30	    mu(q) · c_q(n) / phi(q)  =  mu(d) / phi(q/d).
+    ... (197 more lines)
+I've confirmed the target. The closed form derivation: for W squarefree, M_W^div(n) = [gcd(n,W)=1] · W/φ(W) **exactly** (not just at coprime points). Let me set up the experiment.
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+  [Bash] mkdir -p /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel
+    (Bash completed with no output)
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/definition.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/definition.md
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/spike_divisor_only.py
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/spike_divisor_only.py
+  [Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel && timeout 600 python3 spike_divisor_only.py --N 100000 2>&1 | tail -60
+    N = 100000
+      pi(N) = 9592  rho = 0.095920  (sieve 0.00s)
+      W=2 (2): rad=2, ratio=2.0000
+        abs_err=0.00e+00  mean=1.000000  pearson_div=+3.2566e-01
+        pearson_full=+3.2566e-01  l2_emp=7.7523e-02  l2_pred=7.7523e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': False}
+      W=6 (2·3): rad=6, ratio=3.0000
+        abs_err=0.00e+00  mean=0.999990  pearson_div=+4.6050e-01
+        pearson_full=+4.8843e-01  l2_emp=6.8329e-02  l2_pred=6.8329e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+      W=30 (2·3·5): rad=30, ratio=3.7500
+        abs_err=0.00e+00  mean=0.999975  pearson_div=+5.3993e-01
+        pearson_full=+6.2889e-01  l2_emp=6.1438e-02  l2_pred=6.1438e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+      W=210 (2·3·5·7): rad=210, ratio=4.3750
+        abs_err=8.88e-16  mean=0.999994  pearson_div=+5.9807e-01
+        pearson_full=+7.7511e-01  l2_emp=5.5700e-02  l2_pred=5.5700e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+      W=2310 (2·3·5·7·11): rad=2310, ratio=4.8125
+        abs_err=8.88e-16  mean=0.999989  pearson_div=+6.3558e-01
+        pearson_full=+9.1622e-01  l2_emp=5.1688e-02  l2_pred=5.1688e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+      W=15 (3·5): rad=15, ratio=1.8750
+        abs_err=0.00e+00  mean=0.999994  pearson_div=+3.0455e-01
+        pearson_full=+5.7706e-01  l2_emp=7.8676e-02  l2_pred=7.8676e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+      W=105 (3·5·7): rad=105, ratio=2.1875
+        abs_err=1.39e-17  mean=0.999994  pearson_div=+3.5475e-01
+        pearson_full=+7.2611e-01  l2_emp=7.5806e-02  l2_pred=7.5806e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': True}
+    ... (16 more lines)
+Excellent — all six criteria pass cleanly. The single F6 "fail" at W=2 is structural: at W=2 the full M_2 coincides with M_2^div because the only squarefree integers ≤ 2 are exactly {1, 2} = divisors of 2. Pre-stated F6 only required W ∈ {6, 30, 210, 2310} (where the gap is genuine). Let me verify at N=10^6 to harden the closed-form claim.
+  [Bash] timeout 1800 python3 spike_divisor_only.py --N 1000000 --no-fullcompare --out spike_divisor_only_results_N1e6.json 2>&1 | tail -50
+    N = 1000000
+      pi(N) = 78498  rho = 0.078498  (sieve 0.00s)
+      W=2 (2): rad=2, ratio=2.0000
+        abs_err=0.00e+00  mean=1.000000  pearson_div=+2.9186e-01
+        pearson_full=skipped  l2_emp=6.6174e-02  l2_pred=6.6174e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=6 (2·3): rad=6, ratio=3.0000
+        abs_err=0.00e+00  mean=0.999999  pearson_div=+4.1274e-01
+        pearson_full=skipped  l2_emp=6.0013e-02  l2_pred=6.0013e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=30 (2·3·5): rad=30, ratio=3.7500
+        abs_err=0.00e+00  mean=0.999997  pearson_div=+4.8398e-01
+        pearson_full=skipped  l2_emp=5.5392e-02  l2_pred=5.5392e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=210 (2·3·5·7): rad=210, ratio=4.3750
+        abs_err=8.88e-16  mean=0.999998  pearson_div=+5.3615e-01
+        pearson_full=skipped  l2_emp=5.1542e-02  l2_pred=5.1542e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=2310 (2·3·5·7·11): rad=2310, ratio=4.8125
+        abs_err=8.88e-16  mean=0.999999  pearson_div=+5.6984e-01
+        pearson_full=skipped  l2_emp=4.8847e-02  l2_pred=4.8847e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=15 (3·5): rad=15, ratio=1.8750
+        abs_err=0.00e+00  mean=0.999999  pearson_div=+2.7300e-01
+        pearson_full=skipped  l2_emp=6.6945e-02  l2_pred=6.6945e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+      W=105 (3·5·7): rad=105, ratio=2.1875
+        abs_err=1.39e-17  mean=1.000000  pearson_div=+3.1803e-01
+        pearson_full=skipped  l2_emp=6.5020e-02  l2_pred=6.5020e-02
+        {'F1/F2/F3 pointwise': True, 'F4 mean': True, 'F5 L²': True, 'F6 Pearson_full > Pearson_div': None}
+    ... (16 more lines)
+All F1-F5 pass cleanly at N=10^6 with pointwise error at machine epsilon. Let me write the results.
+  [Write] /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/spike_divisor_only_results.md
+    File created successfully at: /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/spike_divisor_only_results.md
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Now let me update the status files. I'll mark C9.a as CLOSED in NOVELTY_CHALLENGES, refine E2.1 in EDGES, add the CLOSED_PATHS row, and write the session synthesis.
+  [Read] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    570	**Successor challenges (proposed in S191):**
+    571	
+    572	**C9.a — Divisor-only restriction at primorial Q.** Build the closed-form
+    573	identity
+    574	```
+    575	   M_W^{div}(n) := Σ_{q | W, q sqf} mu(q) c_q(n) / phi(q)
+    576	                 ≡ ∏_{p | W} (1 − 1[p | n]/(p − 1) · phi(p))
+    577	```
+    578	(or similar exact-divisor form), and verify pointwise vs the full
+    579	`M_W(n)` (which sums over all squarefree q ≤ W, not just divisors of W).
+    580	Question: at primorial W, is `M_W^{div}` exactly equal to a wheel
+    581	indicator times a Mertens constant? If yes, `T_W^{div}(n)` is an
+    582	*exact* pointwise wheel sieve weighted by Mertens density — a clean
+    583	algebraic identity composing E2.1 and the M_Q closed form. Cost: 1
+    584	session. **Save under:** `experiments/constructions/spike_divisor_only_wheel/`.
+    585	
+    586	**C9.b — Higher-moment composition: T_Q correlations and Hardy-Littlewood — BUILT (S205).**
+    587	**Edges:** E2.1 + E2.2 + E2.13 + E1.6 + C9 / S191.
+    588	**Object:** Two-point function `R_h(Q, N) := ⟨T_Q(n) T_Q(n+h)⟩` with
+    589	connected variant `R_h^conn := R_h − ⟨T_Q⟩²`. Predicted closed-form
+    590	identity: `R_h^conn(Q, N) = (π(N)/N)² · (S_Q(h) − 1)` where
+    591	`S_Q(h) = Σ_{q sqf ≤ Q} μ²(q)/φ²(q) c_q(h)` is the truncated
+    592	Hardy-Littlewood twin-prime singular series.
+    593	**Falsifiers:** F1 identity ratio in [0.85, 1.15]; F2 convergence to
+    594	full HL at Q=√N; F3 odd-h asymptote → −(π/N)²; F4 h=0 self-consistency
+  [Edit] /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md
+    The file /apps/aplikacijos/prime-research/NOVELTY_CHALLENGES.md has been updated successfully.
+Now let me update EDGES.md to refine E2.1 inline.
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    560	ratio `sum sigma^2 / sum |L(1, chi)|^2` varies by 34× across
+    561	`p ∈ {3, 5, 7, 11}` at `d=20` (CV = 1.37). Within-block per-spike
+    562	sigma^2 spread ≤ 1.10× while per-character |L(1, chi)|^2 spread = 4.7×;
+    563	the spike eigenvalues do NOT individually match Dirichlet L-values.
+    564	The empirically correct scaling is **`sum_block sigma^2 ≈ K · N /
+    565	(p · log²N)` with K = 3.86 ± 0.32** (CV = 0.082 across (d, p) ∈
+    566	{14, 18, 20} × {3, 5, 7}). See `experiments/constructions/spike_eigenvalue_l_squared/`.
+    567	
+    568	**S166 commit-thread step 2 — exact theorem for V_p ⊕ V_{2p}^prim energy
+    569	[B-grade per S167 verification, demoted from A]:**
+    570	S148's empirical "K-formula" `sum sigma^2 ≈ K · N / (p log²N)` is now
+    571	**proved analytically** for the primary subspace content. The exact result:
+    572	
+    573	> **Theorem (S166).** For W=2, N = 2^d, the L² energy of chi_P in the
+    574	> additive-Fourier subspace V_p^prim ⊕ V_{2p}^prim is
+    575	>
+    576	>   `E(p, N) = (2 (pi(N) - O(1))²) / ((p-1) N) + O(p · Var(p, N) / N)`
+    577	>
+    578	> where Var(p, N) = sum_{a coprime to p} (pi(N; p, a) - pi(N)/(p-1))² is
+    579	> the Gallagher PNT-in-AP variance. Equivalently:
+    580	>
+    581	>   `K(p, N) = E(p, N) · p log²N / N → 2p/(p-1) as N → ∞`,
+    582	>
+    583	> with finite-N correction `(pi(N) log N / N)²` (≈ 1.18 at d=20).
+    584	
+    585	Verified at 25 cells `(d, p) ∈ {14, 16, 18, 20, 22} × {3, 5, 7, 11, 13}`,
+    586	ratio empirical/predicted ∈ [0.992, 1.000] (max deviation 0.8%, shrinking
+    587	as N grows). **Proof:** Dirichlet character orthogonality + Ramanujan
+    588	sum identity `c_p(k) = mu(p) = -1` (k coprime to p prime) and
+    589	`c_{2p}(k) = mu(2p) = +1` (k coprime to 2p, p odd) give |S_q^k|² ≈
+    ... (60 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    650	
+    651	C-circular failure stands; the contribution is structural.
+    652	
+    653	See `experiments/constructions/s166_squarefree_extension/`.
+    654	
+    655	**S169 commit-thread step 4 — empirical confirmation of the 21% prediction +
+    656	finite-N Q* exponent correction:** S168's prediction tested at six d values
+    657	d ∈ {14, 16, 18, 20, 22, 24} via direct Fourier sieve, and SVD spike block
+    658	data from S82 at d ∈ {14, 18, 20}.
+    659	
+    660	- **The 21% spike-block fraction holds.** Empirical SVD spike block /
+    661	  π(N) = 0.224, 0.221, 0.220 at d = 14, 18, 20 — within 7% at d=14,
+    662	  decreasing to within 5% at d=20 (S176 verify scope-correction;
+    663	  earlier "within 5% at d=14" framing was off by 1.5pp).
+    664	- **Q* exponent CORRECTED 0.21 → 0.185 at finite N.** The matching
+    665	  effective Q_eff (where analytic cum(Q) equals the SVD spike block)
+    666	  is at exponent **≈ 0.185** across d = 14, 18, 20 (exact values
+    667	  0.184640, 0.184552, 0.185022; spread 5e-4, all rounding to 0.185).
+    668	  S173 found d=16 lands at 0.1616 due to integer-Q quantisation; S176
+    669	  found brittleness to ±1 in k_* gives range [0.166, 0.201] at the
+    670	  same d-points. The "0.185" is a stable centre, not a four-decimal
+    671	  invariant. The S168 derivation `Q* ~ N^{0.21}` from
+    672	  `k_*(N) ~ N^{0.42}` has finite-N corrections from both `k_*(N)`'s
+    673	  prefactor and Mertens-Wirsing remainders.
+    674	- **Asymptotic consistency.** Analytic cum(Q=N^{0.21}) / (0.21 π(N))
+    675	  trajectory: 1.33, 1.27, 1.26, 1.19, 1.17, 1.17 across d=14..24,
+    676	  monotonically converging to 1 (as predicted by the asymptotic
+    677	  Wirsing constant A → 1). The crossing-Q exponent in (A.2) drifts
+    678	  from 0.16 (d=18) toward 0.18 (d=24), consistent with asymptotic
+    679	  → 0.21.
+    ... (70 more lines)
+  [Read] /apps/aplikacijos/prime-research/EDGES.md
+    750	finite-N). The two-point identity composes E2.1 (single-point spike
+    751	content) with E2.13 (Gowers `U^k`/HL match for the cube): E2.13 is
+    752	four-point, S205 is two-point shift; the pointwise function `T_Q`
+    753	realises both at any conductor cutoff Q. See
+    754	`experiments/constructions/spike_pointwise_HL_correlation/`.
+    755	
+    756	**S200 paradigm-shift session — spike specificity across arithmetic
+    757	indicators + 2D `(k, ω(q))` resonance pattern:** the S168/S190 21%
+    758	spike fraction is NOT a generic feature of dense arithmetic
+    759	indicators — it is specifically the `Ω = 1` slice of a 2D resonance
+    760	pattern across `(k, ω(q))`. Measured `Spike(f, Q, N)` for f ∈
+    761	{χ_P, χ_{Ω odd}, χ_{Ω even}, χ_{Ω = 2}, χ_{Ω = 3}, μ²} at
+    762	d ∈ {14, 16, 18}, Q ∈ [2, 30]. Two cleanly-separated regimes:
+    763	**fixed-Ω-value indicators** (χ_{Ω = k} for fixed k, plus μ²)
+    764	carry spike fraction ≥ 2.6%; **Ω-parity indicators** (χ_{Ω odd},
+    765	χ_{Ω even} = Liouville (1−λ(n))/2) carry spike fraction ≤ 0.04%
+    766	— at the noise floor, with contrast χ_P / χ_{Ω odd} ≈ **2120×** at
+    767	d=18, Q=8. The Liouville parity-sum `Σ_{k odd} χ_{Ω = k}` cancels
+    768	the principal-character contribution from each χ_{Ω = k} term to
+    769	sub-leading order, giving the 0% spike. Empirically per-q: spike of
+    770	χ_{Ω = k} concentrates at squarefree q with **ω(q) = k − 1**
+    771	(χ_P at all sqf q with Mertens decay; χ_{Ω = 2} at q prime;
+    772	χ_{Ω = 3} at q sqf with two prime factors — with three orders of
+    773	magnitude separation between on-diagonal and off-diagonal cells).
+    774	**Refined hypothesis (P'):** `Spike(χ_{Ω = k}, q) ≈ C(k, ω(q)) ·
+    775	(π_k(N) / N)² · Φ(q) / N` with `C(k, j)` peaking on `j = k − 1`.
+    776	**Algorithmic ruling-out:** S191 `T_Q` predictor scope is restricted
+    777	to fixed-Ω-value indicators; it does NOT extend to Liouville-parity
+    778	indicators because the spike vanishes there. This rules out a class
+    779	of "Liouville-prefilter" strategies for polylog π(x). C-circular
+    ... (60 more lines)
+  [Edit] /apps/aplikacijos/prime-research/EDGES.md
+    The file /apps/aplikacijos/prime-research/EDGES.md has been updated successfully.
+Now add the CLOSED_PATHS row.
+  [Bash] tail -5 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | §D3 ATTACK_VECTORS — Bryc-Dembo-Jiang free-probability Toeplitz/Hankel LSD applied to χ_P: do the empirical even spectral moments `m_k(χ_P-T,N)`, `m_k(χ_P-H,N)` of real symmetric Toeplitz `T_{ij} = ε(|i-j|+1)` and Hankel `H_{ij} = ε(i+j+1)` matrices (centered ε := (χ_P − p_N)/√(p_N(1−p_N)), eigenvalues / √N) match the BDJ universal limits γ_T, γ_H with `m_4(γ_T) = 8/3`, `m_4(γ_H) = 2`? (cross-domain: Bryc-Dembo-Jiang 2006 *Ann. Probab.* 34, 1 = arXiv:math/0307330; Hammond-Miller 2005 *J. Theor. Probab.* 18, 537 = arXiv:math/0312215; Voiculescu 1991 *Invent. Math.* 104, 201) | FAIL | I | S204 wild-swing single-session attack on §D.D3 producing **B-grade case (i) refinement of E2.21 to L^k norms via Toeplitz spectral moments**. χ_P decisively VIOLATES BDJ universality across N ∈ {500, 1000, 2000, 3500} for both T and H types, against BOTH matched-density nulls (B1 = i.i.d. Bernoulli(p_N), B2 = random permutation of χ_P[1..2N-1]). **Empirical scaling laws (the new content):** `m_4(χ_P-T, N) ≈ 2.95 · N / log²N` (BDJ univ: 8/3); `m_4(χ_P-H, N) ≈ 1.66 · N / log²N` (BDJ univ: 2). **Largest-eigenvalue laws:** `λ̃_max(χ_P-T, N) ≈ (4/π) · √(N/log N)` empirical 1.337/1.321/1.303/1.282 monotone descent to ~4/π ≈ 1.273 across N=500..3500; `λ̃_max(χ_P-H, N) ≈ 1.06 · √(N/log N)` (rank-1 parity-vector heuristic gives close-form 1, finite-N correction ~6%). **Structural decomposition:** the SINGLE largest eigenvalue contributes 89.0% ± 0.3% (T) / 76.2% ± 0.3% (H) of m_4 universally across all tested N. Hankel m_4 prediction agrees with measurement to 0.0% rel err at N=2000, ≤3.5% across all N; Toeplitz prediction converges from +21% (N=500) to +3.6% (N=3500). z-scores at N=3500 H: m_4 zB = +854, m_4 zP = +1181 (Bonferroni-3σ threshold ≈ 5.6σ). **Mechanism:** by E2.21 (S138), `|F_N(e^{iπ})| ≈ π(N)−2`: the parity major arc q=2 dominates the L^∞ norm. The centered standardised Toeplitz symbol then has a delta-like spike of magnitude `≈ 2π(N) √(log N)` at θ=π, contributing a single rank-1 component with eigenvalue ≈ `α · N`, `α = (1/N)Σ ε(k)(−1)^k ≈ 1/√log N`. After BDJ scaling, `λ̃_max ≈ √(N/log N)`. By Szegő (Grenander-Szegő), `m_4 ≈ (1/2π)∫f^4 dθ / N²` and `(1/2π)∫|F_N|^4 dθ` is the **Hardy-Littlewood additive energy of primes**, with leading scaling `2N · π(N)²/log²N` from Goldbach-style major arcs. **Adds EDGE E2.31** (the L^k generalisation of E2.21 from L^∞ point evaluation to L^k integral evaluation, accessed via Szegő-Toeplitz spectral moments framed in the BDJ free-probability universality framework). Distinct from CLOSED line 690 (R-transform of `diag(1_P)`, trivial idempotent ESD = (1−π(N)/N)δ_0 + (π(N)/N)δ_1, encoded only π(N) — Toeplitz/Hankel here MIXES χ_P at all offsets producing non-trivial continuous spectrum). Distinct from S74-S168 chain (MPS-Gram model with MP bulk + spike outliers k* ~ R^{0.85}; here raw χ_P gives single parity outlier q=2). Distinct from E2.21 (point evaluation at single rationals; here L^k integrals). **Cross-domain ingredient**: BDJ free-probability framework — appended to `CROSS_DOMAIN_TECHNIQUES.md` §3 as "Bryc-Dembo-Jiang Toeplitz/Hankel universal LSD" USED-I. **Falsifier**: any (N, kind, k) cell with empirical `m_k(χ_P)` matching BDJ universal limit within ±2σ — empirically falsified across 32 cells × moments. OR exhibition of a polylog computational extraction of `λ_max(χ_P-T, N) = (4/π)√(N/log N) = (4/π)√π(N)` as a primality witness — would resolve polylog π(x). **No algorithmic upside**: extracting λ_max of an N×N Toeplitz via Lanczos costs Ω(N log N) per matrix-vector multiply, same order as direct enumeration. **Successors proposed (S204)**: D3.a (Liouville Toeplitz/Hankel BDJ test — predicts FULL BDJ universality since Möbius cancellation kills the parity spike; this would sharpen E2.31 by exhibiting matched-density sequence with NO major-arc spike; the L^k generalisation of D27.b OPEN from S138, 1 session); D3.b (centered χ_P with parity bias subtracted Toeplitz BDJ — should match BDJ universal limit modulo q≥3 spikes; predicts m_4 → 8/3; falsifier-rich and decisive, 1 session); D3.c (Markov-matrix variant γ_M with zero row-sums constraint, 1-2 sessions). All three use cross-domain ingredients (BDJ + Liouville/Möbius / Goldbach-spike-removal / Markov LSD γ_M) NOT used in S204; non-duplicative. **Channelled mathematician**: Bryc / Voiculescu (operator-algebra free probability rigour); Hammond-Miller (Toeplitz LSD combinatorics). See `experiments/constructions/bdj_toeplitz_hankel_chi_p/`, `archive/sessions/session204_d3_bdj_toeplitz_hankel.md`. | 204 |
+    
+    | S201 critique — audit of S193-S200 batch (Connes amortisation S193-S196 + ACSV wild_swing S197 + re-verify E1.5 S198 + F1.a cross-modulus S199 + spike specificity paradigm-shift S200) — does the batch contain inflated grades, mis-cited edges, missing CLOSED_PATHS rows, or duplicate `novel/` placements? | CRITIQUE | C | Per-artefact verification of eight production-equivalent sessions. **Zero new demotions, zero inflations caught**: all eight self-grades honestly placed within ±half a band (six B confirmed, one B-at-lower-edge confirmed S200, one C confirmed S198). **Independent proof verification of S197**: step (iii) `p + pT = p(1+T)` non-periodicity argument rechecked and confirmed correct; classical citations Pólya-Carlson/Stanley/Furstenberg-Lipshitz verified to be real theorems with cited content; assembly is logically sound. **Internal-consistency check of S195 σ² heuristic**: at K=√x, σ ≈ x^{1/4}/√(8π²) ≈ 0.11·x^{1/4} (consistent with Riemann-von Mangoldt √x·log²x error envelope); at K=x, σ ≈ 1 (consistent with K=Θ(x) for unit error). The heuristic is dimensionally and asymptotically self-consistent. **S197 wild_swing override interaction with .commit_state**: the Connes thread slot 5/5 WRAP synthesis was NOT executed; .commit_state shows `sessions_used:5, status:in_progress, next_action: WRAP`. Recommendation: harness mark Thread 2 DONE without consuming slot 5, or fire commit-mode once more to formally close. **Citations audit**: E7.21 added correctly (EDGES.md line 4316); E1.3 inline S199 annotation (line 218); E1.5 inline S198 sharpening "linear→constant" (line 295) plus scope-of-closure clarification (line 323); E2.1 inline S200 specificity annotation (line 728); E3.1 refinements via S193 setup-cost framing + S196 variance-additivity. CLOSED_PATHS rows 810/814/816/818/820/822 verified for S193/S196/S195/S194/S197/S198. **S199 and S200 did not file CLOSED_PATHS rows** — both are inline EDGES.md refinements (E1.3 and E2.1) per CLAUDE.md File-Placement rules; this is correct policy not an omission. **A-grade scarcity escalated**: S147 flagged 0/N; S163 flagged 0/20; S192 flagged 0/30; **S201 flags 0/40 across four consecutive critique-windows**. The frontier-saturation pattern persists at maximal severity: every wild_swing closes at mode E or I via classical-result-citation closures (E7.21 = Pólya-Carlson + finite-singularity D-finite + Furstenberg-Lipshitz). The harness has continued to select commit/refinement/paradigm-shift modes despite four critique-window recommendations to attempt §A.A7 plethysm sub-frame OR §D.D48 BC endomotive Galois-orbit (highest-A-prior open vectors with un-imported cross-domain ingredients). **Recommended next-action**: (1) §A.A7 plethysm sub-frame (cost 2-3 sessions; first session can compute plethysm coefficients for n=4,5 via SYMMETRICA); (2) §D.D48 BC endomotive Galois-orbit (cost 1-2 sessions, distinct from CCM spectral triple at S53/E3.1); (3) housekeeping — Thread 2 WRAP slot 5/5 synthesis if commit fires (C-grade, .commit_state hygiene). **Meta-pattern escalation**: this is the **fourth** consecutive critique flagging the same A-grade scarcity issue without harness response. The framework is producing disciplined honest B-grade work but no breakthrough attempts have been selected. CLAUDE.md "≥ 2 F-grade sessions" escalation threshold NOT hit, but four-window recurrence of same recommendation is a meta-pattern exceeding normal CLAUDE.md tolerance — flagged for user awareness. **No edits to EDGES.md, NOVELTY_CHALLENGES.md, ATTACK_VECTORS.md, RESEARCH_AGENDA.md, or CROSS_DOMAIN_TECHNIQUES.md** (no demotions; A7/D48 recommendations are continuations of S163/S192 picks). See `archive/ephemeral/critique_latest.md`, `archive/sessions/session201_critique.md`. | 201 |
+    
+    | §C9.b NOVELTY_CHALLENGES — Higher-moment composition: T_Q autocorrelation matches truncated Hardy-Littlewood twin-prime singular series at any squarefree-conductor cutoff Q? Test `<T_Q(n) T_Q(n+h)>_n,connected = (π(N)/N)² · (S_Q(h) − 1)` where `S_Q(h) = Σ_{q sqf ≤ Q} μ²(q)/φ²(q) c_q(h)` and `T_Q` is the S191 / C9 pointwise spike approximator. (cross-domain: NONE beyond S191 — Hardy-Littlewood 1923 *Acta Math.* 44 §4; Wintner 1944 *Eratosthenian averages* — used only as comparison textbook value) | BUILT | I | S205 construction-mode session composing E2.1 + E2.2 + E2.13 + E1.6 + C9 / S191. **Identity verified at d ∈ {16, 18, 20}** with precision ≈ 0.5 % uniformly across 14 shifts h ∈ {0, 1, ..., 12, 30, 210} × 8 conductors Q ∈ {2, 6, 13, 18, 30, 210, 1024 (= √N at d=20), 2310}. **F1 (identity) PASS within 0.6 %** — two orders of magnitude tighter than the pre-stated [0.85, 1.15] band. **F2 (HL recovery at Q = √N): PASS within 0.2 %** for all even h tested (h=2 ratio 1.00133 at d=20, Q=1024; h=6 0.99964; h=12 1.00004; h=30 1.00037; h=210 1.00168). **F3 (odd-h asymptote → 1) PASS within 0.03 %** (h=1 ratio 1.00019, h=3 1.00014, h=5 0.99977 at d=20, Q=1024). **F4 (h=0 self-consistency, recovers C9 / S191 single-point L²): PASS within 0.01 %** (Var(T_Q) = (π/N)² · (S_Q(0) − 1) holds at every Q to < 0.0001). **F5 (prime correlation matches HL): PASS within ~6 %** at d=20 (standard finite-N for the small absolute counts of (n, n+h) prime pairs at this scale). **Closed-form identity:** `R_h^conn(Q, N) := ⟨T_Q(n) T_Q(n+h)⟩_n − ⟨T_Q⟩² = (π(N)/N)² · (S_Q(h) − 1) + O(N^{-1+ε})` from Ramanujan-Fourier diagonal selection. **What's new beyond E2.13:** E2.13 is the **four-point cube** `U^2`/HL match with `S_2 = 2.300938`; this construction is the **two-point shift** companion, with explicit pointwise function realising the identity at any conductor Q at `O(N · |H| + Q · ω · N)` cost. The two-point identity is independent observable from the cube. **What's new beyond C9 / S191:** S191 is single-point L²; this is the two-point shift, recovering S191 as the h=0 diagonal. Refines E2.1 (single-point spike → two-point spike correlation), refines E2.2 (parity sign embedded in q=2 term of S_Q(h)), composes with E1.6 (parity bisection inherited at q=2), refines E2.13 (cube → two-point). **No polylog opening** — cost is `O(N · |H|)`, same order as direct prime correlation; structural, not algorithmic. EDGES.md E2.13 / E2.1 annotated. **Successors (S205):** C9.b.i (cross-conductor off-diagonal explicit form, 1 session); C9.b.ii (triple correlation `<T_Q · shift_{h1} · shift_{h2}>` to bridge S205 two-point ↔ E2.13 cube via k-point sequence, 1-2 sessions); C9.b.iii (Lean formalisation of the one-line two-point identity proof, 2-3 sessions). **Falsifier**: any (Q, h) cell with `R_h^conn(Q, N) / [(π/N)² (S_Q(h) − 1)]` outside [0.85, 1.15] at d ≥ 18 — empirically falsified to < 0.6 % across 14×8 = 112 cells. OR exhibition of polylog evaluation of `R_h(Q, N)` at Q = √N as primality-pair witness — would resolve polylog π(x). See `experiments/constructions/spike_pointwise_HL_correlation/`, `archive/sessions/session205_c9b_tq_HL_correlation.md`. | 205 |
+  [Grep] S207|S206|S205|S208
+    833:[Omitted long matching line]
+  [Bash] wc -l /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md && tail -1 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md | head -c 200; echo "..."
+    833 /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    | §C9.b NOVELTY_CHALLENGES — Higher-moment composition: T_Q autocorrelation matches truncated Hardy-Littlewood twin-prime singular series at any squarefree-conductor cutoff Q? Test `<T_Q(n) T_Q(n+h...
+  [Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+    820	
+    821	| S194 commit-thread step 2 (Connes amortisation, Galway frontier in distribution) — does K = polylog(x) suffice for π(x) ± 1 *in distribution* (over a band of x), as a route around the worst-case Riemann-von Mangoldt K = √x floor that S193 reduced Thread 2 to? | EXPERIMENT+REFINEMENT | E | Thread 2 commit step 2/5. Empirical sweep using 8000 cached Riemann zeros and the Riemann explicit formula π(x) ≈ R(x) − 2 Σ_{k≤K} Re R(x^{ρ_k}). **Wide-range K_sustained**: x ∈ {1e3, 1e4, 5e4, 1e5, 5e5, 1e6, 5e6, 1e7}, K_max=8000; stabilised samples (4 of 8): K_sust = 77, 1097, 5375, 5530 at x = 1e3, 1e4, 1e5, 1e6 respectively. Log-log fit slope 0.626 — significantly above the naive √x baseline because K_sustained is a worst-case-along-K measure (sustained rounding requires the *tail* to stay below 0.5). **Fluctuation sweep around x ~ 1e5** (40 samples geometric in [1e5, 3.16e5], K_max=3000): hit-rate at K = log²(x) is 30%, at K = log³(x) is 42%, at K = √x is 20%. Median |error| at K = log²(x) is 1.58. **Fluctuation sweep around x ~ 1e6** (40 samples in [1e6, 3.16e6], K_max=8000): hit-rate at K = log²(x) drops to 5%, at K = log³(x) drops to 15%, at K = √x is 10%. Median |error| at K = log²(x) grows to 4.56. **Hit-rate at fixed polylog K-policy DECAYS with x**, and median |error| grows roughly as x^{0.39−0.46} (between log²(x) and log³(x) policies). If polylog K sufficed in distribution, hit-rate would tend to a positive limit and median error would stay bounded; both fail empirically over the tested range. **Negative-shape evidence** sharpening Thread 3 (Galway frontier): polylog K does not suffice for π(x) ± 1 in distribution at x ≤ 3·10^6. Combined with S193's strict-dominance of Connes setup by Galway/Hiary (K^{22/13} factor), Thread 2 remains closed by transitivity through Thread 3. Cites E3.1, E1.5, S193 row 810, Galway 2004, Hiary 2011. Cross-domain ingredient: empirical distribution of explicit-formula partial-sum errors at polylog truncation — a genuine measurement that the project had not previously made. **Falsifier**: produce a polylog K-policy whose hit rate at |error| ≤ 0.5 tends to a positive limit, or whose median |error| stays bounded, as x → ∞. Empirically falsified within tested range (x ≤ 3·10^6) but un-tested above. See experiments/analytic/connes_amortisation/connes_amortisation_results.md §"Slot 2 (S194) extension". | 194 |
+    822	
+    823	| §D32 ATTACK_VECTORS — Pemantle-Wilson ACSV smooth-point diagonal extraction of `χ_P`: does there exist a multivariate rational `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)` whose diagonal coefficient extraction equals `χ_P(n)` (or `π(n)`) and admits a smooth critical point `ζ*` yielding closed-form `[z_1^n ⋯ z_d^n] F = ζ^{*-n} · poly(n)` for polylog π(x) evaluation? (cross-domain: Pemantle-Wilson 2013/2024 *Analytic Combinatorics in Several Variables* CUP; Melczer 2021 Springer; Furstenberg 1967 *J. Algebra* 7; Lipshitz 1988 *J. Algebra* 113) | FAIL | I | S197 wild-swing single-session attack producing an **unconditional structural barrier** that strictly strengthens CLOSED row 584 (empirical at order ≤ 20, polynomial degree ≤ 8) to ALL orders simultaneously. **Theorem (S197)**: `f(z) := Σ_{n≥1} χ_P(n) z^n` (a) has the unit circle `|z|=1` as natural boundary; (b) is not D-finite (not P-recursive); (c) is not algebraic over `ℚ(z)`; (d) for every `d ≥ 1` is not the diagonal of any rational `F(z_1, ..., z_d) ∈ ℚ(z_1, ..., z_d)`; (e) for every `d ≥ 1` is not the diagonal of any algebraic multivariate `F`. **Proof sketch**: (i) radius of convergence of `f` is 1 (Cauchy-Hadamard, χ_P ∈ {0,1}). (ii) Pólya–Carlson 1916/1921: integer-coefficient power series with radius 1 is either rational or has |z|=1 as natural boundary. (iii) `f` not rational because χ_P bounded-integer + LRS ⇒ eventually periodic; for any candidate period T, prime p ≥ N_0 + periodicity forces p + pT = p(1+T) prime — contradicts compositeness. (iv) D-finite ⇒ at most finitely many singular points (Stanley *EC2* Theorem 6.4.6; Flajolet-Sedgewick *AC* Theorem B.13) — contradicts natural boundary. (v) Algebraic ⊂ D-finite. (vi) Furstenberg 1967 / Lipshitz 1988: diagonal of rational/algebraic multivariate is D-finite — closes (d, e). **Empirical companion** (T1-T5 in `acsv_pi_diagonal.py`): T1 confirms ROC = 1; T2 P-recursion search d ≤ 30, r ≤ 8 shows no holonomic signal (extends CLOSED 584's d ≤ 20); T3 eventual-period search T ≤ 200 on χ_P ≤ 200000 shows max agreement 0.88 (no period); T4 Erdős-Turán equidistribution: closest root of f_N(t) to t=1 halves as N doubles (0.093 → 0.048 → 0.023 → 0.012 → 0.006 for N ∈ {64, 128, 256, 512, 1024}) — confirms NO stable Pemantle-Wilson critical point exists; T5 sanity test on diagonal sequence π(n) at degree ≤ 6. **Adds EDGE E7.21**: Pólya-Carlson natural-boundary barrier rules out the entire ACSV smooth-point technique class, plus Wilf-Zeilberger creative-telescoping, holonomic-gradient, and Karr-Schneider Π Σ-symbolic summation methods (each requires D-finite input). Distinct from E2.20 Mahler / E2.21 Newman (which measure specific extremal values of f_N on archimedean |z|=1; E7.21 is a structural statement about the limit f). Strict strengthening of CLOSED row 584 (empirical low-order → unconditional all-order). **Cross-domain ingredient**: ACSV §7 PROPOSED → USED I; the actual technical content is the meta-fact that ACSV-class techniques require D-finite input + the rigorous combination Pólya-Carlson + Skolem-Mahler-Lech + finite-singularity D-finite theorem + Furstenberg-Lipshitz. **Falsifier**: exhibit any (a) polynomial-coefficient linear recurrence on χ_P valid for large n, OR (b) polynomial Q(z, w) ∈ ℚ[z, w] with Q(z, f(z)) = 0, OR (c) multivariate rational F(z_1, ..., z_d) and direction r ∈ ℤ_{>0}^d such that [z_1^{r_1 n} ⋯ z_d^{r_d n}] F = χ_P(n) for large n. Each is impossible by the theorem; anyone exhibiting one resolves the polylog π(x) problem. **Channelled mathematician**: Pemantle / Flajolet (combinatorial asymptotics) — the actual lever is the meta-result. **Successors proposed (S197)**: D32.a (transcendental-F Pemantle-Wilson — does a non-algebraic but holonomic-D-module F escape Lipshitz?, 1 session); D32.b (Schur-class non-rational generating-function expansions; orthogonal to the rational class, may admit different asymptotic machinery, 2 sessions). Cross-domain refs: Pólya 1916 *Sitzungsber. Berlin Math. Ges.*; Carlson 1921 *Math. Z.* 9, 1; Skolem 1934 / Mahler 1935 / Lech 1953; Furstenberg 1967 *J. Algebra* 7, 271; Lipshitz 1988 *J. Algebra* 113, 373; Stanley 1999 *EC2* CUP Thm 6.4.6; Flajolet-Sedgewick 2009 *AC* Thm B.13; Erdős-Turán 1950 *Ann. Math.* 51 (root equidistribution); Pemantle-Wilson 2013/2024 *ACSV* CUP. See `experiments/constructions/acsv_pi_diagonal/`, `archive/sessions/session197_wild_swing_acsv_d32.md`. | 197 |
+    824	
+    825	| S198 re-verify-closure (E1.5 entropy bound, A-graded) — adversarial probe of the "CRT reconstruction cannot win" closure: is the per-step h_2(pi(X)/X) bound conservatively framed in a way that misses a non-incremental algorithmic angle? | REFINEMENT+CLOSURE | I | Re-verify-closure session targeting the ONLY A-graded edge in the project. **Adversarial finding**: closure stands. The framing "linear in k" was loose; the precise statement is "constant in k" — combining k coprime moduli incrementally gives the SAME h_2(pi(X)/X) bits per step as a single modulus, regardless of k. **Empirical contribution**: directly measured the JOINT k-moduli conditional entropy `H(joint(x) | joint(x-1))` at k = 1..6, X ∈ {10^4, 10^5, 10^6}. Two competing hypotheses: (H1) Independence — joint = sum of marginals = k·h_2; (H2) Perfect correlation — joint = h_2 (single shared bit). Result at X = 10^6 (joint state space ≪ pi(X) for k ≤ 4): J/h_2 = 1.0000 to 10^{-4}; (H1) decisively rejected. Slight drop at k = 5, 6 (J/h_2 ≈ 0.96 at k=6, X=10^6) is the same finite-state coverage effect S69 §3 documents for m approaching pi(X) — not (H1) signal. **Mechanism**: trivial extension of E1.5. Since pi(x) mod m_i = (pi(x-1) mod m_i + 1[x prime]) mod m_i holds for all i simultaneously, the joint transition is determined by the SINGLE bit b = 1[x prime]; conditioning on joint state, only b is random; so joint H = h_2(P[x prime]) = h_2(pi(X)/X). **Three candidate "missed angles" checked and ruled out**: (A) conditioning on side info x mod 6 — h_2(2p) doesn't vanish faster than h_2(p), constant factor only; (B) larger-step Δ — for Δ such that Δ·pi/X >> 1, increment uniform mod m, conditional H → log_2(min(m, Δ)), trade-off not shortcut; (C) direct (non-incremental) computation of pi(X) mod m — NOT closed by E1.5, this is the central open question (a polylog subroutine for any single m would propagate to polylog pi(X) via CRT). **Two-closure framing made explicit**: closure (i) "no incremental CRT shortcut" — closed by E1.5/S198, sharpened. Closure (ii) "no polylog pi(X) mod m via direct computation" — NOT what E1.5 closes; CLOSED row 244 is the correct anchor for that. Edge entry E1.5 in EDGES.md updated inline with the joint-k-moduli sharpening and the scope-of-closure clarification. **Closure mode I** (information-theoretic, sharpened from E in row 243). What's NEW: (a) direct empirical measurement of joint k-moduli entropy (S69 measured per-modulus marginals only); (b) sharpened wording "constant in k" replacing "linear in k"; (c) explicit two-closure framing distinguishing incremental from non-incremental. Cites E1.5 (refined), CLOSED rows 243, 244, E1.6 (compatible). Cross-domain ingredient: NONE (within-project information-theoretic verification). **Falsifier**: any (k, X) cell with prod(m_i) << pi(X)/100 yielding J/h_2 ≠ 1.0000 ± 10^{-4}, OR exhibiting a polylog non-incremental subroutine for pi(X) mod m for any single m (would resolve closure (ii) regardless of E1.5). See `experiments/information_theory/joint_kmoduli_entropy/`, `archive/sessions/session198_reverify_e1_5.md`. | 198 |
+    826	
+    827	| §D48 ATTACK_VECTORS — Bost-Connes endomotive Galois orbits of χ_P-projected KMS_∞ ground states (CCM 2007 *Adv. Math.* 214, 761 = arXiv:math/0512138 §6.2): does the abelian Hilbert-12 Galois action on χ_P-projected pure ground states of the truncated BC algebra carry detectable prime-distribution content beyond Dirichlet equidistribution? (cross-domain: Bost-Connes 1995 *Selecta Math.* 1, 411; CCM 2007 endomotive formalism; Connes-Marcolli 2008 textbook; Marcolli 2005 *Arithmetic Noncommutative Geometry*) | FAIL | E | S203 wild-swing single-session attack on the S163-flagged "highest-A-prior open vector". Closes at mode E (matched-density null) across 14 moduli `N ∈ {30, 60, 90, 105, 120, 210, 330, 420, 510, 630, 840, 1155, 1260, 2310}`. **Construction**: truncate the BC C*-algebra to its commutative sub `\mathcal{A}_N := \mathbb{C}[(\mathbb{Z}/N\mathbb{Z})^*]`; pure KMS_∞ ground states `\phi_\omega(\delta_a) = \omega(a)` parametrised by characters `\omega \in \widehat{G}`, `G = (\mathbb{Z}/N\mathbb{Z})^*`. Define χ_P-projector `P_\chi := Σ_{p ≤ N \text{ prime}, \gcd(p,N)=1} δ_p`; projected functional on the corner reduces to `ω(P_\chi)² · ω(a)`. Two characters give equal projected functionals iff `ω = ω'` or both `ω(P_\chi) = ω'(P_\chi) = 0`; the **zero set** `Z_\chi := {ω : S_\chi(ω) := Σ_p ω(p) = 0}` defines a single merged eq-class. Cyclotomic Galois `(\mathbb{Z}/M\mathbb{Z})^*` (`M = exp G`) acts via `σ_a · ω = ω^a` — Hilbert-12 action restricted to truncation. **Empirics**: `n_zero(χ)` measured against 50-trial random matched-density null `R ⊂ G` with `|R| = |P_N|`. `|z(n_zero)| ≤ 1.1` at every N. Per-bin orbit-length z-scores (14 N × 4–5 bins ≈ 65 tests): max `|z| = 3.39` at `N=60` length-1 bin (a confirmed finite-size artefact — residues `1, 49 mod 60` lack any prime ≤ 60, smallest are 61 and 109; anomaly disappears at `N=120` once these primes fill in); two single-bin `|z| > 3` deviations expected by chance. **No 5σ deviation, no consistent direction across N**. Distinct from CLOSED line 185 (BC partition function = `ζ(β)`, trace-level closure that loses Galois-orbit data by trace-property): D48 is at the **strictly finer ground-state level recommended by CCM 2007 §6.2 as the strongest Galois-data carrier**, and the closure shows the abelian Hilbert-12 part of the endomotive carries no detectable prime content beyond density-matched Dirichlet equidistribution. Distinct from CLOSED line 706 / E3.1 (CCM spectral-triple operator amortisation): D48 is on the BC algebra structure, not the CCM operator. Distinct from E2.29 (Rédei symbol arithmetic-topology Galois cohomology on triples): D48 is non-commutative operator-algebraic on abelianised BC characters. Adds **EDGE E2.30** as the **14th orthogonal pseudorandomness category** for χ_P (non-commutative-arithmetic at BC ground-state level) after E2.13–E2.29; **first project measurement of a non-commutative-arithmetic invariant on χ_P at the BC ground-state level**. **Cross-domain ingredient**: BC + CCM endomotive — appended to `CROSS_DOMAIN_TECHNIQUES.md` §1 as "Bost-Connes endomotive ground-state level" USED-E. **Falsifier**: any `N` with `|z(n_zero)| > 5σ` after multiple-comparison adjustment, OR exhibition of a closed-form description of the χ_P eq-class orbit-length distribution in terms of `π(N)` or class-field-theoretic data not captured by matched-density null, OR a polylog Galois-theoretic primality witness extracted from BC ground-state Galois orbits. None observed. **Successors proposed (S203)**: D49 (BC at finite β, retains type III Hecke factor structure not present at β=∞); D50 (Connes-Marcolli-Ramachandran 2005 imaginary-quadratic class fields, `Cl(K)`-action on χ_P-projected ground states for `K = ℚ(√-d)`, `d ∈ {1, 2, 3, 7, 11, 19, 43, 67, 163}` Heegner — different cross-domain ingredient: complex multiplication instead of abelian Hilbert 12). **Channelled mathematician**: Connes (noncommutative geometry, endomotive). See `experiments/algebraic/bc_endomotive_galois_chi_p/`, `archive/sessions/session203_d48_bc_endomotive_galois.md`. | 203 |
+    828	
+    829	| §D3 ATTACK_VECTORS — Bryc-Dembo-Jiang free-probability Toeplitz/Hankel LSD applied to χ_P: do the empirical even spectral moments `m_k(χ_P-T,N)`, `m_k(χ_P-H,N)` of real symmetric Toeplitz `T_{ij} = ε(|i-j|+1)` and Hankel `H_{ij} = ε(i+j+1)` matrices (centered ε := (χ_P − p_N)/√(p_N(1−p_N)), eigenvalues / √N) match the BDJ universal limits γ_T, γ_H with `m_4(γ_T) = 8/3`, `m_4(γ_H) = 2`? (cross-domain: Bryc-Dembo-Jiang 2006 *Ann. Probab.* 34, 1 = arXiv:math/0307330; Hammond-Miller 2005 *J. Theor. Probab.* 18, 537 = arXiv:math/0312215; Voiculescu 1991 *Invent. Math.* 104, 201) | FAIL | I | S204 wild-swing single-session attack on §D.D3 producing **B-grade case (i) refinement of E2.21 to L^k norms via Toeplitz spectral moments**. χ_P decisively VIOLATES BDJ universality across N ∈ {500, 1000, 2000, 3500} for both T and H types, against BOTH matched-density nulls (B1 = i.i.d. Bernoulli(p_N), B2 = random permutation of χ_P[1..2N-1]). **Empirical scaling laws (the new content):** `m_4(χ_P-T, N) ≈ 2.95 · N / log²N` (BDJ univ: 8/3); `m_4(χ_P-H, N) ≈ 1.66 · N / log²N` (BDJ univ: 2). **Largest-eigenvalue laws:** `λ̃_max(χ_P-T, N) ≈ (4/π) · √(N/log N)` empirical 1.337/1.321/1.303/1.282 monotone descent to ~4/π ≈ 1.273 across N=500..3500; `λ̃_max(χ_P-H, N) ≈ 1.06 · √(N/log N)` (rank-1 parity-vector heuristic gives close-form 1, finite-N correction ~6%). **Structural decomposition:** the SINGLE largest eigenvalue contributes 89.0% ± 0.3% (T) / 76.2% ± 0.3% (H) of m_4 universally across all tested N. Hankel m_4 prediction agrees with measurement to 0.0% rel err at N=2000, ≤3.5% across all N; Toeplitz prediction converges from +21% (N=500) to +3.6% (N=3500). z-scores at N=3500 H: m_4 zB = +854, m_4 zP = +1181 (Bonferroni-3σ threshold ≈ 5.6σ). **Mechanism:** by E2.21 (S138), `|F_N(e^{iπ})| ≈ π(N)−2`: the parity major arc q=2 dominates the L^∞ norm. The centered standardised Toeplitz symbol then has a delta-like spike of magnitude `≈ 2π(N) √(log N)` at θ=π, contributing a single rank-1 component with eigenvalue ≈ `α · N`, `α = (1/N)Σ ε(k)(−1)^k ≈ 1/√log N`. After BDJ scaling, `λ̃_max ≈ √(N/log N)`. By Szegő (Grenander-Szegő), `m_4 ≈ (1/2π)∫f^4 dθ / N²` and `(1/2π)∫|F_N|^4 dθ` is the **Hardy-Littlewood additive energy of primes**, with leading scaling `2N · π(N)²/log²N` from Goldbach-style major arcs. **Adds EDGE E2.31** (the L^k generalisation of E2.21 from L^∞ point evaluation to L^k integral evaluation, accessed via Szegő-Toeplitz spectral moments framed in the BDJ free-probability universality framework). Distinct from CLOSED line 690 (R-transform of `diag(1_P)`, trivial idempotent ESD = (1−π(N)/N)δ_0 + (π(N)/N)δ_1, encoded only π(N) — Toeplitz/Hankel here MIXES χ_P at all offsets producing non-trivial continuous spectrum). Distinct from S74-S168 chain (MPS-Gram model with MP bulk + spike outliers k* ~ R^{0.85}; here raw χ_P gives single parity outlier q=2). Distinct from E2.21 (point evaluation at single rationals; here L^k integrals). **Cross-domain ingredient**: BDJ free-probability framework — appended to `CROSS_DOMAIN_TECHNIQUES.md` §3 as "Bryc-Dembo-Jiang Toeplitz/Hankel universal LSD" USED-I. **Falsifier**: any (N, kind, k) cell with empirical `m_k(χ_P)` matching BDJ universal limit within ±2σ — empirically falsified across 32 cells × moments. OR exhibition of a polylog computational extraction of `λ_max(χ_P-T, N) = (4/π)√(N/log N) = (4/π)√π(N)` as a primality witness — would resolve polylog π(x). **No algorithmic upside**: extracting λ_max of an N×N Toeplitz via Lanczos costs Ω(N log N) per matrix-vector multiply, same order as direct enumeration. **Successors proposed (S204)**: D3.a (Liouville Toeplitz/Hankel BDJ test — predicts FULL BDJ universality since Möbius cancellation kills the parity spike; this would sharpen E2.31 by exhibiting matched-density sequence with NO major-arc spike; the L^k generalisation of D27.b OPEN from S138, 1 session); D3.b (centered χ_P with parity bias subtracted Toeplitz BDJ — should match BDJ universal limit modulo q≥3 spikes; predicts m_4 → 8/3; falsifier-rich and decisive, 1 session); D3.c (Markov-matrix variant γ_M with zero row-sums constraint, 1-2 sessions). All three use cross-domain ingredients (BDJ + Liouville/Möbius / Goldbach-spike-removal / Markov LSD γ_M) NOT used in S204; non-duplicative. **Channelled mathematician**: Bryc / Voiculescu (operator-algebra free probability rigour); Hammond-Miller (Toeplitz LSD combinatorics). See `experiments/constructions/bdj_toeplitz_hankel_chi_p/`, `archive/sessions/session204_d3_bdj_toeplitz_hankel.md`. | 204 |
+    830	
+    831	| S201 critique — audit of S193-S200 batch (Connes amortisation S193-S196 + ACSV wild_swing S197 + re-verify E1.5 S198 + F1.a cross-modulus S199 + spike specificity paradigm-shift S200) — does the batch contain inflated grades, mis-cited edges, missing CLOSED_PATHS rows, or duplicate `novel/` placements? | CRITIQUE | C | Per-artefact verification of eight production-equivalent sessions. **Zero new demotions, zero inflations caught**: all eight self-grades honestly placed within ±half a band (six B confirmed, one B-at-lower-edge confirmed S200, one C confirmed S198). **Independent proof verification of S197**: step (iii) `p + pT = p(1+T)` non-periodicity argument rechecked and confirmed correct; classical citations Pólya-Carlson/Stanley/Furstenberg-Lipshitz verified to be real theorems with cited content; assembly is logically sound. **Internal-consistency check of S195 σ² heuristic**: at K=√x, σ ≈ x^{1/4}/√(8π²) ≈ 0.11·x^{1/4} (consistent with Riemann-von Mangoldt √x·log²x error envelope); at K=x, σ ≈ 1 (consistent with K=Θ(x) for unit error). The heuristic is dimensionally and asymptotically self-consistent. **S197 wild_swing override interaction with .commit_state**: the Connes thread slot 5/5 WRAP synthesis was NOT executed; .commit_state shows `sessions_used:5, status:in_progress, next_action: WRAP`. Recommendation: harness mark Thread 2 DONE without consuming slot 5, or fire commit-mode once more to formally close. **Citations audit**: E7.21 added correctly (EDGES.md line 4316); E1.3 inline S199 annotation (line 218); E1.5 inline S198 sharpening "linear→constant" (line 295) plus scope-of-closure clarification (line 323); E2.1 inline S200 specificity annotation (line 728); E3.1 refinements via S193 setup-cost framing + S196 variance-additivity. CLOSED_PATHS rows 810/814/816/818/820/822 verified for S193/S196/S195/S194/S197/S198. **S199 and S200 did not file CLOSED_PATHS rows** — both are inline EDGES.md refinements (E1.3 and E2.1) per CLAUDE.md File-Placement rules; this is correct policy not an omission. **A-grade scarcity escalated**: S147 flagged 0/N; S163 flagged 0/20; S192 flagged 0/30; **S201 flags 0/40 across four consecutive critique-windows**. The frontier-saturation pattern persists at maximal severity: every wild_swing closes at mode E or I via classical-result-citation closures (E7.21 = Pólya-Carlson + finite-singularity D-finite + Furstenberg-Lipshitz). The harness has continued to select commit/refinement/paradigm-shift modes despite four critique-window recommendations to attempt §A.A7 plethysm sub-frame OR §D.D48 BC endomotive Galois-orbit (highest-A-prior open vectors with un-imported cross-domain ingredients). **Recommended next-action**: (1) §A.A7 plethysm sub-frame (cost 2-3 sessions; first session can compute plethysm coefficients for n=4,5 via SYMMETRICA); (2) §D.D48 BC endomotive Galois-orbit (cost 1-2 sessions, distinct from CCM spectral triple at S53/E3.1); (3) housekeeping — Thread 2 WRAP slot 5/5 synthesis if commit fires (C-grade, .commit_state hygiene). **Meta-pattern escalation**: this is the **fourth** consecutive critique flagging the same A-grade scarcity issue without harness response. The framework is producing disciplined honest B-grade work but no breakthrough attempts have been selected. CLAUDE.md "≥ 2 F-grade sessions" escalation threshold NOT hit, but four-window recurrence of same recommendation is a meta-pattern exceeding normal CLAUDE.md tolerance — flagged for user awareness. **No edits to EDGES.md, NOVELTY_CHALLENGES.md, ATTACK_VECTORS.md, RESEARCH_AGENDA.md, or CROSS_DOMAIN_TECHNIQUES.md** (no demotions; A7/D48 recommendations are continuations of S163/S192 picks). See `archive/ephemeral/critique_latest.md`, `archive/sessions/session201_critique.md`. | 201 |
+    832	
+    833	| §C9.b NOVELTY_CHALLENGES — Higher-moment composition: T_Q autocorrelation matches truncated Hardy-Littlewood twin-prime singular series at any squarefree-conductor cutoff Q? Test `<T_Q(n) T_Q(n+h)>_n,connected = (π(N)/N)² · (S_Q(h) − 1)` where `S_Q(h) = Σ_{q sqf ≤ Q} μ²(q)/φ²(q) c_q(h)` and `T_Q` is the S191 / C9 pointwise spike approximator. (cross-domain: NONE beyond S191 — Hardy-Littlewood 1923 *Acta Math.* 44 §4; Wintner 1944 *Eratosthenian averages* — used only as comparison textbook value) | BUILT | I | S205 construction-mode session composing E2.1 + E2.2 + E2.13 + E1.6 + C9 / S191. **Identity verified at d ∈ {16, 18, 20}** with precision ≈ 0.5 % uniformly across 14 shifts h ∈ {0, 1, ..., 12, 30, 210} × 8 conductors Q ∈ {2, 6, 13, 18, 30, 210, 1024 (= √N at d=20), 2310}. **F1 (identity) PASS within 0.6 %** — two orders of magnitude tighter than the pre-stated [0.85, 1.15] band. **F2 (HL recovery at Q = √N): PASS within 0.2 %** for all even h tested (h=2 ratio 1.00133 at d=20, Q=1024; h=6 0.99964; h=12 1.00004; h=30 1.00037; h=210 1.00168). **F3 (odd-h asymptote → 1) PASS within 0.03 %** (h=1 ratio 1.00019, h=3 1.00014, h=5 0.99977 at d=20, Q=1024). **F4 (h=0 self-consistency, recovers C9 / S191 single-point L²): PASS within 0.01 %** (Var(T_Q) = (π/N)² · (S_Q(0) − 1) holds at every Q to < 0.0001). **F5 (prime correlation matches HL): PASS within ~6 %** at d=20 (standard finite-N for the small absolute counts of (n, n+h) prime pairs at this scale). **Closed-form identity:** `R_h^conn(Q, N) := ⟨T_Q(n) T_Q(n+h)⟩_n − ⟨T_Q⟩² = (π(N)/N)² · (S_Q(h) − 1) + O(N^{-1+ε})` from Ramanujan-Fourier diagonal selection. **What's new beyond E2.13:** E2.13 is the **four-point cube** `U^2`/HL match with `S_2 = 2.300938`; this construction is the **two-point shift** companion, with explicit pointwise function realising the identity at any conductor Q at `O(N · |H| + Q · ω · N)` cost. The two-point identity is independent observable from the cube. **What's new beyond C9 / S191:** S191 is single-point L²; this is the two-point shift, recovering S191 as the h=0 diagonal. Refines E2.1 (single-point spike → two-point spike correlation), refines E2.2 (parity sign embedded in q=2 term of S_Q(h)), composes with E1.6 (parity bisection inherited at q=2), refines E2.13 (cube → two-point). **No polylog opening** — cost is `O(N · |H|)`, same order as direct prime correlation; structural, not algorithmic. EDGES.md E2.13 / E2.1 annotated. **Successors (S205):** C9.b.i (cross-conductor off-diagonal explicit form, 1 session); C9.b.ii (triple correlation `<T_Q · shift_{h1} · shift_{h2}>` to bridge S205 two-point ↔ E2.13 cube via k-point sequence, 1-2 sessions); C9.b.iii (Lean formalisation of the one-line two-point identity proof, 2-3 sessions). **Falsifier**: any (Q, h) cell with `R_h^conn(Q, N) / [(π/N)² (S_Q(h) − 1)]` outside [0.85, 1.15] at d ≥ 18 — empirically falsified to < 0.6 % across 14×8 = 112 cells. OR exhibition of polylog evaluation of `R_h(Q, N)` at Q = √N as primality-pair witness — would resolve polylog π(x). See `experiments/constructions/spike_pointwise_HL_correlation/`, `archive/sessions/session205_c9b_tq_HL_correlation.md`. | 205 |
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md <<'EOF'
+
+| §C9.a NOVELTY_CHALLENGES — Divisor-only restriction at primorial Q: does `M_W^{div}(n) := Σ_{q | W, q sqf} mu(gcd(q,n)) / phi(q/gcd(q,n))` admit an exact pointwise closed form? (cross-domain: NONE; project-internal Möbius collapse + Hölder-reduced Ramanujan sum) | BUILT | E | S208 novelty-mode session refining E2.1 / S191 / C9. **Theorem (S208, proven analytically; verified pointwise to machine epsilon at N ≤ 10⁶ across 10 conductors).** For every squarefree integer W ≥ 1 and every positive integer n, `M_W^{div}(n) = [gcd(n, W) = 1] · W / phi(W)`. For non-squarefree W, the identity holds with W replaced by rad(W). **Proof**: factorise the squarefree-divisor lattice of W by intersection with `{p|W : p|n}`; the alternating-sum collapse `Σ_{A⊆P_n}(-1)^|A| = [P_n = ∅]` factors out, leaving `∏_{p|W} p/(p-1) = W/φ(W)` on the coprime branch. **Empirical verification**: 10 conductors `W ∈ {2, 6, 30, 210, 2310 (primorials); 15, 105 (squarefree non-primorial); 12, 60, 420 (non-squarefree, rad ∈ {6, 30, 210})}` × `N ∈ {10⁵, 10⁶}`. F1/F2/F3 (pointwise identity at squarefree primorial / squarefree non-primorial / radical-reduced non-squarefree): max abs_err 8.88·10⁻¹⁶ (machine epsilon). F4 (mean = 1): all in [0.999997, 1.000000]. F5 (L² closed form `||T_W^{div} − chi_P||²/N` matches explicit prime-distribution count `(n_coprime_primes (T_val−1)² + n_coprime_comp T_val² + n_W) / N` with `T_val = (π(N)/N) · W/φ(W)`): rel_err < 10⁻⁹ on every cell. F6 (Pearson_full > Pearson_div for W ∈ {6, 30, 210, 2310}): PASS, gap = 0.028, 0.089, 0.177, 0.281 respectively at N=10⁵; gap = 0 at W=2 because the only squarefree integers ≤ 2 are exactly the divisors of 2. **Algorithmic consequence**: T_W^{div}(n) is informationally equivalent to a wheel-rad(W) sieve scaled by π(N)/N · rad(W)/φ(rad(W)); the divisor-only restriction inherits all sieve barriers (no polylog opening). The Pearson gap to full T_W locates the prime-discriminating signal in the **non-divisor squarefree conductors** q ≤ W (q squarefree but q ∤ W), capturing 31% of the full Pearson at W=2310. **What's new beyond S191 (C9)**: S191 stated only the corollary at coprime n (`T_W | gcd=1 = (π/N)·W/φ(W)`); S208 proves the identity **on the full domain** (zero at non-coprime n) for all squarefree W, with explicit radical reduction for non-squarefree W. **Refines E2.1**: the wheel-density factor φ(W)/W is now the value of an explicit pointwise scalar field, not merely an asymptotic rank quotient. **Cross-domain ingredient**: NONE; project-internal one-line Möbius collapse. **Falsifier**: any (W, n) with `M_W^{div}(n) ≠ [gcd(n, rad(W)) = 1] · rad(W)/φ(rad(W))` by more than 10⁻¹², OR mean ⟨M_W^{div}⟩_n ≠ 1 ± O(1/N), OR Pearson(chi_P, T_W) ≤ Pearson(chi_P, T_W^{div}) at any W ≥ 6, OR L² closed form deviates by more than rel_err 10⁻⁹. None observed across 10 W × 2 N cells. **Successors proposed (S208)**: C9.a.i (off-divisor squarefree expansion: decompose 0.281 Pearson gap at W=2310 by conductor q; predicted Selberg-Delange `~1/φ(p)²` per prime contribution, 1 session); C9.a.ii (Lean formalisation of the divisor-only identity via L6 Hölder reduction + Möbius collapse, ~50-line Lean target, 1 session); C9.a.iii (Λ-modulated divisor-only sum `μ²(q)λ(q)c_q(n)/φ(q)` — does the parity-twisted weight also yield a closed-form scalar on the residue lattice mod W?, 1 session). See `experiments/constructions/spike_divisor_only_wheel/`, `archive/sessions/session208_c9a_divisor_only_wheel.md`. | 208 |
+EOF
+    (Bash completed with no output)
+Now write the session synthesis and update RESEARCH_AGENDA briefly.
+  [Write] /apps/aplikacijos/prime-research/archive/sessions/session208_c9a_divisor_only_wheel.md
+    File created successfully at: /apps/aplikacijos/prime-research/archive/sessions/session208_c9a_divisor_only_wheel.md
+  [Read] /apps/aplikacijos/prime-research/RESEARCH_AGENDA.md
+    1	# Research Agenda — Long-Horizon Arcs
+    2	
+    3	This file holds **multi-session research arcs**. Each arc is a research
+    4	direction that takes more than one session to pursue. Arcs survive
+    5	across sessions, accumulate state, and have explicit next-actions.
+    6	
+    7	This file is for *continuity*. NOVELTY_CHALLENGES.md is for *targets*.
+    8	EDGES.md is for *verified facts*. CLOSED_PATHS.md is for *failures*.
+    9	
+    10	---
+    11	
+    12	## Active arcs
+    13	
+    14	### Arc 1 — Four-Barriers Paper (synthesis) [renamed from Three-Barriers post-S116]
+    15	**Status:** NOT STARTED
+    16	**Owner:** any agent who picks it up
+    17	**Goal:** A paper-grade unification of E7.6 + E7.10 + E5.8 + E7.11 + E7.14
+    18	into a single negative-result manuscript. See `NOVELTY_CHALLENGES.md` §5.S1.
+    19	
+    20	**Milestones:**
+    21	- [ ] Outline the FIVE sections (one per closure family).
+    22	- [ ] Write precise statement of each family-level closure as a theorem
+    23	  (E7.6 = sieve / pebbling; E7.10 = AKS modulus-twist orthogonality;
+    24	  E5.8 = Brandt structural-welding; E7.11 = convergence-acceleration
+    25	  exhaustion; **E7.14 = Maynard sieve aggregate-not-pointwise +
+    26	  divisor-enumeration sub-poly**).
+    27	- [ ] Write a unified introduction framing the five as "structural
+    28	  barriers to polylog π(x)".
+    29	- [ ] Cross-reference with Williams-Hirahara, Razborov-Rudich,
+    30	  Bombieri-Vinogradov, the Aggarwal optimum.
+    ... (20 more lines)
+RESEARCH_AGENDA doesn't need an update — this is a single-session refinement, not part of an active multi-session arc. Run the cleanup check.
+  [Bash] cd /apps/aplikacijos/prime-research && find experiments/constructions/spike_divisor_only_wheel -name "*.py" | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo "MISSING: $r"; done; find experiments/ -name "__pycache__" -type d 2>/dev/null
+    experiments/constructions/brandt_mktp/__pycache__
+    experiments/sieve/maynard_weight_pointwise/__pycache__
+    experiments/circuit_complexity/sat_tc0_primes_n8/__pycache__
+  [Bash] find /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null; ls /apps/aplikacijos/prime-research/experiments/constructions/spike_divisor_only_wheel/
+    definition.md
+    spike_divisor_only.py
+    spike_divisor_only_results.json
+    spike_divisor_only_results.md
+    spike_divisor_only_results_N1e6.json
+  [Bash] echo 209 > /apps/aplikacijos/prime-research/.run_state && cat /apps/aplikacijos/prime-research/.run_state
+    209
+  [TodoWrite] 
+    Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+Also need to update the SESSION_INSIGHTS file per CLAUDE.md.
+  [Bash] tail -30 /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+    ### Why not C
+    
+    Not duplicate-only: produced (1) edge E2.32 with quantitative
+    scaling law `z ≈ √(log p)`, (2) closed §D9 with structural
+    mechanism, (3) W=6 control distinguishes unique-factorisation from
+    coprime-to-6 sieving. Three measurements not previously in the
+    project.
+    
+    ### Successor proposals (per CLAUDE.md self-extension)
+    
+    - (D9.a) Sum-product on the Liouville-supported set (λ(n) = +1
+      integers; pairs with G1/G2 Liouville edges E2.18, E2.25). Single
+      session. Likely B-grade.
+    - (D9.b) Sum-product on χ_P mod fixed q (Dirichlet residue
+      isolation; cross-domain: Dirichlet character orthogonality). 1-2
+      sessions. Likely B-grade.
+    
+    ### Files
+    
+    - experiments/algebraic/sum_product_chi_p_BGK/sum_product_chi_p.py
+    - experiments/algebraic/sum_product_chi_p_BGK/sum_product_chi_p_results.md
+    - experiments/algebraic/sum_product_chi_p_BGK/results_v3_small.json
+    - experiments/algebraic/sum_product_chi_p_BGK/results_v3_1M.json
+    - archive/sessions/session207_d9_bgk_sum_product.md
+    - ATTACK_VECTORS §D.D9 → "Closed attacks"
+    - CROSS_DOMAIN_TECHNIQUES §7 BGK row PROPOSED → USED-E
+    - EDGES.md §E2.32 (new)
+    - status/CLOSED_PATHS.md (new row in Additive Combinatorics section)
+  [Bash] cat >> /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md <<'EOF'
+
+## Session 208 — C9.a divisor-only restriction of M_Q at squarefree W
+
+**Mode**: novelty (B-grade).
+**Self-grade**: **B**.
+
+### Result
+
+Closed-form theorem with full-domain pointwise verification:
+
+> For every squarefree integer `W ≥ 1` and every positive integer `n`,
+>
+>   `M_W^{div}(n) := Σ_{q | W, q sqf} mu(gcd(q,n)) / phi(q/gcd(q,n)) = [gcd(n, W) = 1] · W / phi(W)`.
+>
+> For non-squarefree `W`, replace `W` by `rad(W)`.
+
+Proof: a one-line Möbius collapse `Σ_{A ⊆ P_n}(-1)^|A| = [P_n = ∅]`
+factorising the squarefree-divisor lattice of `W`. Verified pointwise
+to machine epsilon (`abs_err ≤ 8.88·10⁻¹⁶`) at 10 conductors `W ∈
+{2, 6, 30, 210, 2310, 15, 105, 12, 60, 420}` and `N ∈ {10⁵, 10⁶}`.
+F1–F5 all PASS; F6 PASS for `W ≥ 6` (gap = 0 at W=2 is structural).
+
+### Why this is B not A
+
+A-bar requires content a paper-grade NT theorist could not derive in
+an afternoon from CLOSED_PATHS + EDGES alone. The S208 closed form is
+straightforwardly derivable in 30 minutes from S191's framing — the
+algebraic content is a single Möbius collapse over a Boolean lattice.
+No cross-domain import. **B-grade refinement of E2.1 / S191 / C9.**
+
+### Why not C
+
+Not duplicate-only: produced (1) closed-form pointwise identity on
+the **full domain** (S191 had only the coprime-cosets corollary), (2)
+explicit L² closed form via prime-distribution count (rel_err <
+10⁻⁹), (3) Pearson-gap decomposition isolating prime-discriminating
+content beyond wheel admissibility to non-divisor squarefree
+conductors `q ≤ W`, (4) radical reduction for non-squarefree `W`.
+Four new measurements/identities.
+
+### Successor proposals (per CLAUDE.md self-extension)
+
+- **C9.a.i** Off-divisor squarefree expansion: decompose 0.281
+  Pearson gap at W=2310 by conductor, predict `~1/φ(p)²` per prime
+  (Selberg-Delange). 1 session.
+- **C9.a.ii** Lean formalisation of the divisor-only identity (~50
+  lines via L6 Hölder reduction + Möbius collapse). 1 session.
+- **C9.a.iii** Λ-modulated divisor-only sum `μ²(q)λ(q)c_q(n)/φ(q)`
+  — does the parity-twisted weight yield a closed-form scalar? 1
+  session.
+
+### Files
+
+- experiments/constructions/spike_divisor_only_wheel/definition.md
+- experiments/constructions/spike_divisor_only_wheel/spike_divisor_only.py
+- experiments/constructions/spike_divisor_only_wheel/spike_divisor_only_results.md
+- experiments/constructions/spike_divisor_only_wheel/spike_divisor_only_results.json
+- experiments/constructions/spike_divisor_only_wheel/spike_divisor_only_results_N1e6.json
+- archive/sessions/session208_c9a_divisor_only_wheel.md
+- NOVELTY_CHALLENGES.md C9.a marked BUILT with three successor challenges
+- EDGES.md E2.1 inline annotated (S208 paragraph)
+- status/CLOSED_PATHS.md (new row)
+EOF
+    (Bash completed with no output)
+  [Bash] ls /apps/aplikacijos/prime-research/archive/sessions/ | grep -E 'session20[5-9]_' | sort
+    session205_c9b_tq_HL_correlation.md
+    session206_lean_w11_atomicity.md
+    session207_d9_bgk_sum_product.md
+    session208_c9a_divisor_only_wheel.md
+All artefacts in place. Session summary:
+
+**S208 (B-grade, novelty mode) — C9.a divisor-only restriction of M_Q at squarefree W.**
+
+Proved the closed-form identity `M_W^{div}(n) = [gcd(n, rad(W)) = 1] · rad(W)/φ(rad(W))` analytically (one-line Möbius collapse on the squarefree-divisor lattice of W) and verified it pointwise to machine epsilon across 10 conductors × 2 N scales. All six pre-stated falsifiers pass; the L² closed form `||T_W^{div} − chi_P||²/N` matches the explicit prime-distribution count to rel_err < 10⁻⁹. Pearson-gap decomposition shows the divisor-only restriction captures only 69% of the full T_W's prime-discriminating signal at W=2310 — locating the remaining content in the *non-divisor* squarefree conductors q ≤ W. Refines E2.1 inline (φ(W)/W is now the value of an explicit pointwise scalar field, not merely an asymptotic rank quotient). CLOSED_PATHS row added; three successor challenges (C9.a.i/ii/iii) proposed. .run_state set to 209.
+--- Session ended ---
+Sleeping 60 seconds before next run...
