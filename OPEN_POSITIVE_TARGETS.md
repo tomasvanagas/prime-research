@@ -207,7 +207,7 @@ is a stronger / less-studied hypothesis than RH + Montgomery.
 `experiments/analytic/batched_pi_h/slot3_q_truncation_results.md`, and
 `archive/sessions/session421_commit_p2_theorem_wrap.md`.
 
-### P3 — Approximate π(x) with bounded error in polylog time [Thread 7 ACTIVE]
+### P3 — Approximate π(x) with bounded error in polylog time [Thread 7 CLOSED-CONDITIONAL at S244]
 **Problem:** what is the smallest ε(x) such that there is a polylog
 algorithm computing π(x) ± ε(x)? The Riemann smooth approximation
 R(x) gives ε ≈ √x. Can polylog buy ε = O(x^{1/2-δ}) for some δ > 0?
@@ -604,6 +604,15 @@ CLOSED.
 heuristics, is polylog π(x) achievable for *typical* x (i.e., on a
 density-1 set, with a measurable exception set)?
 
+**⚠ S491 duplication warning:** the explicit-formula route to P6 is
+already closed by the S202 unified theorem — `K*(x, p, h) = Θ̃(x)` for
+any in-distribution success probability p ∈ (0, 1) IS the typical-x
+statement for the zero-sum path, and the per-query obstructions
+(Threads 1–4) block the other pillars regardless of the x-distribution.
+Any future P6 attempt must either name a route that is neither
+explicit-formula nor sieve/pillar-based, or close this entry as a
+duplicate of S202. Do not spend a commit thread here without that.
+
 **Why partial-positive plausible:** the probabilistic-prime-model
 uncertainty around π(x) might be polylog-extractable for "average"
 x even if worst-case is not.
@@ -729,7 +738,20 @@ Aggarwal on a concrete benchmark.
 
 ## §5. Incidence-Geometric Variants
 
-### P11 — Minimum number of straight lines covering all primes ≤ N under a 2D embedding [Thread 11 ACTIVE]
+### P11 — Minimum number of straight lines covering all primes ≤ N under a 2D embedding [Thread 11 CLOSED-B at S488 — partial-positive structural]
+
+**Status: CLOSED-B at S488 (5 slots, S484–S488).** Headline results:
+(i) the Ulam-spiral LP line-cover ratio `LP_p/LP_r ≈ 0.776 ± 0.006` is
+stable across SIX orders of magnitude (N ∈ [10³, 10⁶]) — the first
+LP-tight incidence-geometric structural fact about primes in the
+project, with 69% of LP weight on HL-rich slope-±1 diagonals; (ii) the
+compression is FRACTIONAL only — the integer cover ratio drifts to 1
+with N (no integer algorithmic content); (iii) residue/polynomial-image
+embeddings realise the wheel sieve geometrically (LP-tight, gap 1);
+(iv) no closed form for the constant 0.776 — it is an LP-equilibrium
+quantity, not a named HL constant (naive 1/⟨HL⟩ = 0.495 refuted).
+See `.commit_state` (archived in slot summaries), S484–S488 syntheses,
+`experiments/` p11_* files.
 
 **Problem:** under a chosen 2D embedding `Φ: ℕ → ℝ²` (Ulam spiral,
 residue-class grid, polynomial-image grid), let `L_Φ(N)` = the minimum
@@ -796,6 +818,83 @@ probability if HL alignment provides asymptotic compression beyond
 random-point baseline.
 
 **Budget:** 5-session commit thread.
+
+---
+
+## §6. Verification Variants
+
+### P12 — Succinct verification of π(x): sublinear verifier, untrusted prover [Thread 12 ACTIVE, injected S491]
+
+**Problem:** an untrusted prover who performed the Θ̃(x)-or-worse
+computation convinces a verifier of the exact value of π(x) (or a
+π-adjacent count) at *sublinear* verifier cost. Two soundness regimes:
+(a) **unconditional** — interactive sum-check/GKR, information-theoretic
+soundness, the project-preferred regime; (b) computational — Fiat-Shamir
+/ SNARK, succinct non-interactive certificate.
+
+**Why this is new after 491 sessions:** every prior thread attacked the
+COMPUTATION complexity of π(x). This is the first attack on its
+VERIFICATION complexity. The barrier paragraph ("~50% of digits are
+GUE-random, information-theoretically incompressible") constrains
+computing the bits from scratch; it says nothing about *checking* bits
+produced by someone who did the work. The S18 row ("Sumcheck /
+arithmetization of pi(x)") and S48 row ("Multilinear extension of χ_P")
+closed sum-check as a *computation* route — their objections (dense MLE
+of χ_P; prover needs the breakthrough) dissolve in the verification
+frame, where the prover is allowed Θ̃(x) work and the verifier never
+touches the χ_P truth table. Scope-correction row filed at S491.
+
+**S491 proof-of-concept (already built, runs):**
+`experiments/constructions/p12_sumcheck_pi_verification/` — sum-check
+verification of partial-sieve counts Φ(2ⁿ, P) with verifier
+`O(n·Σ_{p∈P} p)` field ops via the **automaton-MLE primitive**: the
+multilinear extension of [w ≡ 0 mod p] is evaluable at an arbitrary
+field point in O(n·p) by a residue-automaton transfer DP — the
+structured-predicate escape from the S48 density obstruction. Measured:
+exact count match at n = 20, **100/100 adaptive cheating provers
+rejected** (bound n·k/q ≈ 5×10⁻⁸), < 1 KB communication, verifier
+milliseconds while prover scales Θ(2ⁿ).
+
+**The gap that defines the thread:** π(x) itself needs the full wheel
+{p ≤ √x}, making the naive verifier final-check Õ(x/log x) — worse than
+recomputing. Routes to close it: (A) layered GKR arithmetization of the
+compositeness OR-tree; (B) **native protocol for the Meissel-Lehmer /
+Lucy_Hedgehog DP** — prover commits to the O(√x) floor-value table,
+verifier sum-checks recursion consistency; target unconditional
+verifier Õ(√x). Route B succeeding would be a new structural fact about
+the counting DP, not a literature corollary.
+
+**Cross-domain ingredients:** LFKN 1992 (sum-check), Goldwasser-Kalai-
+Rothblum 2008 (doubly-efficient delegation), Cormode-Mitzenmacher-
+Thaler 2012, Thaler *PAZK*. No prior art found on succinct verification
+of prime counting specifically (S491 search; consistent with S48 scan).
+
+**A-grade outcomes:**
+- (a) working protocol verifying exact π(x) at concrete x with verifier
+  cost below recomputation at matched unconditional soundness — the
+  verification analogue of S224 (criterion (b)+(d));
+- (b) native Õ(√x)-verifier protocol for the Meissel-Lehmer/Lucy DP —
+  new structural fact about the recursion;
+- (c) automaton-MLE classification theorem: which sieve predicates
+  admit O(n·W) low-degree-extension evaluation, with primality provably
+  outside (ties to E2.1) — new edge.
+
+**Pre-stated falsifiers / failure profiles:**
+- (B-grade, route A) the OR-tree wiring MLEs cost Ω(x^c) for the
+  verifier — quantify the exact achievable exponent and close route A.
+- (B-grade, route B) the Lucy/ML DP transitions (floor divisions,
+  data-dependent branching) admit no low-degree consistency structure —
+  itself a new negative-shape edge about the DP.
+- (C-grade) everything reduces to "GKR applied to a P-uniform circuit,"
+  no number-theoretic structure exploited and no benchmark won.
+
+**Predicted closure mode:** B (the generic-GKR theorem is literature-
+derivable; route B is a real open design question with maybe 20-25%
+A-probability; the benchmark target (a) is reachable if either route
+lands).
+
+**Budget:** 5-session commit thread (Thread 12). Slot plan in
+`.commit_state`.
 
 ---
 

@@ -6904,6 +6904,12 @@ spaced x's, sharing little of K_per_x_evaluation).
 
 ### H4 — Minimum line cover of primes under 2D embeddings (Thread 11)
 
+**Status: CLOSED-B at S488 (partial-positive structural).** LP-tight
+fractional separation `LP_p/LP_r ≈ 0.776` stable across N ∈ [10³, 10⁶]
+(69% of LP weight on HL-rich slope-±1 Ulam diagonals); integer-cover
+ratio drifts to 1 (no integer algorithmic content); no closed form for
+the constant. See OPEN_POSITIVE_TARGETS.md §P11 and S484–S488 syntheses.
+
 **Question:** under a chosen 2D embedding `Φ: ℕ → ℝ²`, what is the
 minimum number of straight lines `L_Φ(N)` required to cover all
 points `Φ(p)` for primes `p ≤ N`? Is `L_Φ(N) ~ π(N)^α` for some
@@ -6955,6 +6961,59 @@ constant-factor Bertrand-style alignment.
 **Budget:** 5-session commit thread (Thread 11). See `.commit_state`
 for the slot-by-slot plan and `OPEN_POSITIVE_TARGETS.md` §P11 for
 the canonical formulation.
+
+---
+
+### H5 — Succinct verification of π(x): the verification-complexity frontier (Thread 12)
+
+**Question:** what is the minimal VERIFIER cost for the exact value of
+π(x), when an untrusted prover is allowed Θ̃(x)-or-worse work? Polylog
+with computational soundness; what unconditionally?
+
+**Why frontier:** first attack in 491 sessions on the verification
+complexity of π(x) rather than its computation complexity. The
+information-theoretic barrier (GUE-random digits) constrains computing
+bits from scratch, not checking bits produced by a prover who did the
+work. The S18/S48 sumcheck closures attacked the truth-table-MLE layer
+under the computation goal; both objections dissolve in the
+verification frame (scope-correction row filed S491).
+
+**Already demonstrated (S491 PoC):** unconditionally-sound sum-check
+verification of partial-sieve counts Φ(2ⁿ, P) with verifier
+`O(n·Σ_{p∈P} p)` — polylog for polylog wheels — via the automaton-MLE
+primitive (MLE of [w ≡ 0 mod p] evaluable in O(n·p) by residue-automaton
+transfer DP). Exact count match, 100/100 adaptive cheaters rejected,
+< 1 KB communication.
+`experiments/constructions/p12_sumcheck_pi_verification/`.
+
+**Cross-domain ingredient:** verifiable computation / doubly-efficient
+interactive proofs — LFKN 1992, GKR 2008 (*STOC*), Cormode-Mitzenmacher-
+Thaler 2012, Thaler *Proofs, Arguments, and Zero-Knowledge*. First
+substantive project use of this field.
+
+**Concrete open gap:** full π(x) needs wheel primes ≤ √x → naive
+verifier final-check Õ(x/log x). Route A: layered GKR over the
+compositeness OR-tree. Route B: native sum-check consistency protocol
+for the Meissel-Lehmer / Lucy_Hedgehog DP table (target: unconditional
+verifier Õ(√x) for exact π(x)) — a new structural fact about the
+counting DP if it lands.
+
+**A-grade success:** working protocol verifying exact π(x) at concrete
+x with verifier cost below any recomputation at matched unconditional
+soundness; or the route-B native-DP theorem; or the automaton-MLE
+classification theorem (which sieve predicates admit O(n·W) low-degree-
+extension evaluation; primality provably outside via E2.1).
+
+**Failure profile (B-grade):** wiring-MLE cost lower bounds for route A
+(named exponent), or no low-degree consistency structure in the Lucy/ML
+DP for route B — either is a new negative-shape edge.
+
+**Predicted failure mode:** C-collapse risk is "GKR applied to a
+P-uniform circuit, nothing number-theoretic" — guard by requiring the
+protocol to exploit sieve/DP structure, not generic circuits.
+
+**Budget:** 5-session commit thread (Thread 12). Slot plan in
+`.commit_state`; canonical formulation in OPEN_POSITIVE_TARGETS.md §P12.
 
 ---
 
