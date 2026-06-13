@@ -107,6 +107,37 @@ import leaf_open as _lo
 
 
 # ----------------------------------------------------------------------
+# verifier large-table-eval accounting (S507): the op-count curve
+# ----------------------------------------------------------------------
+# The ONLY verifier operation whose per-call cost is Theta(2^nb) = Theta(sqrt x)
+# is the direct MLE evaluation of a committed sqrt x-size table (mle_eval -- a
+# "leaf opening").  Every OTHER verifier step in the chain -- the sum-check
+# round-poly checks, the eq_point / le_eval / band_eval point evals, the
+# delegated wiring carry chain (O(nb log p)), and the batched-discharge MLE
+# recomputes (O(K polylog)) -- costs O(polylog) or O(K polylog) and so is bounded
+# by Õ(sqrt x) over the whole K = pi(sqrt x)-layer chain.  Therefore the LEADING
+# term of the whole-chain verifier cost IS the count of these large-table evals,
+# weighted by table size.  _acct_vleaf tallies them, split into the PER-LAYER
+# critical path (which scales with K ~ sqrt x / ln) vs the ONE-TIME terms (the
+# two S_0 base closes), so a single run exposes whether the leading term is
+# Theta(x) (per-layer leaf opens: K * sqrt x) or Theta(sqrt x) (one-time only).
+# Keys: vleaf_ops_pl / vleaf_ops_ot (summed table sizes = field-ops touched, up
+# to a constant), vleaf_cnt_pl / vleaf_cnt_ot (eval counts).  The wall-clock
+# t_verifier is a misleading proxy (the dominant sum-check FOLDING is untimed
+# prover work, S501, and vectorised numpy hides the asymptotics, S506) -- this
+# op count is the honest headline.
+
+def _acct_vleaf(stats, size, onetime=False):
+    """Account ONE verifier large-table (O(size)) evaluation toward the op-count
+    curve.  size = len(table), the field-ops a direct mle_eval touches up to a
+    constant.  onetime=True buckets it as a chain-level one-time term (the S_0
+    base closes); otherwise it is per-layer critical-path work (scales with K)."""
+    suf = "ot" if onetime else "pl"
+    stats["vleaf_ops_" + suf] = stats.get("vleaf_ops_" + suf, 0) + int(size)
+    stats["vleaf_cnt_" + suf] = stats.get("vleaf_cnt_" + suf, 0) + 1
+
+
+# ----------------------------------------------------------------------
 # the compressed Lucy_Hedgehog DP (prover substrate), all layers, exact
 # ----------------------------------------------------------------------
 
@@ -327,6 +358,7 @@ def verify_affine_region(S_large, r_v, claimed, p, ecut, nb, rng, stats,
     if not pcs:
         t0 = time.perf_counter()
         ok_open = s2 == mle_eval(S_large, r_u, q)
+        _acct_vleaf(stats, len(S_large))                    # per-layer leaf open
         stats["t_verifier"] += time.perf_counter() - t0
         if not ok_open:
             return False, None, None
@@ -362,7 +394,8 @@ def verify_affine_region(S_large, r_v, claimed, p, ecut, nb, rng, stats,
 
 
 def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
-                        skip_constraints=False, pcs=False):
+                        skip_constraints=False, pcs=False, ub_defer=None,
+                        layer_idx=0):
     """g1_trace = sum_{lo<=e<=hi} eq(r_v,e) S_small(floor(x/((e+1)p))).
     Certify every u_e by the step-1 trace zero-test, then route the masked
     small-side lookup. The band mask T(e)=[lo<=e<=hi] zeroes the affine /
@@ -410,6 +443,7 @@ def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
     okf = (finalB1 % q) == sB1["S"] * sB1["W"] % q
     if not pcs:
         okf = okf and sB1["S"] == mle_eval(S_small, r_B, q)  # opening of S_small
+        _acct_vleaf(stats, len(S_small))                     # per-layer leaf open
     stats["t_verifier"] += time.perf_counter() - t0
     if not okf:
         return False, None, None
@@ -432,14 +466,37 @@ def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
     stats["comm"] += (nb + 3) * nb
     if not okB2:
         return False, None, None
-    t0 = time.perf_counter()
-    expect = eq_point(r_v, r_C, q) * band_eval(r_C, lo, hi, nb, q) % q
-    for k in range(nb):
-        rb = int(r_B[k]) % q
-        ub = mle_eval(W["tabs"][f"Ub{jidx[k]}"], r_C, q)    # opening of Ub_j
-        expect = expect * (((1 - rb) % q) + ((2 * rb - 1) % q) * ub) % q
-    ok = (finalB2 % q) == expect
-    stats["t_verifier"] += time.perf_counter() - t0
+    if ub_defer is None:
+        t0 = time.perf_counter()
+        expect = eq_point(r_v, r_C, q) * band_eval(r_C, lo, hi, nb, q) % q
+        for k in range(nb):
+            rb = int(r_B[k]) % q
+            ub = mle_eval(W["tabs"][f"Ub{jidx[k]}"], r_C, q)    # opening of Ub_j
+            _acct_vleaf(stats, len(W["tabs"][f"Ub{jidx[k]}"]))  # per-layer leaf open
+            expect = expect * (((1 - rb) % q) + ((2 * rb - 1) % q) * ub) % q
+        ok = (finalB2 % q) == expect
+        stats["t_verifier"] += time.perf_counter() - t0
+        stats["ub_leaf_v"] = stats.get("ub_leaf_v", 0) + nb      # O(2^nb) VERIFIER evals
+    else:
+        # S506: defer the nb Ub openings -- the LAST per-layer O(2^nb) verifier
+        # term.  The prover supplies the Ub_{jidx[k]}~(r_C) scalars (t_prover); the
+        # verifier folds them into `expect` in O(nb) here and records
+        # (layer_idx, r_C, ub_claims) for ONE batched discharge after the layer
+        # loop (batched_trace.verify_ub_openings_batched), against the SAME stacked
+        # Ub cube the trace zero-test commits.  A forged ub_claim is caught there.
+        t0 = time.perf_counter()
+        ubs = [int(mle_eval(W["tabs"][f"Ub{jidx[k]}"], r_C, q)) % q
+               for k in range(nb)]                          # prover-supplied openings
+        stats["t_prover"] += time.perf_counter() - t0
+        stats["ub_leaf_p"] = stats.get("ub_leaf_p", 0) + nb     # now PROVER-side
+        t0 = time.perf_counter()
+        expect = eq_point(r_v, r_C, q) * band_eval(r_C, lo, hi, nb, q) % q
+        for k in range(nb):
+            rb = int(r_B[k]) % q
+            expect = expect * (((1 - rb) % q) + ((2 * rb - 1) % q) * ubs[k]) % q
+        ok = (finalB2 % q) == expect
+        stats["t_verifier"] += time.perf_counter() - t0
+        ub_defer.append((layer_idx, list(r_C), ubs))
     return ok, r_B, sB1["S"]
 
 
@@ -477,6 +534,7 @@ def line_batch_pair(S, pt0, val0, pt1, val1, nb, rng, stats, q=Q, pcs=False):
     new_pt = [((q + 1 - tstar) * int(a) + tstar * int(b)) % q
               for a, b in zip(pt0, pt1)]
     ok = ok and new_claim == mle_eval(S, new_pt, q)         # leaf close
+    _acct_vleaf(stats, len(S))                              # per-layer leaf open
     stats["t_verifier"] += time.perf_counter() - t0
     stats["comm"] += nb + 1
     return new_pt, new_claim, ok
@@ -499,6 +557,7 @@ def batch_on_table(S, claims, nb, rng, stats, q=Q, pcs=False):
     if len(claims) == 1:                                    # still anchor it
         t0 = time.perf_counter()
         ok = val == mle_eval(S, pt, q)
+        _acct_vleaf(stats, len(S))                          # per-layer leaf open
         stats["t_verifier"] += time.perf_counter() - t0
         return pt, val, ok
     ok = True
@@ -521,7 +580,8 @@ def pad(tab, nb, q=Q):
 
 def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
                  rng, stats, cheat=None, delegate=False, structured=False,
-                 q=Q, skip_trace=False, defer=None, pcs=False):
+                 q=Q, skip_trace=False, defer=None, pcs=False, ub_defer=None,
+                 layer_idx=0):
     """Reduce S~_i^large(z)=C to: a large point-claim (new_z,new_claim) on
     S_{i-1}^large (line-batched s1@r_v + s2_aff@r_u) and a small point-claim
     (r_B,s_B) on S_{i-1}^small (trace region). cheat in
@@ -598,7 +658,8 @@ def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
         W["tabs"]["U"][d] = (int(W["tabs"]["U"][d]) + 1) % q
     okTr, r_B, s_B = verify_trace_region(
         W, S_prev_small, r_v, g1_trace, lo, hi, nb, rng, stats, q,
-        skip_constraints=skip_trace, pcs=pcs)
+        skip_constraints=skip_trace, pcs=pcs, ub_defer=ub_defer,
+        layer_idx=layer_idx)
     if not okTr:
         return dict(accepted=False)
 
@@ -836,7 +897,7 @@ def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
 
 def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
               structured=False, q=Q, batch_trace=False, batch_wiring=False,
-              pcs=False):
+              pcs=False, batch_ub=False, commit_base=False, commit_code="rs"):
     """Chain all K layers from S_K^large(e=0)=pi(x) down to S_0 (opened on
     both sides). cheat='delta_pi' lies about pi(x); corrupt_layer=i0 is a
     self-consistent liar. delegate routes BOTH wirings (small division,
@@ -890,9 +951,44 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
     delta_pi / self-consistent liar are caught in phase-A round-1 (untouched by the
     leaf openings), so the verdict is preserved.  Default pcs=False keeps every
     prior artifact verbatim (the transcript is NOT bit-identical under pcs).
+
+    batch_ub (S506, requires pcs AND batch_trace): the ONE per-layer O(2^nb) verifier
+    term pcs leaves standing -- verify_trace_region's nb Ub-bit-table openings (the B2
+    routing's Ub_{Lv-nb+k}~(r_C), per-layer WITNESS data with no carried claim to
+    thread to the base) -- is DEFERRED via the `ub_defer` accumulator (the prover
+    supplies the scalars; the verifier folds them into its B2 `expect` in O(nb)) and
+    discharged in ONE degree-2 sum-check (batched_trace.verify_ub_openings_batched)
+    against the SAME stacked Ub cube batch_trace's zero-test commits.  The verifier-
+    side O(2^nb) Ub-leaf eval count drops from K*nb to 0 (moved to the prover); the
+    per-layer verifier is then leaf-eval-free, so the only O(sqrt x) verifier work
+    left is one-time (the two S_0 base closes + the batched discharges) -- the chain
+    verifier is honestly Õ(sqrt x) end-to-end.  Verdict unchanged (the same `expect`
+    check runs; a forged Ub opening is caught by the batched discharge, the chain
+    cheats by phase-A/base as before).
+
+    commit_base (S508): discharge the TWO one-time S_0 base closes -- the last
+    verifier work whose cost grows with x (each a direct O(2^nb)=O(sqrt x) mle_eval)
+    -- through the tensor / Ligero-Brakedown polynomial commitment (pcs_commit:
+    commit/prove/verify).  Its evaluation-proof VERIFIER is SUB-sqrt x
+    (O(t*(r+k)) ~ O(x^{1/4}) field-ops, tallied in stats['vcommit_ops']); the full
+    2^nb tables stay on the prover side.  With pcs+batch_trace+batch_ub this makes
+    the WHOLE-CHAIN verifier sub-sqrt x (polylog above sqrt x) -- the milestone's
+    full succinctness -- now under a collision-resistant-hash / random-oracle
+    assumption (vs the otherwise-unconditional Õ(sqrt x) verifier).  Verdict
+    unchanged: the commitment opens to the SAME S~(z) value the mle_eval close
+    checked, so honest accepts and delta_pi / self-consistent liar (caught in
+    phase-A / by the carried-claim value reaching the base) are rejected as before.
+    commit_code (S514) selects the pcs row code: "rs" (Reed-Solomon, needs the
+    codeword length N<=q -- the demo constraint that forced large runs onto BIG_Q)
+    or "expander" (Brakedown-style linear-time code, field-size-free, no N<=q
+    requirement; same sub-sqrt-x verifier).  Verdict identical either way.
     Returns dict(accepted, claimed, layers, ...)."""
     if batch_wiring and not delegate:
         raise ValueError("batch_wiring requires delegate=True")
+    if batch_ub and not (pcs and batch_trace):
+        # the Ub openings ride the pcs deferral path and discharge against the
+        # SAME stacked Ub cube the trace zero-test (batch_trace) commits.
+        raise ValueError("batch_ub requires pcs=True and batch_trace=True")
     V = isqrt(x)
     nb = max(1, V.bit_length())
     primes, sm_layers, lg_layers = compressed_lucy(x)
@@ -904,7 +1000,18 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
     if cheat == "delta_pi":
         claimed_pi += 1
 
-    stats = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+    stats = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0,
+             "vleaf_ops_pl": 0, "vleaf_cnt_pl": 0,        # per-layer leaf-eval ops
+             "vleaf_ops_ot": 0, "vleaf_cnt_ot": 0,        # one-time leaf-eval ops
+             "vcommit_ops": 0,                            # commit-verifier field-ops
+             # S509: certificate-SIZE attribution -- partition stats["comm"] by
+             # source so the Õ(sqrt x) total can be localized.  Purely additive
+             # (boundary snapshots of stats["comm"]); the transcript is unchanged.
+             "comm_outer": 0,   # K SEQUENTIAL per-layer two-sided reductions
+             "comm_bt": 0,      # one-time batched trace zero-test
+             "comm_bw": 0,      # one-time batched wiring discharge
+             "comm_ub": 0,      # one-time batched Ub-opening discharge
+             "comm_base": 0}    # one-time S_0 base close / commit proof
     z_large = [0] * nb                                       # Boolean point e=0
     C_large = claimed_pi % q
     z_small, C_small = None, None
@@ -915,10 +1022,13 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
     if batch_trace:                       # one batched zero-test for all K layers
         import batched_trace as _bt
         Ws = [build_witness(x, p, nb, dstart=1, q=q) for p in primes]
+        _c0 = stats["comm"]
         if not _bt.verify_constraints_batched(Ws, primes, x, nb, rng, stats, q):
             return fail()
+        stats["comm_bt"] += stats["comm"] - _c0
 
     defer = [] if batch_wiring else None   # collect K wiring obligations; discharge once
+    ub_defer = [] if batch_ub else None    # collect K*nb Ub openings; discharge once
 
     for i in range(K, 0, -1):
         p = primes[i - 1]
@@ -926,11 +1036,13 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
         ecut = V // p - 1
         S_prev_small = pad(sm_layers[i - 1], nb, q)
         S_prev_large = pad(lg_layers[i - 1], nb, q)
+        _c0 = stats["comm"]                 # S509: attribute this layer's outer comm
 
         lres = large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large,
                             z_large, C_large, rng, stats, delegate=delegate,
                             structured=structured, q=q, skip_trace=batch_trace,
-                            defer=defer, pcs=pcs)
+                            defer=defer, pcs=pcs, ub_defer=ub_defer,
+                            layer_idx=i - 1)
         if not lres["accepted"]:
             return fail()
         small_claims = [(lres["r_B"], lres["s_B"])]
@@ -946,20 +1058,55 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
         if not okb:
             return fail()
         z_large, C_large = lres["new_z"], lres["new_claim"]
+        stats["comm_outer"] += stats["comm"] - _c0   # this layer's outer comm
 
     if batch_wiring and defer:             # ONE batched chain for all 2K-1 wirings
         import batched_wiring as _bw
         l_max = max(max(1, (pp - 1).bit_length()) for pp in primes)
+        _c0 = stats["comm"]
         if not _bw.verify_wiring_obligations(defer, nb, l_max, rng, stats, q):
             return fail()
+        stats["comm_bw"] += stats["comm"] - _c0
 
-    # base: open S_0 on both sides (leaf-opening stand-in, O(sqrt x) once)
+    if batch_ub and ub_defer:              # ONE batched opening for all K*nb Ub leaves
+        import batched_trace as _bt        # (Ws built above under batch_trace)
+        _c0 = stats["comm"]
+        if not _bt.verify_ub_openings_batched(Ws, nb, ub_defer, rng, stats, q):
+            return fail()
+        stats["comm_ub"] += stats["comm"] - _c0
+
+    # base: open S_0 on both sides.  Default: a direct mle_eval close (the
+    # leaf-opening stand-in, a one-time O(sqrt x) = O(2^nb)).  commit_base (S508):
+    # discharge each close through the tensor polynomial commitment (pcs_commit),
+    # whose evaluation-proof VERIFIER is sub-sqrt x (O(t*(r+k)) ~ O(x^{1/4})), so
+    # the last one-time x-scaling verifier term drops below sqrt x -- making the
+    # whole-chain verifier polylog under the hash (RO/CRH) assumption.  The full
+    # 2^nb tables never touch the verifier; the commit is the prover's one-time
+    # O(x^{3/4}) work (within its Õ(x) budget).
     t0 = time.perf_counter()
+    _c0 = stats["comm"]                                     # S509: base-close comm
     S0_large = pad(lg_layers[0], nb, q)
     S0_small = pad(sm_layers[0], nb, q)
-    ok = (C_large == mle_eval(S0_large, z_large, q)
-          and C_small == mle_eval(S0_small, z_small, q))
+    if commit_base:
+        import pcs_commit as _pcs
+        ok = True
+        for S0, z, C in ((S0_large, z_large, C_large),
+                         (S0_small, z_small, C_small)):
+            com = _pcs.commit(S0, q, code=commit_code)
+            pf = _pcs.prove(com, z, C)
+            okp, vop = _pcs.verify(com["root"], z, C, pf, q=q)
+            ok = ok and okp
+            _acct_vleaf(stats, vop, onetime=True)           # sub-sqrt-x base open
+            stats["vcommit_ops"] += vop
+            stats["comm"] += (len(pf["v"]) + len(pf["w"])  # proof: messages + cols
+                              + sum(len(cv) for (_, cv, _) in pf["opened"]))
+    else:
+        ok = (C_large == mle_eval(S0_large, z_large, q)
+              and C_small == mle_eval(S0_small, z_small, q))
+        _acct_vleaf(stats, len(S0_large), onetime=True)     # one-time base close
+        _acct_vleaf(stats, len(S0_small), onetime=True)     # one-time base close
     stats["t_verifier"] += time.perf_counter() - t0
+    stats["comm_base"] += stats["comm"] - _c0
     return dict(accepted=ok, claimed=claimed_pi, layers=K, **stats)
 
 
@@ -1475,6 +1622,154 @@ def selftest():
                                          batch_wiring=True, pcs=True)["accepted"]
                            for t in range(3)), (n, qf, "pcs liar", i0)
 
+    # 21. BATCHED Ub OPENINGS (S506): batch_ub=True defers verify_trace_region's nb
+    #     Ub-bit-table openings -- the LAST per-layer O(2^nb) verifier term left after
+    #     pcs (S505) -- and discharges them in ONE sum-check against the SAME stacked
+    #     Ub cube batch_trace commits (batched_trace.verify_ub_openings_batched).  The
+    #     chain VERDICT is unchanged: honest accepts & matches the sieve; delta_pi and
+    #     the self-consistent liar still rejected -- over q AND BIG_Q.  The asymptotic
+    #     fact, MEASURED: the verifier-side O(2^nb) Ub-leaf eval count drops from K*nb
+    #     to EXACTLY 0 (moved to the prover, ub_leaf_p == K*nb); the per-layer verifier
+    #     is then leaf-eval-free (the only O(sqrt x) verifier ops left are one-time --
+    #     the two S_0 base closes + the batched discharges).  Requires pcs+batch_trace.
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        nb = max(1, isqrt(x).bit_length())
+        for qf in (Q, BIG_Q):
+            cfg = dict(delegate=True, structured=True, batch_trace=True,
+                       batch_wiring=True, pcs=True)
+            off = run_chain(x, np.random.default_rng(5), q=qf, batch_ub=False, **cfg)
+            on = run_chain(x, np.random.default_rng(5), q=qf, batch_ub=True, **cfg)
+            assert on["accepted"] and on["claimed"] == truth, (n, qf, "ub honest")
+            # verdict identical to pcs-without-ub-batch; the op-count shifts
+            assert off["accepted"] and off["claimed"] == on["claimed"]
+            assert off.get("ub_leaf_v", 0) == K * nb, (n, qf, off.get("ub_leaf_v"))
+            assert on.get("ub_leaf_v", 0) == 0, (n, qf, on.get("ub_leaf_v"))
+            assert on.get("ub_leaf_p", 0) == K * nb, (n, qf, on.get("ub_leaf_p"))
+            # delta_pi and the self-consistent liar still rejected under batch_ub
+            assert all(not run_chain(x, np.random.default_rng(600 + t),
+                                     cheat="delta_pi", q=qf, batch_ub=True,
+                                     **cfg)["accepted"]
+                       for t in range(3)), (n, qf, "ub delta_pi")
+            for i0 in sorted(set([K, max(1, K // 2), 1])):
+                assert all(not run_chain(x, np.random.default_rng(700 + i0 + t),
+                                         corrupt_layer=i0, q=qf, batch_ub=True,
+                                         **cfg)["accepted"]
+                           for t in range(3)), (n, qf, "ub liar", i0)
+    # batch_ub requires pcs AND batch_trace (the committed cube it discharges against)
+    for bad in (dict(batch_ub=True),
+                dict(batch_ub=True, pcs=True),
+                dict(batch_ub=True, batch_trace=True, delegate=True)):
+        try:
+            run_chain((1 << 8) - 1, np.random.default_rng(0), **bad)
+            assert False, ("batch_ub guard", bad)
+        except ValueError:
+            pass
+
+    # 22. VERIFIER OP-COUNT ATTRIBUTION (S507): the per-region large-table-eval
+    #     counter (_acct_vleaf) splits the verifier's O(2^nb) leaf opens into the
+    #     PER-LAYER critical path vs the ONE-TIME base closes.  Exact count
+    #     identities (the falsifiable instrumentation check), and the leading-term
+    #     direction: config (c) (pcs+batch_trace+batch_ub) is per-layer leaf-eval-
+    #     FREE so its total is the two S_0 closes ONLY -- collapsing the Theta(x)
+    #     per-layer term (a)/(b) carry to a Theta(sqrt x) one-time term.  Over q AND
+    #     BIG_Q (the op COUNT is field-independent: same tables, same eval count).
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        nb = max(1, isqrt(x).bit_length())
+        for qf in (Q, BIG_Q):
+            ra = run_chain(x, np.random.default_rng(5), q=qf,
+                           delegate=True, structured=True)               # (a)
+            rb = run_chain(x, np.random.default_rng(5), q=qf,
+                           delegate=True, structured=True, pcs=True)       # (b)
+            rc = run_chain(x, np.random.default_rng(5), q=qf, delegate=True,
+                           structured=True, pcs=True, batch_trace=True,
+                           batch_ub=True)                                  # (c)
+            for r in (ra, rb, rc):
+                assert r["accepted"] and r["claimed"] == truth, (n, qf)
+                assert r["vleaf_cnt_ot"] == 2                  # two S_0 base closes
+                assert r["vleaf_ops_ot"] == 2 * (1 << nb)
+            # exact per-layer leaf-eval COUNTS
+            assert ra["vleaf_cnt_pl"] == K * (nb + 5) - 1, (n, qf, ra["vleaf_cnt_pl"])
+            assert rb["vleaf_cnt_pl"] == K * nb, (n, qf, rb["vleaf_cnt_pl"])
+            assert rc["vleaf_cnt_pl"] == 0, (n, qf, rc["vleaf_cnt_pl"])
+            # field-independence of the op count (same table sizes, same evals)
+            if qf == BIG_Q:
+                assert ra["vleaf_ops_pl"] == ra0_pl and rc["vleaf_ops_pl"] == 0
+            else:
+                ra0_pl = ra["vleaf_ops_pl"]
+            # all per-layer leaves are 2^nb-size, so ops = cnt * 2^nb exactly
+            assert ra["vleaf_ops_pl"] == (K * (nb + 5) - 1) * (1 << nb)
+            assert rb["vleaf_ops_pl"] == K * nb * (1 << nb)
+            # leading-term direction: (c) total is the one-time base ONLY
+            tot_a = ra["vleaf_ops_pl"] + ra["vleaf_ops_ot"]
+            tot_c = rc["vleaf_ops_pl"] + rc["vleaf_ops_ot"]
+            assert tot_c == 2 * (1 << nb)
+            assert tot_a > K * tot_c // 4              # per-layer term dominates (a)
+
+    # 23. COMMIT-BASE (S508): the two one-time S_0 base closes discharged through
+    #     the tensor polynomial commitment (pcs_commit) -- verdict UNCHANGED vs the
+    #     direct mle_eval close (config (c)), per-layer still leaf-eval-free, and the
+    #     ONLY one-time x-scaling verifier work is now the sub-sqrt-x commit opens
+    #     (vcommit_ops == vleaf_ops_ot, < 2*2^nb asymptotically -- here just the
+    #     instrumentation identity + the correctness/soundness equivalence).  Over q
+    #     AND BIG_Q (the commitment is field-parameterised through pcs_commit).
+    full = dict(delegate=True, structured=True, pcs=True,
+                batch_trace=True, batch_ub=True)
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        # honest accept + instrumentation identity over q AND BIG_Q (the commitment
+        # is field-parameterised through pcs_commit)
+        for qf in (Q, BIG_Q):
+            cb = run_chain(x, np.random.default_rng(5), q=qf, commit_base=True, **full)
+            assert cb["accepted"] and cb["claimed"] == truth, (n, qf, "commit-base")
+            assert cb["vleaf_cnt_pl"] == 0                  # per-layer still leaf-free
+            assert cb["vleaf_cnt_ot"] == 2                  # two base opens
+            assert cb["vcommit_ops"] == cb["vleaf_ops_ot"] > 0
+        # cheat rejection THROUGH the committed base (cheat mechanism is
+        # field-independent -- already covered over BIG_Q in case 22 -- so run the
+        # panel over q to keep the selftest fast)
+        assert all(not run_chain(x, np.random.default_rng(600 + t),
+                                 cheat="delta_pi", commit_base=True,
+                                 **full)["accepted"] for t in range(3)), (n,)
+        for i0 in sorted(set([1, max(1, K // 2), K])):
+            assert all(not run_chain(x, np.random.default_rng(700 + i0 + t),
+                                     corrupt_layer=i0, commit_base=True,
+                                     **full)["accepted"]
+                       for t in range(3)), (n, "liar", i0)
+
+    # 24. EXPANDER BASE (S514): the field-size-free Brakedown-style row code is a
+    #     drop-in for the RS commitment behind the SAME interface -- VERDICT
+    #     UNCHANGED (honest pi==sieve, delta_pi + self-consistent liar rejected),
+    #     per-layer still leaf-free, base opens still sub-sqrt-x (vcommit_ops ==
+    #     vleaf_ops_ot).  Over q AND BIG_Q.
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        for qf in (Q, BIG_Q):
+            cb = run_chain(x, np.random.default_rng(5), q=qf, commit_base=True,
+                           commit_code="expander", **full)
+            assert cb["accepted"] and cb["claimed"] == truth, (n, qf, "expander-base")
+            assert cb["vleaf_cnt_pl"] == 0
+            assert cb["vleaf_cnt_ot"] == 2
+            assert cb["vcommit_ops"] == cb["vleaf_ops_ot"] > 0
+        assert all(not run_chain(x, np.random.default_rng(800 + t),
+                                 cheat="delta_pi", commit_base=True,
+                                 commit_code="expander", **full)["accepted"]
+                   for t in range(2)), (n, "expander delta_pi")
+        i0 = max(1, K // 2)
+        assert not run_chain(x, np.random.default_rng(900 + i0),
+                             corrupt_layer=i0, commit_base=True,
+                             commit_code="expander", **full)["accepted"], \
+            (n, "expander liar", i0)
+
     print("selftest OK")
 
 
@@ -1527,6 +1822,162 @@ def bench_pcs():
               f"{a['layers']:>4} {a['claimed']:>7} "
               f"{a['t_verifier']*1000:>10.3f} {b['t_verifier']*1000:>10.3f} "
               f"{ratio:>9.2f} {a['comm']:>9} {b['comm']:>9}")
+
+
+def bench_ub():
+    """The S506 measurement: batch_ub=True defers verify_trace_region's nb Ub-bit-
+    table openings (the LAST per-layer O(2^nb) VERIFIER term after pcs) and discharges
+    them in ONE sum-check against the committed stacked Ub cube.  The ASYMPTOTIC
+    headline is the COUNT 'ub_leaf_v' of O(2^nb) Ub-leaf evals on the verifier's
+    per-layer critical path: K*nb with batch_ub off, EXACTLY 0 with it on (they move
+    to the prover, 'ub_leaf_p').  That is the falsifiable signal that the per-layer
+    verifier is now leaf-eval-free (Õ(sqrt x) end-to-end -- only one-time S_0 closes +
+    batched discharges remain O(sqrt x)).
+
+    Honest scope: the WALL-CLOCK t_verifier drop is a modest ~1.1-1.2x and roughly
+    flat in n -- because a vectorised numpy mle_eval on an O(sqrt x)-size array is
+    cheap relative to the Python-loop wiring/eq recomputes that dominate the measured
+    t_verifier, the asymptotic O(K nb 2^nb)->one-time improvement does NOT surface as
+    a growing wall-clock ratio at reachable n (it would past the array-size crossover
+    S500 measured).  t_prover rises by the shifted openings.  This CORRECTS the S505
+    NEXT-ACTION prediction that the ratio would grow with n.  Falsifier: ub_leaf_v
+    not 0 under batch_ub, or claimed pi changing, or t_verifier(on) > t_verifier(off).
+    Full config (delegate+structured+batch_trace+batch_wiring+pcs), q field."""
+    print("compressed chain, full config: per-layer Ub openings inline (batch_ub "
+          "off) vs ONE batched discharge (on)")
+    print(f"{'n':>3} {'V':>6} {'nb':>3} {'K':>4} {'pi(x)':>7} "
+          f"{'Knb':>6} {'vleaf_off':>9} {'vleaf_on':>8} "
+          f"{'tV_off_ms':>10} {'tV_on_ms':>9} {'tVr':>5} "
+          f"{'tP_off_ms':>10} {'tP_on_ms':>9} {'comm_on':>8}")
+    cfg = dict(delegate=True, structured=True, batch_trace=True,
+               batch_wiring=True, pcs=True)
+    for n in (8, 10, 12, 14, 16):
+        x = (1 << n) - 1
+        a = run_chain(x, np.random.default_rng(n), batch_ub=False, **cfg)
+        b = run_chain(x, np.random.default_rng(n), batch_ub=True, **cfg)
+        assert a["accepted"] and b["accepted"]
+        assert a["claimed"] == b["claimed"] == sieve_pi(x)
+        nb = max(1, isqrt(x).bit_length())
+        K = a["layers"]
+        r = a["t_verifier"] / b["t_verifier"] if b["t_verifier"] else 0
+        print(f"{n:>3} {isqrt(x):>6} {nb:>3} {K:>4} {a['claimed']:>7} "
+              f"{K*nb:>6} {a.get('ub_leaf_v',0):>9} {b.get('ub_leaf_v',0):>8} "
+              f"{a['t_verifier']*1000:>10.3f} {b['t_verifier']*1000:>9.3f} "
+              f"{r:>4.2f}x {a['t_prover']*1000:>10.3f} {b['t_prover']*1000:>9.3f} "
+              f"{b['comm']:>8}")
+
+
+def _fit_slope(xs, ys):
+    """Least-squares slope of ys vs xs (xs = n, ys = log2(metric))."""
+    k = len(xs)
+    mx = sum(xs) / k
+    my = sum(ys) / k
+    num = sum((a - mx) * (b - my) for a, b in zip(xs, ys))
+    den = sum((a - mx) ** 2 for a in xs)
+    return num / den if den else 0.0
+
+
+def bench_verifier_ops(ns=(8, 10, 12, 14, 16, 18), seed=1):
+    """S507 -- the whole-chain VERIFIER op-count CURVE, the honest headline the
+    wall-clock t_verifier hides (the dominant sum-check FOLDING is untimed prover
+    work, S501; vectorised numpy flattens the asymptotics, S506).
+
+    Metric `vleaf_ops` = the count of VERIFIER large-table (mle_eval, O(2^nb) =
+    O(sqrt x)) evaluations, weighted by table size -- the ONLY verifier operation
+    whose per-call cost grows with x.  Every OTHER verifier step (sum-check round
+    checks, eq/le/band point evals O(nb), the delegated wiring carry chain
+    O(nb log p), the batched-discharge recomputes O(K polylog)) is polylog or
+    O(K polylog), bounded by Õ(sqrt x); the printed `comm` curve corroborates that
+    residual stays Õ(sqrt x) in ALL configs.  So vleaf_ops IS the leading term.
+
+    Four configs (ALL delegate+structured -- so the wiring verifier is already
+    polylog and the leaf opens are the SOLE x-scaling verifier term):
+      (a) no-pcs              per-layer leaf closes  K*(nb+5)-1 evals  ~ Theta(x)
+      (b) pcs                 only Ub openings survive   K*nb evals    ~ Theta(x)
+      (c) pcs+batch_trace+ub  per-layer leaf-eval-FREE; one-time 2 evals ~ Th(sqrt x)
+      (d) +commit_base        one-time base via tensor PCS (S508) ~ Th(x^{1/4})
+
+    FALSIFIABLE CLAIM: (c)'s whole-chain verifier leaf-op count has leading term
+    Theta(sqrt x polylog) -- slope of log2(ops) vs n approaches 0.5 -- while (a)/(b)
+    are Theta(x polylog) -- slope -> 1.0.  (d) discharges the one-time base closes
+    through the sub-sqrt-x tensor commitment, so its leading term drops BELOW sqrt x
+    -- slope -> 0.25 (Theta(x^{1/4})), i.e. the whole-chain verifier is sub-sqrt x
+    (succinct under the hash assumption).  Falsifier: (c)/(d) per-layer leaf count
+    != 0; (c)'s slope not -> 0.5; (d)'s slope not -> 0.25 (not sub-(c)); (a)/(b)'s
+    slope not -> 1.0; or claimed pi(x) differing across configs."""
+    cfgs = [("a no-pcs", dict(delegate=True, structured=True)),
+            ("b pcs", dict(delegate=True, structured=True, pcs=True)),
+            ("c pcs+bt+ub", dict(delegate=True, structured=True, pcs=True,
+                                 batch_trace=True, batch_ub=True)),
+            ("d +commit", dict(delegate=True, structured=True, pcs=True,
+                               batch_trace=True, batch_ub=True, commit_base=True))]
+    print("whole-chain VERIFIER large-table-eval op count (field-ops mle_eval "
+          "touches), default q")
+    print(f"{'n':>3} {'x':>9} {'V':>6} {'nb':>3} {'K':>4} {'pi':>6} | "
+          + " | ".join(f"{nm:>11}: {'pl_cnt':>6} {'total':>9} {'x4?':>4}"
+                       for nm, _ in cfgs))
+    data = {nm: [] for nm, _ in cfgs}                # (n, x, total, comm, r)
+    for n in ns:
+        x = (1 << n) - 1
+        V = isqrt(x); nb = max(1, V.bit_length())
+        K = len(compressed_lucy(x)[0]); truth = sieve_pi(x)
+        cells = []
+        for nm, kw in cfgs:
+            r = run_chain(x, np.random.default_rng(seed), **kw)
+            assert r["accepted"] and r["claimed"] == truth, (n, nm)
+            tot = r["vleaf_ops_pl"] + r["vleaf_ops_ot"]
+            # exact per-config leaf-eval COUNT identities (instrumentation check)
+            if nm.startswith("a"):
+                assert r["vleaf_cnt_pl"] == K * (nb + 5) - 1, (n, r["vleaf_cnt_pl"])
+            elif nm.startswith("b"):
+                assert r["vleaf_cnt_pl"] == K * nb, (n, r["vleaf_cnt_pl"])
+            elif nm.startswith("c"):
+                assert r["vleaf_cnt_pl"] == 0, (n, r["vleaf_cnt_pl"])
+                assert r["vleaf_ops_ot"] == 2 * (1 << nb), (n, r["vleaf_ops_ot"])
+            else:                       # (d) commit_base: per-layer free + sub-sqrt-x base
+                assert r["vleaf_cnt_pl"] == 0, (n, r["vleaf_cnt_pl"])
+                assert r["vcommit_ops"] == r["vleaf_ops_ot"], (n,)   # only one-time work
+            assert r["vleaf_cnt_ot"] == 2, (n, r["vleaf_cnt_ot"])    # 2 S_0 closes
+            prev = data[nm][-1][2] if data[nm] else 0
+            fac = tot / prev if prev else 0.0
+            data[nm].append((n, x, tot, r["comm"], r))
+            cells.append(f"{nm:>11}: {r['vleaf_cnt_pl']:>6} {tot:>9} "
+                         + (f"{fac:>3.1f}x" if fac else f"{'-':>4}"))
+        print(f"{n:>3} {x:>9} {V:>6} {nb:>3} {K:>4} {truth:>6} | "
+              + " | ".join(cells))
+
+    import math
+    print("\nfitted leading-term exponent  alpha  (total_ops ~ x^alpha; "
+          "log2(total) vs n, last 4 pts):")
+    print(f"{'config':>14} {'alpha_ops':>10} {'alpha_comm':>11}  expectation")
+    expect = {"a no-pcs": "ops~x  (1.0), comm~sqrt x",
+              "b pcs": "ops~x  (1.0), comm~sqrt x",
+              "c pcs+bt+ub": "ops~sqrt x (0.5), comm~sqrt x",
+              "d +commit": "ops~x^1/4 (0.25), comm~sqrt x"}
+    for nm, _ in cfgs:
+        pts = data[nm][-4:]
+        nsl = [p[0] for p in pts]
+        a_ops = _fit_slope(nsl, [math.log2(p[2]) for p in pts])
+        a_comm = _fit_slope(nsl, [math.log2(p[3]) for p in pts])
+        print(f"{nm:>14} {a_ops:>10.3f} {a_comm:>11.3f}  {expect[nm]}")
+    print("\n(x = 2^n-1, so alpha = d log2(total)/d n: alpha~1.0 => Theta(x), "
+          "alpha~0.5 => Theta(sqrt x).  Per-step factor over dn=2: ~4x for x, "
+          "~2x for sqrt x.)")
+    # headline assertion: (c) leading exponent is sub-linear and (a)/(b) linear
+    a_a = _fit_slope([p[0] for p in data["a no-pcs"][-4:]],
+                     [math.log2(p[2]) for p in data["a no-pcs"][-4:]])
+    a_c = _fit_slope([p[0] for p in data["c pcs+bt+ub"][-4:]],
+                     [math.log2(p[2]) for p in data["c pcs+bt+ub"][-4:]])
+    a_d = _fit_slope([p[0] for p in data["d +commit"][-4:]],
+                     [math.log2(p[2]) for p in data["d +commit"][-4:]])
+    assert a_a > 0.9, ("config a not ~linear", a_a)
+    assert a_c < 0.6, ("config c not ~sqrt", a_c)
+    assert a_d < 0.4 and a_d < a_c, ("config d not sub-sqrt-x", a_d, a_c)
+    print(f"\nHEADLINE: (a) alpha_ops = {a_a:.3f} ~ 1.0 (Theta(x));  "
+          f"(c) alpha_ops = {a_c:.3f} ~ 0.5 (Theta(sqrt x));  "
+          f"(d) alpha_ops = {a_d:.3f} ~ 0.25 (Theta(x^1/4), SUB-sqrt x).  "
+          f"The whole-chain verifier leading term drops Theta(x) -> Theta(sqrt x) "
+          f"(per-layer leaf opens removed) -> Theta(x^1/4) (base via tensor PCS).")
 
 
 def wiring_bench(nb=12, trials=5):
@@ -1697,7 +2148,7 @@ def bench_combined(n=16, seed=1):
 
 
 def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
-         fast_big_flag=False, pcs=False):
+         fast_big_flag=False, pcs=False, commit_base=False, commit_code="rs"):
     q = FIELDS[field]
     # The uint64 Mersenne path wins only on LARGE arrays; the chain is dominated
     # by many SMALL per-layer cubes, so it is SLOWER at reachable n (see
@@ -1718,9 +2169,13 @@ def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
 
     # ---- full compressed chain (the headline) ----
     res = run_chain(x, np.random.default_rng(seed), delegate=delegate,
-                    structured=structured, q=q, pcs=pcs)
+                    structured=structured, q=q, pcs=pcs, commit_base=commit_base,
+                    commit_code=commit_code)
     if pcs:
         mode += ", PCS leaf openings (residuals threaded to base)"
+    if commit_base:
+        mode += (f", S_0 base via tensor PCS ({commit_code} code, "
+                 f"sub-sqrt-x verifier)")
     print(f"x = 2^{n}-1 = {x}, V = floor(sqrt x) = {V}, compressed cubes "
           f"2^{nb} = {1 << nb}, layers K = {K}")
     fld = ("  [uint64 Mersenne]" if fast_big(q)
@@ -1738,14 +2193,16 @@ def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
           f"comm = {res['comm']} field elems (~{res['comm']*4/1024:.1f} KB)")
     rej = sum(not run_chain(x, np.random.default_rng(seed + 10 + t),
                             cheat="delta_pi", delegate=delegate,
-                            structured=structured, q=q, pcs=pcs)["accepted"]
+                            structured=structured, q=q, pcs=pcs,
+                            commit_base=commit_base, commit_code=commit_code)["accepted"]
               for t in range(cheat_trials))
     print(f"  chain cheat delta_pi (claim pi+1):           "
           f"rejected {rej}/{cheat_trials}")
     for i0 in sorted(set([K, max(1, K // 2), 1])):
         rej = sum(not run_chain(x, np.random.default_rng(seed + 100 + i0 + t),
                                 corrupt_layer=i0, delegate=delegate,
-                                structured=structured, q=q, pcs=pcs)["accepted"]
+                                structured=structured, q=q, pcs=pcs,
+                                commit_base=commit_base, commit_code=commit_code)["accepted"]
                   for t in range(cheat_trials))
         print(f"  chain self-consistent liar @ layer {i0:>2}/{K}:        "
               f"rejected {rej}/{cheat_trials}")
@@ -1800,9 +2257,22 @@ if __name__ == "__main__":
     ap.add_argument("--prover-bench", action="store_true")
     ap.add_argument("--bench-pcs", action="store_true",
                     help="leaf-opening stand-in vs sum-check openings (S505)")
+    ap.add_argument("--bench-ub", action="store_true",
+                    help="per-layer Ub openings inline vs ONE batched discharge "
+                         "(S506): verifier O(2^nb) leaf-eval count K*nb -> 0")
+    ap.add_argument("--bench-verifier-ops", action="store_true",
+                    help="whole-chain verifier large-table-eval op-count CURVE "
+                         "across no-pcs / pcs / pcs+batch_trace+batch_ub (S507): "
+                         "leading term Theta(x) -> Theta(sqrt x)")
     ap.add_argument("--pcs", action="store_true",
                     help="use real sum-check leaf openings (S505), residuals "
                          "threaded to the base")
+    ap.add_argument("--commit-base", action="store_true",
+                    help="discharge the two one-time S_0 base closes via the "
+                         "tensor polynomial commitment (S508): sub-sqrt-x verifier")
+    ap.add_argument("--commit-code", choices=("rs", "expander"), default="rs",
+                    help="pcs row code (S514): rs (Reed-Solomon, needs N<=q) or "
+                         "expander (Brakedown-style, field-size-free)")
     args = ap.parse_args()
     if args.selftest:
         selftest()
@@ -1810,6 +2280,10 @@ if __name__ == "__main__":
         bench()
     elif args.bench_pcs:
         bench_pcs()
+    elif args.bench_ub:
+        bench_ub()
+    elif args.bench_verifier_ops:
+        bench_verifier_ops()
     elif args.bench_big:
         bench_big()
     elif args.bench_combined:
@@ -1820,4 +2294,5 @@ if __name__ == "__main__":
         prover_bench()
     else:
         main(args.n, args.layer, args.cheat_trials, args.seed, args.delegate,
-             args.structured, args.field, args.fast_big, args.pcs)
+             args.structured, args.field, args.fast_big, args.pcs, args.commit_base,
+             args.commit_code)

@@ -92,3 +92,74 @@ Full selftest passes (including case 20). Let me kill the redundant monitor and 
   [tool: Bash] timeout 200 python3 leaf_open.py --bench --field big 2>&1 | tail -10
 Over BIG_Q the speedup is even larger (21×–3605×) since object-array `mle_eval` is costly while the opening verifier stays O(nb). Let me check the n=16 headline run:
   [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bh7zbil41.output 2>/dev/nu
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bh7zbil41.output
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bh7zbil41.output ] 
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bh7zbil41.output
+Everything works end-to-end at n=16: π(65535)=6542 verified with PCS openings, all cheats rejected. Now let me write the results file for `leaf_open.py`:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open_results.md
+Now let me update `compressed_layer_results.md` with a note about the new `pcs` flag. Let me check its structure:
+  [tool: Bash] wc -l compressed_layer_results.md && grep -n "^## \|^# \|S504\|S503\|S502\|batch_wiring\|NEXT" compressed_layer_results.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Let me update the canonical doc's honest scope with the S505 leaf-opening note:
+  [tool: Bash] grep -n "leaf\|mle_eval\|stand-in\|Demo prover is table-based" novel/succinct_verification_of_pi.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research && grep -n "leaf\|mle_eval\|stand-in\|Demo prover is table-based" novel/succinct_ver
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now let me update PROGRAM.md — the protocol table, the open items, the "Done this era" log, and the NEXT ACTION.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 5 (the leaf-opening caveat) and add the S505 "Done this era" entry. Let me look at item 5's current text:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the S505 "Done this era" entry at the top of that log:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now rewrite the NEXT ACTION to point at the now-isolated remaining term:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me run the cleanup checks from CLAUDE.md (missing results files, `__pycache__`):
+  [tool: Bash] find experiments/ -path "*/.lake" -prune -o -name "*.py" -print | while read f; do r="${f%.py}_results.md"; [ ! -f "$r" 
+The MISSING ones are all pre-existing in unrelated directories; my `leaf_open.py` has its results file. Let me remove the `__pycache__`:
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__; echo "removed"; ls experiments/constructions/
+Let me do a final sanity check: import cleanly and confirm a default (non-pcs) run is unaffected:
+  [tool: Bash] timeout 120 python3 -c "
+import numpy as np, compressed_layer as cl, leaf_open as lo
+# default path unchanged
+r = cl.run
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 120 python3 -c "
+i
+All checks pass. Let me confirm the final set of changed/new files:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short | grep -i "leaf_open\|compressed_layer\|PROGRAM\|succinct" 
+  [tool: Bash] git status --short | grep "p12_sumcheck"
+  [tool: Bash] git status --short | grep -E "compressed_layer\.py|leaf_open\.py"; echo "exit=$?"; git status --short | head -30
+  [tool: Bash] ls -la experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py && git check-ignore experiments/constructions
+  [tool: Bash] git ls-files --error-unmatch experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py 2>&1 | head -1; 
+Both `.py` files are tracked with no pending diff — they appear to have been committed already (likely by the loop's tooling). Let me verify via the log:
+  [tool: Bash] git log --oneline -5; echo "--- last commit files (py only) ---"; git show --stat --oneline HEAD | grep -E "leaf_open|co
+I see — the loop's tooling auto-committed my code (`082fb42`) mid-cycle; `git diff --stat` confirms the committed `compressed_layer.py`/`leaf_open.py` match my final working-tree state (no pending diff), and the remaining doc edits are staged for the next auto-commit. Everything is consistent. Let me do a final `__pycache__` sweep:
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && find experiments/constructions/p12_sumcheck
+Cycle complete. Here's what S505 produced.
+
+## Summary
+
+**Delivered the NEXT ACTION: a real multilinear polynomial-commitment opening, threaded into the chain.**
+
+### New artifact — `leaf_open.py` (+ `leaf_open_results.md`)
+The standard sum-check MLE opening, the thing that replaces the `mle_eval` leaf stand-ins:
+- **`open_eval(S, pt, claimed)`** — proves `S~(pt)=claimed` by one degree-2 sum-check of `S~(pt)=Σ_w S[w]·eq~(pt,w)`. It's a *reduction*: opening at `pt` → a polylog transcript (verifier O(nb), comm O(nb)) + **one residual** claim `S~(r)` at a fresh point.
+- **`open_batch(S, claims)`** — folds k same-table claims into one residual via a γ-RLC of eq tables; drop-in for `line_batch_pair`/`batch_on_table`.
+
+Measured: the opening verifier is **flat in table size** (the O(nb) signature) — **6.5×→432×** faster than the `mle_eval` close as nb grows over q, **21×→3605×** over BIG_Q. `open_batch` beats line folding 13–34×.
+
+### Integration — `run_chain(--pcs)`
+Threaded through `large_reduce → {verify_affine_region, verify_trace_region, line_batch_pair}` and `batch_on_table`: each carried-claim fold becomes a sum-check opening whose **residual threads to the S₀ base** instead of closing per layer — **unconditional** (soundness rides the existing GKR layer reductions; no commitment). Selftest **case 20** confirms the chain verdict is unchanged (honest==sieve, delta_pi + self-consistent liar rejected) over q & BIG_Q, automaton & delegated+structured, composed with batch_trace+batch_wiring. n=16 headline: π(65535)=6542, all cheats rejected.
+
+### Honest scope (stated everywhere)
+This is a **stable ~1.2–1.36× verifier win, NOT yet asymptotic Õ(√x)**. It removes ~5 per-layer leaf closes, leaving the *single dominant* per-layer O(2^nb) term now precisely isolated: `verify_trace_region`'s **nb Ub-bit-table openings** (`compressed_layer.py:429`) — per-layer witness data with no carried claim to thread to.
+
+### NEXT ACTION (re-pointed)
+Fold those nb Ub openings into the **batched-trace** machinery (which already commits every Ub table across all K layers) via the existing `defer`/`pcs` plumbing — the last step to a polylog-per-layer, unconditionally-real Õ(√x) verifier.
+
+All updates recorded in `PROGRAM.md` (table row step 10, open item 6, done-log, new NEXT ACTION), the canonical doc, and `compressed_layer_results.md`. Full selftest green; `__pycache__` removed.
+--- cycle result: success (turns=87, duration=2601820ms) ---
+=== Cycle 214 finished — Sat Jun 13 12:14:38 UTC 2026 ===

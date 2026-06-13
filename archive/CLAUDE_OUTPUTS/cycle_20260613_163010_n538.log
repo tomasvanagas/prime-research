@@ -1,0 +1,128 @@
+=== Cycle 538 — Sat Jun 13 16:30:10 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have a clear picture of the NEXT ACTION: build a `#P-hardness feasibility probe for π(x)` as a standalone falsifiable measurement. Let me study the relevant prior work and references before committing.
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/ && echo "---EDGES---" && ls -la EDGES.md status/OPEN_PROBLEMS
+Let me read the key reference materials in parallel.
+  [tool: Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+Now let me study the most recent cycle's experiment (S511) to match its style, and the canonical doc's relevant sections.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] sed -n '90,140p' experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py | grep -n "def \|argpa
+  [tool: Bash] grep -n "^def \|^    def \|def selftest\|add_argument\|if args\." experiments/constructions/p12_sumcheck_pi_verification
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me check what's already been catalogued about #P-hardness, NP, and counting reductions, to avoid redoing closed work.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -in "#P\|sharp.*P\|coNP\|parsimonious\|counting.*complete\|valiant\|in NP\b\|N
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -in "P-hard\|P-complete\|Toda\|Meissel\|in NP\|NP ∩ coNP\|NP and coNP\|nondete
+I have a clear understanding of the project and the NEXT ACTION. Let me check for duplication on the specific sub-claims (zero-truncation witness, #P assertions) and tooling availability before building.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== mpmath/sympy ==="; python3 -c "import mpmath, sympy, numpy; print('mpmath
+  [tool: Read] /apps/aplikacijos/prime-research/EDGES.md
+The picture is now complete and avoids duplication:
+- **π(x), φ(x,a) ∈ #P** is folklore (upper bound) — I'll demonstrate it constructively.
+- The **zeta-zero witness ~ √x·log²x is already established** (Galway / Thread 3, S195/196/434-436) — I'll *cite* it, not recompute, and use it as one rung of a witness ladder.
+- The genuinely new content: a **witness-size ladder** for `L_π`, the **NP∩coNP reframing**, the **circularity obstruction** to parsimonious #P-hardness reductions, and a **correction of CLOSED row 175** ("exact π(x) is #P-hard" is unsubstantiated).
+
+Let me check the exact text of row 175 and the BQP context before building.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; sed -n '173,177p' status/CLOSED_PATHS.md; echo "=== header of CLOSED_PATHS (format)
+I'll label this cycle S512 (continuing PROGRAM.md's S-series). Now let me build the probe.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+Now let me run the selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 sharpP_probe.py --
+The failures are all the classic finite-window problem: over a short dyadic window, polylog factors inflate the single-slope fit (e.g. `log²x` shows slope 0.18, not 0). The fix is the standard one — separate the leading power from the log-power with a 2-term fit `log y = α·log x + δ·log log x + c`. Let me prototype it on controls to set honest thresholds.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np, math
+def fit_power_log(xs, ys):
+    lx=np.log(np
+The 2-term fit cleanly recovers the leading power even over 9 points. Let me update the script to use it and base conclusions on the leading exponent α (reporting δ as the polylog order).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+Now update the ladder runner and report to use the 2-term fit:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+Now update the selftest to use α-based thresholds:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 sharpP_probe.py --
+The sieve proxy α=0.637 is inflated by small-√x curvature of π and integer step-function artifacts (`bitlen` jumps). Let me diagnose and smooth it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np, math
+def fit_power_log(xs, ys):
+    x=np.asarray
+`bitlen` step-functions were the artifact; continuous `log2` extracts the clean leading power (α=0.505 vs 0.637). Let me switch the proxies to continuous logs (they're O(log²x) models anyway — the leading power is the claim, not the constant).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 sharpP_probe.py --
+All pass. Now let me run the full report to capture the output for the results file.
+  [tool: Bash] python3 sharpP_probe.py --kmax 20 2>&1
+Clean results. The ladder shows the three natural witness families (sieve α=0.490, info α=0.486, zeta α=0.500) converging at √x, matching S509's measured 0.473, while enumeration sits a full power higher (α=0.985) and polylog (α=0.0) is the ruled-out rung. Let me remove the now-unused `li` helper.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+  [tool: Bash] python3 sharpP_probe.py --selftest 2>&1 | tail -3 && echo "=== grep mpmath/unused ===" && grep -n "mpmath\|def li\b\|imp
+Now let me check the results file format from the sibling experiment, then write the results file.
+  [tool: Bash] head -40 cert_incompressibility_results.md
+Now I'll write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe_results.md
+Now let me update the catalogues. First, correct CLOSED_PATHS row 175 and add a new row. Let me check the table format at the end of the file.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; tail -1 status/CLOSED_PATHS.md | cut -c1-260; echo; echo "=== col header near top =
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Now correct row 175 and append the new closure row:
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Bash] cat >> status/CLOSED_PATHS.md << 'EOF'
+| #P-hardness / NP-membership feasibility probe for L_π={(x,c):π(x)=c} (PROGRAM.m
+Now update PROGRAM.md. First, add the step-17 row to the table (consistent with S510/S511 measurement rows):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 3:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry (at the top of that section) and update the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run the cleanup checks and a final selftest verification.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== missing results files ==="; find experiments/ -path "*/.lake" -prune -o -
+The pre-existing MISSING files are from other directories/old cycles (mine is complete); no `__pycache__`. But I need to fix an important complexity-theory error I introduced: I wrote `P^#P ⊆ PH`, which is backwards — Toda's theorem is `PH ⊆ P^#P`, and `PP ⊆ PH` is not known (would collapse PH). Let me correct all occurrences.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -rn "PH\|P\^#P\|subset PH\|⊆PH\|⊆ PH" experiments/constructions/p12_sumcheck_p
+The grep caught many unrelated "PH" (persistent homology) rows. The real fixes are my 6 locations where I wrote the backwards inclusion. Let me correct each — the right statement is `PP ⊆ P^#P` (Toda gives `PH ⊆ P^#P`, the other direction; `PP ⊆ PH` is not known).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe_results.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -n "PP ⊆ P\^#P ⊆ PH\|PP⊆P\^#P⊆PH\|PP⊆PH" experiments/constructions/p12_sumchec
+I'll fix all four remaining occurrences with targeted replacements.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Let me verify all the inclusion errors are fixed and do a final check.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== any remaining backwards inclusions? (should be empty) ==="; grep -rn "P\^
+The remaining grep hits are the *correct* disclaimers (they contain "PP⊆PH is not known"). Let me verify the actual selftest check count (docs say 36) and confirm no `__pycache__` from the repo root.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== actual selftest check count ==="; python3 experiments/constructions/p12_s
+The count is 40, not 36. Let me correct that number everywhere I wrote it, to keep the docs honest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -rln "36 selftest\|36 checks\|36 check" experiments/constructions/p12_sumcheck
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+# results file
+sed -i 's/`--selftest`, 36 checks/`--selftest`, 40 checks/' experimen
+All checks pass. Let me do a final coherence read of the updated PROGRAM.md NEXT ACTION and confirm the full demo runs end-to-end after the docstring edits.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py --km
+The reach push is now duplicated (main NEXT ACTION + follow-on). Let me remove the redundant follow-on entry.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+The cycle is complete. Let me give a final summary.
+
+## Cycle S512 — complete
+
+**Picked the recorded NEXT ACTION:** the #P-hardness / NP-membership feasibility probe for `L_π = {(x,c) : π(x)=c}` — the **computational** lower-bound face of open item 3 (S511 had closed the information face for the sieze-reconstruction class).
+
+**Built** `experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py` (+ `_results.md`), a standalone measurement + complexity anchor (not a protocol), 40 selftest checks, all passing. It delivers five honest results:
+
+- **(A) Upper bound, demonstrated exactly:** `π(x)` and the Legendre sieve `φ(x,a)` are **#P functions** of binary `x` (count ≤2^N integers under a poly(N) primality/coprimality predicate; selftest verifies predicate-count == sieve π and coprime-count == the 2^a inclusion-exclusion). ⇒ `L_π ∈ C_=P`, `{π≥c} ∈ PP ⊆ P^#P`.
+- **(B) NP-completeness obstruction:** π is a function ⇒ `L_π ∈ NP ⟹ NP∩coNP`, so NP-completeness would force NP=coNP — the live question is mere NP-*membership*.
+- **(C) Witness-size ladder (measured):** using a 2-term fit that separates leading power from polylog, the natural certificate families place as **enumeration α=0.985 (Θ(x))**, **sieve transcript α=0.490** (matches S509's real 0.473), **S511 info floor α=0.486**, **zeta-zero/explicit-formula α=0.500** (Galway, cited from EDGES, not recomputed). Three independent natural families converge at √x; polylog (α=0) is the rung S511 rules out. No natural witness reaches poly(N).
+- **(D) Reduction obstruction (exact):** a parsimonious #P-hardness reduction is **circular** — realizing target count `c` forces `x ∈ [p_c, p_{c+1}-1]`, so the reduction map *is* the inverse-prime `p(·)` = the project goal; the sieve/φ instance is lattice-structured with no embedding richness.
+- **(E) Correction:** CLOSED row 175's "exact π(x) is #P-hard" is an unsubstantiated S7-era assertion — corrected in place.
+
+**Honest scope filed, not overclaimed:** a genuine #P-hardness proof or a non-sieve sub-√x witness remain genuinely open (new-math frontier). On present evidence `L_π` is an NP-intermediate-flavoured counting problem with a √x certificate and no proven poly(N) one — the information (S511) and computational (S512) faces now agree.
+
+**Also fixed** a complexity-theory error I initially introduced (`P^#P ⊆ PH` is backwards; Toda is `PH ⊆ P^#P`, and `PP ⊆ PH` is not known) across all four documents.
+
+**Updated:** PROGRAM.md (step-17 table row, open item 3, Done-this-era entry, new NEXT ACTION = the item-5 reach push at n=22/24), CLOSED_PATHS.md (new row 910 + corrected row 175). Cleanup checklist passes: results file present, no `__pycache__`.
+--- cycle result: success (turns=58, duration=1071018ms) ---
+=== Cycle 538 finished — Sat Jun 13 16:48:02 UTC 2026 ===

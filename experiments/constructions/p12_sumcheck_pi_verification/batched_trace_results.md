@@ -142,6 +142,41 @@ landed first half; the wiring defer-and-batch (collect all K layers'
 protocol) is the precondition to globally enable the fast path and capture the
 combined win — the second target S501 named.
 
+## Batched Ub-bit-table OPENINGS (S506) — `verify_ub_openings_batched`
+
+The same stacked Ub cube this zero-test commits is the natural home for the LAST
+per-layer `O(2^nb)` verifier term in `compressed_layer.run_chain`:
+`verify_trace_region`'s B2 check evaluates `Ub_{Lv−nb+k}~(r_C)` for the `nb` low bits
+of each layer's certified quotient `u_e` — `nb` direct `mle_eval`s per layer,
+`O(K·nb·2^nb) = Õ(x)` over the chain, and `--pcs` (S505) could not thread them (they
+are per-layer *witness* data with no carried claim to the base).
+
+`verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q)` discharges all
+`K·nb` of them in **ONE degree-2 sum-check**. Each layer defers
+`(l, r_C^l, [ub_{l,k}]_{k<nb})`. With `γ ← F_q` and `β = γ^{nb}` the per-`(l,k)` weight
+`β^l·γ^k = γ^{l·nb+k}` is a distinct power (a true RLC over all `K·nb` openings), and
+the identity factorizes to a single inner product over the `(Lk+nb)`-cube:
+
+```
+claim := Σ_{l,k} γ^{l·nb+k} ub_{l,k}  ==  Σ_w B[w]·C[w]
+  B[w] = Σ_{l<K} β^l [w_L=l] eq~(r_C^l, w_e)    (verifier-anchored; public r_C, β)
+  C[w] = Σ_{k<nb} γ^k Ub_{(nb−1−k)}[w]          (γ-fold of the committed Ub cube)
+```
+
+The cross term is exactly `Σ_{l,k} β^l γ^k Ub_{(nb−1−k)}^{(l)}~(r_C^l)` — the γ-weighted
+*true* openings. Verifier recomputes `B~(r*)` in `O(K(Lk+nb))` (anchor) and takes
+`C~(r*)` from the folded scalar (the committed Ub-cube opening, exactly as the zero-test
+trusts its bit scalars); one-time `O(K(Lk+nb)) = Õ(√x)`, replacing the per-layer
+`O(K·nb·2^nb)`. Soundness error `≤ (K·nb−1)/q + 2(Lk+nb)/q` (a wrong `ub_{l,k}` flips
+`claim`, caught by the round-1 identity). Wired behind
+`run_chain(pcs=True, batch_trace=True, batch_ub=True)`: the verifier-side `O(2^nb)`
+Ub-leaf eval count `ub_leaf_v` drops `K·nb → 0` (moved to the prover); the per-layer
+verifier is leaf-eval-free, the chain verifier honestly **Õ(√x)** end-to-end. See
+`compressed_layer_results.md` "Step 8" for the `--bench-ub` table (the wall-clock win is
+a modest, flat `~1.1–1.2×` — vectorised numpy makes the √x-size `mle_eval` cheap relative
+to the Python-loop recomputes, so the asymptotic improvement is in op-count, not
+measured wall-clock at reachable `n`).
+
 ## Selftest (`--selftest`)
 
 1. **Structural** — `Lk = ⌈log₂K⌉`, one sum-check of `Lk+nb` rounds,
@@ -158,6 +193,11 @@ combined win — the second target S501 named.
    object reference (same accept/reject, honest + every cheat), BIG_Q.
 6. **The win itself** — instrumented `fmul`: batched calls < unbatched, batched
    mean width > unbatched, and `unbatched/batched calls > 0.4·K` (~K-fold).
+7. **Batched Ub openings (S506)** — `verify_ub_openings_batched` (a) accepts honest
+   openings and (b) agrees with the per-layer inline `mle_eval` ground truth
+   (`verify_ub_openings_each`); (c) rejects ANY single forged `(layer,bit)` opening
+   4/4 (first/middle/last layer × first/middle/last bit) — over Q and BIG_Q;
+   `comm = 1 + 3(Lk+nb)`; plus the K=1 edge (Lk=0) and fast==object bit-identity.
 
 ## What would falsify this
 
@@ -170,3 +210,6 @@ combined win — the second target S501 named.
 - The fast `speedup` column failing to cross 1.0× and grow with n — which would
   refute the predicted sign flip (the reason batching is the precondition for
   the fast-Mersenne path to be a net win on the chain).
+- (S506) `verify_ub_openings_batched` disagreeing with the per-layer inline
+  `mle_eval` ground truth, accepting a forged Ub opening, or `run_chain(batch_ub=True)`
+  not driving `ub_leaf_v` to 0 / changing the chain verdict vs `batch_ub=False`.

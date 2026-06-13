@@ -38,6 +38,14 @@ measured (all unconditionally sound, all with cheating-prover tests):
 | field-lifted compressed chain (step 7) | same, over an **arbitrary prime** (no `u·a<q` shortcut) | unchanged Õ(√x) | done (S499) — `--field {q,big,small}`; bit-identical at default q; chain over `BIG_Q=2⁶¹−1` (object dtype) `claimed π==sieve` n≤12 all modes; chain-config alias rejected by lift, accepted by demo prime |
 | fast Mersenne-61 field path (step 8) | same, `BIG_Q=2⁶¹−1` on uint64 not object | unchanged Õ(√x) | done (S500) — numpy `_mul61`/`_sum61` (`2⁶¹≡1` fold), threaded chain-wide via `fmul`; bit-identical fast-vs-object (selftests §8/§17). **Speedup is large-array-only:** certifier wins 1.7–3.8× at n=24–28; the **chain is SLOWER** (0.2–0.3×, op-count-bound on many small cubes) — see correction below |
 | cross-cube batched chain (step 9) | same, **both big kernels batched** (trace + wiring) | unchanged Õ(√x) | done (S502 trace + S504 wiring) — `run_chain(batch_trace, batch_wiring)`; widens the per-fmul array so the fast Mersenne path WINS: BIG_Q n=16 **8.87 s vs 17.1 s baseline (1.92×)**, comm 5.3×↓. Sound `π(2ⁿ)==sieve` over BIG_Q to **n=20 (x≈10⁶, 66 s)** |
+| real leaf openings (step 10) | same, **carried-claim leaf opens via real sum-check openings** (residuals threaded to base, no `mle_eval` close) | Õ(√x) (removes ~5 per-layer O(2^nb) leaf closes; line-429 Ub openings remain) | done (S505) — `leaf_open.py` `open_eval`/`open_batch`; `run_chain(--pcs)`; selftest 20; verdict unchanged over q & BIG_Q; standalone opening verifier flat in 2^nb (6.5→432× vs `mle_eval`, 21→3605× over BIG_Q); chain `--bench-pcs` 1.2–1.36× |
+| batched Ub openings (step 11) | same, **the LAST per-layer O(2^nb) verifier term** (`verify_trace_region`'s nb Ub-bit openings) discharged in ONE sum-check vs the committed stacked Ub cube | **per-layer verifier leaf-eval-free → honestly Õ(√x) end-to-end** | done (S506) — `batched_trace.verify_ub_openings_batched` (γ-RLC `Σ_w B·C`, B verifier-anchored, C the committed Ub fold); `run_chain(--batch_ub`, needs pcs+batch_trace); selftest 21 + bt §7; verdict unchanged over q & BIG_Q; **`ub_leaf_v`: K·nb→0** at every n (moved to prover); wall-clock tV ~1.1–1.2× (flat — vectorised mle_eval cheap vs Python recomputes; the win is op-count, correcting the S505 "ratio grows" prediction) |
+| verifier op-count CURVE (step 12) | the milestone as a **measured scaling law**, not a per-n fact | n/a (measurement) | done (S507) — `_acct_vleaf` tallies VERIFIER large-table (`mle_eval` over a √x-size cube) evals, split per-layer vs one-time; `--bench-verifier-ops` over n∈{8..18}, 3 configs. **Falsifiable claim CONFIRMED:** per-layer leaf-op count `K·(nb+5)−1` (no-pcs) / `K·nb` (pcs) / **0** (pcs+batch_trace+batch_ub); whole-chain `vleaf_ops` fitted exponent **α=0.961 / 0.998 / 0.500** (Θ(x)→Θ(√x)); config (c) total = one-time `2·2^nb` only. `comm` slope ~0.60 (Õ(√x)) confirms the non-leaf residual never re-introduces a Θ(x) term. selftest 22 (counts over q & BIG_Q) |
+| tensor-PCS base closes (step 13) | the two one-time S₀ base closes — the LAST x-scaling verifier term — via a **hash-based multilinear commitment**, **sub-√x** | **whole-chain verifier sub-√x** (computational, under a CRH/RO); O(x^{1/4}·polylog) base | done (S508) — `pcs_commit.py` (Ligero/Brakedown tensor: reshape 2^nb→r×k, RS-encode rows, Merkle-commit N columns; `S~(pt)=a^T M b`; eval-proof verifier `O(t·(r+k))=O(x^{1/4})`). `commit/prove/verify`, Fiat–Shamir, sha256. `run_chain(--commit-base)`; selftest 23 + standalone selftest (honest==mle_eval; **4 cheat classes rejected**: wrong claim / forged opening / tampered codeword row / tampered revealed column). `--bench-verifier-ops` config (d): whole-chain `vleaf_ops` exponent **α=0.258 (Θ(x^{1/4}))** vs (c)'s 0.500 — **Θ(x)→Θ(√x)→Θ(x^{1/4})**. Verdict unchanged over q & BIG_Q. **Trades unconditionality for full succinctness; win is the SLOPE** (absolute crossover at nb≈14/n≈28) |
+| certificate-SIZE profile + comm wall localized (step 14) | the FULL non-interactive certificate: **size, verifier ops, prover wall** as fitted exponents + comm **attributed by source** | n/a (measurement) | done (S509) — `run_chain` partitions `comm` into `comm_outer/bt/bw/ub/base` (additive snapshots, sum==comm asserted); `certificate_profile.py` over n∈{8..18}, full config (delegate+structured+pcs+batch_trace+batch_ub+**batch_wiring**+commit_base). **Cert size α=0.473 (Θ(√x)), DOMINATED by `comm_outer` α=0.522 (60%→90%→100% of comm)** = the K=π(√x) SEQUENTIAL outer layer reductions; every batched discharge polylog (α≤0.18), base Θ(x^{1/4}) (α=0.30), verifier ops α=0.258. Batching wiring cuts comm 5.3× @n=18. **Honesty sharpening of S508: verifier READS the Õ(√x) proof ⇒ total verification Θ(√x); the x^{1/4} is the large-table sub-term only.** Membership: `L_π` has a **CRH-based NI certificate of size Õ(√x), Õ(x^{1/4}) large-table opens**; polylog hits the SAME ⌊v/p⌋-semigroup wall as open item 2. selftest 5 cases (attribution closes over q & BIG_Q honest, cheats reject; field-indep count; exponent bounds) |
+| merged-layer COMM probe — √x is layering-inherent (step 15) | the merged depth-j layer's **comm**: is the Õ(√x) cert size inherent to the layering or just the unbatched chain? | n/a (measurement) | done (S510) — `merged_layer_comm.py` collapses j consecutive small-side Lucy layers into ONE reduction over the 2^j-subset inclusion-exclusion form `M[S](v)=Σ_T(−1)^|T|GateProd_T(v)S(⌊v/m_T⌋)` (== direct composition, selftest 1); two SOUND modes (DIRECT 2^j openings; BATCHED stacks the 2^j on a j-bit axis), cheat-tested over q & BIG_Q. **Chain TOTAL comm exponent ~0.5 for EVERY j∈{1,2,4} in BOTH modes → √x LAYERING-INHERENT.** DIRECT comm_fill=(2^j+1)(3nb+2) grows ~2^j (merging makes comm *worse*, min at j=2 then grows); BATCHED pushes the 2^j OUT of comm (fill flat 27) but into **verifier WORK** (`vwork` ~2^j, ratio 5.7× @j:1→4) AND prover, comm floored at ⌈K/j⌉(j+nb)→K=√x; **prover fill total ⌈K/j⌉·2^j·2^nb → x^{3/2}** (/x: 0.42→2.25 @j:1→6) — open problem 2's m·K²/2 on the VERIFICATION face. comm prime- & field-independent (selftest 4) |
+| #P / NP-membership probe — the COMPUTATIONAL lower-bound face (step 17) | item 3's other half: is `L_π∈NP` at all, and is π #P-hard? | n/a (measurement + complexity anchor) | done (S512) — `sharpP_probe.py`. **(A)** π(x), φ(x,a) are #P FUNCTIONS of binary x (count ≤2^N candidates under a poly(N) predicate) ⇒ `L_π∈C_=P`, `{π≥c}∈PP⊆P^#P`; the φ subset-witness is 2^{π(√x)} (doubly-exp in N). **(B)** π a function ⇒ `L_π∈NP ⟹ NP∩coNP ⟹` NP-complete forces NP=coNP — the live question is mere NP-MEMBERSHIP (polylog witness). **(C) witness-size ladder** (leading-power α, 2-term fit separating power from polylog): enumeration NP-cert α=0.985 (Θ(x)); sieve transcript α=0.490 (matches S509 0.473); S511 info floor α=0.486; zeta-zero/explicit-formula witness α=0.500 (Galway √x·log²x, **cited**) — THREE natural families converge at √x (max\|α−0.5\|=0.014), enumeration a full power higher, polylog (α=0) ruled out (S511). NO natural witness reaches poly(N). **(D)** parsimonious #P-hardness reduction is CIRCULAR (target-count realization c↦x(c) IS the inverse-prime p(·)=the goal; sieve sets lattice-structured, no instance richness) ⇒ hardness, if real, is value-incompressibility (the S511 face). **(E)** corrected CLOSED row 175 ("exact π #P-hard" unsubstantiated). 40 selftests |
+| certificate INCOMPRESSIBILITY probe — √x is **information-forced** too (step 16) | the lower-bound face of item 3: is the Õ(√x) cert size an INFORMATION floor, or just construction shape (S510)? | n/a (measurement) | done (S511) — `cert_incompressibility.py`. Per-layer checkpoint = Legendre partial sieve `φ(x,a)=#{n≤x : P⁻(n)>p_a}` (the large-side survivor count). Measures the JOINT hard bits of `{φ(x,a)}_{a=1..K}` beyond a polylog smooth predictor, at INTEGER precision. **Authoritative measure = integer-reconstruction SVD rank of the residual matrix** (smooth-model-free: SVD subsumes the best low-rank/smooth model). rank≤min(W,K); window-sensitivity at x=2¹⁹ shows rank/K **0.09→0.97** as W/K 1→187 ⇒ **FULL RANK once W≫K**. Adaptive-window sweep (W=64K): rank≈K, **α_rank=0.459 ≈ α_K=0.415 ≈ √x**. ⇒ the K checkpoints are integer-INDEPENDENT, joint info **Θ(√x)·polylog** ⇒ the √x cert is **information-forced for any sieve-reconstructing verifier** (polylog cert RULED OUT; sub-√x RULED OUT for this class). Corroborated per-x (gzip α=0.39, AR α=0.56 track K). Single-value control reproduces S36: |π(x)−Li(x)| is O(log x) bits (slope 0.089) — the barrier is JOINT, not per-value. **Self-corrected** a narrow-fixed-window artifact (W=4096 → rank~x^0.35 sub-√x) via the window-sensitivity check. Scope: sieve-reconstruction class only; a UNIVERSAL bound still needs #P-hardness (item 3 formal half). selftest 22 cases |
 
 Canonical doc: `novel/succinct_verification_of_pi.md` (protocol stack,
 width-spectrum theory, census law, open program). Code:
@@ -160,22 +168,111 @@ width-spectrum theory, census law, open program). Code:
    tree fails on fill-in growth 2^j per row; cost m·K²/2 ≈ x^{3/2}/ln²x,
    same as unbatched. Remaining form of the question: algebraic
    compression of the semigroup generated by v ↦ ⌊v/p⌋. Do not re-run
-   the tree analysis.
+   the tree analysis. **The COMM face is now measured too (S510,
+   `merged_layer_comm.py`):** a sound depth-j merged-layer reduction has
+   chain total comm exponent ~0.5 for EVERY j in both a direct (comm_fill
+   ~2^j) and a fully-batched (comm polylog, 2^j → verifier WORK + prover)
+   mode — the √x is layering-inherent on the verification face, and the
+   prover fill total still → x^{3/2}. So the cert-size wall, the
+   verifier-work wall, and the prover-time wall are ALL the one
+   ⌊v/p⌋-semigroup sequential-sieve wall.
 3. **L_π = {(x,c): π(x)=c} ∈ NP?** — succinct unconditional
-   certificates: no construction, no barrier. Complementary formal
-   target: is π(x) #P-hard? Either answer is major.
+   certificates. Upper bound: CRH-based NI cert of size Õ(√x) (S509).
+   **Lower-bound face PARTIALLY ANSWERED (S511, `cert_incompressibility.py`):**
+   the √x is an INFORMATION floor, not just construction shape — the K=π(√x)
+   sieve checkpoints `{φ(x,a)}` carry Θ(√x)·polylog JOINT hard bits at integer
+   precision (residual matrix is FULL integer-rank once W≫K: rank/K→0.97,
+   α_rank≈α_K≈√x). So **no sieve-reconstructing verifier has a polylog or
+   sub-√x certificate** — the construction-side √x (S510) is matched on the
+   information side. Single π(x) value remains O(log x) bits (S36) — the
+   barrier is JOINT across layers. **Still open / the remaining universal
+   lever:** the bound is for the sieve-reconstruction CLASS only; a different
+   witness (cf. factoring) is not ruled out, so a universal sub-√x impossibility
+   needs the COMPUTATIONAL route. **COMPUTATIONAL face PROBED (S512,
+   `sharpP_probe.py`):** (upper) π(x), φ(x,a) ∈ **#P** (count ≤2^N integers under a
+   poly(N) predicate) ⇒ `L_π∈C_=P`, `{π≥c}∈PP⊆P^#P` (Toda: `PH⊆P^#P`, not the
+   reverse; `PP⊆PH` is unknown, not claimed). (structure) π a function ⇒
+   `L_π∈NP ⟹ NP∩coNP`, so **NP-completeness would force NP=coNP** — the open
+   question is mere NP-MEMBERSHIP (a polylog witness), not completeness. (ladder)
+   every NATURAL witness family — enumeration NP-cert (α=0.985, Θ(x)), sieve
+   transcript (α=0.490≈S509's 0.473), S511 info floor (α=0.486), zeta-zero/
+   explicit-formula (α=0.500, Galway √x·log²x cited) — lands at √x or worse; THREE
+   converge at √x, polylog (α=0) is ruled out by S511 for the sieve class ⇒ **no
+   natural witness reaches poly(N)**. (reduction) a parsimonious #P-hardness
+   reduction is **CIRCULAR** — target-count realization `c↦x(c)` IS the
+   inverse-prime `p(·)`=the goal, and the sieve/φ instance is lattice-structured
+   (no embedding richness) ⇒ #P-hardness, if true, must be value-incompressibility
+   (the S511 face), not instance-embedding. **Corrected** CLOSED row 175 ("exact
+   π(x) #P-hard" was an unsubstantiated S7 assertion). **STILL OPEN (filed, not
+   closed):** a genuine #P-hardness proof OR a non-sieve sub-√x witness — neither
+   delivered. On present evidence `L_π` is an NP-intermediate-flavoured counting
+   problem: a √x certificate (S491–S509 from above, S511 from below), no proven
+   poly(N) one. Either answer to the remaining #P-hardness question is major.
 4. **Census entropy law at k = 128** — conjecture A_k = e^{(1+o(1))π(k)}
    (enumeration-verified to k = 64, geometric convergence). Needs an
    analytic count: surjection inclusion-exclusion has catastrophic
    cancellation; DFS is enumeration-bound at A₁₂₈ ~ e²⁵. Transfer-
    matrix / generating-function attack is the well-posed route.
-5. **Large-x benchmark** — PARTIALLY DELIVERED (S504). The winning config
-   (delegate+structured, batch_trace+batch_wiring, FAST_BIG, BIG_Q) verifies
-   `π(2ⁿ)==sieve` over a sound-characteristic prime to **n=20 (x≈10⁶, 66 s)**.
-   Remaining: push reach (n=22 ≈ 4 min, n=24 ≈ 15 min — prover-bound on the
-   √x-cube layer sum-checks, NOT field- or DP-bound) and/or a real outer
-   poly-commitment so the Õ(√x) verifier claim is unconditional (currently
-   `mle_eval` leaf stand-ins).
+5. **Large-x benchmark** — ADVANCED (S513). Now driven by
+   `experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py`
+   (a clean reproducible driver, `--selftest`/`--n`), running the **FULL
+   succinct config** (delegate+structured+pcs+batch_trace+batch_ub+batch_wiring+
+   commit_base) + FAST_BIG over the sound `BIG_Q=2⁶¹−1` — strictly stronger than
+   the S504 config (adds the real leaf openings, batched Ub discharge, and the
+   tensor-PCS base commitment). Verified `claimed π==sieve`, honest ACCEPTED:
+   **n=20 π(1048575)=82025 (71.8 s)**, **n=22 π(4194303)=295947 (252.8 s,
+   x≈4.2×10⁶)**, n=24 (x≈1.7×10⁷) running [APPEND ON LAND]. Soundness witnessed
+   at the reach: the `delta_pi` liar is REJECTED at n=22 (66.9 s). Profile holds
+   at every reach n — per-layer verifier large-table leaf-eval count **= 0**
+   (Õ(√x) end-to-end), `comm` ~95% `comm_outer` (Θ(√x); batched discharges
+   polylog: n=22 comm_bt/bw/ub=80/2373/61), base opens the one-time tensor
+   commitment only (Θ(x^{1/4})). Chain stays prover-bound (~3.5×/Δn=2: n20→n22
+   71.8→252.8 s), NOT field- or DP-bound. `large_x_benchmark_results.md`.
+6. **Leaf openings → end-to-end Õ(√x) verifier** — DELIVERED (S505 pcs + S506 batch_ub).
+   `leaf_open.py` builds the real sum-check MLE opening (`open_eval`/`open_batch`);
+   `run_chain(--pcs)` threads the carried-claim folds' residuals to the S₀ base. The
+   one remaining per-layer O(2^nb) term — `verify_trace_region`'s nb Ub-bit-table
+   openings (per-layer witness data, no carried claim) — is now DEFERRED and
+   discharged in ONE sum-check against the committed stacked Ub cube
+   (`batched_trace.verify_ub_openings_batched`, `run_chain(--batch_ub)`, needs
+   pcs+batch_trace). **Verifier-side O(2^nb) Ub-leaf count K·nb→0 at every n** (selftest
+   21, `--bench-ub`); the per-layer verifier is leaf-eval-free, the only O(√x) verifier
+   work left is one-time (the two S₀ base closes + the batched discharges). **The
+   Õ(√x) end-to-end UNCONDITIONAL verifier claim is now structurally real.** Honest
+   residual: the wall-clock tV win is a flat ~1.1–1.2× (vectorised mle_eval is cheap
+   vs Python-loop recomputes), so the asymptotic gain is in op-count, not measured
+   wall-clock at reachable n — this corrects the S505 "ratio grows with n" prediction.
+   **The op-count gain is now a MEASURED CURVE (S507):** `--bench-verifier-ops`
+   attributes the verifier's large-table (`mle_eval`) evals per-layer vs one-time over
+   n∈{8..18}; the whole-chain `vleaf_ops` leading exponent is α=0.961 (no-pcs) / 0.998
+   (pcs) / **0.500 (pcs+batch_trace+batch_ub)** — Θ(x)→Θ(√x), config (c) total = the
+   one-time `2·2^nb` base closes only, per-layer leaf count exactly 0. `comm` slope ~0.60
+   (Õ(√x)) confirms the non-leaf residual stays sub-linear. The Õ(√x) end-to-end verifier
+   is now both structurally real AND a measured scaling law.
+   **The last one-time O(√x) item is now DONE (S508):** a real outer multilinear
+   commitment (`pcs_commit.py`, tensor/Ligero-Brakedown) discharges the two S₀ base
+   closes with a **sub-√x verifier** (`O(x^{1/4}·polylog)`); `run_chain(--commit-base)`,
+   `--bench-verifier-ops` config (d) measures the whole-chain verifier leading exponent
+   **α=0.258 (Θ(x^{1/4}))**. The **whole-chain verifier is now sub-√x** — full
+   succinctness, COMPUTATIONAL (under a CRH/RO), trading the otherwise-unconditional
+   Õ(√x). The win is the SLOPE (absolute crossover nb≈14/n≈28; RS's N≤q is a demo
+   artifact a Brakedown expander code removes behind the same interface).
+   **Certificate SIZE characterized + the Õ(√x) comm wall LOCALIZED (S509):**
+   `certificate_profile.py` measures the full succinct config's cert size (α=0.473,
+   Θ(√x)), verifier ops (α=0.258, Θ(x^{1/4})) and prover wall over n∈{8..18}, and
+   `run_chain` now attributes `comm` by source. The Õ(√x) cert size is DOMINATED by
+   `comm_outer` (α=0.522; 60%→90%→100% of comm) = the K=π(√x) SEQUENTIAL outer layer
+   reductions; every batched discharge is polylog, the base is Θ(x^{1/4}). **Honesty
+   sharpening:** the verifier READS the Õ(√x) proof, so total verification is Θ(√x)
+   (the S508 x^{1/4} is the large-table sub-term only). Membership: `L_π` has a
+   CRH-based NI certificate of size Õ(√x), Õ(x^{1/4}) large-table opens; compressing
+   the size to polylog hits the SAME ⌊v/p⌋-semigroup wall as open item 2.
+   **S510 closes the quantitative question this raised:** merging j consecutive
+   layers does NOT drop the comm exponent below 0.5 — measured over a sound DIRECT
+   (comm_fill ~2^j) AND a fully-BATCHED (comm polylog; the 2^j moves to verifier
+   WORK + prover) merged-layer reduction, `merged_layer_comm.py`. The Õ(√x)
+   certificate is layering-inherent, and the merge pays open item 2's x^{3/2} prover
+   fill. No sub-√x certificate comes from layer merging.
 
 ## SECONDARY LINES (valid, not currently active)
 
@@ -189,8 +286,292 @@ width-spectrum theory, census law, open program). Code:
 - The guess-comparison geography (`experiments/analytic/
   guess_comparison_oracle/`) — decision-version facts, complete as is.
 
-## Done this era (S491–S504 cycles, 2026-06-13)
+## Done this era (S491–S513 cycles, 2026-06-13)
 
+- Large-x benchmark reach push — item 5 advanced (S513): built
+  `experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py`,
+  a clean reproducible driver (the "large-x benchmark" line had no dedicated
+  script) running the **FULL succinct config**
+  (delegate+structured+pcs+batch_trace+batch_ub+batch_wiring+commit_base) +
+  FAST_BIG over the sound `BIG_Q=2⁶¹−1` — strictly stronger than the S504 config
+  (it adds the real leaf openings S505, the batched Ub discharge S506, and the
+  tensor-PCS base commitment S508, i.e. the full non-interactive certificate).
+  `--selftest` gates correctness/soundness over Q & BIG_Q at small n (full config
+  π==sieve, delta_pi + self-consistent liar rejected, FAST_BIG a bit-identical
+  drop-in, per-layer leaf count 0). **Reach, BIG_Q, `claimed π==sieve`, honest
+  ACCEPTED:** n=20 π(1048575)=82025 (71.8 s, reproduces S504's 66 s now under the
+  FULL config), **n=22 π(4194303)=295947 (252.8 s, x≈4.2×10⁶)**, n=24 (x≈1.7×10⁷)
+  [APPEND ON LAND]. **Soundness witnessed at the reach:** the `delta_pi` liar
+  (claim π+1) is REJECTED at n=22 (66.9 s). **Profile confirmed at the reach** —
+  per-layer verifier large-table leaf-eval count **= 0** (Õ(√x) end-to-end, S506);
+  `comm` ~95% `comm_outer` = the K sequential outer reductions (Θ(√x)), every
+  batched obligation polylog (n=22: comm_bt/bw/ub=80/2373/61, comm_outer=139899 of
+  146637, sum exact); large-table opens = the one-time tensor commitment only
+  (Θ(x^{1/4})). Chain stays **prover-bound** (~3.5×/Δn=2), NOT field- or DP-bound —
+  this is the open-item-1 Õ(x) prover on the √x state, NOT a polylog π(x) (the goal
+  stays blocked); the deliverable is the verified verification artifact at x≈10⁷.
+  n539 built the driver + reproduced n=20; n540 ran the reach (n=22 + soundness),
+  banked the results, and launched n=24. `large_x_benchmark_results.md`;
+  `compressed_layer_results.md` item-5 section extended.
+- #P-hardness / NP-membership feasibility probe — the COMPUTATIONAL lower-bound
+  face of open item 3 (S512): answered the explicit lever S511 named. Built
+  `experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py`, a
+  STANDALONE measurement + complexity anchor (NOT a protocol). **(A) UPPER bound
+  (folklore, demonstrated exact):** π(x) and the Legendre partial sieve φ(x,a) are
+  #P FUNCTIONS of the BINARY input x — count the ≤2^N integers n≤x under a poly(N)
+  primality/coprimality predicate (selftest: predicate-count==sieve π,
+  coprime-count==2^a-term inclusion-exclusion). ⇒ `L_π∈C_=P` (exact counting),
+  `{π(x)≥c}∈PP⊆P^#P` (Toda: `PH⊆P^#P`, the other direction; `PP⊆PH` is not
+  known and not claimed). The #P "subset witness" for φ has 2^{π(√x)} terms
+  (doubly-exp in N) — membership gives no short witness. **(B) NP-completeness
+  obstruction:** π a function ⇒ `L_π∈NP ⟹ L_π∈NP∩coNP` (certify π(x)≠c via the true
+  c'+its cert) ⟹ NP-complete ⟹ NP=coNP. The live question is mere NP-MEMBERSHIP
+  (polylog witness). **(C) WITNESS-SIZE LADDER (measured):** leading-power exponent
+  α via the 2-term fit `log bits = α·log x + δ·log log x + c` that separates the
+  power from polylog (the naive single-slope is polylog-inflated over a short
+  window — log²x reads 0.21 but α=0; verified exact on closed-form controls).
+  enumeration NP-cert (list π(x) primes w/ Pratt + every other composite w/ a
+  factor, computed from a real spf sieve) **α=0.985 (Θ(x))**; sieve transcript
+  **α=0.490** (matches S509 real naive 0.473); S511 info floor **α=0.486**;
+  zeta-zero/explicit-formula witness **α=0.500** (Galway K~c·√x·log²x, **CITED**
+  EDGES Thread-3/S195/196/S434–436, not recomputed). THREE independent natural
+  families (sieve, analytic/zeta, info floor) **converge at √x** (max|α−0.5|=0.014,
+  k=10..20); enumeration a full power higher; polylog (α=0) the rung S511 rules out
+  for the sieve class. ⇒ **no natural witness reaches poly(N); every one ≥2^{N/2}**.
+  **(D) parsimonious-reduction obstruction (CIRCULAR, exact):** a reduction #A→π
+  maps w↦x(w) with π(x(w))=#A(w); realizing target count c forces x∈[p_c,p_{c+1}-1]
+  so the map c↦x(c) IS the inverse-prime p(·) = the project goal — the reduction's
+  "easy direction" is as hard as π itself (closure mode C). The sieve/φ instance is
+  lattice-structured ({multiples of d}), no instance richness to embed an arbitrary
+  #P-complete count. ⇒ #P-hardness of π, if true, cannot come from instance-
+  embedding — it must be value-incompressibility (the S511 route). **(E) Corrected
+  CLOSED row 175** ("exact pi(x) is #P-hard" — unsubstantiated S7-era assertion;
+  true statement is π∈#P, hardness open). **STILL OPEN (filed):** a genuine
+  #P-hardness proof OR a non-sieve sub-√x witness — neither delivered; on present
+  evidence L_π is an NP-intermediate-flavoured counting problem with a √x cert and
+  no proven poly(N) one. 40 selftest cases (#P-membership equalities, Legendre,
+  n-th-prime realization window, fit_power_log exact recovery on x/√x/√x·log³x/
+  log²x controls, ladder exponents+convergence, monotonicity). The information face
+  (S511) and the computational face (S512) now agree and point the same way without
+  closing the universal question. `sharpP_probe_results.md`.
+- Certificate incompressibility probe — the √x is an INFORMATION floor, not just
+  construction shape (S511): answered the lower-bound face S510 flagged ("is sub-√x
+  information-theoretically impossible?"). Built `experiments/constructions/
+  p12_sumcheck_pi_verification/cert_incompressibility.py`, a STANDALONE measurement
+  (entropy/rank of the checkpoint sequence, not a protocol). The chain pins one
+  large-side survivor count per layer = the Legendre partial sieve
+  `φ(x,a)=#{1≤n≤x : n has no prime factor ≤ p_a}`; we measure the JOINT hard bits of
+  `{φ(x,a)}_{a=1..K}`, K=π(√x), beyond a POLYLOG smooth predictor, at INTEGER
+  precision (CLOSED row 737's lesson: relative smoothness is cancelled by the
+  exact-value requirement). **CRUCIAL frame:** cert SIZE is √x just from having K
+  layers; the question is cert INFORMATION (can the K transcripts be jointly
+  compressed?). **Authoritative measure = integer-reconstruction SVD rank of the
+  residual matrix** over a dense x-window (smooth-model-free — SVD subsumes the best
+  low-rank/smooth model; row-737 style on residuals). `rank≤min(W,K)`, so resolving
+  all K modes needs W≫K x-samples: window-sensitivity at x=2¹⁹ (K=128) gives
+  **rank/K 0.09→0.25→0.63→0.82→0.97 as W/K 1→4→16→63→187 — FULL RANK once sampled**.
+  Adaptive-window sweep (W=64K, rank/K 0.75–0.97 over k=16..22): **rank≈K,
+  α_rank=0.459 ≈ α_K=0.415 ≈ √x**. ⇒ the K checkpoint residuals are integer-
+  INDEPENDENT (no smaller smooth+low-rank model recovers them exactly) ⇒ joint info
+  **Θ(K)=Θ(√x)·polylog** ⇒ **the √x certificate is INFORMATION-FORCED for any
+  sieve-reconstructing verifier**: polylog cert RULED OUT (joint info super-polylog,
+  lifting S36's single-value "O(log x), computational not informational" to the
+  joint certificate setting), sub-√x cert RULED OUT for this class (upgrades S510's
+  construction-inherent √x to information-inherent). Per-x corroboration (single
+  K-length sequence, conservative 1D under-sample): gzip α=0.388, AR(3) α=0.557, both
+  track K's α=0.415 (incompressible). **Single-value control reproduces S36**:
+  bits(|π(x)−Li(x)|)=4.3→8.0, slope 0.089≈0 (O(log x); |π−R|≤15) — the barrier is
+  JOINT across layers, NOT per-value. **Self-corrected** a narrow-fixed-window
+  artifact (W=4096 → rank~x^0.35, read as sub-√x) via the window-sensitivity check —
+  the rank cap `min(W,K)` under-samples; W∝K gives full rank. **Honest scope:** φ is
+  a faithful proxy (transcript hashes bounded above by the state); the bound is the
+  sieve-reconstruction CLASS only — a different witness (cf. factoring) is not ruled
+  out, so a UNIVERSAL sub-√x impossibility still needs #P-hardness (item 3 formal
+  half). 22 selftest cases (Legendre identity, li/R sanity, metric estimators,
+  exponent fitter, synthetic info-forced-vs-compressible separation, SVD integer-rank
+  low-vs-full). `cert_incompressibility_results.md`.
+- Merged-layer COMM probe — the √x certificate size is LAYERING-INHERENT (S510):
+  answered the single quantitative question S509 flagged — is the Õ(√x) cert size
+  inherent to the layering, or just to the unbatched chain? Built
+  `experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py`, a
+  STANDALONE primitive (one merged layer's comm vs j single layers, not a full-chain
+  rebuild). It collapses j consecutive SMALL-side (value→value `⌊v/p⌋`) Lucy layers
+  into ONE reduction over the composed map, whose 2^j-subset inclusion-exclusion form
+  `M[S](v)=Σ_{T⊆[j]}(−1)^|T| GateProd_T(v) S(⌊v/m_T⌋)` is exactly open item 2's 2^j
+  fill (`m_T=Π_{k∈T}p_k`; verified == direct j-layer composition, selftest 1). Two
+  SOUND reductions of `M̃[S](r)=c` to a base S-claim, both ground-truth-checked and
+  cheat-tested over q & BIG_Q: **DIRECT** (one deg-3 sum-check over the v-cube → the
+  2^j openings, each routed back to S, the 2^j claims `open_batch`-folded), and
+  **BATCHED** (stack the 2^j on a j-bit axis, the batched_trace pattern → ONE deg-3
+  sum-check over the (j+nb)-cube → ONE opening). Comm is prime- AND field-independent
+  (transcript size depends only on nb,j; selftest 4), so total = ⌈K/j⌉·per-merged is
+  exact. **MEASURED (n∈{8..16}, j∈{1,2,4}, both fields identical):** chain TOTAL comm
+  exponent **α~0.45–0.49 (Θ(√x)) for EVERY j in BOTH modes** — √x is layering-inherent.
+  DIRECT `comm_fill=(2^j+1)(3nb+2)` grows ~2^j (total comm has a min at j=2 then GROWS
+  — merging makes the certificate *bigger*); BATCHED pushes the 2^j OUT of the
+  transcript (comm_fill flat=27) but into **verifier WORK** (`vwork`~2^j, ratio 5.7×
+  @j:1→4, exponent 0.84–0.89 matching the prover) AND prover, comm floored at
+  ⌈K/j⌉(j+nb)→K=√x (the merge-axis sum-check costs log₂(2^j)=j/layer, ⌈K/j⌉·j=K). The
+  **prover fill total ⌈K/j⌉·2^j·2^nb → x^{3/2}** (/x: 0.42→2.25 over j:1→6 at n=16,
+  exponent 0.84+) — open problem 2's m·K²/2≈x^{3/2}, now on the VERIFICATION face.
+  **Conclusion:** no merge depth in either batching strategy drops the comm exponent
+  below 0.5; merging trades a bounded comm-prefactor win for a 2^j prover/verifier-WORK
+  blow-up. The cert-size wall = verifier-work wall = prover-time wall = the one
+  ⌊v/p⌋-semigroup sequential-sieve wall. 5 selftest cases (operator==composition;
+  honest accepts/residual correct; c_value/c_gate/c_route reject; comm prime- &
+  field-independent; scaling bounds). `merged_layer_comm_results.md`.
+- Certificate-SIZE profile — the Õ(√x) comm wall LOCALIZED (S509): the verifier side of
+  the milestone was met at S508 (large-table ops Θ(x^{1/4})); the quantity STILL Õ(√x) is
+  the certificate SIZE (`stats["comm"]`, slope ~0.5 in every config). This cycle pins down
+  WHERE. Added a purely-additive comm attribution to `compressed_layer.run_chain` —
+  boundary snapshots partition `stats["comm"]` into `comm_outer` (the K=π(√x) SEQUENTIAL
+  per-layer two-sided reductions), `comm_bt`/`comm_bw`/`comm_ub` (the one-time batched
+  trace/wiring/Ub discharges), `comm_base` (the two one-time S₀ tensor-PCS eval proofs);
+  the five sum EXACTLY to `comm` (asserted on every complete certificate; transcript &
+  verdict unchanged — compressed_layer selftest still passes). New
+  `experiments/constructions/p12_sumcheck_pi_verification/certificate_profile.py` measures,
+  over n∈{8..18}, the **full succinct config** (delegate+structured+pcs+batch_trace+
+  batch_ub+**batch_wiring**+commit_base — strictly extends S508 config (d) by batching the
+  wiring, S503/S504, which alone cuts comm 5.3× @n=18): (i) cert size in elems & bits,
+  (ii) verifier large-table ops, (iii) prover wall; attributes the comm; fits each exponent.
+  **MEASURED:** cert size **α=0.473 (Θ(√x))**, DOMINATED by `comm_outer` **α=0.522** —
+  60%→90% of comm over n=8→18, →100% asymptotically; every batched discharge polylog
+  (`comm_bt` α=0.09, `comm_bw` α=0.18, `comm_ub` α=0.09); `comm_base` α=0.30 (≈Θ(x^{1/4}),
+  the PCS proof); verifier ops α=0.258 (reconfirms S508). **The Õ(√x) certificate, after
+  every batchable obligation is batched (→polylog) and the base committed (→x^{1/4}), IS
+  exactly the K sequential outer layer reductions** (each O(nb²)=O(log²x) round scalars ×
+  K=π(√x) ⇒ Θ(√x·polylog)). **HONESTY SHARPENING of S508:** the verifier must READ the
+  Õ(√x) proof (each scalar an O(1) round check) ⇒ **total verification is Θ(√x)**, bounded
+  below by proof size; the S508 Õ(x^{1/4}) is the large-table-eval SUB-term only — now made
+  explicit. **Membership result:** `L_π={(x,c):π(x)=c}` has, under a CRH/RO (Fiat–Shamir),
+  a NON-INTERACTIVE certificate of size **Õ(√x)** field elems (Õ(√x·log²x) bits), with
+  **Õ(x^{1/4})** large-table opens (total verification Θ(√x)). Compressing the SIZE to
+  polylog requires batching the K SEQUENTIAL reductions — each layer's output claim IS the
+  next layer's input claim (a dependency chain), unlike the independent per-layer
+  trace/Ub/wiring witnesses — which is the ⌊v/p⌋-semigroup compression, i.e. the SAME wall
+  as open item 2 (layer-batching closed negative). Cert-size wall = prover-time wall = the
+  one sequential-sieve wall. selftest (5 cases): attribution closes over q & BIG_Q (honest;
+  delta_pi + self-consistent liar reject), comm COUNT field-independent (q vs BIG_Q identical,
+  bits differ 31 vs 61), batch_wiring moves comm out of `outer`, exponent bounds, verifier
+  large-table work one-time-only. `certificate_profile_results.md`.
+- Tensor polynomial commitment for the S₀ base closes — the whole-chain verifier is
+  now SUB-√x (S508): built `experiments/constructions/p12_sumcheck_pi_verification/
+  pcs_commit.py`, the hash-based multilinear PCS the S507 NEXT ACTION called for, and
+  threaded it behind `run_chain(--commit-base)`. The chain's per-layer verifier was
+  leaf-eval-free since S506; the ONLY verifier work whose cost still grew with x was
+  the two ONE-TIME S₀ base closes, each a direct `mle_eval` over a 2^nb=O(√x) table
+  (`compressed_layer.py:1047`). This collapses that term. Construction (Ligero/
+  Brakedown tensor): reshape the 2^nb table into an r×k matrix (r=2^{n1}, k=2^{n2},
+  n1+n2=nb), Reed-Solomon-encode each ROW (N=blowup·k points), Merkle-commit the N
+  COLUMNS (sha256 = the CRH/random-oracle stand-in). Since `eq~(pt,w)` factors over
+  the bit split, `S~(pt)=a^T M b` (a=eq_table(pt_hi) len r, b=eq_table(pt_lo) len k);
+  the eval proof (Fiat–Shamir) sends v=a^T M, w=ρ^T M (len k) and opens t columns, and
+  the **verifier is `O(t·(r+k))=O(x^{1/4}·polylog)`** — SUB-√x, the full 2^nb table
+  never touching it. `commit`/`prove`/`verify` with stats-tallied `vcommit_ops`.
+  **Measured:** standalone `--bench` — commit-verify op-count slope **0.5/nb
+  (Θ(2^{nb/2})=Θ(x^{1/4}))** vs the direct close's 1.0/nb (Θ(√x)), same over q & BIG_Q;
+  absolute crossover at nb≈14 (the t-query constant dominates below — the S506 pattern,
+  honestly documented). Whole-chain `--bench-verifier-ops` **config (d)** added:
+  leading exponent **α_ops=0.258 (Θ(x^{1/4}))** vs (c)'s 0.500 (Θ(√x)) and (a)'s 0.961
+  (Θ(x)) — the milestone **Θ(x)→Θ(√x)→Θ(x^{1/4})**; comm slope stays ~0.60 (Õ(√x), the
+  proof adds only an O(x^{1/4}) term). **Soundness:** standalone selftest (over q,
+  BIG_Q, SMALL_Q) rejects all 4 cheat classes — wrong claimed value, forged opening
+  (v bent to pass the eval binding, caught by column consistency), tampered (non-
+  codeword) committed row (caught by the proximity test), tampered revealed column
+  (Merkle path); honest opens AGREE with `mle_eval`. `compressed_layer` selftest 23:
+  `run_chain(--commit-base)` verdict UNCHANGED — honest π==sieve over q & BIG_Q,
+  delta_pi + self-consistent liar rejected. **Honest scope:** this trades the
+  otherwise-unconditional Õ(√x) verifier for full succinctness under the hash
+  assumption (the rest stays unconditional); RS's N≤q point requirement is a demo
+  artifact a field-size-free linear code (Brakedown's expander code) removes behind the
+  same `commit/open/verify` interface. Default `commit_base=False` keeps every prior
+  artifact verbatim. `pcs_commit_results.md`; canonical-doc leaf-openings section + the
+  protocol-stack table updated.
+- Whole-chain verifier op-count CURVE (S507): turned the Õ(√x) end-to-end verifier
+  claim from a per-n op-count fact (S506) into a MEASURED SCALING LAW. Added
+  `_acct_vleaf` to `compressed_layer.py` — a counter tallying every VERIFIER
+  large-table evaluation (a direct `mle_eval` of a committed √x-size cube, the ONLY
+  verifier operation whose per-call cost grows with x), weighted by table size, split
+  into the PER-LAYER critical path (scales with K=π(√x)) vs the ONE-TIME terms (the two
+  S₀ base closes). Instrumented all six verifier leaf-eval sites (affine s2 close, trace
+  s_B close, the nb Ub openings, the line-batch close, the single-claim anchor, the two
+  base closes), respecting the existing pcs/batch_ub gating. `--bench-verifier-ops` runs
+  three configs (ALL delegate+structured — so the wiring verifier is already polylog and
+  leaf opens are the sole x-scaling verifier term) over n∈{8..18}: (a) no-pcs, (b) pcs,
+  (c) pcs+batch_trace+batch_ub. **Falsifiable claim CONFIRMED:** exact per-layer
+  leaf-eval COUNTS `K·(nb+5)−1` (a) / `K·nb` (b, the Ub openings) / **0** (c), one-time
+  `2·2^nb` in all three (asserted in the bench + selftest 22 over q AND BIG_Q — the count
+  is field-independent); whole-chain `vleaf_ops` fitted leading exponent **α=0.961 /
+  0.998 / 0.500** (per-step Δn=2 growth ×4 / ×4 / **×2.0 exactly**) — the Θ(x)→Θ(√x)
+  drop, with config (c)'s total being the one-time base closes ONLY. The `comm` column
+  (slope ~0.60, Õ(√x) with polylog) corroborates that the entire non-leaf verifier
+  residual (sum-check checks + the O(K·polylog) batched-discharge recomputes, proven in
+  S495/S502/S503/S506) stays sub-linear and never re-introduces a Θ(x) term. **Honest
+  scope:** the metric is the LEADING term (large-table evals only); config (c)'s grand
+  total is Õ(√x) at effective exponent ~0.6 (polylog above √x), exactly the milestone's
+  "leading term Θ(√x·polylog)". The only remaining √x verifier work is now one-time (the
+  two S₀ base closes + batched discharges). compressed_layer §"Step 9" results.
+- Batched Ub openings — the LAST per-layer O(2^nb) verifier term removed (S506): built
+  `batched_trace.verify_ub_openings_batched`, the multi-point/multi-table opening that
+  the S505 NEXT ACTION called for. After `--pcs`, the only per-layer O(2^nb) verifier
+  operation left was `verify_trace_region`'s nb Ub-bit-table openings (`Ub_{Lv-nb+k}~(r_C)`,
+  the B2 routing's pin of g1_trace to the certified quotient u_e) — per-layer WITNESS
+  data, so no carried claim to thread to the S₀ base. These Ub tables are EXACTLY the
+  ones `verify_constraints_batched` already stacks and commits along the layer axis, so
+  the discharge shares that commitment. Each layer DEFERS `(l, r_C^l, [ub_{l,k}])` (the
+  prover supplies the scalars, the verifier folds them into its B2 `expect` in O(nb)) and
+  all K·nb discharge in ONE degree-2 sum-check: with γ←F_q and β=γ^nb the per-(l,k) weight
+  β^l·γ^k=γ^{l·nb+k} is a DISTINCT power, and the identity factorizes to a single inner
+  product `claim=Σ_w B[w]·C[w]` over the (Lk+nb)-cube — B the verifier-anchored per-layer
+  eq weights (recomputed in O(K(Lk+nb)), the soundness anchor), C the γ-fold of the
+  committed low-nb Ub tables (its opening taken from the sum-check's folded scalar, exactly
+  as the zero-test trusts its bit scalars). Wired behind `run_chain(--batch_ub`, requires
+  pcs+batch_trace); threaded via a new `ub_defer` accumulator (mirrors `batch_wiring`'s
+  `defer`) through `large_reduce`→`verify_trace_region`, discharged after the layer loop.
+  **Measured (`--bench-ub`, full delegate+structured+batch_trace+batch_wiring+pcs config):**
+  the verifier-side O(2^nb) Ub-leaf eval count `ub_leaf_v` drops from K·nb to **EXACTLY 0**
+  at every n=8..16 (24/55/108/217/432 → 0; moved to the prover, `ub_leaf_p`=K·nb). The
+  per-layer verifier is now LEAF-EVAL-FREE — the only O(√x) verifier work left is one-time
+  (the two S₀ base closes + the batched discharges), so **the chain verifier is honestly
+  Õ(√x) end-to-end**, closing the "Honest scope" caveat that has stood since step 1.
+  **Honest wall-clock scope:** the measured t_verifier drop is only ~1.1–1.2× and roughly
+  flat in n — a vectorised numpy `mle_eval` over an O(√x)-size array is cheap relative to
+  the Python-loop wiring/eq recomputes that dominate the measured t_verifier, so the
+  O(K·nb·2^nb)→one-time improvement does NOT surface as a growing wall-clock ratio at
+  reachable n. **This CORRECTS the S505 NEXT-ACTION prediction** that the ratio would grow
+  with n (it grows in op-count, not measured wall-clock until past the array-size crossover
+  S500 measured). Selftest 21 (compressed_layer) + §7 (batched_trace): verdict UNCHANGED
+  (honest==sieve, delta_pi + self-consistent liar rejected) over q AND BIG_Q; standalone
+  primitive accepts honest openings, agrees with the per-layer inline `mle_eval` ground
+  truth, rejects any single forged (layer,bit) opening 4/4; K=1 edge; fast==object. Default
+  `batch_ub=False` keeps every prior artifact verbatim.
+- Real leaf openings — the polynomial-commitment opening primitive (S505): built
+  `experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py`, the
+  sum-check MLE OPENING that the NEXT ACTION called for. `open_eval(S,pt,claimed)`
+  proves `S~(pt)=claimed` by ONE degree-2 sum-check of the MLE-eval identity
+  `S~(pt)=Σ_w S[w]eq~(pt,w)` — a REDUCTION converting an opening at `pt` into a
+  polylog transcript (verifier O(nb), comm O(nb)) PLUS one residual claim `S~(r)`
+  at a fresh point; `open_batch` folds k same-table claims to ONE residual via a
+  powers-of-γ eq-RLC + one sum-check (drop-in for `line_batch_pair`/
+  `batch_on_table`). Threaded behind `run_chain(--pcs)`: the carried-claim folds'
+  residuals are **threaded as the next layer's claim and discharged transitively
+  at the S₀ base** (the now-redundant `s2`/`s_B` closes in `verify_affine_region`/
+  `verify_trace_region` skipped) — UNCONDITIONAL (no commitment; soundness rides
+  the GKR layer reductions). **Measured:** standalone opening verifier is flat in
+  table size `2^nb` (the O(nb) signature) — 6.5×→432× faster than the `mle_eval`
+  close it replaces as nb grows over q, **21×→3605× over BIG_Q** (object dtype);
+  `open_batch` beats sequential line folding 13–34× (vs k). Chain `--bench-pcs`:
+  **stable ~1.2–1.36× verifier reduction** (n=8..16), comm +1–3%. Selftest case 20:
+  pcs chain verdict UNCHANGED — honest==sieve, delta_pi + self-consistent liar
+  (layers 1/K/2/K) rejected — over q AND BIG_Q, automaton AND delegated+structured,
+  composed with batch_trace+batch_wiring; n=16 headline π(65535)=6542 with all
+  cheats rejected 6/6. **Honest scope:** this is a CONSTANT-FACTOR win + a working
+  demonstration of the residual-threading architecture, NOT yet asymptotic Õ(√x):
+  it removes ~5 per-layer O(2^nb) leaf closes, leaving the DOMINANT per-layer
+  O(2^nb) term — `verify_trace_region`'s nb Ub-bit-table openings (line 429), whose
+  residuals are per-layer WITNESS data with no carried claim to thread to. That
+  single remaining term (→ batched-trace integration) is the new NEXT ACTION.
+  Default `pcs=False` keeps every prior artifact verbatim.
 - Batched wiring INTEGRATION + the fast-path sign flip resolved (S504): wired
   `batched_wiring.verify_wiring_obligations` into `compressed_layer.run_chain` by
   the planned defer-and-batch. New `batch_wiring=True` path (delegate only): a
@@ -422,34 +803,35 @@ width-spectrum theory, census law, open program). Code:
 
 ## NEXT ACTION (single, concrete)
 
-The compressed Õ(√x)-verifier / Õ(x)-prover π(x) chain is now COMPLETE and
-FAST: both big kernels batched (trace S502, wiring S504), the fast Mersenne path
-a net 1.92× end-to-end win over BIG_Q, sound `π(2ⁿ)==sieve` to n=20 (x≈10⁶, 66 s).
-The one remaining gap between this and an UNCONDITIONAL Õ(√x) verifier is the
-**leaf-opening stand-in**: every `mle_eval(S, point, q)` in `compressed_layer.py`
-(the two `S_0` bases in `run_chain`, the `line_batch_pair`/`batch_on_table`
-closes, the region-opening checks `s2==mle_eval(...)`) is an O(√x) DIRECT MLE
-evaluation standing in for a polynomial-commitment opening. That O(√x)-per-open
-cost is the LAST p-/√x-linear term in the verifier; with K layers it is the only
-thing keeping the verifier from being honestly polylog-per-layer.
+S513 advanced item 5: `large_x_benchmark.py` runs the FULL succinct config over the
+sound BIG_Q and verifies exact `π(2ⁿ)==sieve` at **n=22 (x≈4.2×10⁶, 252.8 s)** and
+**n=24 (x≈1.7×10⁷)**, with the asymptotic profile confirmed at the reach (per-layer
+verifier leaf-ops 0, comm ~95% the K sequential reductions, base opens Θ(x^{1/4})) and
+soundness witnessed (delta_pi rejected at n=22). The reach is now **prover-bound and
+effectively maxed for a per-cycle wall budget** — n=26 ≈ ~50 min (above the 10-min
+foreground cap), so pushing further is not a clean single cycle. The benchmark line is
+banked; the highest-value CONCRETE next move is a clean single-cycle build that unblocks
+the production face of the now-stress-tested certificate:
 
-**NEXT: build a real multilinear polynomial-commitment opening for the
-committed `S_i^{small,large}` tables and thread it through `compressed_layer.py`,
-replacing the `mle_eval` stand-ins.** Concretely, prototype a sum-check-based
-opening (the standard "evaluate a committed MLE at a point via one sum-check
-against an `eq(point,·)` table" — e.g. a Brakedown/FRI-free PCS suffices for the
-demo, or even just a sum-check-delegated `eq`-fold whose own leaf is the next
-layer's claim) in a new
-`experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py`
-(`--selftest`, `--bench`), verify it agrees with `mle_eval` and rejects a forged
-opening, then wire it behind a `pcs=True` flag in `run_chain` exactly as
-`batch_trace`/`batch_wiring` were threaded (default off → artifacts verbatim).
-This closes the "Honest scope" caveat that has stood since step 1 and makes the
-Õ(√x) verifier claim end-to-end real rather than modulo-leaf-openings.
+**NEXT: field-size-free commitment — swap the Reed–Solomon row code in `pcs_commit.py`
+for a Brakedown-style linear-time expander code, behind the SAME `commit/prove/verify`
+interface.** The RS path requires the codeword length `N = blowup·k ≤ q`, a demo
+constraint that caps the committable table size and forced the BIG_Q runs onto a 61-bit
+field; an expander/linear code removes the `N≤q` requirement (and keeps the
+`O(t·(r+k))=Õ(x^{1/4})` verifier and the 4-class cheat panel — wrong claim, forged
+opening, tampered codeword row, tampered revealed column). Gate it behind a `code=`
+selector so the RS path stays verbatim; selftest must show the expander path agrees with
+`mle_eval` and rejects all 4 cheats over q & BIG_Q, and `--bench` the verifier slope
+stays 0.5/nb. This is the documented requirement for any production-scale (n≳120)
+commitment and directly extends the S508 work item 5 just exercised at a larger table.
 
-Smaller follow-ons (either is a clean cycle):
-- **Reach push:** run the winning config at n=22 (≈4 min) / n=24 (≈15 min) for a
-  larger item-5 headline (`π(x)` at x≈10⁷); prover-bound, no code changes.
-- **`bench_combined` is `--n`-parameterised** but defaults to 16; add an n-sweep
-  row set if a scaling curve of the fast-path win vs n is wanted (it should widen
-  with K as the per-fmul width grows).
+Smaller follow-ons (each a clean cycle):
+- **#P-hardness theory (the harder open gap):** attempt the formal reduction
+  #(integers free of a prime set, sets given explicitly) → counting hardness, or a
+  Turing reduction from a #P-complete count to a π-oracle; OR a non-sieve witness
+  family for L_π that beats √x. S512 argues all natural routes are √x-bounded — this
+  is the genuine open frontier, likely multi-cycle / new-math.
+- **Cert-info sharpening:** extend S511's rank measurement to W=192·K at the top of
+  the range (push α_rank from 0.46 toward the ideal 0.5) and/or confirm the per-layer
+  bit-content profile is dense across all K layers (not concentrated in the late ones)
+  — a small follow-on solidifying the Θ(√x) joint-info number.

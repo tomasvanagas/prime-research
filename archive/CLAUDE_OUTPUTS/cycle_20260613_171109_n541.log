@@ -1,0 +1,84 @@
+=== Cycle 541 — Sat Jun 13 17:11:09 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, especially the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: swap the Reed–Solomon row code in `pcs_commit.py` for a Brakedown-style linear-time expander code behind the same interface. Let me read the current implementation.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+The NEXT ACTION is well-specified. Let me look at the field definitions and how `pcs_commit` is wired into the chain before designing the expander code.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "DEFAULT_Q\|^BIG_Q
+  [tool: Bash] grep -n "pcs_commit\|commit_base\|commit(\|prove(\|verify(\|import pcs" compressed_layer.py | head -40
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me look at the `run_chain` signature and the existing selftest 23 (chain + commit_base) so I can thread the code selector and add an expander selftest.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Before committing parameters, let me prototype the expander code and measure its minimum relative distance (which directly controls cheat-rejection reliability).
+  [tool: Bash] cat > /tmp/proto_exp.py << 'PY'
+import hashlib, itertools
+import numpy as np
+
+def _digest(*parts):
+    h=hashlib.sha256(
+Min *basis* weight (which governs the forge cheat) drops to 1 at low density — some input coordinate never reaches the parity. I'll make the sparse matrix column-regular (every input influences parity) and re-measure.
+  [tool: Bash] cat >> /tmp/proto_exp.py << 'PY'
+
+def gen_sparse_colreg(nr,nc,coldeg,q,tag):
+    # every column assigned to `coldeg` dis
+Column-regular matrices give a robust minimum relative distance of ~0.42–0.65 even at low density. With `coldeg=4` and δ≈0.45, t=32 queries gives soundness error (0.55)³² ≈ 7e-9 — comfortably robust for deterministic cheat rejection. The encode is linear-time (geometric recursion, constant column degree), so the verifier re-encode stays O(k)=O(x^{1/4}). Let me implement.
+
+First, the expander code section in `pcs_commit.py`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now update `commit` to add the `code` selector:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now `prove` — it's code-agnostic but must carry `code` into the proof:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now `verify` — add the code branch for Ncode recompute and the per-column encoding:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now the per-column encoding branch. Let me update the column-consistency loop:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now `_forge_prove` must carry `code` too:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me update the selftest to cover both codes plus a measured-distance assertion. Let me view the current selftest text:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now I'll rewrite the selftest to cover both codes, plus a measured-distance check. Let me edit the main loop:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now update `bench` to accept the code selector and `__main__` for `--code`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me run the selftest and benches to verify:
+  [tool: Bash] time python3 pcs_commit.py --selftest 2>&1 | tail -20
+Selftest passes. Now the benches for both codes:
+  [tool: Bash] echo "=== RS (default, verbatim) ===" && python3 pcs_commit.py --bench --code rs 2>&1 | tail -12
+echo "" && echo "=== EX
+Both codes hit the sub-sqrt slope (~0.5/nb → α≈0.25 in x), and the expander's codeword is *smaller* (N=380 vs RS's 512 at nb=14). Now let me demonstrate the actual win concretely: a tiny field where RS breaks (N>q) but the expander works.
+  [tool: Bash] python3 -c "
+import numpy as np, pcs_commit as P
+qt = 17                      # tiny prime: RS needs Ncode = max(4k,k+1)
+Excellent — the field-size-free win is concrete: over q=17, RS refuses (Ncode=64>17) but the expander commits, verifies, and rejects cheats. Let me add this as a selftest case:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me thread `commit_code` through `run_chain` in `compressed_layer.py` for the end-to-end integration proof. First the signature and the call sites:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me add a docstring note for `commit_code` near the `commit_base` description:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now extend chain selftest case 23 to also exercise the expander code. Let me update it:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me check the CLI/demo path to optionally expose `--commit-code`:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the pcs_commit selftest again (with the new cases), then a quick end-to-end chain check with the expander code:
+  [tool: Bash] echo "=== pcs_commit selftest ===" && time python3 pcs_commit.py --selftest 2>&1 | tail -5
+echo "" && echo "=== chain wi
+Let me see the headline of that chain run:
+  [tool: Bash] python3 compressed_layer.py --n 12 --delegate --structured --field big --pcs --commit-base --commit-code expander --chea
+Full chain end-to-end with expander base works: π(4095)=564 correct, all cheats rejected. Now let me run the full `compressed_layer.py` selftest (includes the new case 24) to confirm nothing regressed:
+  [tool: Bash] time python3 compressed_layer.py --selftest 2>&1 | tail -6

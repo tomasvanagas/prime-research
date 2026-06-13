@@ -40,6 +40,165 @@ the structured prover — defaulting `q = Q` so all prior artifacts stay
 **object arrays** for larger primes (`BIG_Q = 2⁶¹−1`, sound to `n ≲ 60`).
 `--field {q,big,small}`. **See the "Step 6" section below.**
 
+**Step 7 (S505): real leaf openings (`--pcs`) replace the per-layer `mle_eval`
+stand-ins.** The `O(√x)` direct `mle_eval` leaf opens that grounded each carried
+claim are replaced by sum-check OPENINGS (`leaf_open.py`: `open_eval`/`open_batch`)
+whose residuals **thread to the chain base** instead of closing per layer. Threaded
+through `line_batch_pair`/`batch_on_table` (both carried-claim folds) and the now-
+redundant `s2`/`s_B` closes in `verify_affine_region`/`verify_trace_region`. The
+chain verdict is unchanged (selftest case 20, over q & BIG_Q, automaton &
+delegated+structured, composed with batch_trace+batch_wiring); `--bench-pcs` shows
+a **stable ~1.2–1.36× verifier reduction**. This is a constant-factor win + a
+working demonstration of the unconditional residual-threading architecture, NOT yet
+asymptotic Õ(√x): the dominant per-layer `O(2^nb)` term that REMAINS is
+`verify_trace_region`'s nb Ub-bit-table openings (line 429), whose residuals are
+per-layer witness data needing the batched-trace integration. Default `pcs=False`
+keeps prior artifacts verbatim. **See `leaf_open_results.md` for the full
+treatment.**
+
+**Step 8 (S506): the LAST per-layer `O(2^nb)` verifier term is gone (`--batch_ub`).**
+After S505, exactly one per-layer `O(2^nb)` verifier operation remained:
+`verify_trace_region`'s `nb` Ub-bit-table openings `Ub_{Lv-nb+k}~(r_C)` (the B2
+routing check that pins `g1_trace` to the certified quotient `u_e`) — per-layer
+*witness* data, so their residuals have no carried chain claim to thread to the base.
+This cycle **defers** them (`ub_defer`, mirroring the `batch_wiring` accumulator: the
+prover supplies the scalars, the verifier folds them into its `expect` in `O(nb)`) and
+**discharges all `K·nb` of them in ONE degree-2 sum-check** against the SAME stacked Ub
+cube `batch_trace`'s zero-test already commits. New primitive
+`batched_trace.verify_ub_openings_batched`; the γ-RLC factorizes so the whole batch is
+a single `claim = Σ_w B[w]·C[w]` over the `(Lk+nb)`-cube — `B` the verifier-anchored
+per-layer eq weights, `C` the γ-fold of the committed low-`nb` Ub tables. Requires
+`pcs` + `batch_trace`. **Measured asymptotic fact:** the verifier-side `O(2^nb)`
+Ub-leaf eval count `ub_leaf_v` drops from **`K·nb` to exactly 0** at every `n` (moved to
+the prover, `ub_leaf_p = K·nb`); the per-layer verifier is now **leaf-eval-free**, so the
+only `O(√x)` verifier work left is one-time (the two `S₀` base closes + the batched
+discharges). **The chain verifier is honestly Õ(√x) end-to-end** — closing the "Honest
+scope" caveat that has stood since step 1. **Honest wall-clock scope:** the measured
+`t_verifier` drop is only `~1.1–1.2×` and roughly flat in `n` (a vectorised numpy
+`mle_eval` over an `O(√x)`-size array is cheap relative to the Python-loop wiring/eq
+recomputes that dominate the measured `t_verifier`), so the `O(K·nb·2^nb)→`one-time
+improvement does NOT surface as a growing wall-clock ratio at reachable `n`. This
+**corrects the S505 NEXT-ACTION prediction** that the ratio would grow with `n`: it
+grows in *op-count*, not in measured wall-clock until past the array-size crossover.
+Verdict unchanged (selftest case 21, over q & BIG_Q; honest == sieve, delta_pi + liar
+rejected). Default `batch_ub=False`. **See the "Step 8" section below.**
+
+## Step 8 — batched Ub openings (S506): the per-layer verifier is leaf-eval-free
+
+**The single remaining per-layer `O(2^nb)` verifier term (after S505).** `--pcs`
+threaded every CARRIED-claim leaf open's residual to the `S₀` base. What it could not
+touch: `verify_trace_region`'s B2 check evaluates `Ub_{Lv-nb+k}~(r_C)` for the `nb` low
+bits of the certified quotient `u_e` (bit `nb−1−k` of `u_e`), `nb` direct `mle_eval`s
+per layer = `O(K·nb·2^nb) = Õ(x)` over the chain. These are *witness* tables (no carried
+claim to thread), so they need a commitment-shared discharge — and `batch_trace` already
+stacks and commits exactly these Ub tables across all `K` layers in its zero-test.
+
+**The construction (the γ-RLC factorization).** Each layer `l` emits the obligation
+`(l, r_C^l, [ub_{l,k}]_{k<nb})`. With `γ ← F_q` and `β = γ^{nb}` the per-`(l,k)` weight
+`β^l·γ^k = γ^{l·nb+k}` is a *distinct* power, so the weighting is a genuine RLC over all
+`K·nb` openings. The combined identity
+
+```
+claim := Σ_{l,k} γ^{l·nb+k} ub_{l,k}  ==  Σ_w B[w]·C[w]
+  B[w] = Σ_{l<K} β^l [w_L=l] eq~(r_C^l, w_e)     (verifier-anchored: public r_C, β)
+  C[w] = Σ_{k<nb} γ^k Ub_{(nb−1−k)}[w]           (γ-fold of the committed Ub cube)
+```
+
+is ONE degree-2 sum-check over the stacked `(Lk+nb)`-cube (`Lk=⌈log₂K⌉`). The cross term
+`Σ_w B[w]C[w] = Σ_{l,k} β^l γ^k Ub_{(nb−1−k)}^{(l)}~(r_C^l)` is exactly the γ-weighted
+*true* openings, so an honest prover's `claim` matches; a single wrong `ub_{l,k}` flips
+`claim` (caught by the sum-check round-1 identity, error `≤ (K·nb−1)/q + 2(Lk+nb)/q`).
+**Verifier:** recompute `B~(r*)` in `O(K(Lk+nb))` (the anchor — `B` is public) and take
+`C~(r*)` from the sum-check's folded scalar (the committed Ub-cube opening, exactly as
+the zero-test trusts its U/R/Qv/bit scalars). One-time `O(K(Lk+nb)) = Õ(√x)`, replacing
+the per-layer `O(K·nb·2^nb)`.
+
+**Measured (`--bench-ub`, full config delegate+structured+batch_trace+batch_wiring+pcs,
+q field):**
+
+```
+  n    K  nb   K·nb   vleaf_off  vleaf_on   tV_off    tV_on   tVr    tP_off    tP_on
+  8    6   4     24        24        0      5.93m    5.57m  1.06x    8.29m     9.06m
+ 10   11   5     55        55        0     15.47m   13.45m  1.15x   17.67m    20.36m
+ 12   18   6    108       108        0     36.19m   31.02m  1.17x   35.31m    39.54m
+ 14   31   7    217       217        0     69.37m   56.66m  1.22x   63.72m    68.31m
+ 16   54   8    432       432        0    177.12m  157.27m  1.13x  146.38m   186.09m
+```
+
+`vleaf_on = 0` at every `n` is the headline: the per-layer verifier has no table-sized
+eval. `tP` rises by the shifted openings. `comm` rises by one batched sum-check
+(`1 + 3(Lk+nb)`, e.g. `+34` at `n=12`). The verdict and `claimed π(x)` are identical to
+`batch_ub=False`.
+
+## Step 9 — the whole-chain verifier op-count CURVE (S507): Θ(x) → Θ(√x)
+
+Steps S505/S506 made the per-layer verifier **leaf-eval-free** (an op-COUNT fact at
+a single `n`). What remained to turn the Õ(√x) end-to-end verifier claim into a
+**measured curve**: a whole-chain field-op-count attribution that shows the *leading
+term* fall from Θ(x) to Θ(√x). Wall-clock `t_verifier` cannot show this — the
+dominant sum-check FOLDING is untimed prover work (S501), and vectorised numpy
+flattens the asymptotics (S506, `tVr ≈ 1.1–1.2×` flat). The honest headline is an
+op-count.
+
+**The metric (`--bench-verifier-ops`).** A counter `_acct_vleaf` tallies every
+VERIFIER **large-table evaluation** — a direct `mle_eval` of a committed `2^nb = √x`-size
+table — weighted by table length, split into the **per-layer critical path** (scales
+with `K = π(√x)`) vs the **one-time** terms (the two `S₀` base closes). This is the
+*only* verifier operation whose per-call cost grows with `x`: every other verifier step
+— sum-check round checks, `eq_point`/`le_eval`/`band_eval` point evals `O(nb)`, the
+delegated wiring carry chain `O(nb·log p)` (S495), and the batched-discharge MLE
+recomputes `O(K·polylog)` (S502/S503/S506) — is polylog or `O(K·polylog)`, hence bounded
+by Õ(√x). So `vleaf_ops` **is** the leading term, and `comm` (printed) corroborates that
+the entire non-leaf residual stays Õ(√x) in all configs.
+
+Three configs, **all delegate+structured** (so the wiring verifier is already polylog and
+the leaf opens are the sole `x`-scaling verifier term), differing only on the leaf-opening
+axis:
+
+```
+  n        x    V  nb    K     pi |   a no-pcs: pl_cnt   total x4? |     b pcs: pl_cnt   total x4? | c pcs+bt+ub: pl_cnt total x4?
+  8      255   15   4    6     54 |               53      880   -  |             24     416   -  |               0      32   -
+ 10     1023   31   5   11    172 |              109     3552 4.0x |             55    1824 4.4x |               0      64 2.0x
+ 12     4095   63   6   18    564 |              197    12736 3.6x |            108    7040 3.9x |               0     128 2.0x
+ 14    16383  127   7   31   1900 |              371    47744 3.7x |            217   28032 4.0x |               0     256 2.0x
+ 16    65535  255   8   54   6542 |              701   179968 3.8x |            432  111104 4.0x |               0     512 2.0x
+ 18   262143  511   9   97  23000 |             1357   695808 3.9x |            873  448000 4.0x |               0    1024 2.0x
+
+fitted leading-term exponent  alpha  (total_ops ~ x^alpha; log2(total) vs n, last 4 pts):
+        config  alpha_ops  alpha_comm
+      a no-pcs      0.961       0.604
+         b pcs      0.998       0.602
+   c pcs+bt+ub      0.500       0.604
+```
+
+**The curve is the proof.** Per step (`Δn = 2`, i.e. `x` quadruples) configs (a)/(b)
+grow `~4×` (∝ `x`), config (c) grows **exactly 2.0×** (∝ `√x`). The fitted exponents:
+(a) `α_ops = 0.961`, (b) `0.998` — `Θ(x)`; (c) `α_ops = 0.500` — `Θ(√x)`. The exact
+per-config leaf-eval COUNTS (asserted in the bench and selftest 22) are
+`K·(nb+5)−1` (a), `K·nb` (b, the Ub openings only), and **0** (c); the one-time term is
+`2·2^nb` in all three. Config (c)'s total `vleaf_ops` is *only* the two `S₀` base
+closes — `2·2^nb` — so the entire Θ(x) per-layer term that (a)/(b) carry has collapsed
+to a one-time Θ(√x) term.
+
+**Honest scope.** (i) The metric counts large-table (`2^nb`) evals only — the leading
+term. Config (c)'s *total* verifier op-count is `vleaf_ops + non-leaf work`; the non-leaf
+work (sum-check checks + batched-discharge recomputes) is `O(K·polylog) = Õ(√x)`, proven
+by construction in S495/S502/S503/S506 and tested there, and reflected here in the
+`comm` column (slope `α_comm ≈ 0.60` — `√x` with polylog factors above it, sub-linear in
+all three configs, so it never re-introduces a Θ(x) term). So config (c)'s grand total is
+`Õ(√x)` (effective exponent ~0.6 at these `n`, polylog above `√x`), not literally `x^{0.5}`
+— which is exactly the "leading term `Θ(√x·polylog)`" the milestone claims. (ii) `α_ops`
+for (a) reads `0.961` not `1.000` because `total(a) = (K(nb+5)+1)·2^nb` carries the
+`π(√x)/√x` and `nb` log-factors that bend the finite-`n` slope slightly below 1; the
+per-step `~4×` and (b)'s `0.998` confirm the term is genuinely linear. (iii) Field
+(`q` vs `BIG_Q`) does not change the op COUNT — same tables, same number of evals
+(selftest 22 asserts this); the bench uses default `q` for speed.
+
+The remaining Θ(√x) verifier work is now entirely **one-time** (the two `S₀` base closes,
+`2·2^nb`, plus the `O(K·polylog)` batched discharges) — so a real outer multilinear
+commitment on those two base closes would make the whole verifier *succinct* (polylog)
+under a hashing assumption. The unconditional verifier is otherwise complete at Õ(√x).
+
 ## Step 6 — the field lift through the compressed chain (S499)
 
 The hole closed by S498 lived in `compressed_prover_mult_trace.py`'s isolated
@@ -434,8 +593,17 @@ obstruction.
   (verbatim) with `BIG_Q = 2⁶¹−1` (object dtype) removing the `u·a<q` shortcut;
   the chain's trace certifier now rejects the wrap-around alias the demo prime
   admits past `n≈30`. See "Step 6".
+- **DONE in step 7 (S505):** the carried-claim leaf opens (the line-batched large
+  point, the `s2`/`s_B` reconciliations) are real sum-check **openings** whose
+  residuals thread to the `S₀` base (`--pcs`), unconditionally. See `leaf_open_results.md`.
+- **DONE in step 8 (S506):** the **`Ub_j` openings** — the only per-layer `O(2^nb)`
+  verifier term `--pcs` could not thread (per-layer witness data) — are deferred and
+  **discharged in ONE sum-check against the committed stacked Ub cube** (`--batch_ub`,
+  requires `pcs`+`batch_trace`). Verifier-side `O(2^nb)` Ub-leaf eval count `K·nb → 0`;
+  the per-layer verifier is **leaf-eval-free**, the end-to-end verifier honestly **Õ(√x)**
+  (the only `O(√x)` left is the two one-time `S₀` base closes). See "Step 8" above.
 - **NOT done (next steps):** (c) a **real outer poly-commitment** to replace the
-  `mle_eval` leaf stand-in (incl. the two `S_0` bases); (d) the end-to-end
+  two one-time `S₀` base `mle_eval` closes (computational, not unconditional); (d) the end-to-end
   **large-x benchmark** vs a real Lucy recomputation — see S500 below: the
   numpy Mersenne `mulmod` is built and threaded through the chain, but it does
   **not** unblock a large-`n` chain run; the chain wall is the *count* of small
@@ -545,6 +713,30 @@ prime admits above its field is rejected, S498), Õ(x) prover, both wirings
 delegated, both big kernels batched. The chain remains prover-bound (the √x-cube
 layer sum-checks); the ~3× wall per +2 in `n` tracks the 4× growth in `x`.
 
+**Item-5 reach push to n=22/24 in the FULL succinct config (S513,
+`large_x_benchmark.py`).** The table above is the S504 config; the reach driver
+runs the **FULL** config — it additionally enables `pcs` (real leaf openings,
+S505), `batch_ub` (per-layer Ub-opens → one, S506) and `commit_base` (the two
+S₀ base closes via the tensor PCS, S508), i.e. the full non-interactive succinct
+certificate (same as `certificate_profile.FULL`) plus `FAST_BIG`. Numbers
+(`BIG_Q`, one seed, `claimed π == sieve`):
+
+  | n | x | V=√x | nb | K | π(x) | wall (s, honest) | comm (elems) | comm_outer | per-layer leaf | base opens |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | 20 | 1048575 | 1023 | 10 | 172 | 82025 | 71.8 | 73333 | 94% | 0 | 8256 |
+  | 22 | 4194303 | 2047 | 11 | 309 | 295947 | 252.8 | 146637 | 95% | 0 | 12352 |
+  | 24 | 16777215 | 4095 | 12 | 564 | _(pending background run)_ | | | | | |
+
+The FULL config is ~8% slower than the S504 table at n=20 (71.8 vs 66.2 s — the
+pcs/commit_base overhead) but yields the complete succinct certificate. The
+profile is the milestone made concrete at the reach: **per-layer verifier
+large-table leaf-eval count = 0** (Õ(√x) end-to-end, S506), **comm ≈ 95%
+`comm_outer`** (the K sequential reductions, Θ(√x), with every batched discharge
+polylog — n=22: `comm_bt/bw/ub` = 80/2373/61), **base opens = the one-time tensor
+commitment** (Θ(x^{1/4}), S508). Soundness at the reach is witnessed: the
+`delta_pi` liar (claim π+1) is **REJECTED** at n=22 (66.9 s). Details in
+`large_x_benchmark_results.md`.
+
 ## Falsification
 
 Falsified by: the compressed DP disagreeing with a sieve (checked n≤20); an
@@ -564,3 +756,14 @@ accepting a chain cheat (it does not — selftest 16); or the lifted prime
 prime accepts (it rejects 5/5 over `BIG_Q`, accepts over `SMALL_Q`); or the
 default-`q` transcript differing from the pre-S499 artifacts (it is verbatim —
 every prior selftest passes unchanged).
+
+The **verifier op-count curve** (S507, `--bench-verifier-ops`) is falsified by:
+config (c) `pcs+batch_trace+batch_ub` having a non-zero per-layer leaf-eval count
+(`vleaf_cnt_pl ≠ 0`); its `total vleaf_ops` slope not approaching `0.5` (or the
+per-step `Δn=2` growth not `~2×`); configs (a)/(b) not approaching slope `1.0`
+(per-step `~4×`); the exact leaf-eval count identities `K·(nb+5)−1` (a), `K·nb`
+(b), `0` (c), or the one-time `2·2^nb`, failing (asserted in selftest 22 over `q`
+AND `BIG_Q`); the op count differing between `q` and `BIG_Q` (it is field-
+independent); `claimed π(x)` differing across the three configs; or the `comm`
+slope exceeding `~1.0` (which would re-introduce a Θ(x) non-leaf verifier term —
+it is `~0.6`, Õ(√x), in all three).

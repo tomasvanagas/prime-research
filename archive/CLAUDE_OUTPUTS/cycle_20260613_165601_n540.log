@@ -1,0 +1,83 @@
+=== Cycle 540 — Sat Jun 13 16:56:01 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, especially the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, long-running research project. Let me understand the current state — there are many uncommitted cycle logs (n215–n227) since the PROGRAM.md content I read (S512). Let me check what the most recent cycles actually did, so I don't redo work.
+  [tool: Bash] cat .cycle && echo "---RECENT LOGS---" && ls -t archive/CLAUDE_OUTPUTS/*.log | head -8
+We're at cycle 540, not 227 — the git snapshot in my context was stale. The PROGRAM.md narrative references S491–S512 but the loop has run many more cycles. Let me check the latest cycle logs and re-read the current PROGRAM.md NEXT ACTION to avoid redoing work.
+  [tool: Bash] echo "=== git log last 5 ===" && git log --oneline -5
+echo "=== PROGRAM.md mtime / size ===" && stat -c '%y %s' PROGRAM.
+The latest log is my own current cycle. Let me see which recent cycles did real work (many appear to be ~17-second crash cycles) and check whether the n=22/n=24 push already happened.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== runtimes of last 20 cycles (by log timestamps) ==="
+ls -t archive/CLAUDE_O
+Most recent cycles (n520–n537) were 220-byte crash cycles. The real work was n538 and n539. Let me read what they did to avoid redoing it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "########## n538 ##########"
+cat archive/CLAUDE_OUTPUTS/cycle_20260613_163010_n
+Now I have the full picture. Cycle n539 built `large_x_benchmark.py`, reproduced n=20 (π=82025, 71.8s), and **launched n=22 and n=24 in the background**, then yielded. My job (n540) is to harvest those results and finalize the documentation. Let me check whether the background runs survived and completed.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== reach process still
+The background runs did NOT survive the cycle boundary (only the header was written; the process was killed when n539 ended). And `large_x_benchmark_results.md` is missing — a contract gap left by n539. My job: run the reach runs synchronously, harvest real numbers, and finalize docs. Let me read the driver script first.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+The background runs died at the cycle boundary (n539's shell `&` process was killed when its turn ended), and `large_x_benchmark_results.md` was never written. The script itself is solid and validated. 
+
+My plan: run the reach **synchronously in the foreground** (so it can't be orphaned), starting with n=22 + soundness check — the core deliverable. This also gives me actual timing to calibrate n=24. Let me clean up the stale log and launch n=22.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+rm -f reach_run.log
+echo "===
+n=22 is a clean success — **π(4194303) = 295947 = sieve, ACCEPTED**, honest run 252.8 s, the delta_pi liar REJECTED, per-layer verifier leaf-ops = 0 (Õ(√x) end-to-end holds), comm 95% dominated by the K=309 sequential outer reductions. That's the core bankable item-5 step-up already in hand (x≈4.2×10⁶).
+
+Actual timing: n=20→n=22 was 3.52×/Δn=2, so n=24 honest ≈ 15 min — over the 10-min foreground cap. I'll run n=24 in the background (harness-tracked) and wait on it with Monitor so the cycle isn't orphaned. Let me load Monitor.
+  [tool: ToolSearch] 
+n=22 is fully banked. Now I'll launch n=24 honest-only (soundness already witnessed at n=22) in the background — harness-tracked so it survives and re-invokes me on completion — and write the documentation for n=20/n=22 while it runs. This pipelines the ~15-min wait productively.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "==== n=24 REACH (honest
+n=24 is running in the background. While it runs, let me write the results file using the n=20 (from n539's log) and n=22 (just measured) data. First let me verify the n=22 comm breakdown sums correctly and gather the exact n=20 numbers from n539's log.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== n=22 comm sum check
+n=22 sums verify exactly (146637). n=24 is progressing (760MB→4GB RAM, CPU active). I have solid n=20 (from n539) and n=22 (just measured) numbers. Let me write the results file now, with the n=24 row to be filled when the background job lands.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Results file written. Let me check n=24's progress, then update `compressed_layer_results.md` and PROGRAM.md with the banked n=22 result (so the work is durable even if n=24 runs long), refining with n=24 when it lands.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== n=24 partial output
+n=24 is mid-computation (4 GB RAM, prints only at completion). Let me update `compressed_layer_results.md` while it runs — let me find the right section.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer_re
+There's an "Item-5 headline" table at line 701. Let me read it to extend with the new reach data.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+I'll add a new reach subsection (the FULL succinct config differs from the S504 table's config — it adds pcs+batch_ub+commit_base, so the numbers belong in their own labeled block). Let me insert it before the Falsification section.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me check n=24's progress and then update PROGRAM.md item 5.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== n=24 log ==="; cat 
+Two consecutive 0.0% CPU readings is a red flag for a compute-bound job. Let me check actual CPU time consumed vs wall to confirm it's genuinely progressing, not stuck/swapping.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== cputime (TIME) vs e
+Confirmed healthy: n=24 is at ~100% of one core (300 jiffies/3s), 144s CPU so far, ~16% done; the "0.0%" was a broken `etime` clock in the container. System has 32 cores and 98 GB free — plenty. It'll complete in ~12 more min and notify me.
+
+Given the recent crash-loop history, I'll **bank the n=22 deliverable into PROGRAM.md now** (durable against a cycle kill), then append n=24 when it lands. Let me update item 5.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me add the S513 "Done this era" entry and update the header. Let me make those edits.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the NEXT ACTION. The reach is effectively maxed for a per-cycle wall budget (n=26 ≈ ~50 min, over the foreground cap). Let me read the current NEXT ACTION block and reframe it toward the next cheap concrete deliverable.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+The n=22 deliverable is now fully banked across all three docs. Now let me check n=24's progress before waiting on its completion notification.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== n=24 log ==="; cat 
+n=24 is healthy and ~5 min in (5:02 CPU, full single-core utilization), needing ~10 more minutes. The n=22 deliverable is fully banked across PROGRAM.md, `compressed_layer_results.md`, and `large_x_benchmark_results.md`. 
+
+The n=24 run is a harness-tracked background task (`bie32an0s`) that will re-invoke me when it exits. I'll wait for that completion notification, then fill in the n=24 numbers (currently marked `[APPEND ON LAND]`).
+
+**Cycle S513 status so far** — the item-5 reach push:
+- Found n539 had built `large_x_benchmark.py` and launched reach runs that died at the cycle boundary (shell `&`, not harness-tracked), leaving no results file.
+- Re-ran **n=22 synchronously**: **π(4194303) = 295947 = sieve, ACCEPTED** (252.8 s); `delta_pi` liar **REJECTED** (66.9 s); per-layer verifier leaf-ops **= 0** (Õ(√x) end-to-end holds); comm 146637 elems, 95% the K=309 sequential outer reductions (Θ(√x)), batched discharges polylog; base opens Θ(x^{1/4}). 
+- Wrote `large_x_benchmark_results.md`, extended `compressed_layer_results.md` item-5 section, updated PROGRAM.md (item 5, Done-this-era S513 entry, new NEXT ACTION = field-size-free Brakedown code in `pcs_commit.py`).
+- Launched **n=24** (x≈1.7×10⁷) as a proper harness-tracked background task.
+
+Waiting for n=24 to land.
+--- cycle result: success (turns=26, duration=887078ms) ---
+=== Cycle 540 finished — Sat Jun 13 17:10:54 UTC 2026 ===

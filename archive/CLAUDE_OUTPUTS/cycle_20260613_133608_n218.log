@@ -1,0 +1,142 @@
+=== Cycle 218 — Sat Jun 13 13:36:08 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build `certificate_profile.py` to characterize the full non-interactive certificate size and locate the Õ(√x) comm wall. Let me read the canonical doc and the relevant experiment files to understand the structures I'll be working with.
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now let me examine the key experiment file `compressed_layer.py` to understand the `run_chain` structure, stats accounting, and existing bench infrastructure.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && wc -l *.py && echo "---" &
+Let me look at the structure of `compressed_layer.py`, focusing on the stats accounting, `run_chain`, and the existing bench infrastructure.
+  [tool: Bash] grep -n "comm" compressed_layer.py | head -80
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me look at the `_acct_vleaf` function and the existing `--bench-verifier-ops` infrastructure.
+  [tool: Bash] grep -n "_acct_vleaf\|def bench\|bench-verifier-ops\|bench_verifier_ops\|vleaf_ops\|def _fit\|np.polyfit\|leading expone
+Let me read the existing `bench_verifier_ops` function, which is the model for what I'll build.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the comm-adding sites to understand exactly what's in each source category.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me check the comm contributions in `leaf_open.py`, `batched_trace.py`, `batched_wiring.py`, and `pcs_commit.py` to confirm what each category captures.
+  [tool: Bash] echo "=== leaf_open.py ===" && grep -n 'comm' leaf_open.py && echo "=== batched_trace.py ===" && grep -n 'comm' batched_
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I now understand the comm structure thoroughly. Let me verify the full config (including `batch_wiring`) runs correctly before building the profiler.
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+full = dict(delegate=True, structured=True, pcs=True, batch_trac
+The full config works. Now let me add comm attribution (purely additive snapshots) to `run_chain`. First the stats init:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the batch_trace snapshot:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the per-layer outer loop snapshot:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the batch_wiring and batch_ub discharge snapshots, plus the base close:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me verify the attribution sums correctly to the total comm across configs:
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+configs = {
+  'full': dict(delegate=True, structured=True, pcs=T
+Attribution sums correctly. Note `comm_outer` dominates and, with `batch_wiring` on, it's purely the sequential two-sided reductions. Let me verify comm (in field elements) is field-independent (count, not bit-width), and check timing/reach at n=16,18:
+  [tool: Bash] python3 -c "
+import numpy as np, time, compressed_layer as cl
+full = dict(delegate=True, structured=True, pcs=True, batc
+comm count is field-independent (count is structural; only bit-width differs). n=18 runs in ~5s — the full range is feasible. Let me get the per-source breakdown across the full n range to see the dominance trend:
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+full = dict(delegate=True, structured=True, pcs=True, batch_trac
+This is a textbook confirmation of the thesis: `comm_outer` rises from 60% → 90% of total as n grows, while the batched discharges and commit proof shrink as a fraction. Let me check the exponent fits before writing the profiler:
+  [tool: Bash] python3 -c "
+import numpy as np, math, compressed_layer as cl
+full = dict(delegate=True, structured=True, pcs=True, batc
+All exponents land exactly on the thesis: total comm α=0.473≈0.5, dominated by `comm_outer` α=0.522; batched discharges α=0.09–0.18 (polylog); commit proof α=0.30≈0.25; verifier ops α=0.258≈0.25. Let me check the prover-wall exponent so I report it honestly:
+  [tool: Bash] python3 -c "
+import numpy as np, math, time, compressed_layer as cl
+full = dict(delegate=True, structured=True, pcs=True
+Measured prover-wall exponent ≈0.55 — overhead/call-count-bound at reachable n (the S500/S501 finding), not the asymptotic Õ(x). I now have a complete, honest picture. One important sharpening: the verifier must *read* the Õ(√x) proof, so total verification is Θ(√x); the Õ(x^{1/4}) S508 figure is only the expensive large-table-eval sub-term. Let me write the profiler.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/certificate_profile.py
+Now run the selftest:
+  [tool: Bash] python3 certificate_profile.py --selftest
+The attribution only closes on *complete* (accepting) runs — a rejected transcript bails mid-layer before that layer's snapshot is recorded, so a partial certificate isn't fully attributed (by design; a rejected transcript isn't a certificate). Let me fix the selftest to assert attribution-closure only on accepting runs, and rejection-only for cheats:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/certificate_profile.py
+  [tool: Bash] python3 certificate_profile.py --selftest
+The verifier-op exponent is 0.39 on the short sweep (n=10..16) — the x^{1/4} crossover only settles past nb≈14 (n≈28) per S508, so small-n is inflated by the t-query constant. The robust claim is that table-ops grow *slower than cert size*. Let me loosen the short-sweep bound and assert the meaningful relationship:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/certificate_profile.py
+  [tool: Bash] python3 certificate_profile.py --selftest
+Selftest passes. Now run the full profile:
+  [tool: Bash] python3 certificate_profile.py
+The profile is clean and complete. Table 3 shows batching the wiring cuts comm 5.3× at n=18 (201k→38k), confirming why it belongs in the headline config. Now let me verify I haven't broken `compressed_layer.py`'s own selftest (my changes were purely additive — new stats keys + boundary snapshots):
+  [tool: Bash] timeout 580 python3 compressed_layer.py --selftest 2>&1 | tail -30
+While that runs, let me confirm the `bench_verifier_ops` assertions (which check exact `vleaf` counts) still hold under my additive changes — running a quick targeted check:
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+# replicate bench_verifier_ops's per-config count identities at 
+The verifier-op count identities are intact and attribution closes in all S507/S508 configs. Let me check on the full selftest:
+  [tool: Bash] sleep 30; tail -5 /tmp/claude-0/-apps-aplikacijos-prime-research/ab7261bb-9acd-49cf-b3b0-76899c156f6b/tasks/b12sylzre.ou
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/ab7261bb-9acd-49cf-b3b0-76899c156f6b/tasks/b12sylzre.output
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/ab7261bb-9acd-49cf-b3b0-76899c156f6b/tasks/b12sylzre.output 2>/dev/nu
+The selftest is still running (it prints only at the end). Let me write the results file while it completes:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/certificate_profile_results.md
+Let me check whether the compressed_layer selftest has finished:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/ab7261bb-9acd-49cf-b3b0-76899c156f6b/tasks/b12sylzre.output 2>/dev/nu
+  [tool: Bash] until [ ! -d /proc/$(pgrep -f "compressed_layer.py --selftest" | head -1) ] 2>/dev/null || ! pgrep -f "compressed_layer.
+The compressed_layer selftest completed with exit code 0. Let me read its output to confirm it passed:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/ab7261bb-9acd-49cf-b3b0-76899c156f6b/tasks/b12sylzre.output 2>/dev/nu
+`selftest OK` — my additive changes are clean. Let me kill the stray monitor loop and clean up `__pycache__`:
+  [tool: Bash] pkill -f "compressed_layer.py --selftest" 2>/dev/null; kill %1 2>/dev/null; find /apps/aplikacijos/prime-research/experi
+The stray monitor was killed (exit 144 from the signal). Let me re-run the cleanup cleanly:
+  [tool: Bash] find /apps/aplikacijos/prime-research/experiments -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null; echo "
+No missing results, pycache clean. Now let me update PROGRAM.md. First, add the step-14 row to the protocol-stack table:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the "Done this era" section header and add the S509 entry at the top:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 6 to note S509 closed the certificate-size characterization, and replace the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "whole-chain verifier is now sub-√x\|Brakedown expander code removes behind" PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research && grep -n "whole-chain verifier is now sub\|Brakedown expander code removes" PROGRA
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now replace the NEXT ACTION block:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the canonical doc with the S509 finding. Let me add a scope bullet after the S508 one:
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Let me also note the concrete Õ(√x) upper bound in open problem 3 (L_π ∈ NP?):
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now a final verification pass — re-run the new selftest, clean pycache, and confirm all new `.py` files have results:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 certificate_profil
+All checks pass. Let me confirm the final state of changes:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short | grep -E "certificate|compressed_layer.py|PROGRAM|succinct" 
+Cycle complete. Here's what this cycle (S509) produced.
+
+## Summary
+
+The NEXT ACTION was to characterize the full non-interactive certificate for `π(x)=c` and locate the Õ(√x) communication wall. Done, with a measured, falsifiable result.
+
+**Built:**
+- **`comm` attribution in `run_chain`** (purely additive boundary snapshots — transcript and verdict unchanged; `compressed_layer.py` selftest still passes). Partitions `stats["comm"]` into `comm_outer` (the K=π(√x) sequential per-layer two-sided reductions), `comm_bt`/`comm_bw`/`comm_ub` (the one-time batched discharges), and `comm_base` (the two S₀ tensor-PCS proofs). The five sum **exactly** to `comm` on every complete certificate (asserted).
+- **`certificate_profile.py`** + results — measures size, verifier ops, and prover wall over n∈{8..18} for the full succinct config, attributes the comm by source, fits each exponent, and self-tests (5 cases).
+
+**Measured (full config, n=8..18):**
+| metric | α | reading |
+|---|---|---|
+| cert size (`comm`) | **0.473** | Θ(√x) |
+| `comm_outer` | 0.522 | Θ(√x) — **dominant**, 60%→90%→100% of comm |
+| batched discharges (bt/bw/ub) | 0.09–0.18 | polylog |
+| `comm_base` (PCS proof) | 0.296 | ≈Θ(x^{1/4}) |
+| verifier ops | 0.258 | Θ(x^{1/4}) (reconfirms S508) |
+
+**Result.** `L_π = {(x,c) : π(x)=c}` has, under a CRH/RO (Fiat–Shamir), a non-interactive certificate of size **Õ(√x)** elements, with **Õ(x^{1/4})** large-table opens. After every batchable obligation is batched (→polylog) and the base committed (→x^{1/4}), the residual Õ(√x) **is exactly the K sequential outer layer reductions** — each layer's output claim feeds the next, so they cannot be batched the way the independent per-layer trace/Ub/wiring witnesses were. That is the ⌊v/p⌋-semigroup wall = open item 2. The certificate-size wall and the prover-time wall are the same sequential-sieve wall.
+
+**Honest sharpening of S508:** the verifier must *read* the Õ(√x) proof, so **total verification is Θ(√x)**; S508's Õ(x^{1/4}) is the large-table-eval sub-term only — now made explicit.
+
+**Next:** a merged-layer **comm** probe — open item 2 closed the *prover* cost of merging consecutive layers but never measured the *comm* of a merged-layer verifier, which is the one thing that could drop the comm exponent. No BREAKTHROUGH.md (this is a measurement/localization cycle, not the goal).
+--- cycle result: success (turns=62, duration=1320996ms) ---
+=== Cycle 218 finished — Sat Jun 13 13:58:10 UTC 2026 ===

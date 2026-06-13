@@ -1,0 +1,59 @@
+=== Cycle 539 — Sat Jun 13 16:48:17 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: the item-5 reach push — run the winning config at n=22 and n=24 for a larger headline (exact π(x) at x≈10⁷ behind the Õ(√x) verifier). But the git status shows recent uncommitted modifications to `batched_trace.py`, `compressed_layer.py`, and results files. Let me understand what the most recent cycles did before committing to the next action.
+  [tool: Bash] cat .cycle 2>/dev/null; echo "---RECENT LOGS---"; ls -t archive/CLAUDE_OUTPUTS/*.log 2>/dev/null | head -5
+  [tool: Bash] git diff --stat HEAD 2>/dev/null | tail -20
+The cycle counter is at 539 but PROGRAM.md's latest entry is S512 — many cycles have run. Let me check the most recent cycle logs to see the true current state.
+  [tool: Bash] for n in 539 538 537 536 535; do f="archive/CLAUDE_OUTPUTS/cycle_20260613_"*"_n${n}.log"; echo "=== n${n} ==="; tail -n 
+Now I understand: cycle 538 = S512 (the #P-hardness probe); cycles 535-537 just hit session limits. The uncommitted changes are from earlier cycles in this session (the loop commits periodically). PROGRAM.md is current as of S512, and the NEXT ACTION — the item-5 reach push at n=22/n=24 — is valid and is the cheapest unbanked deliverable.
+
+Let me find the exact CLI invocation for the winning config.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification; grep -n "add_argument" compressed_layer.py | head -80
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification; grep -n "add_argument" compressed_layer.py | tail -20; echo "
+Let me look at the main dispatch block to understand how flags map to a chain run, and how the S504 headline was produced.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me look at the `main` and `bench_combined` functions to see how the winning config is invoked.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; grep -n "^def main\|^def ben
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+`main` runs `run_chain` with pcs/commit_base but NOT the batched kernels; `bench_combined` runs batch_trace/batch_wiring/FAST but NOT pcs/commit_base — and it runs 5 configs (including the slow object baseline). Neither CLI entrypoint runs the *full* succinct config the NEXT ACTION names. Let me check `run_chain`'s signature to see if all flags compose, and how `certificate_profile.py` (S509, which used the full config) invokes it.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+All flags compose in `run_chain`. Let me see exactly how `certificate_profile.py` (S509) invokes the full succinct config.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; grep -n "run_chain\|FAST_BIG
+The full succinct config is `FULL = dict(delegate=True, structured=True, pcs=True, batch_trace=True, batch_ub=True, batch_wiring=True, commit_base=True)` — but `certificate_profile.py` does NOT enable `FAST_BIG` (the uint64 Mersenne path that wins at large n). The reach push needs FULL + FAST_BIG over BIG_Q. Let me check existing scripts in the directory and confirm no benchmark driver already exists.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; ls -la *.py; echo "---"; gre
+No dedicated reach driver exists. Let me first validate that the full config + FAST_BIG composes correctly and produces correct π at a small n, and measure timing, before launching the long runs. This is a probe, not yet the deliverable.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 300 python3 -c "
+imp
+The full config + FAST_BIG composes correctly: π(65535)=6542 = sieve, accepted, 8.82s — and this jointly exercises pcs+commit_base+batch_trace+batch_wiring+batch_ub+FAST_BIG, which the existing selftests don't combine. Now let me check `run_chain`'s return dict and module helpers so I can write a clean, reproducible driver (better than an ephemeral one-liner for a headline that bankrolls the benchmark line).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; python3 -c "
+import compress
+I have everything I need. The return dict exposes `comm_outer` (the Õ(√x) sequential reductions), `vleaf_ops_pl`/`vleaf_ops_ot` (per-layer should be 0; the Õ(√x) end-to-end property), and `vcommit_ops` (the Õ(x^{1/4}) base term). Rather than an ephemeral one-liner, I'll write a clean reproducible driver for item 5 (the "Large-x benchmark" line), which currently has no dedicated script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now run the selftest gate to confirm correctness before the long runs.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 400 python3 large_x_
+Selftest passes — the full config + FAST_BIG is correct, soundness holds, FAST_BIG is a verbatim drop-in, and the per-layer verifier is leaf-free. Now let me calibrate with n=20 (honest only, ~70-90s) to confirm the timing extrapolation before launching the long reach runs.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 400 python3 large_x_
+n=20 honest: 71.82s, π(1048575)=82025 = sieve — reproduces the S504 headline (now under the FULL succinct config). The profile is clean: comm_outer 94% (the K=172 sequential reductions, Θ(√x)), per-layer leaf ops = 0 (Õ(√x) end-to-end), base opens 8256 (Θ(x^{1/4})). Growth is ~3×/Δn=2, so n=22 ≈ 3.6 min, n=24 ≈ 11 min.
+
+Now I'll launch the reach runs in the background: n=22 with the soundness spot-check, n=24 honest-only (soundness witnessed at n=22 + selftest).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; { echo "==== REACH RUN $(dat
+The reach runs are in the background (~18-20 min total). While they run, let me check on progress shortly to catch any errors early, then prepare documentation. Let me peek at the partial output.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_run.log
+The n=22 run is underway. This is harness-tracked background work, so I'll be re-invoked when it completes (~18-20 min for both n=22 and n=24). Rather than idle-poll, I'll wait for completion, then finalize all documentation with the real numbers.
+
+Let me verify the process is healthy (not silently erroring) with a quick check, then yield.
+  [tool: Bash] sleep 20; ps aux | grep "[l]arge_x_benchmark" | head; echo "--- log ---"; cat /apps/aplikacijos/prime-research/experimen
+The reach process is running healthily (n=22 in progress, ~960 MB RAM, CPU active). I'll wait for the background task to complete — the harness re-invokes me automatically when it exits, so polling would just waste cache. 
+
+**Status so far this cycle (the item-5 reach push):**
+- Built `large_x_benchmark.py` — a clean, reproducible driver for the large-x benchmark line (item 5 had no dedicated script), running the FULL succinct config (`delegate+structured+pcs+batch_trace+batch_ub+batch_wiring+commit_base`) + `FAST_BIG` over the sound BIG_Q=2⁶¹−1, with `--selftest`, a `--n` reach mode, and a `delta_pi` soundness spot-check.
+- Selftest passes: full config returns π==sieve and rejects delta_pi + self-consistent liar over both Q and BIG_Q; **FAST_BIG ON is a bit-identical drop-in** to OFF; per-layer verifier leaf-eval count is exactly 0 (Õ(√x) end-to-end); comm_outer dominates.
+- **n=20 reproduced under FULL config:** π(1048575)=82025 = sieve, 71.8 s; comm 73333 elems with comm_outer 94% (Θ(√x)), per-layer leaf ops 0, base opens 8256 (Θ(x^{1/4})).
+- n=22 (with soundness check) and n=24 (honest) now running in background.
+
+When the runs land I'll finalize `large_x_benchmark_results.md`, update `compressed_layer_results.md`, and record the new headlines + verifier profile in PROGRAM.md item 5 with a fresh NEXT ACTION.
+--- cycle result: success (turns=22, duration=443334ms) ---
+=== Cycle 539 finished — Sat Jun 13 16:55:46 UTC 2026 ===

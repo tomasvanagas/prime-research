@@ -1,0 +1,133 @@
+=== Cycle 220 — Sat Jun 13 14:23:11 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, mature research program. The NEXT ACTION is an incompressibility probe for the certificate: test whether the Õ(√x) certificate size has an information-theoretic floor. Let me examine the relevant prior context before building — the existing √x zeta-phase barrier in `status/`, any prior entropy measurements, and the construction's checkpoint definition.
+  [tool: Bash] grep -rn -i -E "smooth.{0,3}(\+|and).{0,3}random|zeta.zero.phase|information.theoretic|sqrt.*x.*bit|residual entropy|inc
+  [tool: Read] /apps/aplikacijos/prime-research/status/OPEN_PROBLEMS.md
+The S36 reframing (lines 50–53) is directly on point: π(x)−Li(x) has only **O(log x)** bits of information; the barrier is computational (cancelling √x terms), not information-theoretic. Let me read the information-theoretic quantification in SESSION_INSIGHTS to ground my measurement.
+  [tool: Read] /apps/aplikacijos/prime-research/status/SESSION_INSIGHTS.md
+The S36 reframing and SESSION_INSIGHTS (i) are exactly the foundation I need: a *single* π(x) value carries only O(log x) "hard" bits, and the barrier to computing it is computational (cancelling √x terms), not informational. The novel question for the certificate is the **joint** information of the K=π(√x) layer checkpoints the chain pins. Let me check for prior duplicate measurements and read the canonical doc's open-program framing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== CLOSED_PATHS hits for checkpoint/partial-sieve/joint entropy ==="
+grep -n 
+This is the decisive prior context. Two findings shape the design:
+
+1. **S36 / SESSION_INSIGHTS (i):** a *single* π(x) carries only O(log x) "hard" bits; the compute barrier is *computational* (cancelling √x terms), not informational.
+2. **CLOSED_PATHS row 737 (S65):** the φ(x,a) *2D matrix* is relatively low-rank but needs rank **linear in K** for *integer* precision — "relative compressibility cancelled by absolute scale."
+
+The genuinely new, well-posed question for the certificate lower bound: the **joint** hard-bit content of the K=π(√x) layer checkpoints {φ(x,a)} that the chain pins — measured at *integer* precision against a *polylog* predictor. Does it scale like √x (info-forced) or polylog (computational wall only)? Let me build this.
+  [tool: TaskCreate] 
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me run the selftest to validate correctness of the primitives.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 cert_i
+Two failures — both informative:
+
+1. `magbits(0)` returns 1 not 0 (the `+1e-9` inside the log). Easy fix.
+2. The synthetic "smooth O(1)" sequence gives exponent 0.41, not ~0 — because **H_chain = Σ over K=π(√x) layers, so even O(1) bits/layer sums to Θ(√x)**. This is the crucial conceptual point: `H_chain ~ √x` is *near-trivial* given K=√x layers each with ≥1 bit. The real discriminator must be **compressibility** of the residual sequence (whether the K layers are redundant), not the naive sum.
+
+Let me restructure: H_chain becomes the reference upper bound; the **headline** becomes gzip/conditional compressibility of the smooth-removed residual, plus the per-layer bits *profile*. I'll also add a matrix integer-rank cross-check linking to S65/row-737.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me add the matrix integer-rank cross-check (linking to S65/row-737) and restructure the sweep/report/verdict around compressibility as the discriminator.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now restructure the sweep rows and report/verdict to make compressibility the discriminator:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now rewrite the `_report` function and verdict logic:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now fix the synthetic discriminator selftest (use compressibility, not the naive sum) and add an integer-rank selftest:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now wire the integer-rank cross-check into `main`/`run_sweep` so the real run reports it too:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 cert_i
+gzip is too weak to detect smooth structure in *large-magnitude* sequences — but that's fine: after the polylog smooth fit removes the trend, the real question is whether the *residual* is white-noise across all K layers (→ incompressible, √x) or concentrated in polylog-many layers (→ compressible). Let me make the synthetic test reflect those two actual regimes.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 cert_i
+The metrics behave correctly but my synthetic test conflated cases. The honest picture: **magbits** (Σ bits) separates sparse-vs-dense; **gzip** additionally catches dense-but-redundant; both agree on the two real regimes (dense white-noise = info-forced vs sparse = compressible). And the K=π(√x) exponent over a finite dyadic window is ~0.42, not 0.50, so verdict thresholds should be *relative to the measured K exponent*. Let me fix the test and make the verdict K-relative.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now make the verdict K-relative:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 300 python3 cert_incompressibility.py --selftest 2>&1 | tail -10
+Sparse magbits reads as `(log x)²` → exponent ~0.17 over a finite window, which is polylog but not knife-edge zero. The honest separation is ~0.17 (polylog) vs ~0.41 (√x≈K) — a clean ~2.5× gap. Let me use a single K-relative separator.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 300 python3 cert_incompressibility.py --selftest 2>&1 | tail -7
+All selftests pass. Now the real measurement — let me run the actual sweep.
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 4194304 2>&1
+The real run reveals an important subtlety I must handle honestly. The **integer-rank cross-check is robust and clean**: required rank grows like x^0.35–0.41 ≈ linear in K (rank/K ≈ 0.71–0.87), smooth-model-free (SVD subsumes any smooth low-rank model) — a solid info-forced signal extending S65/row-737.
+
+But the **per-x residual is contaminated**: `rF_rms` grows like x^0.93 ≈ x/log x, not √x. That's because my degree-8 polynomial can't capture Buchstab's ω(u) — which has *kinks at every integer u* (≈log x of them). So the residual is dominated by smooth-model error, not genuine fluctuation. The fair polylog predictor needs O(log x) params (a spline with knots at integer u) to capture ω's kinks. Let me fix the predictor to a hinge-basis linear spline.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now update `integer_rank` to use the same spline basis for consistency:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 200 python3 cert_incompressibility.py --selftest 2>&1 | tail -6
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 4194304 2>&1 | sed -n '12,60p'
+The spline barely helped — `rF_rms` is still ~x^0.89 ≈ x/log x. The reason is deeper: the irreducible question is *how much smooth structure can ANY polylog model remove*, and a per-x fit can't cleanly answer that. The **integer-rank/SVD measurement is the principled answer** — SVD subsumes the *best* low-rank (= best smooth) model and measures the irreducible integer rank. That's the robust headline. But I only have 3 rank points and need to determine whether rank/K → constant (info-forced at √x) or rank is a *sub-√x* power (sub-√x info floor). Let me vectorize `integer_rank` and add a proper rank sweep.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now replace the rank cross-check block with a proper multi-point rank sweep that fits the exponent and rank/K trend:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 8388608 2>&1 | sed -n '23,75p'
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 8388608 2>&1 | grep -A4 "Traceback" | head -20
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 8388608 2>&1 | grep -A20 "Traceback" | tail -12
+K mismatch: `phi_checkpoints(X0)` uses K from √X0, but I set K from √(X0+window). Let me compute the base directly over the chosen K:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 8388608 2>&1 | sed -n '/integer-rank of the residual/,$p'
+Now I have a clean, robust result. The **integer-rank** (smooth-model-free) grows like **x^0.355** — a power of x (super-polylog) but slightly sub-√x; the per-x gzip independently gives x^0.39. Two methods agree: joint checkpoint info ≈ x^0.36–0.39. Before finalizing, I must check whether the rank is under-estimated by the narrow window W (which would push the true floor toward √x). Let me test window-sensitivity at one x.
+  [tool: Bash] timeout 300 python3 -c "
+import cert_incompressibility as c
+import numpy as np, math
+spf, primes = c.sieve_spf(1<<21)
+X0
+**Critical finding — and it corrects my initial reading.** The rank is strongly window-dependent: at fixed x=2^20, rank/K climbs 0.40→0.98 as W grows 1024→32768. So the "x^0.35, sub-√x" reading was a **narrow-window under-sampling artifact**. With W ≫ K, the residual matrix is **essentially full rank (rank ≈ K)** — the K checkpoint residuals are genuinely independent → joint info is Θ(K)=Θ(√x) → **info-forced at √x**. You need ≳K samples in x to resolve all K modes. Let me fix the sweep to use an adaptive window (W ∝ K) and binary-search the rank for speed.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Let me set the sweep window factor to 64 (balancing fidelity and SVD cost) and run the full measurement:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax 8388608 2>&1 | sed -n '/window-sensitivity of integer-rank/,$p'
+The result is now robust and it **corrects my own initial narrow-window misreading**. The window-sensitivity table is decisive: at x=2^19, rank/K climbs 0.09→0.97 as W/K goes 1→187 — so the residual matrix is **full rank** once adequately sampled. The sweep confirms rank ≈ K with α_rank=0.459 ≈ α_K=0.415 ≈ √x. 
+
+**Conclusion: the K checkpoint residuals are integer-independent ⇒ joint info Θ(√x) ⇒ the √x certificate is information-forced for any sieve-reconstructing verifier.** Let me verify selftest still passes and lightly reconcile the per-x verdict to defer to the authoritative rank measurement.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Bash] timeout 200 python3 cert_incompressibility.py --selftest 2>&1 | tail -3 && echo "---full run captured---" && timeout 590
+Both pass. Now let me write the results file documenting the measurement, the self-correction, and the precise scope.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+  [tool: TaskUpdate] 
+Now update PROGRAM.md. First the protocol table (add step 16):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 3 to record the lower-bound progress:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry and update the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the canonical doc's open-program section, which explicitly named this as the "natural successor":
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now add a CLOSED_PATHS row documenting the closure. Let me check the format:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && tail -3 status/CLOSED_PATHS.md && echo "=== header ===" && grep -n "^| " status/C
+  [tool: Bash] cat >> status/CLOSED_PATHS.md << 'ROW'
+| Information-theoretic incompressibility argument as a UNIVERSAL sub-√x certific
+Let me run the final cleanup checks from the contract (missing results files, leftover `__pycache__`):
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== missing _results.md check ==="
+find experiments/ -path "*/.lake" -prune -o
+All my files are clean (the MISSING list is pre-existing auxiliary scripts in unrelated directories, not from this cycle). Selftest passes, no `__pycache__` left.
+
+## Cycle summary
+
+**Built `cert_incompressibility.py`** — the incompressibility probe the NEXT ACTION called for, answering the **information-theoretic half of open item 3's lower bound**: is the Õ(√x) certificate's size an information floor, or just construction shape (as S510 left open)?
+
+**Key conceptual move.** I separated cert **SIZE** (Θ(√x) just from having K=π(√x) layers) from cert **INFORMATION** (can the K transcripts be jointly compressed?). The chain pins, per layer, the Legendre partial-sieve survivor count `φ(x,a)`; I measured the joint hard bits of `{φ(x,a)}` beyond a polylog smooth predictor, at **integer** precision (the lesson of CLOSED row 737).
+
+**Result — the √x is information-forced for any sieve-reconstructing verifier.** The authoritative, smooth-model-free measure is the integer-reconstruction SVD rank of the residual matrix. Window-sensitivity is decisive: at x=2¹⁹, rank/K climbs **0.09 → 0.97** as the x-sample window grows — the matrix is **full rank** once W≫K, so the K checkpoints are integer-*independent* and the joint info is **Θ(√x)·polylog** (α_rank=0.459 ≈ α_K=0.415 ≈ √x). Per-x gzip/AR exponents (0.39/0.56) corroborate. The single-value control reproduces S36 (|π(x)−Li(x)| is O(log x) bits, slope 0.089) — confirming the barrier is **joint across layers, not per-value**.
+
+**Honest self-correction.** My first run used a fixed narrow window (W=4096) and gave rank ~ x^0.35 (a *sub*-√x reading). The window-sensitivity check refuted this — `rank ≤ min(W,K)` under-samples at large x. Recorded in the results file.
+
+**Precise scope.** This binds the *sieve-reconstruction class* only; a fundamentally different witness (cf. factoring's tiny witness for a hard answer) is not ruled out by information — so a *universal* sub-√x impossibility still routes through **#P-hardness**, which I set as the next action.
+
+**Updated:** `PROGRAM.md` (step-16 table row, open-item-3 lower-bound progress, S511 done-entry, new #P-hardness NEXT ACTION), the canonical doc's open-program section, and `CLOSED_PATHS.md` (partial-close row, session 511). 22 selftest checks pass.
+--- cycle result: success (turns=58, duration=1944164ms) ---
+=== Cycle 220 finished — Sat Jun 13 14:55:37 UTC 2026 ===

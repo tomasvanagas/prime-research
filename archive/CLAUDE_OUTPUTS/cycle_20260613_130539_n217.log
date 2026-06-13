@@ -1,0 +1,148 @@
+=== Cycle 217 — Sat Jun 13 13:05:39 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build a hash-based multilinear polynomial commitment scheme (`pcs_commit.py`) for the two S₀ base closes, to make the one-time √x verifier work sub-√x. Let me look at the relevant code and context first.
+  [tool: Bash] ls -la experiments/constructions/p12_sumcheck_pi_verification/ && echo "---LINES---" && wc -l experiments/constructions/
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+Let me look at the core field/sumcheck helpers I'll build on, and how the base closes work in `compressed_layer.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me see the core helper functions: `eq_table`, `eq_point`, `mle_eval`, `sumcheck`, `fmul`, `lagrange_eval`, `_asum`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me look at how the S₀ base closes work in `compressed_layer.py` and the `--bench-verifier-ops` instrumentation.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "base close\|base_
+Let me read the base-close section and `run_chain` signature in detail.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read `bench_verifier_ops` and the surrounding context, plus how stats are printed.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the selftest region that checks verifier-op counts, and the run_chain docstring tail, to integrate cleanly.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me check the argparse/main section and `_fit_slope`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] grep -n "_fit_slope" compressed_layer.py | head
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I have a full understanding now. Let me write the PCS module.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Bash] time python3 pcs_commit.py --selftest 2>&1 | tail -20
+Selftest passes. Now the bench to confirm sub-√x scaling:
+  [tool: Bash] python3 pcs_commit.py --bench 2>&1 | tail -25
+Both slopes are exactly as predicted: commit verifier is Θ(x^{1/4}) (slope 0.5/nb = 0.25/n), direct close is Θ(√x), crossover at nb≈14. Let me verify it works over BIG_Q too:
+  [tool: Bash] python3 pcs_commit.py --bench --field big 2>&1 | tail -6
+The PCS works over both fields with exactly the target sub-√x scaling. Now let me integrate it into `run_chain` with a `commit_base` flag. First the signature:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the stats init (add `vcommit_ops`):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the base close itself:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I introduced an indentation typo. Let me fix it:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me update the `run_chain` docstring to document `commit_base`, and add config (d) to `bench_verifier_ops`. First the docstring (append after the `batch_ub` paragraph):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me smoke-test `run_chain` with `commit_base` before extending the bench:
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+for n in (8,12,16):
+    x=(1<<n)-1; truth=cl.sieve_pi(x)
+    bas
+Works (and at reachable n the commit ops exceed the direct close — the documented asymptotic-only crossover). Let me confirm BIG_Q and self-consistent liar:
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as cl
+from compressed_prover_mult_trace import BIG_Q
+for n in (8,10,12
+Both fields and the self-consistent liar behave correctly. Now let me add config (d) to `bench_verifier_ops`. Let me update the docstring and config list:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the per-config assertion branch:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the headline assertions / expectations at the end of `bench_verifier_ops`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me check how `main` calls `run_chain` to add the `--commit-base` flag:
+  [tool: Bash] grep -n "def main\|run_chain(" compressed_layer.py | sed -n '1,40p'
+  [tool: Bash] grep -n "^def main" compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add the CLI flag and pass it to `main`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add a selftest case (23) for `commit_base` in `compressed_layer.py`. Let me insert before the final `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the `bench_verifier_ops` to see config (d) and confirm the sub-√x slope:
+  [tool: Bash] time python3 compressed_layer.py --bench-verifier-ops 2>&1 | tail -30
+Headline confirmed: config (d) verifier leading term is **α=0.258 ≈ 0.25 (Θ(x^{1/4}), sub-√x)**, vs (c)'s 0.5 and (a)'s ~1.0. The milestone — a sub-√x whole-chain verifier — is demonstrated.
+
+One honesty gap: I'm not counting the commitment proof's communication in `comm`. Let me capture the proofs and add their field-element size (still sub-√x, so the comm slope stays Õ(√x), but it should be counted):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the full `compressed_layer.py --selftest` to confirm everything (including the new case 23) passes:
+  [tool: Bash] time python3 compressed_layer.py --selftest 2>&1 | tail -15
+While that runs, let me re-confirm the standalone PCS selftest still passes after edits:
+  [tool: Bash] python3 pcs_commit.py --selftest 2>&1 | tail -3
+  [tool: Bash] sleep 1; tail -5 /tmp/claude-0/-apps-aplikacijos-prime-research/d33de27f-25b4-488e-9a44-b588a5fbee09/tasks/b846p3avl.out
+The selftest only prints at the end. Let me wait for the background task to finish:
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/d33de27f-25b4-488e-9a44-b588a5fbee09/tasks/b846p3avl.output ];
+Full selftest passes (case 23's BIG_Q object-array runs make it slow, as expected). Let me confirm the CLI `--commit-base` path runs cleanly:
+  [tool: Bash] python3 compressed_layer.py --n 16 --delegate --structured --commit-base --cheat-trials 3 2>&1 | head -12
+Everything works end-to-end. Now let me write the results file for the new module:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Now let me update the canonical doc. Let me find the relevant section:
+  [tool: Bash] grep -n "step 1[012]\|S507\|S506\|S505\|one-time\|base close\|succinct\|open program\|Open program\|polylog verifier\|su
+  [tool: Bash] cd /apps/aplikacijos/prime-research && grep -n "step 1[012]\|S507\|S506\|S505\|one-time\|base close\|succinct\|Open prog
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+I'll add the S508 entry to the canonical doc after the S506 bullet:
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Let me check the protocol-stack table at the top of the doc to add the S508 row:
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Let me trim case 23's cost — the BIG_Q chain runs are expensive and the cheat-rejection mechanism is already field-tested in case 22. I'll keep BIG_Q for the honest/instrumentation check and run the cheat panel over q only:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && time python3 compressed_la
+Selftest passes (the bulk is pre-existing case-22 BIG_Q runs; case 23 adds ~30s). Let me run the cleanup checks and confirm no missing results files or `__pycache__`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -path "*/.lake" -prune -o -name "*.py" -print | while read f; d
+All the MISSING entries are pre-existing in unrelated directories; my `pcs_commit.py`/`pcs_commit_results.md` pair is complete. Let me remove the `__pycache__`:
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && ls experiments/constructions/p12_sumcheck_p
+Now let me update PROGRAM.md. First, add the step-13 row to the ACTIVE LINE table:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 6 to mark the commit-base delivered, and add the S508 "Done this era" entry:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the S508 "Done this era" entry and update the era header:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me do a final review of the integrated base-close branch to confirm correctness:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The branch is clean and correctly handles the liar case (a wrong carried claim `C` fails the commitment's eval binding). Let me do a final import sanity check across the modules:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 -c "import pcs_com
+Cycle complete. Here's what this research cycle delivered.
+
+## Summary — S508: tensor polynomial commitment, the whole-chain verifier is now sub-√x
+
+I executed the recorded NEXT ACTION: a hash-based multilinear polynomial commitment for the chain's two one-time S₀ base closes — the last verifier work whose cost still grew with x.
+
+**New module: `pcs_commit.py`** (Ligero/Brakedown tensor PCS)
+- Reshape the `2^nb` table into an `r×k` matrix, Reed–Solomon-encode each row, Merkle-commit the `N` columns (sha256 = CRH/RO stand-in).
+- Using `eq~(pt,w) = eq~(pt_hi,w_hi)·eq~(pt_lo,w_lo)` so `S~(pt) = aᵀMb`, the Fiat–Shamir evaluation proof sends `v=aᵀM`, `w=ρᵀM` (len `k`) and opens `t` columns. **Verifier `O(t·(r+k)) = O(x^{1/4}·polylog)` — sub-√x; the full `2^nb` table never touches it.**
+- `commit`/`prove`/`verify` interface. Selftest (over q, BIG_Q, SMALL_Q) rejects **4 cheat classes**: wrong claimed value, forged opening, tampered codeword row, tampered revealed column; honest opens agree with `mle_eval`.
+
+**Integration: `run_chain(--commit-base)`** in `compressed_layer.py` — base closes branch to the PCS; verdict unchanged over q & BIG_Q (selftest 23: honest π==sieve, delta_pi + self-consistent liar rejected).
+
+**Measured headline** (`--bench-verifier-ops`, new config (d)):
+
+| config | α_ops | |
+|---|---|---|
+| (a) no-pcs | 0.961 | Θ(x) |
+| (c) pcs+batch_trace+batch_ub | 0.500 | Θ(√x) |
+| **(d) +commit_base** | **0.258** | **Θ(x^{1/4}), sub-√x** |
+
+The whole-chain verifier leading term drops **Θ(x) → Θ(√x) → Θ(x^{1/4})**.
+
+**Honest scope** (documented throughout): trades the otherwise-unconditional Õ(√x) verifier for full succinctness *under a hash assumption*; the win is the **slope** — the absolute op count only beats the direct close at nb≈14 (n≈28), the t-query constant dominating below (the same S506 crossover pattern); RS's `N≤q` is a demo artifact a Brakedown expander code removes behind the same interface.
+
+**Files:** `pcs_commit.py` + `pcs_commit_results.md` (new); `compressed_layer.py` (commit_base flag, config (d), selftest 23); `PROGRAM.md` + `novel/succinct_verification_of_pi.md` updated. Full selftest passes; no `__pycache__` left.
+
+**NEXT ACTION set:** the verifier side of succinctness is met; the certificate *size* (`comm`) is still Õ(√x) — characterize it (`certificate_profile.py`), attribute it to the K sequential outer layer reductions, and state the precise `L_π` membership (CRH-based certificate of size Õ(√x), verifiable in Õ(x^{1/4})), noting size-compression hits the same sequential-layer wall as open item 2.
+--- cycle result: success (turns=65, duration=1813450ms) ---
+=== Cycle 217 finished — Sat Jun 13 13:35:53 UTC 2026 ===

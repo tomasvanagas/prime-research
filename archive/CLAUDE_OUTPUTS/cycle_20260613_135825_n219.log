@@ -1,0 +1,118 @@
+=== Cycle 219 — Sat Jun 13 13:58:25 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build a merged-layer COMM probe. Let me understand the codebase before building. Let me read the relevant files in parallel.
+  [tool: Bash] ls -la experiments/constructions/p12_sumcheck_pi_verification/ && echo "---WC---" && wc -l experiments/constructions/p12
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/certificate_profile.py
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+The NEXT ACTION is well-defined. Let me read the key reusable primitives in `compressed_layer.py` — field arithmetic, sum-check, `compressed_lucy`, `mle_eval`, `eq_table`, `_fit_slope`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "^def \|^class \|^
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] grep -n "^def sumcheck\|^def eq_table\|^def eq_point\|^def mle_eval\|^def lagrange_eval\|^DEFAULT_Q\|^BIG_Q\|^SMALL_Q\|^
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+I now have a thorough understanding. The NEXT ACTION wants a **standalone merged-layer comm probe**: collapse `j` consecutive Lucy layers into one reduction over the composed map `v↦⌊v/(p_{i₁}···p_{iⱼ})⌋` (whose inclusion-exclusion has 2^j fill-in, per closed-item-2), and measure its `comm` for j∈{1,2,4} to test whether the Õ(√x) certificate size is layering-inherent or merely an artifact of the unbatched chain.
+
+Let me set up a task list and verify the inclusion-exclusion math empirically before building the full protocol.
+  [tool: Bash] python3 -c "
+from math import isqrt
+import compressed_layer as cl
+import numpy as np
+
+# Verify the inclusion-exclusion s
+The inclusion-exclusion formula is verified against direct composition. Now let me build the full experiment. Let me track the plan.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskUpdate] 
+Now let me write the experiment file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+Now let me run the selftest:
+  [tool: Bash] timeout 600 python3 merged_layer_comm.py --selftest 2>&1 | tail -40
+Selftest passes. Let me run the full profile to see the actual numbers:
+  [tool: Bash] timeout 900 python3 merged_layer_comm.py 2>&1 | tail -60
+This is a clean, decisive result. The total comm exponent stays ~0.46–0.49 for **all j in both modes** (Θ(√x), layering-inherent); the jsweep shows DIRECT total comm bottoms out at j=2 then grows, BATCHED keeps dropping by constant factors but the prover fill-table blows up (×2.25 at j=6).
+
+One honesty gap: I should also measure **verifier work**, to show batching the *comm* doesn't escape the 2^j — it just moves it into verifier/prover work. Let me add that counter so the negative result is airtight.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+Now thread `vwork` through `measure_point` and the displays, and fix the per-merged growth assertion to use the clean `comm_fill` signal:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+Now update the selftest's scaling assertions to use the cleaner `comm_fill`/`vwork` signals:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+Now let me add `vwork` to the jsweep and update the headline messaging:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm.py
+Now let me re-run the selftest and full profile to confirm everything works with the new accounting:
+  [tool: Bash] timeout 600 python3 merged_layer_comm.py --selftest 2>&1 | tail -12
+  [tool: Bash] timeout 900 python3 merged_layer_comm.py 2>&1 | tail -50
+Excellent — the complete, coherent story. Let me confirm it holds over BIG_Q (field-independence of the conclusion):
+  [tool: Bash] timeout 900 python3 merged_layer_comm.py --field big --nmax 14 2>&1 | sed -n '1,30p'
+Comm counts are byte-identical over BIG_Q (field-independent, as the selftest asserts). The experiment is complete and decisive. Let me update tasks and write the results file.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/merged_layer_comm_results.md
+Now let me clean up `__pycache__` and verify no missing results files:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; echo "
+All missing-results warnings are pre-existing in other directories (unrelated to this cycle). Let me confirm my directory is clean:
+  [tool: Bash] find experiments/constructions/p12_sumcheck_pi_verification/ -name "*.py" -print | while read f; do r="${f%.py}_results.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+Now let me update PROGRAM.md. First the protocol-stack table (add step 15), then the open-item-6 entry, the "done this era" entry, and the NEXT ACTION.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open items 2 and 6 to record the S510 finding:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry at the top of that section and rewrite the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the NEXT ACTION. The S509-flagged merged-layer question is now closed (negative). Let me rewrite it to point at the cleanest remaining target:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the canonical doc — open problem 2 and the certificate-size scope bullet:
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Let me add a CLOSED_PATHS row, as the contract requires when closing a path. Let me check the format:
+  [tool: Bash] tail -8 status/CLOSED_PATHS.md && echo "=== header ===" && grep -n "^|" status/CLOSED_PATHS.md | head -3
+  [tool: Bash] grep -n "^| *Approach\|^| *approach\|^|---\|^| Path\|^| #" status/CLOSED_PATHS.md | head -5; echo "---first data row col
+  [tool: Bash] tail -3 status/CLOSED_PATHS.md | cut -c1-160
+  [tool: Bash] tail -1 status/CLOSED_PATHS.md
+  [tool: Bash] cat >> status/CLOSED_PATHS.md << 'EOF'
+| Layer batching on the VERIFICATION (certificate-size) face — merge j consecutiv
+Let me do a final verification run and clean up:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 merged
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; echo "pycache cle
+  [tool: TaskUpdate] 
+All work is complete and verified. Summary of this cycle (S510):
+
+## What this cycle produced
+
+I built `merged_layer_comm.py` — the standalone **merged-layer COMM probe** that the PROGRAM.md NEXT ACTION called for, answering the single quantitative question S509 flagged: **is the Õ(√x) certificate size inherent to the layering, or just to the unbatched chain?**
+
+**Construction.** It collapses `j` consecutive small-side (value→value `⌊v/p⌋`) Lucy layers into one reduction over the 2^j-subset inclusion-exclusion operator `M[S](v)=Σ_{T⊆[j]}(−1)^|T| GateProd_T(v)·S(⌊v/m_T⌋)` — exactly open problem 2's `2^j` fill, verified == direct composition. Two **sound, cheat-tested** reductions (DIRECT: the 2^j subset openings; BATCHED: the 2^j stacked on a `j`-bit axis, one sum-check), checked against ground truth over `q` and `BIG_Q` with three cheat classes rejected.
+
+**Measured result (the answer — a clean negative):**
+- **Chain total comm exponent stays ~0.45–0.49 (Θ(√x)) for every j∈{1,2,4} in BOTH modes** → the √x certificate is **layering-inherent**.
+- DIRECT comm carries the 2^j fill explicitly (total comm even *grows* past j=2 — merging makes the certificate bigger).
+- BATCHED pushes the 2^j *out of the transcript* (comm polylog) but into **verifier WORK** (measured `vwork` ~2^j) and the prover; comm is floored at `⌈K/j⌉(j+nb) → K = √x`.
+- The prover fill-table total `⌈K/j⌉·2^j·2^nb → x^{3/2}` (/x: 0.42→2.25 over j:1→6) — open problem 2's `m·K²/2` reproduced **on the verification face**.
+
+So no merge depth, in any batching strategy, drops the comm exponent below 0.5. The cert-size, verifier-work, and prover-time walls are all the one `⌊v/p⌋`-semigroup sequential-sieve wall.
+
+**Recorded:** results file with falsifiers; PROGRAM.md (step-15 row, open items 2 & 6, done entry, new NEXT ACTION pivoting to the *lower-bound* face — certificate incompressibility); canonical doc (open problem 2 & 3, scope); a CLOSED_PATHS.md row. The unconditional/computational upper-bound construction side of the verification program is now exhausted; the natural successor is whether sub-√x is information-theoretically *impossible*.
+
+No BREAKTHROUGH.md — this is an honest negative measurement that strengthens the existing membership result, not the goal.
+--- cycle result: success (turns=64, duration=1469850ms) ---
+=== Cycle 219 finished — Sat Jun 13 14:22:56 UTC 2026 ===

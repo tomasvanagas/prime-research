@@ -1,0 +1,128 @@
+=== Cycle 216 — Sat Jun 13 12:46:15 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build a whole-chain verifier-op counter and produce a `--bench-verifier-ops` curve showing the leading term go Õ(x)→Õ(√x) across three configs. Let me understand the current code structure before committing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && ls -la && echo "---WC---" 
+  [tool: Bash] git log --oneline -5 -- compressed_layer.py && echo "---" && head -60 compressed_layer.py
+Let me look at the existing instrumentation and the `run_chain` structure.
+  [tool: Bash] grep -n "ub_leaf_v\|ub_leaf_p\|def run_chain\|def main\|argparse\|add_argument\|bench-ub\|bench_ub\|bench-pcs\|bench_pcs
+  [tool: Bash] grep -n "def run_chain\|def bench\|def _bench\|def main\|def selftest\|def _selftest" compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the verifier-side leaf-eval sites and their pcs/batch_ub gating precisely.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me check `leaf_open` (verifier cost of the sum-check openings) and the Ub table sizes.
+  [tool: Bash] sed -n '1,120p' leaf_open.py
+Let me check `verify_constraints` (per-layer trace zero-test verifier cost) and the Ub/D table sizes.
+  [tool: Bash] grep -n "def verify_constraints\b\|def build_witness\|def mle_eval\|def eq_table\|def eq_point\|def sumcheck\|D =\|Lv =\
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me check `small_reduce`, `verify_waff_value`, and `large_reduce` for any other verifier large-table evals.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read `bench_ub`, `main`, and the CLI wiring to match the existing pattern.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me check the imports/helpers region and the selftest tail to plan where to add a verification case.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I now have a complete picture. The plan:
+
+- **Metric**: verifier *large-table evals* (the only Θ(√x)-per-call verifier op — direct MLE evaluation of a committed √x-size table). Every other verifier step (sum-check round checks, eq/le/band point evals, delegated wiring carry-chain O(nb·log p), batched-discharge recomputes O(K·polylog)) is polylog/Õ(√x) by construction, so the *leading term* of the whole-chain verifier cost is exactly this leaf-op count.
+- Add `_acct_vleaf(stats, size, onetime)` and instrument the 6 verifier leaf-eval sites (with the correct pcs/batch_ub gating already in place).
+- `bench_verifier_ops()` over n∈{8..18}, three configs (a) no-pcs, (b) pcs, (c) pcs+batch_trace+batch_ub — all delegate+structured — fitting the exponent.
+
+Let me start with the accounting helper.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the 6 instrumentation sites. Site 1 — `verify_affine_region` s2 close:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Site 2 — `verify_trace_region` s_B close:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Site 3 — `verify_trace_region` Ub openings (inline, `ub_defer is None`):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Site 4 — `line_batch_pair` non-pcs close:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Site 5 — `batch_on_table` single-claim anchor:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Site 6 — the two S₀ base closes (one-time):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now initialize the keys in `run_chain`'s stats dict for clean reporting:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the `bench_verifier_ops` function. Let me insert it after `bench_ub`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now wire the CLI flag:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add a selftest case asserting the op-count attribution identities. Let me insert before `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me run the selftest to validate the instrumentation:
+  [tool: Bash] timeout 600 python3 compressed_layer.py --selftest 2>&1 | tail -20
+  [tool: Bash] sleep 45; tail -5 /tmp/claude-0/-apps-aplikacijos-prime-research/cfc72ea0-9ac5-4f3e-8929-70ed57524bb5/tasks/b8u4vweb8.ou
+I'll wait for the background selftest to complete (I'm notified on exit).
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/cfc72ea0-9ac5-4f3e-8929-70ed57524bb5/tasks/b8u4vweb8.output
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/cfc72ea0-9ac5-4f3e-8929-70ed57524bb5/tasks/b8u4vweb8.output ] 
+Selftest passes (including the new case 22). Now run the headline bench:
+  [tool: Bash] timeout 590 python3 compressed_layer.py --bench-verifier-ops 2>&1 | tail -40
+  [tool: Bash] until grep -q "HEADLINE\|Error\|Traceback\|AssertionError" /tmp/claude-0/-apps-aplikacijos-prime-research/cfc72ea0-9ac5-
+The result is clean and exactly the claimed curve:
+- **(a) no-pcs**: per-step ×4 (∝x), α_ops = 0.961
+- **(b) pcs**: per-step ×4 (∝x), α_ops = 0.998
+- **(c) pcs+batch_trace+batch_ub**: per-step **×2.0 exactly** (∝√x), α_ops = **0.500**, per-layer leaf-count = 0
+- `comm` (poly-bucket proxy) slope ≈ 0.60 in all three — sub-linear, Õ(√x).
+
+Let me look at the existing results file tail to append a matching section.
+  [tool: Bash] tail -35 compressed_layer_results.md; echo "=== HEAD ==="; head -8 compressed_layer_results.md
+Let me find where to insert the S507 section (before `## Falsification`):
+  [tool: Bash] grep -n "^## \|^### \|S506\|S507\|bench-ub\|batch_ub\|Õ(√x) end-to-end\|leaf-eval-free" compressed_layer_results.md | he
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+I'll insert the S507 section right after the Step 8 section (before Step 6):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now add an S507 falsifier line to the Falsification section:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now clean up and verify no missing results files:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + ; find exper
+All missing results files are pre-existing in unrelated experiment dirs (not files I touched this cycle); `compressed_layer.py` has its updated results file. Now update PROGRAM.md. First the protocol table:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 6 to reflect the curve is measured, and add the S507 "Done this era" entry plus the new NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now rewrite the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me verify no `__pycache__` was left and do a final quick consistency check that the module still loads cleanly:
+  [tool: Bash] find experiments/constructions/p12_sumcheck_pi_verification -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/nu
+  [tool: Bash] find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null; find experiments/ -name __pycache__ -t
+Cycle complete. Here's what this cycle (S507) produced.
+
+## What I built
+
+The NEXT ACTION asked to turn the "Õ(√x) end-to-end verifier" claim — which until now was a *per-n op-count fact* (S506) plus a structural argument — into a **measured scaling curve**. Done.
+
+**Instrumentation** (`compressed_layer.py`): added `_acct_vleaf`, a counter that tallies every *verifier large-table evaluation* — a direct `mle_eval` over a committed √x-size cube, which is the **only** verifier operation whose per-call cost grows with x. Everything else the verifier does (sum-check round checks, `eq`/`le`/`band` point evals, the delegated wiring carry-chain `O(nb·log p)`, the batched-discharge recomputes `O(K·polylog)`) is polylog/Õ(√x) by construction, so this count *is* the leading term. It's split into the **per-layer critical path** (scales with K=π(√x)) vs the **one-time** terms (the two S₀ base closes), instrumented at all six leaf-eval sites, respecting the existing pcs/batch_ub gating.
+
+**`--bench-verifier-ops`** runs three configs (all delegate+structured) over n∈{8..18}.
+
+## The result — the falsifiable claim confirmed
+
+| config | per-layer leaf count | whole-chain `vleaf_ops` exponent α | per-step (Δn=2) |
+|---|---|---|---|
+| (a) no-pcs | `K·(nb+5)−1` | **0.961** (Θ(x)) | ×4 |
+| (b) pcs | `K·nb` (Ub openings only) | **0.998** (Θ(x)) | ×4 |
+| (c) pcs+batch_trace+batch_ub | **0** | **0.500** (Θ(√x)) | **×2.0 exactly** |
+
+Config (c)'s total is the one-time `2·2^nb` base closes *only* — the entire Θ(x) per-layer term that (a)/(b) carry has collapsed to a one-time Θ(√x) term. The `comm` slope (~0.60, Õ(√x)) corroborates that the non-leaf verifier residual stays sub-linear and never sneaks a Θ(x) term back in.
+
+The exact leaf-eval count identities are asserted in both the bench and **selftest 22** (over q AND BIG_Q — the count is field-independent). Full selftest passes.
+
+## Honest scope
+The metric is the *leading term* (large-table evals only). Config (c)'s grand total is Õ(√x) at effective exponent ~0.6 (polylog above √x), which is exactly the milestone's "leading term Θ(√x·polylog)". The α=0.961 for (a) reads slightly below 1.0 because of the `π(√x)/√x` and `nb` log-factors; (b)'s 0.998 and the ×4 per-step confirm the term is genuinely linear.
+
+## Files
+- `compressed_layer.py` — `_acct_vleaf`, 6 instrumented sites, `bench_verifier_ops`, `--bench-verifier-ops`, selftest 22.
+- `compressed_layer_results.md` — new "Step 9" section + Falsification clause.
+- `PROGRAM.md` — protocol table row (step 12), open item 6 update, S507 "Done" entry, new NEXT ACTION.
+
+**NEXT ACTION** set: build a real hash-based multilinear commitment (`pcs_commit.py`, Brakedown/tensor style) for the two one-time S₀ base closes — the last √x verifier term — to make the whole verifier *succinct* (polylog) under a collision-resistance assumption.
+
+No BREAKTHROUGH.md — this is a verifier op-count measurement, not exact π(x) in polylog.
+--- cycle result: success (turns=49, duration=1147948ms) ---
+=== Cycle 216 finished — Sat Jun 13 13:05:24 UTC 2026 ===

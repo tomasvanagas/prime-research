@@ -257,6 +257,133 @@ def verify_constraints_each(witnesses, rng, stats, q=Q):
 
 
 # ----------------------------------------------------------------------
+# batched Ub-bit-table OPENINGS (S506) -- the last per-layer O(2^nb) term
+# ----------------------------------------------------------------------
+#
+# WHAT IT DISCHARGES.  compressed_layer.verify_trace_region's B2 routing check
+# pins g1_trace to the certified quotient u_e by EVALUATING, at the B2 challenge
+# point r_C, the nb LOW bit tables Ub_{Lv-nb+k} (= bit nb-1-k of u_e) -- nb direct
+# mle_eval's per layer = O(K nb 2^nb) over the chain, the ONLY per-layer O(2^nb)
+# verifier term the pcs leaf-opening pass (S505) left standing (their residuals
+# are per-layer WITNESS data: no carried chain claim to thread to the base).
+#
+# THE BATCH.  Those Ub tables are EXACTLY the ones verify_constraints_batched
+# already stacks and commits along the layer axis (one zero-test, all K layers).
+# So defer each layer's openings -- (layer l, point r_C^l, claims [ub_{l,k}]_k) --
+# and discharge them ALL in ONE degree-2 sum-check over the SAME stacked
+# (Lk+nb)-cube.  gamma <- F_q; with beta = gamma^nb the per-(l,k) weight
+# beta^l gamma^k = gamma^{l*nb+k} is a DISTINCT power, so the weighting is a
+# genuine RLC over all K*nb openings.  Write the combined identity
+#
+#   claim := sum_{l,k} gamma^{l nb+k} ub_{l,k}  ==  sum_w B[w] C[w],
+#     B[w] = sum_{l<K} beta^l [w_L=l] eq~(r_C^l, w_e)          (verifier-anchored)
+#     C[w] = sum_{k<nb} gamma^k Ub_{(nb-1-k)}[w]               (committed Ub RLC)
+#
+# (B factors the per-layer eq weight, k-independent; C is the gamma-fold of the
+# nb committed low-bit tables -- one combined opening of the SAME cube the
+# zero-test pins).  The cross term sum_w B[w]C[w] = sum_{l,k} beta^l gamma^k
+# Ub_{(nb-1-k)}^{(l)}~(r_C^l) is exactly the gamma-weighted TRUE openings, so an
+# honest prover's claim matches and a single wrong ub_{l,k} flips claim (w.p.
+# >= 1 - (K nb - 1)/q over gamma), caught by the sum-check round-1 identity.
+#
+# VERIFIER.  After binding (r_L, r_e) it recomputes B~(r*) = sum_l beta^l
+# chi_l(r_L) eq~(r_C^l, r_e) in O(K(Lk+nb)) -- B is PUBLIC (the r_C points, beta),
+# the anchor -- and takes C~(r*) from the sum-check's folded scalar (the committed
+# Ub-cube opening, exactly as the zero-test trusts its U/R/Qv/bit scalars), then
+# checks final == B~(r*) C~(r*).  ONE-TIME O(K(Lk+nb)) = O~(sqrt x), replacing the
+# per-layer O(K nb 2^nb).  Soundness ~ (K nb + 2(Lk+nb))/q.
+
+def ub_opening_claims(W, r_C, nb, q=Q):
+    """Honest prover's nb LOW-bit openings for one layer: [Ub_{Lv-nb+k}~(r_C)]_k,
+    k in [0,nb).  These are the scalars verify_trace_region multiplies into its B2
+    `expect`; under deferral the prover supplies them and the batch discharges
+    them.  O(nb 2^nb) (prover-side)."""
+    Lv = W["Lv"]
+    out = []
+    for k in range(nb):
+        j = Lv - nb + k
+        out.append(int(mle_eval(W["tabs"][f"Ub{j}"].astype(_dt(q)), r_C, q)) % q)
+    return out
+
+
+def verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q=Q):
+    """Discharge ALL deferred per-layer Ub-bit-table openings in ONE degree-2
+    sum-check against the SAME stacked Ub cube the trace zero-test commits.
+
+    obligations: list of (layer_idx, r_C, ub_claims), one per layer that ran the
+    trace region, with r_C a length-nb point and ub_claims[k] the prover's claimed
+    Ub_{(nb-1-k)}^{(layer)}~(r_C) (bit nb-1-k of u_e, = the per-layer Ub_{Lv-nb+k}).
+    layer_idx indexes `witnesses` / its stacked layer slice.
+
+    Replaces the K*nb per-layer mle_eval openings (the last per-layer O(2^nb)
+    verifier term) with a one-time O(K(Lk+nb)) discharge.  Returns ok."""
+    K = len(witnesses)
+    if not obligations:
+        return True
+    Lk = _ceil_log2(K)
+    D = 1 << nb
+    N = (1 << Lk) * D
+    dt = _dt(q)
+
+    gamma = int(rng.integers(2, q))
+    beta = pow(gamma % q, nb, q)
+
+    # combined claim = sum_l beta^l (sum_k gamma^k ub_{l,k})   (verifier O(K nb))
+    t0 = time.perf_counter()
+    claim = 0
+    for (li, r_C, ubs) in obligations:
+        inner, gp = 0, 1
+        for c in ubs:
+            inner = (inner + gp * (int(c) % q)) % q
+            gp = gp * gamma % q
+        claim = (claim + pow(beta, li, q) * inner) % q
+    stats["t_verifier"] += time.perf_counter() - t0
+
+    # prover tables: B (verifier-anchored eq weights) and C (committed Ub RLC)
+    t0 = time.perf_counter()
+    B = np.zeros(N, dtype=dt)
+    for (li, r_C, ubs) in obligations:
+        B[li * D:(li + 1) * D] = fmul(eq_table(r_C, q), pow(beta, li, q), q)
+    C = np.zeros(N, dtype=dt)
+    gp = 1
+    for k in range(nb):
+        bitpos = nb - 1 - k                                  # bit of u_e for slot k
+        col = np.zeros(N, dtype=np.int64)
+        for li, W in enumerate(witnesses):
+            col[li * D:(li + 1) * D] = (W["u"] >> bitpos) & 1
+        C = (C + fmul(col.astype(dt), gp % q, q)) % q
+        gp = gp * gamma % q
+    stats["t_prover"] += time.perf_counter() - t0
+
+    ok, r_all, final, scal = sumcheck(claim, {"B": B, "C": C},
+                                      [(1, ["B", "C"])], 2, rng, q)
+    stats["comm"] += 1 + 3 * (Lk + nb)                       # gamma + deg-2 rounds
+    if not ok:
+        return False
+
+    t0 = time.perf_counter()
+    r_L, r_e = r_all[:Lk], r_all[Lk:]
+    bv = 0                                                   # B~(r*), the anchor
+    for (li, r_C, ubs) in obligations:
+        bv = (bv + pow(beta, li, q) * _chi(li, r_L, q) % q
+              * eq_point(r_C, r_e, q)) % q
+    res = (final % q) == bv * (int(scal["C"]) % q) % q
+    stats["t_verifier"] += time.perf_counter() - t0
+    return res
+
+
+def verify_ub_openings_each(witnesses, nb, obligations, q=Q):
+    """The unbatched baseline / ground truth the batch must agree with: per layer,
+    check every ub_claim equals the direct mle_eval of its Ub bit table at r_C
+    (exactly compressed_layer.verify_trace_region's inline opening, line ~439)."""
+    ok = True
+    for (li, r_C, ubs) in obligations:
+        true = ub_opening_claims(witnesses[li], r_C, nb, q)
+        ok = ok and all(int(a) % q == int(b) % q for a, b in zip(ubs, true))
+    return ok
+
+
+# ----------------------------------------------------------------------
 # fmul instrumentation (count + array width), for the bench
 # ----------------------------------------------------------------------
 
@@ -401,6 +528,79 @@ def selftest():
     assert cb.mean_w > cu.mean_w, (cb.mean_w, cu.mean_w)    # wider each call
     K = len(Ws)
     assert cu.calls / cb.calls > 0.4 * K, (cu.calls, cb.calls, K)   # ~K-fold
+
+    # 7. BATCHED Ub OPENINGS (S506): the deferred per-layer Ub-bit-table openings
+    #    (verify_trace_region's nb mle_eval's, the last per-layer O(2^nb) verifier
+    #    term) discharge in ONE sum-check.  It (a) ACCEPTS honest openings, (b)
+    #    AGREES with the per-layer inline mle_eval ground truth, (c) REJECTS any
+    #    single forged ub_claim -- over q AND BIG_Q, first/middle/last layer and
+    #    bit, plus the K=1 edge and fast==object bit-identity.
+    def _obligations(witnesses, nb, q, seed, corrupt=None):
+        rg = np.random.default_rng(seed)
+        obs = []
+        for li, W in enumerate(witnesses):
+            rC = [int(rg.integers(0, q)) for _ in range(nb)]
+            ubs = ub_opening_claims(W, rC, nb, q)
+            if corrupt is not None and li == corrupt[0]:
+                ubs = list(ubs)
+                ubs[corrupt[1]] = (int(ubs[corrupt[1]]) + 1) % q
+            obs.append((li, rC, ubs))
+        return obs
+
+    for q in (Q, BIG_Q):
+        for n in (8, 10, 12):
+            x = (1 << n) - 1
+            primes, nb, Ws = chain_trace_witnesses(x, q)
+            K = len(Ws)
+            obs = _obligations(Ws, nb, q, 11)
+            # (a) honest accept + (b) agreement with the inline mle_eval ground truth
+            assert verify_ub_openings_each(Ws, nb, obs, q), (q, n, "each honest")
+            st = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+            assert verify_ub_openings_batched(Ws, nb, obs,
+                                              np.random.default_rng(3), st, q), \
+                (q, n, "batched honest")
+            assert st["comm"] == 1 + 3 * (_ceil_log2(K) + nb), (q, n, st["comm"])
+            # (c) corrupting ANY single (layer, bit) opening -> BOTH reject
+            for cl in sorted(set([0, K // 2, K - 1])):
+                for kb in sorted(set([0, nb // 2, nb - 1])):
+                    bad = _obligations(Ws, nb, q, 11, corrupt=(cl, kb))
+                    assert not verify_ub_openings_each(Ws, nb, bad, q), \
+                        (q, n, cl, kb, "each missed forge")
+                    rej = sum(not verify_ub_openings_batched(
+                        Ws, nb, bad, np.random.default_rng(200 + t), st, q)
+                        for t in range(4))
+                    assert rej == 4, (q, n, cl, kb, rej)
+
+    # K=1 edge (x=7): Lk=0, the cube is just the nb e-vars, chi_l empty -> 1
+    x = 7
+    primes, nb, Ws = chain_trace_witnesses(x)
+    assert len(Ws) == 1 and _ceil_log2(1) == 0
+    obs = _obligations(Ws, nb, Q, 12)
+    st = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+    assert verify_ub_openings_batched(Ws, nb, obs, np.random.default_rng(1), st)
+    bad = _obligations(Ws, nb, Q, 12, corrupt=(0, 0))
+    assert sum(not verify_ub_openings_batched(
+        Ws, nb, bad, np.random.default_rng(13 + t), st) for t in range(4)) == 4
+
+    # fast-Mersenne uint64 path == object reference (same accept/reject)
+    saved = _cpmt.FAST_BIG
+    try:
+        x = (1 << 12) - 1
+        _cpmt.FAST_BIG = False
+        primes, nb, Wo = chain_trace_witnesses(x, BIG_Q)
+        obs_o = _obligations(Wo, nb, BIG_Q, 21)
+        ro = verify_ub_openings_batched(Wo, nb, obs_o, np.random.default_rng(7),
+                                        {"t_prover": 0., "t_verifier": 0., "comm": 0},
+                                        BIG_Q)
+        _cpmt.FAST_BIG = True
+        _, _, Wf = chain_trace_witnesses(x, BIG_Q)
+        obs_f = _obligations(Wf, nb, BIG_Q, 21)
+        rf = verify_ub_openings_batched(Wf, nb, obs_f, np.random.default_rng(7),
+                                        {"t_prover": 0., "t_verifier": 0., "comm": 0},
+                                        BIG_Q)
+        assert ro == rf == True, (ro, rf)
+    finally:
+        _cpmt.FAST_BIG = saved
 
     print("selftest OK")
 

@@ -1,0 +1,161 @@
+=== Cycle 215 — Sat Jun 13 12:14:53 UTC 2026 ===
+I'll start by reading the live program state and the relevant context.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, mature research line. The NEXT ACTION is concrete: fold the `nb` Ub-bit-table openings in `verify_trace_region` into the batched-trace machinery to remove the last per-layer O(2^nb) verifier term. Let me read the relevant code.
+  [tool: Bash] ls -la experiments/constructions/p12_sumcheck_pi_verification/ && echo "---WC---" && wc -l experiments/constructions/p12
+Let me read the batched_trace machinery and the verify_trace_region in compressed_layer.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now let me look at `verify_trace_region` in compressed_layer.py and the surrounding region.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "verify_trace_regi
+Let me read `verify_trace_region` in detail and the surrounding reduction code.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the sumcheck implementation and the constraint/witness machinery in compressed_prover_mult_trace.py.
+  [tool: Bash] grep -n "^def \|^class \|^FAST_BIG\|^Q \|^BIG_Q\|^SMALL_Q\|^DEFAULT_Q\|^FIELDS\|def fmul\|def _dt\|def eq_table\|def eq_
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me read `run_chain` and `large_reduce` fully, plus the leaf_open module.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the leaf_open module and the rest of run_chain's selftest area (cases 18-20).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+Let me read the selftest cases 18-20 and bench_pcs in compressed_layer.py to match the testing/measurement style.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I have a thorough understanding now. Let me check the `fmul`/dtype helpers and confirm the current selftests pass before implementing.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me confirm the current baselines pass before modifying.
+  [tool: Bash] echo "=== batched_trace selftest ===" && timeout 300 python3 batched_trace.py --selftest && echo "=== leaf_open selftest
+  [tool: Bash] timeout 200 python3 -c "
+import numpy as np, compressed_layer as cl
+for n in (8,12):
+    x=(1<<n)-1
+    truth=cl.sieve_p
+Now let me implement. First, add the batched Ub-opening primitive to `batched_trace.py`. I'll insert it after `verify_constraints_each`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now add a selftest case for the new primitive:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now run the batched_trace selftest to validate the new primitive:
+  [tool: Bash] timeout 400 python3 batched_trace.py --selftest
+The standalone primitive works. Now thread it through `compressed_layer.py`. First, `verify_trace_region`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `ub_defer`/`layer_idx` through `large_reduce`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `run_chain`: signature, validation, defer accumulator, pass-through, and discharge.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] grep -n "batch_wiring requires delegate" compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add the `ub_defer` accumulator, pass-through, and discharge in `run_chain`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me test the threaded chain with `batch_ub`:
+  [tool: Bash] timeout 300 python3 -c "
+import numpy as np, compressed_layer as cl
+
+# validation: batch_ub requires pcs and batch_trace
+Verifier time at n=12 dropped from 42.8ms → 26.7ms. Let me measure the scaling of the verifier win (the key claim: the ratio should grow with n, confirming the per-layer term is gone).
+  [tool: Bash] timeout 600 python3 -c "
+import numpy as np, time, compressed_layer as cl
+print('full delegated+structured+batch_trace+b
+The wall-clock ratio is flat (~1.1×), not growing — that contradicts the NEXT ACTION's prediction. Let me understand why before reporting. The key question: are the Ub openings actually the dominant verifier term in wall-clock? Let me profile and also add a clean op-count measurement (the verifier-side leaf-eval count is the real asymptotic signal, since `sumcheck` folding is untimed per the S501 profile).
+
+First, add structural op-counters to `verify_trace_region`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] timeout 400 python3 -c "
+import numpy as np, compressed_layer as cl
+print('per-layer VERIFIER O(2^nb) Ub-leaf evals: OFF
+The clean falsifiable result: verifier-side O(2^nb) Ub-leaf evaluations go from **K·nb → exactly 0** (moved to prover), at every n. The per-layer verifier now has no table-sized eval. The wall-clock drop is modest (~1.1×) because vectorized numpy mle_eval is cheap vs the Python-loop wiring recomputes — I'll report that honestly.
+
+Now let me add a selftest case (21) to `compressed_layer.py`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add a `bench_ub` function and wire the CLI. Let me look at the bench_pcs and main/argparse:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add `bench_ub` after `bench_pcs`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now wire `--bench-ub` into the CLI. Let me view the argparse block:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update the `run_chain` docstring to document `batch_ub`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now run the full selftests for both modified files:
+  [tool: Bash] echo "=== batched_trace ===" && timeout 400 python3 batched_trace.py --selftest && echo "=== compressed_layer (full, may
+While the full selftest runs in the background, let me capture the bench_ub headline and confirm leaf_open still passes.
+  [tool: Bash] timeout 400 python3 leaf_open.py --selftest && echo "---bench-ub---" && timeout 400 python3 compressed_layer.py --bench-
+Let me check the background selftest progress:
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/b2veb6nwq.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/b2veb6nwq.output
+The full selftest is still running. While it does, let me read the current results file to find where to add the S506 section.
+  [tool: Bash] grep -n "^## \|^### \|^# \|S505\|S506\|leaf open\|Ub" compressed_layer_results.md | head -50
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+I'll add a Step 8 (S506) summary header after the Step 7 block:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Let me check the "Honest scope" section that mentions the Ub leaf closure, to update it:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Bash] grep -n "Honest scope\|Leaf closure\|Ub_j" compressed_layer_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Let me check the background selftest:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/b2veb6nwq.output
+The selftest is still running. Let me wait for it to complete using a Monitor loop:
+  [tool: Bash] until grep -q "selftest OK" /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/b2
+Both pass. Let me clean up `__pycache__` and verify no results files are missing:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; find e
+All the missing results files are pre-existing in unrelated experiment directories, not mine. Let me confirm my directory is clean:
+  [tool: Bash] for f in experiments/constructions/p12_sumcheck_pi_verification/*.py; do r="${f%.py}_results.md"; [ ! -f "$r" ] && echo 
+Now update `batched_trace_results.md` to document the new Ub-opening primitive. Let me read its structure:
+  [tool: Bash] grep -n "^## \|^# \|^### " batched_trace_results.md
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification && grep -n "^## \|^# \|^### " batched_trace_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+Now update PROGRAM.md. First, add the step-11 row to the protocol table:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 6 (mark the Ub openings DONE) and add the S506 entry to "Done this era":
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the S506 entry to "Done this era" and update the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check the canonical doc for a caveat about the per-layer O(2^nb) / Ub openings that's now closed:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && grep -n "Ub\|per-layer\|2\^nb\|leaf\|S505\|S506\|pcs\|Õ(√x)\|end-to-end\|mle_eval
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+I'll add an S506 bullet to the canonical doc right after the S505 leaf-openings bullet:
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now update the NEXT ACTION in PROGRAM.md:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I'll replace the NEXT ACTION section by targeting unique anchor lines:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+All edits done. The code was already validated by the full selftest run after the last code change (docs since then don't touch code). Let me do a final cleanup and sanity check:
+  [tool: Bash] find experiments/constructions/p12_sumcheck_pi_verification -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; pyt
+Let me do a final confirming run of both selftests to report faithfully:
+  [tool: Bash] echo "=== batched_trace --selftest ===" && timeout 400 python3 batched_trace.py --selftest && echo "=== compressed_layer
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/bvtsmnmlu.output
+The background run failed only on working directory (fresh shell from root; the scripts need the p12 dir on the import path). The definitive validation (task b2veb6nwq) already passed both selftests after all code edits. Let me re-confirm cleanly using PYTHONPATH:
+  [tool: Bash] D=/apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== batched_trace ===" 
+  [tool: Bash] until [ -f /tmp/claude-0/-apps-aplikacijos-prime-research/23c4435f-cbe5-40a2-a549-80370ec0ab10/tasks/b5a2vkeqs.output ] 
+Both selftests pass cleanly. The cycle is complete.
+
+## Summary
+
+This cycle executed the recorded NEXT ACTION: **remove the last per-layer O(2^nb) verifier term** from the compressed π(x) verification chain (S506).
+
+**What was built.** After S505's `--pcs` threaded every *carried-claim* leaf opening's residual to the base, exactly one per-layer O(2^nb) verifier operation remained: `verify_trace_region`'s `nb` Ub-bit-table openings `Ub_{Lv−nb+k}~(r_C)` (the B2 routing that pins `g1_trace` to the certified quotient `u_e`). These are per-layer *witness* data — no carried claim to thread — so they needed a commitment-shared discharge. The batched trace zero-test already stacks and commits exactly those Ub tables across all K layers, so it became the home for them:
+
+- **New primitive** `batched_trace.verify_ub_openings_batched` discharges all K·nb openings in ONE degree-2 sum-check. With γ←F_q and β=γ^nb, the per-(l,k) weight γ^{l·nb+k} is distinct, and the identity factorizes to a single inner product `claim = Σ_w B[w]·C[w]` over the (Lk+nb)-cube — `B` the verifier-anchored per-layer eq weights, `C` the γ-fold of the committed low-nb Ub tables.
+- **Wired** behind `run_chain(--batch_ub)` (requires `pcs`+`batch_trace`) via a new `ub_defer` accumulator mirroring `batch_wiring`'s plumbing.
+
+**Measured result (the honest headline).** The verifier-side O(2^nb) Ub-leaf eval count `ub_leaf_v` drops from **K·nb to exactly 0** at every n=8..16 (24/55/108/217/432 → 0; moved to the prover). The per-layer verifier is now leaf-eval-free — **the chain verifier is honestly Õ(√x) end-to-end**, closing the "Honest scope" caveat standing since step 1. The only O(√x) verifier work left is one-time (the two S₀ base closes + the batched discharges).
+
+**Honest correction.** The S505 NEXT-ACTION predicted the verifier *wall-clock* ratio would grow with n. It does not — it's a flat ~1.1–1.2×, because vectorised numpy `mle_eval` on a √x-size array is cheap relative to the Python-loop wiring/eq recomputes that dominate measured `t_verifier`. The asymptotic O(K·nb·2^nb)→one-time improvement is real but lives in **op-count, not measured wall-clock** at reachable n. I recorded this correction in all the docs.
+
+**Verification.** Selftest case 21 (compressed_layer) + §7 (batched_trace): verdict unchanged (honest==sieve, delta_pi + self-consistent liar rejected) over q AND BIG_Q; standalone primitive agrees with the inline `mle_eval` ground truth and rejects any single forged (layer,bit) opening 4/4; K=1 edge; fast==object. Default `batch_ub=False` keeps all prior artifacts verbatim. Updated PROGRAM.md, both results files, and the canonical doc; the new NEXT ACTION is a whole-chain verifier-op-count scaling curve to turn this per-layer fact into a measured Õ(x)→Õ(√x) headline.
+--- cycle result: success (turns=81, duration=1865468ms) ---
+=== Cycle 215 finished — Sat Jun 13 12:46:00 UTC 2026 ===
