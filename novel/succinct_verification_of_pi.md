@@ -179,19 +179,52 @@ x = 2²⁴ with matched-random control:
   the automaton-MLE treatment of the sieve wiring, and the public-
   scalar observation that makes the Lucy chain close without auxiliary
   claims.
-- Demo field q = 2³¹−1 (soundness ~10⁻⁶ at n=16; production lifts to
-  q ~ 2⁶¹/extension fields with no structural change). Demo prover is
-  table-based Θ(2ⁿ/layer); production prover works the O(√x) compressed
-  Lucy state at Õ(x) total.
+- Demo field q = 2³¹−1 (soundness ~10⁻⁶ at n=16). **Field lift (S498,
+  corrected):** the multiply-trace identity U·a+R−X=0 is sound only while
+  the field's CHARACTERISTIC exceeds the integers it relates (U·a ~ x),
+  i.e. q > x, roughly n ≲ 30. The lift is therefore to a larger-
+  characteristic PRIME (q ~ 2⁶¹−1 for n ≲ 60, generic ~128-bit prime for
+  cryptographic x) — NOT an extension field. An extension field F_{q²} has
+  q² *elements* but characteristic q, so an aliasing forgery (off by k·q)
+  embeds as the SAME field element as the truth and is undetectable; the
+  larger element count only shrinks Schwartz–Zippel error, an orthogonal
+  concern. Demonstrated end-to-end in `compressed_prover_mult_trace.py`
+  (`--field`, `--alias-demo`, `--refute-q2`). The genuine alternative to a
+  bigger prime is a small-field schoolbook carry trace. **The lift is now
+  threaded through the WHOLE compressed chain (S499):** `compressed_layer.py`
+  `run_chain` and the delegated wiring (`lucy_dp_delegated_wiring.py`) carry a
+  prime-modulus `q` (`--field {q,big,small}`), default `q=2³¹−1` bit-identical,
+  `q=2⁶¹−1` over exact-int object arrays — the chain over `big` gives
+  `claimed π==sieve` with all cheats rejected, and the wrap-around alias the demo
+  prime admits is rejected by the lift in the chain's exact trace config. The
+  remaining gap to a large-n run is speed, not soundness — but (**S500**) the
+  obvious speed fix is not the bottleneck: the numpy `2⁶¹−1` mulmod
+  (`_mul61`/`_sum61`, `2⁶¹≡1` fold) is built and threaded chain-wide
+  bit-identically, yet it is a *large-array-only* win (the single-`√x`-cube
+  certifier gains 1.7–3.8× at n=24–28; the **full chain is slower**, being
+  `π(√x)` layers of many small cubes — *operation-count-bound*, not
+  width-bound). The pure-Python Lucy DP is also negligible (`<0.1%` of
+  `run_chain`). So the real lever for a fast large-x chain run is reducing the
+  *count* of small per-layer field-ops (cross-cube batching), kept opt-in
+  (`--fast-big`) with BIG_Q on the object reference by default.
+  Demo prover is table-based Θ(2ⁿ/layer); production prover works the O(√x)
+  compressed Lucy state at Õ(x) total.
 
 ## Open problems (the verification program, consolidated S491-final)
 
 1. **Compressed prover** — make the prover pay Õ(x) (polylog overhead
-   over plain Lucy) instead of Õ(x^{3/2}). Design analysis in
-   `.commit_state`: the large-value side forces d-addressing whose
-   cross-map u = ⌊x/(dp)⌋ is variable×variable multiplication ⟹ a
-   trace-table (AIR-style) GKR with delegated addition chains. Correct
-   in principle; multi-session build.
+   over plain Lucy) instead of Õ(x^{3/2}). The large-value side forces
+   d-addressing whose cross-map u = ⌊x/(dp)⌋ is variable×variable
+   multiplication ⟹ a trace-table (AIR-style) GKR. **Step 1 built and
+   tested (S492):** `compressed_prover_mult_trace.py` — a batched
+   primitive verifying C = Σ_d eq(ρ,d)·S̃(⌊X/(dp)⌋) with every quotient
+   certified through prover trace tables (a degree-3 constraint
+   zero-test — multiply+remainder identity, bit-range recompositions,
+   remainder bound — plus a routing lookup), verifier polylog O(m·Lv)
+   and never dividing, prover on the D≈√x cube; 6 cheat classes
+   rejected, verifier flat in batch size. Remaining: integrate into the
+   layer protocol (small/large-side dispatch; the affine index map for
+   dp≤√x; chaining and line-batching the S̃ claims).
 2. **Layer batching (closed negative, S491-final).** Merging the
    K = π(√x) sequential layers by a balanced product tree fails on
    fill-in: each layer matrix has fill ≤ 3 per row on the compressed

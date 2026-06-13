@@ -1,0 +1,57 @@
+=== Cycle 3 — Sat Jun 13 03:19:50 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+  [tool: Bash] ls -la /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+This is a continuation of an active multi-cycle build. Let me read the canonical doc's relevant section and check the closed-paths catalogue before building, then look at the supporting infrastructure.
+  [tool: Bash] sed -n '1,60p' novel/succinct_verification_of_pi.md 2>/dev/null | head -80; echo "---- grep compressed in CLOSED_PATHS -
+I have a complete picture. The NEXT ACTION is to integrate the step-1 trace primitive into a single **compressed** Lucy layer verifier — small side value-addressed, large side d-addressed, dispatching `dp≤√x` (affine wiring) vs `dp>√x` (trace lookup). Let me build it.
+
+Let me first verify a key correctness fact about the compressed Lucy DP and the dispatch threshold before committing to the design:
+  [tool: Bash] python3 -c "
+from math import isqrt
+def sieve_pi(x):
+    s=[True]*(x+1); s[0]=s[1]=False
+    for p in range(2,isqrt(x)+1
+The compressed DP and the affine/trace dispatch are validated against the sieve. Now I'll write the full single-layer compressed verifier.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 compre
+Selftest passes on the first run. Let me see the main output and the scaling benchmark.
+  [tool: Bash] echo "=== n=12 layer 4 ===" && python3 compressed_layer.py --n 12 --layer 4 --cheat-trials 20 2>&1 && echo && echo "=== 
+All green. The verifier is polylog except the affine `waff` automaton (O(nb·p), the same √x cost as the *base* protocol's wiring, delegatable to O(nb·log p) by the already-built carry chain — out of scope this cycle). Communication is O(nb²). Let me clean up and write the results file.
+  [tool: Bash] find . -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; echo "pycache cleaned"; ls
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me update PROGRAM.md to record this cycle and set the next action.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run the final cleanup checks from CLAUDE.md (missing results files, pycache, selftest still green).
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== missing _results.md ===" && find experiments/ -path "*/.lake" -prune -o
+All checks pass. The `MISSING` entries are all pre-existing auxiliary scripts from *other* experiment directories (older cycles) — my two new files both have their `_results.md`, pycache is clean, and the selftest is green.
+
+## Cycle summary (S493)
+
+I completed **step 2 of the compressed prover** — the planned NEXT ACTION — integrating the step-1 trace primitive into one real Lucy sieve layer over the **compressed O(√x) state**.
+
+**Built** (`experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py` + results):
+
+1. **The compressed Lucy_Hedgehog DP** — the prover substrate that was missing. Every prior protocol materialized the full `2^n≈x` table (Õ(x^{3/2}) demo prover); this works the two √x-size arrays (`small[v]`, `large[e]`). Validated `π(x)=large[0]` against a direct sieve for all n∈[6,20].
+
+2. **One large-side compressed layer verifier**. A claim `S̃_i^large(z)` reduces by phase-A (one threshold `B(e)=[e≤Bcut]` folds validity + the p² gate) to `s1, g1`, then phase-B **dispatches each large key by region**:
+   - `(e+1)p≤V` → **affine** index map `e↦p·e+(p−1)`, verified by a long-division `waff_eval` automaton (**no trace**);
+   - `(e+1)p>V` → the **step-1 band-masked trace lookup** into the small side.
+   
+   Then line-batches the two same-table claims.
+
+**Two facts that keep everything at √x** (the point of the line): the *verified* band mask `T(e)` zeroes the affine/padding columns out of the routing, and the lookup uses the **low nb=bits(V) bits** of the certified `u_e`, so `omega`/`S_small` stay 2^nb≈√x even though `build_witness` certifies `u_e` with Lv≈bits(x/p) bits.
+
+**Measured**: honest layer accepts; **output point-claims verified equal to the true MLEs** of `S_{i-1}` on both sides (the reduction is consistent, not merely self-accepting); 5 cheat classes rejected 20/20; comm = O(nb²); prover ≈ flat; verifier polylog except `waff`'s O(nb·p), which `lucy_dp_delegated_wiring` already showed reduces to O(nb·log p).
+
+**Honest scope**: leaf openings are still harness-closed by direct MLE eval (same stand-in as step 1); the field caveat is inherited. Not done → the **small-side layer** (which consumes the `s_B` claim this layer emits) and **chaining** all K layers — now the single concrete NEXT ACTION in PROGRAM.md.
+
+No breakthrough claim: this is incremental progress on the verification line, not the polylog computation goal.
+--- cycle result: success (turns=19, duration=936072ms) ---
+=== Cycle 3 finished — Sat Jun 13 03:35:27 UTC 2026 ===

@@ -1,0 +1,31 @@
+=== Cycle 210 — Sat Jun 13 08:07:46 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/ && echo "---WC---" && wc -l experiments/constructions/p12_sum
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/chain_profile_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I have a thorough understanding now. The NEXT ACTION is clear: build the **batched trace zero-test**. Let me verify my understanding of one key detail — how the per-layer `verify_constraints` calls relate to the chain (whether they're truly independent and detachable).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Confirmed. The per-layer trace zero-tests (`verify_constraints`) are independent — each draws its own `tau`/`alpha` and certifies its own witness, with no challenge feeding forward. Now let me build the batched primitive.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 batche
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+  [tool: Bash] timeout 600 python3 batched_trace.py --selftest 2>&1 | tail -30
+Selftest passes. Now the demo and benchmark:
+  [tool: Bash] timeout 300 python3 batched_trace.py --n 16 --field big 2>&1 | tail -20
+  [tool: Bash] timeout 600 python3 batched_trace.py --bench --field big 2>&1 | tail -40
+The benchmark confirms the S501 prediction precisely:
+- **fmul COUNT drops ~K-fold** (n=16: 1.37M → 51.8K = 26×; K=54)
+- **per-fmul WIDTH rises ~K-fold** (31.9 → 1170 = 37×)
+- **the fast-Mersenne path flips**: at n=8 batched+fast *loses* (0.60×, arrays still tiny), but the sign flips and the win grows with n — at n=16 batched+fast is **3.54×** faster than unbatched+fast, and at **1707 ms** beats unbatched-object (**8526 ms**) by **5×**.
+
+That 8.5s unbatched-object trace cost matches S501's "53% of the ~15s run_chain wall." Now let me wire it into `run_chain` to hit the end-to-end target metric.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `run_chain` to accept `batch_trace` and run the batched zero-test once:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] timeout 900 python3 compressed_layer.py --selftest 2>&1 | tail -20

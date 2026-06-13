@@ -1,0 +1,76 @@
+=== Cycle 4 — Sat Jun 13 03:35:42 UTC 2026 ===
+I'll start by reading the live program state and the relevant context.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the canonical doc and the current state of the key experiment file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the supporting primitive files I'll need to reuse for step 3.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+Now let me read step 1's primitive file to understand `build_witness` and `verify_constraints`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+I now understand the full state. The NEXT ACTION is clear: build the **small-side layer + chaining** (step 3) in `compressed_layer.py`. Let me check the closed-paths catalogue briefly to make sure I'm not redoing something, then verify the current files run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 compressed_layer.p
+The existing selftest passes and nothing in CLOSED_PATHS blocks the verification chain (the matches are about computation routes, not verification). Now I'll implement step 3: the small-side layer + two-sided chaining. Let me write the updated file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the selftest:
+  [tool: Bash] timeout 600 python3 compressed_layer.py --selftest 2>&1 | tail -20
+Test 7 found a real boundary bug: when `p² > V` the small-side band `[p²..V]` is empty, but `band_eval(r, p², V)` computes `le(V) - le(p²-1) ≠ 0` for `lo > hi`. The prover's table is correctly all-zero, so they disagree. The fix: `band_eval` must return 0 for an empty band (`lo > hi`). This is the correct MLE of the empty indicator.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me also lock this boundary into the selftest, then re-run.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] timeout 600 python3 compressed_layer.py --selftest 2>&1 | tail -20
+Selftest passes. Now let me run the main demo and bench to see the chain working end-to-end with measurements:
+  [tool: Bash] timeout 600 python3 compressed_layer.py --n 12 --cheat-trials 20 2>&1 | tail -30
+Excellent — the full chain verifies π(4095)=564 against the sieve, and all cheat classes (9 per-layer + delta_pi + self-consistent liar at layers 1/9/18) are rejected 20/20. Let me run the bench for scaling:
+  [tool: Bash] timeout 600 python3 compressed_layer.py --bench 2>&1 | tail -20
+Clean scaling. Let me confirm correctness at an odd `n` (exercises padding, `V ≠ 2^nb−1`) and a larger size via the main demo:
+  [tool: Bash] timeout 600 python3 compressed_layer.py --n 11 --cheat-trials 12 2>&1 | tail -8; echo "===== n=14 ====="; timeout 600 py
+All scenarios pass including odd-`n` padding and `n=14` (π=1900 verified). Now let me update the results file. Let me check the existing one:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+The step-2 content is still accurate. I'll update the title and add a step-3 section, then amend the "NOT done" list and falsification. Let me make targeted edits:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now update the "NOT done" list at the bottom to reflect that the small-side layer and chaining are complete:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now update the falsification section to cover the chain:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me clean up `__pycache__`, verify no missing results files, and run the full selftest one more time to confirm everything is green:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/nul
+The missing-results entries are all pre-existing old experiments (circuit_complexity, ml, quantum, etc.) — not from this cycle. Both my files have their `_results.md`. Final selftest is green.
+
+Now let me peek at the delegated-wiring file so the NEXT ACTION is precise, then update PROGRAM.md:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions && ls -d */ | head; echo "---"; find . -name "lucy_dp_dele
+The division-wiring delegation already exists in `lucy_dp_delegated_wiring.py`; only the large-side `waff` affine wiring still needs it. That makes a clean NEXT ACTION. Now let me update PROGRAM.md — the protocol table, open item 1, the done list, and the next action:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now replace the NEXT ACTION with the wiring-delegation task:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me re-read the open items section to ensure coherence after my edits:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+PROGRAM.md is coherent. Let me run a final verification across all three interlocking files to confirm nothing broke, and do one fresh-seed honest+cheat chain run to be sure the result is robust (not seed-lucky):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== lucy_dp_verifica
+All green: three selftests pass, and 8 fresh-seed runs confirm honest accept+match 8/8 and `delta_pi` reject 8/8 — not seed-luck. Final cleanup:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/nul
+Cycle complete. Here's what this cycle (S494) produced.
+
+## Summary
+
+**Delivered the NEXT ACTION: the small-side layer + full two-sided chain** in `experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py` — closing the core of open item 1 (the compressed prover).
+
+**Built and verified:**
+- **`small_reduce`** — the small-side Lucy layer. The wiring `v→⌊v/p⌋` stays entirely value→value, reusing the existing division automaton `w_div_eval` over the `2^nb≈√x` cube.
+- **`run_two_sided_layer`** — one full layer as `(large-claim, small-claim) → (large-claim', small-claim')`, with a width-2 claim vector. The three same-table claims about `S_{i−1}^small` (`s_B` from the large trace + 2 from the small layer) fold to one by sequential line restriction.
+- **`run_chain`** — the full `K=π(√x)`-layer chain from `S_K^large(e=0)=π(x)` down to `S₀`. **`claimed π(x) == sieve π(x)` for every n≤16** (π(16383)=1900, etc.), with the prover working only the √x cube (Õ(x) total, vs the demo's Õ(x^{3/2}) — the open-item-1 target).
+
+**Soundness:** 9 per-layer cheat classes + 3 chain cheats (`delta_pi`, self-consistent liar at layers 1/K/2/K) all rejected 20/20, confirmed across fresh seeds. The self-consistent liar is the load-bearing test — it confirms the cross-layer binding catches corruption at exactly the layer where it meets the honest layer below.
+
+**Two honest corrections recorded (not glossed over):**
+1. The planned gate `B(v)=[v≥p²]` ("comparator, no validity-fold") is **only correct when `V=2^nb−1`** (no padding). General `V` needs the **band** `[p²≤v≤V]` — the bare comparator corrupts the zero-padding columns. Selftest now exercises odd-`n` padding.
+2. `band_eval` was wrong for an **empty band** (`p²>V` ⇒ `lo>hi`): `le(hi)−le(lo−1)≠0`. Fixed to return 0 (the correct MLE of the empty indicator) and exhaustively selftested.
+
+**Files updated:** `compressed_layer.py` (+`_results.md`), `PROGRAM.md` (step 3 marked done, protocol table row added). Selftests for all three interlocking files pass; no `__pycache__` left.
+
+**NEXT ACTION set for the next cycle:** delegate the two remaining O(nb·p) wiring evals to O(nb·log p) so the *whole* compressed-chain verifier is cleanly Õ(√x) — the small side's `w_div_eval` is a drop-in for the existing `lucy_dp_delegated_wiring` carry chain; the large side's `waff` needs the same carry-chain template applied to its affine map.
+
+No `BREAKTHROUGH.md` — this is verification progress (an interactive proof of π(x) with an Õ(x) prover / Õ(√x) verifier over the compressed state), not the polylog *computation* goal.
+--- cycle result: success (turns=27, duration=1255993ms) ---
+=== Cycle 4 finished — Sat Jun 13 03:56:39 UTC 2026 ===

@@ -1,0 +1,105 @@
+=== Cycle 6 — Sat Jun 13 04:22:34 UTC 2026 ===
+I'll start by reading the live program state and understanding where things stand.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build a **structured chain prover** in `lucy_dp_delegated_wiring.py` to reduce the prover from O(nb·p²)/layer (Õ(x^{3/2})) down to O(nb·p·l)/layer (Õ(x)), while keeping the verifier transcript identical so `compressed_layer --delegate` still passes.
+
+Let me read the relevant files.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me read the base `lucy_dp_verification.py` to understand `sumcheck` and the primitives, since the structured prover needs to reproduce its transcript exactly.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+Now let me read the compressed_layer.py to understand how it calls into the delegated wiring, and the results docs for conventions.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && wc -l compressed_layer.py 
+This is a well-scoped multi-cycle build. I've now mapped the bottleneck precisely:
+
+- `inner_verify_div`'s backward chain sweep builds 5 dense tables of size `dim²=2^{2l}≈p²` per chain layer (via `np.repeat`/`np.tile`/`inner_r_table`), then runs a `2l`-variable degree-5 sum-check over them → **O(p²) per chain layer** → `Σ_p n·p² ≈ Õ(x^{3/2})`.
+
+The structured insight: the summand `F(σ',σ)=E(σ')P(σ')R(σ',σ)L(σ)V(σ)` factors. Binding σ' first, I can fold the σ-sum into `G(σ')=Σ_σ R(σ',σ)L(σ)v(σ)` (built in O(p) since R has 4 nonzeros/column), run phase-1 over **O(p)-size** tables E·P·G; then phase-2 over `R*(w)=R(ρ_out,w)`·L·V, also O(p). Crucially, **sum-check challenges come from `rng`, not from the eval values**, and the round polynomials are mathematically the same function → the transcript is bit-identical, so this is a true drop-in.
+
+Let me verify my understanding of the eval/challenge independence before coding, and check the results doc format.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring_results
+I have a complete and verified design. Let me implement it. First, insert the structured reduction + test helpers after `inner_r_table`.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now update the docstring and the backward-sweep loop in `inner_verify_div` to dispatch to the structured reduction:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now thread `structured` through `inner_verify_W`, `verify_layer_delegated`, and `run_protocol_delegated`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me add the selftest cases for structured equivalence and the `prover_bench`. Let me view the current selftest and CLI:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me add the structured selftest cases (before the final end-to-end test #4):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now add the `prover_bench` function and CLI flag:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let's run the selftest to verify the structured reduction is a bit-identical drop-in:
+  [tool: Bash] python3 lucy_dp_delegated_wiring.py --selftest 2>&1 | tail -30
+Selftest passes, including round-poly equality and drop-in equivalence. Now the prover benchmark to confirm the scaling flattens from p² to p:
+  [tool: Bash] python3 lucy_dp_delegated_wiring.py --prover-bench 2>&1 | tail -20
+The benchmark cleanly confirms the scaling: `dense/p²` flattens to a constant (~3.5) at large p → dense is Θ(p²); structured stays far below (the ratio widens from 1.2× to **42.5×** at p=1021, and grows with p). The structured prover is essentially verifier-order (O(n·l) sum-check rounds over O(p)-size tables), overhead-bound at these sizes.
+
+Now let me confirm the downstream protocols still pass verbatim (structured is opt-in, default off) and the dense end-to-end is unchanged:
+  [tool: Bash] echo "=== base lucy_dp_verification selftest ===" && python3 lucy_dp_verification.py --selftest 2>&1 | tail -3 && echo "
+  [tool: Bash] sleep 25 && cat /tmp/claude-0/-apps-aplikacijos-prime-research/f7667c09-16ae-4c02-9098-3d7847d02aee/tasks/br8vx0my0.outp
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/f7667c09-16ae-4c02-9098-3d7847d02aee/tasks/br8vx0my0.output ] 
+All downstream protocols pass verbatim. Let me measure the whole-chain prover at n=16, dense vs structured, to confirm the end-to-end win:
+  [tool: Bash] python3 -c "
+import numpy as np, time
+from lucy_dp_delegated_wiring import run_protocol_delegated, direct_pi
+x=(1<<16)-1
+Bit-identical transcript confirmed (comm=77133 both, π=6542 both). The whole-chain `t_prover` only times table-building (the sum-check arithmetic that dominates dense at large p is untimed), which is why the per-evaluation `prover-bench` is the load-bearing measurement of the exponent drop. Let me remove an unused variable and clean up:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Let me re-run the selftest after cleanup and capture benchmark outputs to log files for the results doc:
+  [tool: Bash] python3 lucy_dp_delegated_wiring.py --selftest 2>&1 | tail -2 && echo "---prover-bench---" && python3 lucy_dp_delegated_
+Everything passes. Now let me document this in the results file:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring_results
+Now let me update PROGRAM.md. First the end of open item 1 (mark structured prover DONE):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the protocol table to reflect the prover result, the "Done this era" list, and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me run the final verification pass — all selftests, the results-file check, and pycache cleanup:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== selftests ===" && for f in experiments/constructions/p12_sumcheck_pi_ve
+All four selftests pass. The MISSING list is entirely pre-existing files from other experiment trees (not this cycle's work — my modified file has its `_results.md`). Let me clean the `__pycache__` left by the selftest runs:
+  [tool: Bash] find . -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; echo "cleaned:"; find . -name __pycache__ -type d 2>/dev
+Cycle complete. Everything is green and clean. Here's what this cycle (S496) produced.
+
+## What I built — the structured chain prover (the last piece of open item 1)
+
+The S495 verifier was already Õ(√x), so the binding cost was the delegated chain **prover**: `inner_verify_div`'s backward sweep materialized five `2^{2ℓ}≈p²`-size tables per chain layer → **O(n·p²)/Lucy-layer → Σ_{p≤√x} n·p² ≈ Õ(x^{3/2})**, reintroducing the very exponent the compressed DP removed.
+
+`chain_layer_reduce_structured` (in `lucy_dp_delegated_wiring.py`, opt-in `structured=True`) removes it. The summand `F(σ′,σ)=E(σ′)P(σ′)R_j(σ′,σ)L(σ)v_j(σ)` **factors**: E,P depend only on σ′; L,v only on σ; R_j is the **sparse width-4 affine operator** (4 nonzeros/column). Splitting the 2ℓ-variable sum-check at the σ′/σ boundary runs both phases over **O(p)-size** tables — phase 1 over `E·P·G` with `G(y)=Σ_σ R_j(y,σ)L(σ)v_j(σ)` built in O(p); phase 2 over `(κR*)·L·v`. **Per chain layer O(p²)→O(p); whole chain Σ_p n·p ≈ Õ(x).**
+
+## Why it's a safe drop-in (verified, not asserted)
+
+The transcript is **bit-identical**: sum-check challenges come from `rng`, never from the eval values, and the round polynomials are the unique multilinear sum-check of the *same* F — G merely regroups the σ-sum, which commutes with multilinear extension. The verifier checks are untouched, and `accept_rem` (affine-image path) is orthogonal.
+
+Selftest cases 5/6/6b assert **per-round-polynomial equality exhaustively** (small p, random points/chain-vectors) plus equal accept/reject + comm on truth / truth+1 / lying-chain / corrupt-DP / false-wiring, across both the division and affine-image paths. Downstream (`compressed_layer --selftest`, base) pass **verbatim** (structured is opt-in, default dense). End-to-end at x=2¹⁶−1, structured and dense are identical (π=6542, comm=77133, both liars rejected).
+
+## Measured (`--prover-bench`, per wiring evaluation, n=16)
+
+| p | dense (ms) | struct (ms) | ratio | dense/p² | struct/p |
+|---|---|---|---|---|---|
+| 31 | 46.7 | 33.4 | 1.4 | 48.5 | 1078 |
+| 251 | 315 | 58 | 5.4 | 5.01 | 233 |
+| 1021 | 3640 | 83 | **43.9** | **3.49** | 81 |
+
+`dense/p²` flattens to a constant (~3.5) → dense is **Θ(p²)**; structured stays overhead-bound (the O(n·ℓ) round structure dominates the genuine O(p) arithmetic), so the **ratio widens 1.3× → 44×**. The exponent dropped by one.
+
+**Open item 1 is now complete: Õ(√x) verifier + Õ(x) prover, unconditional, both wirings delegated, no p-linear term either side.**
+
+## Files
+- `lucy_dp_delegated_wiring.py` — `chain_layer_reduce_structured`, `_sumcheck_rec`/`_dense_chain_evals` (test refs), threaded `structured` param, selftest cases 5/6/6b, `--prover-bench`.
+- `lucy_dp_delegated_wiring_results.md` — S496 section + falsification criteria.
+- `PROGRAM.md` — step-5 done, table row, "done this era", and a concrete NEXT ACTION: propagate `structured=True` into `compressed_layer.py`'s `verify_waff_value`/`inner_verify_div` calls so the *real* compressed √x-state chain inherits the Õ(x) wiring prover, then field-lift (|F|>x for n≳31) and the large-x benchmark.
+
+No BREAKTHROUGH.md — this is honest infrastructure progress (a prover-complexity drop on the verification line), not exact π(x) in polylog time.
+--- cycle result: success (turns=35, duration=1242245ms) ---
+=== Cycle 6 finished — Sat Jun 13 04:43:17 UTC 2026 ===

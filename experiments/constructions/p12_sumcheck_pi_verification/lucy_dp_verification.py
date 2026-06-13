@@ -130,13 +130,14 @@ def s0_closed_form(z):
 # verifier-side automaton evaluations (the structured-wiring primitives)
 # ----------------------------------------------------------------------
 
-def ge_const_eval(rv, M, n):
+def ge_const_eval(rv, M, n, q=Q):
     """MLE of [v >= M] at point rv. 3-state comparator (equal-so-far /
-    greater / less), bits MSB-first. VERIFIER: O(n)."""
+    greater / less), bits MSB-first. VERIFIER: O(n). Field-parameterised
+    (q=Q default keeps every existing caller verbatim)."""
     st = [1, 0, 0]
     for j in range(n):
         mj = (M >> (n - 1 - j)) & 1
-        w = [(Q + 1 - int(rv[j])) % Q, int(rv[j]) % Q]
+        w = [(q + 1 - int(rv[j])) % q, int(rv[j]) % q]
         new = [0, 0, 0]
         for a in (0, 1):
             if a == mj:
@@ -147,20 +148,21 @@ def ge_const_eval(rv, M, n):
                 new[2] += st[0] * w[a]
             new[1] += st[1] * w[a]
             new[2] += st[2] * w[a]
-        st = [x % Q for x in new]
-    return (st[0] + st[1]) % Q
+        st = [x % q for x in new]
+    return (st[0] + st[1]) % q
 
 
-def w_div_eval(rv, ru, p, n):
+def w_div_eval(rv, ru, p, n, q=Q):
     """MLE of W(v, u) = [u = floor(v/p)] at (rv, ru). Long-division
     automaton: state = running remainder (< p); reading bit a of v
     MSB-first from state s gives t = 2s + a, emits quotient bit
-    floor(t/p) and moves to t mod p. VERIFIER: O(n*p)."""
+    floor(t/p) and moves to t mod p. VERIFIER: O(n*p). Field-parameterised
+    (q=Q default keeps every existing caller verbatim)."""
     st = [0] * p
     st[0] = 1
     for j in range(n):
-        wv = [(Q + 1 - int(rv[j])) % Q, int(rv[j]) % Q]
-        wu = [(Q + 1 - int(ru[j])) % Q, int(ru[j]) % Q]
+        wv = [(q + 1 - int(rv[j])) % q, int(rv[j]) % q]
+        wu = [(q + 1 - int(ru[j])) % q, int(ru[j]) % q]
         new = [0] * p
         for s in range(p):
             if st[s] == 0:
@@ -168,9 +170,9 @@ def w_div_eval(rv, ru, p, n):
             for a in (0, 1):
                 t = 2 * s + a
                 b, s2 = divmod(t, p)
-                new[s2] = (new[s2] + st[s] * wv[a] % Q * wu[b]) % Q
+                new[s2] = (new[s2] + st[s] * wv[a] % q * wu[b]) % q
         st = new
-    return sum(st) % Q
+    return sum(st) % q
 
 
 # ----------------------------------------------------------------------

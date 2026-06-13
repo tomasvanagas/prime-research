@@ -18,7 +18,7 @@
 set -u
 cd "$(dirname "$0")"
 
-MODEL="claude-fable-5[1m]"
+MODEL="claude-opus-4-8[1m]"
 EFFORT="xhigh"
 OUTDIR="archive/CLAUDE_OUTPUTS"
 CYCLE_FILE=".cycle"

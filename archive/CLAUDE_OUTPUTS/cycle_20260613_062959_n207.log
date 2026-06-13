@@ -1,0 +1,214 @@
+=== Cycle 207 — Sat Jun 13 06:29:59 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me look at the key files for the NEXT ACTION.
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/ && echo "---LINECOUNTS---" && wc -l experiments/constructions
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+Let me look at the S498 field-parameterization pattern (the template) and the two files to be threaded.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me read the two files that need threading. Let me start with the delegated wiring.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now the main compressed layer file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the rest of `compressed_layer.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+This is a substantial but well-defined threading task. Let me set up tracking and understand the full picture before editing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== uses of Q / np.u
+All baselines pass. Let me create a task list and begin the threading.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+Starting with Task 1: q-parameterize the two automata in `lucy_dp_verification.py`.
+  [tool: TaskUpdate] 
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+Task 1 done. Task 2: add `q=DEFAULT_Q` defaults to cp_mult helpers so they can be imported as field-parameterized shadows.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Bash] python3 compressed_prover_mult_trace.py --selftest && python3 lucy_dp_verification.py --selftest
+Tasks 1-2 done. Task 3: thread q through `lucy_dp_delegated_wiring.py`. First the imports.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now the verifier-side O(l) primitives:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now `bit_weights`, `inner_chain_vectors`, `inner_r_table`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now `_modmul_arr`, `_sumcheck_rec` (leave default-q only), and `chain_layer_reduce_structured`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now `chain_layer_reduce_structured`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now `inner_verify_div` — the core. Let me thread q through it:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me run the delegated wiring selftest to validate the threading is behavior-preserving at default q:
+  [tool: Bash] python3 lucy_dp_delegated_wiring.py --selftest
+Delegated wiring passes. Let me quickly verify the inner wiring works correctly over BIG_Q (object dtype) before moving on:
+  [tool: Bash] python3 -c "
+import numpy as np
+from compressed_prover_mult_trace import BIG_Q
+import lucy_dp_delegated_wiring as W
+from
+Excellent — the inner wiring is correct over BIG_Q (object dtype), dense and structured. Task 3 done. Now Task 4: `compressed_layer.py`.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the threshold MLEs `le_eval`, `band_eval`, `waff_eval`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_waff_value`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_affine_region`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_trace_region`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `line_batch_pair`, `batch_on_table`, `pad`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `large_reduce`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `small_reduce`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the drivers `run_layer`, `run_two_sided_layer`, `run_chain`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `run_chain`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the compressed_layer selftest to validate the default-q behavior is preserved:
+  [tool: Bash] python3 compressed_layer.py --selftest 2>&1 | tail -20
+All default-q selftests pass. Let me confirm all four files and run a quick default-q chain/bench sanity check:
+  [tool: Bash] for f in lucy_dp_verification compressed_prover_mult_trace lucy_dp_delegated_wiring compressed_layer; do echo "=== $f ==
+Task 4 done. Now let me verify the chain runs correctly over BIG_Q (object dtype) before formalizing tests:
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: Bash] time python3 -c "
+import numpy as np
+from compressed_prover_mult_trace import BIG_Q, DEFAULT_Q
+import compressed_layer a
+The chain runs correctly over BIG_Q. Now let me demonstrate the **soundness** payoff — the wrap-around alias defense — in the chain's actual trace-region configuration (`build_witness(x, p, nb, dstart=1)`), where the demo prime is too small but the lift rejects:
+  [tool: Bash] python3 -c "
+import numpy as np
+from math import isqrt
+from compressed_prover_mult_trace import (build_witness, verify_c
+The soundness payoff is confirmed in the chain's exact trace config. Now let me measure timing to size the new selftest case appropriately:
+  [tool: Bash] python3 -c "
+import time, numpy as np
+from compressed_prover_mult_trace import BIG_Q
+import compressed_layer as CL
+for n
+Let me check the current selftest runtime to budget the new case:
+  [tool: Bash] /usr/bin/time -v python3 compressed_layer.py --selftest 2>&1 | grep -E "selftest OK|wall clock" 
+  [tool: Bash] t0=$(date +%s.%N); python3 compressed_layer.py --selftest; t1=$(date +%s.%N); echo "elapsed: $(echo "$t1-$t0"|bc)s"
+  [tool: Bash] python3 -c "import time,subprocess; t=time.perf_counter(); subprocess.run(['python3','compressed_layer.py','--selftest']
+The current selftest is ~38s; adding the BIG_Q case is proportionate. Let me add the needed imports and the field constants:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add selftest case 16 after case 15 (which ends with `print("selftest OK")`):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `field`/`q` into `main` and add the `--field` CLI:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add the `--field` argument and pass it to `main`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the full selftest (with the new case 16) and the CLI:
+  [tool: Bash] python3 -c "import time,subprocess; t=time.perf_counter(); subprocess.run(['python3','compressed_layer.py','--selftest']
+Full selftest passes (46.5s). Now the CLI demos over the lifted field:
+  [tool: Bash] echo "=== default field q (n=12) ===" && python3 compressed_layer.py --n 12 --cheat-trials 5 --delegate --structured 2>&
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/9da79469-d7d2-4241-8e6e-9b10476122c8/tasks/b5u74mnqx.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9da79469-d7d2-4241-8e6e-9b10476122c8/tasks/b5u74mnqx.output
+The first two demos are perfect — identical π=564 over both fields, cheats rejected. The n=22 small-field run is slow (it builds the full compressed DP at n=22). Let me wait for it to finish:
+  [tool: ToolSearch] 
+  [tool: Bash] until grep -q "ACCEPTED\|REJECTED\|Error\|Traceback" /tmp/claude-0/-apps-aplikacijos-prime-research/9da79469-d7d2-4241-8
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9da79469-d7d2-4241-8e6e-9b10476122c8/tasks/b5u74mnqx.output
+The waiter matched on earlier "ACCEPTED" text. Let me check whether the n=22 process is still running:
+  [tool: Bash] if kill -0 $(pgrep -f "compressed_layer.py --n 22" | head -1) 2>/dev/null; then echo "n=22 still RUNNING"; else echo "n=
+The big-field correctness is fully demonstrated. The n=22 small-field full-chain is just illustrating the warning (and is slow due to the n=22 prover DP). Let me stop it — the warning logic and alias soundness are already covered by selftest case 16:
+  [tool: Bash] pkill -f "compressed_layer.py --n 22" 2>/dev/null; sleep 1; echo "stopped n=22 demo"
+# faster small-field illustration: 
+  [tool: Bash] python3 -c "
+import numpy as np, compressed_layer as CL
+from compressed_prover_mult_trace import SMALL_Q
+x=(1<<24)-1
+r=C
+Let me run a quick smoke test of the benchmarks (default q) to confirm no breakage from the import changes:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer --
+Benches work. Let me clean up `__pycache__` and then update the results docs:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + && echo "pyc
+The missing results files are all pre-existing in other experiment dirs — my four files all have theirs. Let me update the results docs. First the compressed_layer one:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && wc -l compressed_layer_res
+  [tool: Bash] grep -n "^## \|^### \|^# " compressed_layer_results.md | head -40
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me add the S499 field-lift summary and a section to the results doc:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now the delegated wiring results doc. Let me check its current state:
+  [tool: Bash] grep -n "^## \|^# " lucy_dp_delegated_wiring_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring_results
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring_results
+Let me add a brief note to the lucy results doc since I touched its automata:
+  [tool: Bash] tail -6 lucy_dp_verification_results.md
+  [tool: Bash] grep -n "^## \|^# " lucy_dp_verification_results.md | tail -8
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification_results.md
+Final verification — run all four selftests together:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+for f in lucy_dp_verification
+All four pass. Let me clean pycache and update PROGRAM.md:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + && echo clea
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the active-line table and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check whether the canonical novel doc references the field limitation and needs a touch-up:
+  [tool: Bash] grep -n "2³¹\|2\^31\|field\|characteristic\|BIG_Q\|2⁶¹\|n.≲.30\|n≈30\|object dtype" novel/succinct_verification_of_pi.md
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Let me verify no q-path function still hard-codes `np.uint64` or bare `Q` arithmetic that would break object dtype:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer.py
+All residual `% Q` / `np.uint64` are confined to (a) the intentional uint64 fast-path cast in `_modmul_arr`, (b) the 2ⁿ-table demo functions that stay at default Q by design, and (c) test/bench code at the default prime — none are in the compressed-chain q-path. The threading is complete. Let me mark task 5 done and do a final review:
+  [tool: TaskUpdate] 
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + ; git status
+Let me confirm all edited files show as modified (the grep above looks incomplete):
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short -- experiments/constructions/p12_sumcheck_pi_verification/comp
+All files are present with my edits (the `compressed_*` files are untracked from prior cycles, not yet committed — that's expected; I won't commit unless asked). Final pycache cleanup:
+  [tool: Bash] find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + && echo "cleaned" && ls experiments/constructions/p
+This cycle is complete. Here's what I did.
+
+## Summary — S499: field lift threaded through the whole compressed π(x) chain
+
+This cycle executed PROGRAM.md's NEXT ACTION thread (1): thread the prime modulus `q` through `compressed_layer.py`'s `run_chain` and `lucy_dp_delegated_wiring.py`, which both hard-coded the demo prime `Q = 2³¹−1`. That prime is sound only while every certified integer stays below it (`x < Q`, roughly `n ≲ 30`); above that a wrap-around alias `u''·a + r'' = X + k·Q` is undetectable (the S498 hole).
+
+**What changed (all backward-compatible, default `q = Q`):**
+- `lucy_dp_verification.py`: `q=Q` kwarg on the two automata `ge_const_eval`, `w_div_eval`.
+- `compressed_prover_mult_trace.py`: `q=DEFAULT_Q` defaults on `lagrange_eval/eq_table/eq_point/mle_eval/int_of_point/sumcheck` so they're importable as field-parameterised shadows.
+- `lucy_dp_delegated_wiring.py`: imports those q-helpers (shadowing), threads `q` through the entire inner wiring (`lt_const_eval`, `aff_rel_eval`, `r_tilde_eval`, `bit_weights`, `inner_chain_vectors`, `inner_r_table`, `_modmul_arr`, `chain_layer_reduce_structured`, `inner_verify_div`, `inner_verify_W`). `_dt(q)` selects `uint64` for `q ≤ 2³¹−1` and exact-int `object` arrays above.
+- `compressed_layer.py`: `q` threaded through the entire `run_chain` call graph; added `--field {q,big,small}` and selftest case 16.
+
+**Verified:**
+- All four selftests pass **verbatim** at the default prime (transcript bit-identical, incl. the structured-vs-dense bit-identity).
+- The whole chain runs over `BIG_Q = 2⁶¹−1` (object dtype) at n∈{8,10,12}, all three modes — `claimed π == sieve`, comm identical to the q-field, every chain cheat rejected.
+- The lift **closes the wrap-around aliasing hole in the chain's exact trace config**: at n=22 (x > SMALL_Q) the too-small prime accepts a forged alias that `BIG_Q` rejects 5/5.
+
+**Honest scope:** the n>31 *soundness* failure lives in the trace certifier (now field-parameterised, tested at the chain's `build_witness` config). A *full* `run_chain` at n>31 is **prover-bound, not field-bound** (`compressed_lucy` is an O(x/log x) pure-Python DP over √x-size object cubes × π(√x) layers), so whole-chain correctness over the lift is shown at small n. The remaining gap to a large-n run is pure speed — a numpy Mersenne `mulmod` for 2⁶¹−1 — which is now the recorded NEXT ACTION, gating the large-x benchmark (open item 5).
+
+Open item 1's step 7 and the active-line table are marked done; PROGRAM.md, both results docs, the base results note, and the canonical novel doc are updated.
+--- cycle result: success (turns=113, duration=2059901ms) ---
+=== Cycle 207 finished — Sat Jun 13 07:04:20 UTC 2026 ===

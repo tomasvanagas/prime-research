@@ -1,0 +1,131 @@
+=== Cycle 5 — Sat Jun 13 03:56:54 UTC 2026 ===
+I'll start by reading the live program state and the relevant documents.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the canonical doc and the key code files referenced in the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me look at the delegated wiring file referenced in the NEXT ACTION, and the verification helpers.
+  [tool: Bash] find experiments/constructions -name "lucy_dp_delegated_wiring.py" -o -name "lucy_dp_verification.py" | head; echo "---"
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me read the verification helpers (the shared primitives), focusing on the key functions.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+Let me run the existing selftests to confirm the baseline works before I change anything.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== lucy_dp_verifica
+Baseline is green. Let me check the current chain bench and the wiring-bench to understand the cost I'm trying to remove.
+  [tool: Bash] echo "=== compressed chain bench ===" && python3 compressed_layer.py --bench && echo "=== delegated wiring-bench (automa
+Baseline understood. Now I'll implement the delegation. **Step 1**: add a generalized `inner_verify_div` to `lucy_dp_delegated_wiring.py` (the carry-chain template), parameterized by the accept state, and make `inner_verify_W` a thin wrapper.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now I'll generalize this into `inner_verify_div` with an `accept_rem` parameter and make `inner_verify_W` a wrapper.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now add the `inner_verify_W` wrapper after the function. Let me view the end of the function.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me add a selftest for the new `accept_rem` path in `lucy_dp_delegated_wiring.py`'s selftest, then verify the refactor.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Bash] python3 lucy_dp_delegated_wiring.py --selftest
+Baseline + new accept path both green. Now let me wire delegation into `compressed_layer.py`. First the import and a new delegated-waff helper.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add the delegated-waff verifier helper after `waff_eval`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me clean up the redundant table-building in that helper:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now rewrite `verify_affine_region` to support `delegate` and the new cheat classes:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `delegate` through `large_reduce`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `delegate` through `small_reduce`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `small_reduce`'s phase-B wiring check for delegation:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `delegate` through the drivers. First `run_layer`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `run_two_sided_layer`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `run_chain`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me do a quick sanity check that the honest delegated chain works and matches the sieve before adding tests:
+  [tool: Bash] python3 -c "
+import numpy as np
+from compressed_layer import run_chain, run_two_sided_layer, sieve_pi
+for n in (8, 10, 1
+Honest delegated chain matches the sieve. Now verify all delegated cheats are rejected:
+  [tool: Bash] python3 -c "
+import numpy as np
+from compressed_layer import run_two_sided_layer
+print('--- delegated two-sided cheat pa
+All delegated cheats reject. Now let me add the delegated cases to the selftest. Let me view the end of `selftest`:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me insert the delegated selftest cases before `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `bench` to show automaton vs delegated, and add a `wiring_bench` that isolates the p-dependence. Let me view the current `bench`/`main`/CLI:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now run the full selftest to confirm everything passes:
+  [tool: Bash] echo "=== compressed_layer selftest ===" && time python3 compressed_layer.py --selftest && echo "=== delegated_wiring se
+All selftests pass. Now the headline measurements — the wiring bench (p-isolation) and chain bench (automaton vs delegated):
+  [tool: Bash] echo "=== WIRING BENCH: per-layer verifier cost vs p at fixed nb (the p-isolation) ===" && python3 compressed_layer.py -
+The asymptotic trend is right (delegated ~ `l`=log p, automaton ~ p), but my guard capped p at 61 so the crossover isn't visible. The affine region only needs `p ≤ V`, not `(p+1)p < 2^nb`. Let me fix the guard to sweep p up to ~V:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Bash] time python3 compressed_layer.py --wiring-bench
+Crossover is now clear: **waff automaton grows ~linearly (0.10→6.26 ms as p: 3→1021), delegated grows ~log p (0.88→3.10 ms as l: 2→10)** — crossover at p≈251, 2× faster at p=1021. Same for division. Now the full-chain bench:
+  [tool: Bash] time python3 compressed_layer.py --bench
+The crossover and scaling are clear. Now let me run the `main` demo in both modes at n=14 to confirm the end-to-end cheat panels (including the 4 new delegation-specific liars):
+  [tool: Bash] echo "############ AUTOMATON MODE ############" && python3 compressed_layer.py --n 14 --cheat-trials 12 && echo && echo 
+Both modes verify π(x)=1900 and reject every cheat (13 classes when delegated). Let me check the existing results file to match its style before documenting:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me document the delegation. I'll add a new section at the top of the results file and update the "NOT done" list:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now update the "NOT done" item (a) to mark the verifier delegation done:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Let me run all three selftests once more to confirm consistency, then clean up:
+  [tool: Bash] python3 lucy_dp_verification.py --selftest && python3 lucy_dp_delegated_wiring.py --selftest && python3 compressed_layer
+All green. Let me add a brief note to the delegated-wiring results file about the new generalization:
+  [tool: Bash] tail -n 25 lucy_dp_delegated_wiring_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring_results
+Now update PROGRAM.md. First the protocol table — add the step-4 row:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 1 to record step 4 done and shift the bottleneck, and rewrite NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the "Done this era" list and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run the cleanup checks from CLAUDE.md (missing results files, no pycache):
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== missing _results.md check ===" && find experiments/ -path "*/.lake" -pr
+All MISSING entries are pre-existing in unrelated directories (none in mine, which I didn't touch). Let me confirm my working directory is clean:
+  [tool: Bash] find experiments/constructions/p12_sumcheck_pi_verification -name "*.py" | while read f; do r="${f%.py}_results.md"; [ !
+Let me do a final review of the diff to make sure everything is coherent:
+  [tool: Bash] git diff --stat experiments/constructions/p12_sumcheck_pi_verification/ PROGRAM.md 2>/dev/null; echo "---- untracked new
+All work is complete and verified. Let me give a final consolidated test run as confirmation:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && for f in lucy_dp_verificat
+This cycle completed open item 1's **NEXT ACTION: wiring delegation** — the compressed-π(x) chain verifier is now cleanly Õ(√x), with the last p-linear automaton term removed.
+
+## What I built
+
+Both `O(nb·p)` wiring automata in the compressed-prover chain are replaced by an `O(nb·log p)` inner protocol (`compressed_layer.py --delegate`):
+
+1. **Small side** (`small_reduce`): its phase-B division wiring `[u=⌊v/p⌋]` is *exactly* what `lucy_dp_delegated_wiring.inner_verify_W` already delegates — a drop-in, as the note predicted.
+
+2. **Large side `waff`** (the genuinely new piece): `waff_eval` is the affine-image relation `[e'=p·e+(p−1)]` **crossed with a comparator `[e≤ecut]`**, which is *not* a pure division (the MLE of a product isn't the product of MLEs). I generalized the carry chain to `inner_verify_div(accept_rem=m)` — the fixed-remainder relation `[v=p·u+m]`, changing only sum-check #0's accept weighting (`[σ=m]` vs `[σ<p]`). `verify_waff_value` then folds the comparator **as-is** (its MLE is the existing O(nb) `le_eval`) via an inner e-cube sum-check, delegating only the pure affine-image relation (`accept_rem=p−1`).
+
+## Measured (all honest, all reproducible)
+
+- **`--wiring-bench` (the p-isolation)**: delegated wiring-check verifier time tracks `l=⌈log₂p⌉`; automaton tracks `p`. waff crosses over at p≈251, division near p≈1021 — confirming **O(nb·log p), no p-linear term**.
+- **`--bench` / chain**: `claimed π(x)==sieve π(x)` unchanged at n≤16 in delegated mode.
+- **Soundness**: 13 cheat classes all rejected, including 4 new delegation-specific liars — `waff_forge`/`small_forge` (corrupt the wiring table *and* forge the matching scalar to pass the algebra check → caught by the inner sum-check) and `waff_chain`/`small_chain` (lie in the chain → caught by its base check). Selftest case 13 cross-checks that the delegated protocols prove the *same scalar* the automata compute.
+
+## Honest trade-offs (reported in full)
+
+- The win is **asymptotic**: at the demo's tiny x every prime is below the crossover, so the full delegated verifier is ~2.3× slower wall-clock and comm rises ~5×.
+- **New bottleneck shifted to the prover**: the delegated chain materializes dense `2^{2l}` tables → `O(nb·p²)`/layer → prover `Õ(x^{3/2})`. The verifier target of open item 1 is met; the next step (recorded as NEXT ACTION) is a **structured chain prover** exploiting the sparse width-4 affine operator to bring the prover back to `Õ(x)`.
+
+Updated `PROGRAM.md` (step-4 row, open-item-1 status, done-list, new NEXT ACTION), `compressed_layer_results.md` (full Step-4 section + measurements), and `lucy_dp_delegated_wiring_results.md` (the `accept_rem` generalization). All three selftests green; no `__pycache__` left.
+--- cycle result: success (turns=59, duration=1523415ms) ---
+=== Cycle 5 finished — Sat Jun 13 04:22:19 UTC 2026 ===

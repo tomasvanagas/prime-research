@@ -116,6 +116,15 @@ prover of either tested class accepted above the soundness bound (0/50
 accepted); or verifier cost found to scale with x rather than
 n·Σ_{p≤√x} p (refuted by the 16×-x / 13×-verifier measurement).
 
+## S499 note (field-parameterised automata)
+
+The two verifier-side automata `ge_const_eval` (comparator `[v≥M]`) and
+`w_div_eval` (division wiring `[u=⌊v/p⌋]`) gained a `q=Q` keyword so the
+compressed chain and delegated wiring can evaluate them over an arbitrary prime
+field (the S498/S499 field lift). Pure-Python, no dtype change; `q=Q` default
+keeps every existing caller and the base 2ⁿ-demo protocol byte-for-byte
+identical (selftest unchanged).
+
 ## Files
 
 - `lucy_dp_verification.py` — protocol (one script, CLI-parameterised).

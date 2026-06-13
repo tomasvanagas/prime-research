@@ -1,0 +1,107 @@
+=== Cycle 8 — Sat Jun 13 04:55:20 UTC 2026 ===
+I'll start by reading the live program state and the active line's documents.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build the field lift to |F|>x in `compressed_prover_mult_trace.py` via an `F_{q²}` extension-field path behind a `--field {q,q2}` flag. Let me read the relevant code first.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me read the core field arithmetic primitives this depends on.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+The NEXT ACTION is to build a field lift via an extension field `F_{q²}`. Before I implement, let me check the dependency graph and the canonical doc's existing field caveat, because the extension-field premise needs scrutiny.
+  [tool: Bash] grep -rl "compressed_prover_mult_trace\|import compressed_prover" experiments/ 2>/dev/null; echo "---imports OF mult_tra
+`compressed_layer.py` imports `build_witness` and `verify_constraints`. I must keep those backward-compatible (default args). Let me see how they're used there.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "build_witness\|ve
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+Let me look at how `compressed_layer.py` uses these two functions, to ensure backward compatibility.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+`compressed_layer.py` reads `W["D"]`, `W["Lv"]`, `W["u"]` and calls `verify_constraints(W, rng, stats)` / `build_witness(x, p, nb, dstart=1)`. I'll keep both signatures backward-compatible by appending a `q=` keyword.
+
+Now, the NEXT ACTION proposes an **extension field `F_{q²}`** as the lift. Let me verify a critical mathematical point before building on it — whether `F_{q²}` actually raises the integer range, or only the element count. Let me probe numpy's big-int behavior and the characteristic question empirically.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np
+q = (1<<31)-1
+# 1) does uint64 array * python-int
+Both points confirmed empirically:
+1. `uint64 * python-int` stays exact uint64 — the existing arithmetic pattern is safe to parameterize by modulus.
+2. **The characteristic argument holds: any integer ≡ 0 mod q (like a wrap-around offset `k·q`) embeds as the ZERO element of `F_{q²}`.** So the extension field `F_{q²}` cannot detect the wrap-around forgery `u → u + k·q` — it is literally the same field element as the truth. The NEXT ACTION's premise is mathematically wrong: `|F_{q²}| ≈ 2⁶²` counts *elements*, but the *characteristic* stays `q ≈ 2³¹`, and integers reduce mod the characteristic.
+
+The correct lift is a **larger-characteristic prime field** (e.g. `2⁶¹−1`), which is what the results file's own "lift to `|F|>X`" actually means. I'll implement the correct prime lift, add the wrap-around cheat, and include a runnable refutation of the `F_{q²}` approach. Let me write the new file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Section 3 of my selftest has an ugly, error-prone unpacking. Let me fix it.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me run the selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 compre
+Section 6 (n=34 boundary) found no alias. Let me debug `forge_alias` at those params.
+  [tool: Bash] python3 -c "
+import numpy as np
+from compressed_prover_mult_trace import build_witness, forge_alias, DEFAULT_Q
+n2,p2,m2=
+The headroom problem I anticipated: at `n=34`, `√X ≈ 2¹⁷` sits right at a power-of-2 boundary, so `Lv=17` leaves almost no headroom for the alias increment `≈ q/√X ≈ 16370`. Odd `n` puts `√X` mid-range with ample headroom. Let me verify `n=35` works:
+  [tool: Bash] python3 -c "
+import numpy as np
+from compressed_prover_mult_trace import build_witness, forge_alias, DEFAULT_Q
+for n2 in
+`n=33` works (smallest above the boundary, most illustrative). Let me update section 6 and `refute_q2` to `n=33`.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Bash] timeout 600 python3 compressed_prover_mult_trace.py --selftest 2>&1 | tail -30
+The prime-field path in `_eqw_sum_c1` accumulates unreduced Python ints (the GF2 path auto-reduces). Since `mod` is a ring homomorphism, reducing the final prime sums recovers the true field value. Let me fix `refute_q2` to reduce the prime sums.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Bash] timeout 600 python3 compressed_prover_mult_trace.py --selftest 2>&1 | tail -30
+Selftest passes. Let me run the demonstrations to capture output, and confirm the dependent chain code still works.
+  [tool: Bash] echo "=== refute-q2 ===" && python3 compressed_prover_mult_trace.py --refute-q2 && echo && echo "=== alias-demo n=24 fie
+All three demonstrations are clean. The headline refutation: the wrap-around alias (off by `k·q = 2147483647`) is **UNDETECTED by `F_{q²}`** but detected by the larger prime `F_Q`. Now let me confirm the dependent chain code still passes its selftest (backward compatibility).
+  [tool: Bash] echo "=== compressed_layer selftest ===" && timeout 600 python3 compressed_layer.py --selftest 2>&1 | tail -15
+Backward compatibility confirmed. Let me capture the bench and a default run for the results file.
+  [tool: Bash] echo "=== bench (default prime) ===" && python3 compressed_prover_mult_trace.py --bench && echo && echo "=== n=12 field=
+Everything works and the default-field behavior is unchanged. Note `field=big` also yields a far smaller soundness bound (3.1e-17 vs 3.3e-8) as a bonus of the larger element count. Now let me write the results file and update the docs. First let me check the CLOSED_PATHS format and the canonical doc's field caveat.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && echo
+  [tool: Bash] grep -n "2\^31\|extension\|F_{q\|field\|characteristic\|2\^61\|q = 2\|lift" novel/succinct_verification_of_pi.md | head 
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now let me correct the canonical doc's field line — it conflates "q ~ 2⁶¹" (correct) with "extension fields" (incorrect).
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now let me write the results file. Let me check the existing one's structure is preserved (I'll update it for S498).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+Now let me update the field-caveat bullet and add the S498 field-lift section with the demonstration results.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+Let me update the Falsification section to include the new alias/lift falsifier.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+Now let me add a CLOSED_PATHS row. Let me check the table column format used in recent rows.
+  [tool: Bash] grep -n "^| " status/CLOSED_PATHS.md | head -3 && echo "..." && echo "total rows:" && grep -c "^| " status/CLOSED_PATHS.
+The table format is `| Approach | Verdict | Mode | Key Finding | Session |`. Let me append a row at the end of the table.
+  [tool: Bash] grep -n "^| " status/CLOSED_PATHS.md | tail -1
+  [tool: Bash] sed -n '906,915p' status/CLOSED_PATHS.md | cut -c1-80; echo "=== total lines ==="; wc -l status/CLOSED_PATHS.md
+The table ends at line 906 (last line of file). I'll append a new row.
+  [tool: Bash] python3 - <<'PY'
+row = ("| Extension field F_{q^2} as the integer-range / wrap-around-alias "
+"lift for the compressed-p
+Now let me update PROGRAM.md — add the S498 entry and rewrite the NEXT ACTION to reflect the correction and the real remaining steps.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run final verification: both selftests, the missing-results check, and confirm no `__pycache__`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== mult_trace selft
+The `find` ran from the wrong directory. Let me run those checks from the project root.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== missing results check ===" && find experiments/ -path "*/.lake" -prune 
+These MISSING results files are all pre-existing helper scripts in *other* experiment directories from prior cycles — none are mine (my `compressed_prover_mult_trace.py` has its `_results.md`, and I added no new `.py`). All three selftests pass and pycache is clean. Let me time the selftest and do a final diff review.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && /usr/bin/time -v python3 c
+  [tool: Bash] t0=$(date +%s.%N) && python3 compressed_prover_mult_trace.py --selftest && t1=$(date +%s.%N) && echo "selftest wall time
+  [tool: Bash] python3 -c "import time,subprocess,sys; t=time.time(); subprocess.run([sys.executable,'compressed_prover_mult_trace.py',
+Selftest runs in 3.1s. Let me review the final diff stat and confirm the key edits are coherent.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short && echo "=== diffstat (tracked) ===" && git diff --stat -- PRO
+The cycle is complete. The two `experiments/.../compressed_*` files show as untracked because they were never committed (prior cycles' uncommitted work); I won't commit unless asked.
+
+## Summary
+
+This cycle tackled the recorded NEXT ACTION — the field lift for the compressed-prover multiply-trace primitive — and in doing so **found and corrected a mathematical error in that NEXT ACTION**, then implemented the correct fix.
+
+**The error (now refuted, runnable):** S497 proposed lifting to an extension field `F_{q²}` (q=2³¹−1, "|F|≈2⁶²"). But `|F_{q²}| = q²` counts *elements*; the **characteristic stays q**. Integers embed mod the characteristic, so a wrap-around forgery (a different `Lv`-bit quotient off by `k·q`) embeds as the **same element of `F_{q²}` as the truth** — undetectable no matter how challenges are drawn. `--refute-q2` shows the multiply-identity zero-test sum is `(0+0t)` for both honest and forged witnesses over `F_{q²}`, but `≠0` over a true larger prime.
+
+**The real soundness hole (now demonstrated):** at `n=33` (X>2³¹) the demo prime `q=2³¹−1` **accepts its own wrap-around alias** (8/8) — the concrete reason `n≳31` was blocked. `forge_alias` constructs it; the bit-range tables don't stop it because the alias is a genuine `Lv`-bit integer once `q<X`.
+
+**The correct lift (implemented + adversarially tested):** a larger-**characteristic prime**. `compressed_prover_mult_trace.py` now runs the whole primitive over an arbitrary prime (`--field {q,big,small}`; uint64 fast path for `q≤2³¹−1`, exact object arrays above). `big`=2⁶¹−1 rejects every alias 8/8, keeps honest + all 6 original cheats passing, and drops Schwartz–Zippel error 3.3e−8→3.1e−17 as a bonus. Backward-compatible defaults — `compressed_layer.py` is untouched and its selftest still passes. Selftest 3.1s, cases 5–7 cover the lift and refutation.
+
+**Recorded:** results file (full field-lift section + tables), `CLOSED_PATHS.md` row, canonical doc caveat corrected, PROGRAM.md updated with an honest Done/S498 entry and a new NEXT ACTION: thread the prime modulus through `compressed_layer.py`'s `run_chain` + the delegated-wiring carry chain (currently hard-coded to `Q=2³¹−1`), then the large-x benchmark over `--field big`.
+
+A clean correction with a working, measured fix — exactly the "earlier claims get corrected when wrong, that is progress" contract.
+--- cycle result: success (turns=43, duration=1683250ms) ---
+=== Cycle 8 finished — Sat Jun 13 05:23:24 UTC 2026 ===

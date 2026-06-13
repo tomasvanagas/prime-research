@@ -1,0 +1,61 @@
+=== Cycle 2 — Sat Jun 13 03:02:37 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the canonical doc and explore the relevant experiment directory.
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Bash] ls -la experiments/constructions/p12_sumcheck_pi_verification/ && echo "---AUTOMATON---" && ls -la experiments/construct
+Let me read the existing delegated wiring code that the NEXT ACTION wants me to extend, to match its patterns.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now let me read the base verification module to understand the core primitives I'll reuse.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_verification.py
+This is a multi-cycle build (the compressed prover). The NEXT ACTION is precise: build the batched multiplication-trace sum-check primitive in isolation — verify `Σ_d w(d)·S̃(u_d)` with `u_d = ⌊X/(d·p)⌋` certified through a prover trace, the verifier never dividing. Let me check the closed-paths catalogue and confirm nothing already covers this before building.
+  [tool: Bash] grep -in "trace\|addition.chain\|AIR\|multiplication.trace\|d-address\|compressed prover\|x/(dp)\|dp)" status/CLOSED_PAT
+The catalogue hits are unrelated (zeta-zero structure). The compressed-prover trace is an explicitly open item (PROGRAM.md item 1), not a closed path. Let me build the primitive now.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me run the selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 compre
+Selftest passes. Let me run the main demo and the benchmark.
+  [tool: Bash] echo "=== MAIN n=12 p=7 ===" && timeout 300 python3 compressed_prover_mult_trace.py --n 12 --p 7 --cheat-trials 20 2>&1 
+All cheat classes rejected at both `p=7` and the `p=2` boundary. Now the benchmark to confirm verifier work scales with `m`/`Lv`, never with the batch size `D` or a quotient size.
+  [tool: Bash] timeout 400 python3 compressed_prover_mult_trace.py --bench 2>&1 | head -20
+Clean polylog scaling: batch `D` grows 16× (16→256) while verifier time grows ~2× and communication grows ~linearly in `m` — verifier cost is `O(m·Lv)=O(log²X)`, independent of `D` and of any quotient size. Let me write the results file and clean up.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace_res
+Now update PROGRAM.md to record this cycle and set the next action, and clean up `__pycache__`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/nul
+My new script + results pair is complete (not in the MISSING list — those are pre-existing helper scripts from older cycles). Now update PROGRAM.md.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the "Done this era" section and the NEXT ACTION at the bottom.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now a brief update to the canonical doc's open-problem 1 to record the step-1 progress.
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Final verification — re-run the selftest and confirm no `__pycache__` left behind.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 compressed_prover_
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find . -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/null; find . -
+Cycle complete. Honest summary:
+
+## What this cycle produced
+
+**Step 1 of the compressed prover** (PROGRAM.md open item 1, the gate to verifying π(10⁹⁺) against real recomputation) — built and tested in isolation:
+
+`experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py` (+ `_results.md`)
+
+The batched multiplication-trace sum-check certifying claims of the form
+
+```
+C = Σ_d eq(ρ,d)·S̃(u_d),   u_d = ⌊X/(d·p)⌋
+```
+
+— the one place in the compressed Lucy layer recursion that is a genuine variable×variable multiplication (`u_d·d`, with `p` fixed in a layer): the large-side crossing where `d·p > √x` forces a value-lookup of `⌊x/(dp)⌋` in the small side. **The verifier never divides and never touches a quotient.** Every `u_d` is certified through prover trace tables via a degree-3 constraint zero-test (multiply+remainder identity `U·a_d+R−X=0`, bit-range recompositions, remainder bound) plus a routing lookup (B1 deg-2, B2 deg-`Lv+1`).
+
+**Measured (q = 2³¹−1):**
+- Honest runs accepted; `C` cross-checked against the routing identity `⟨S,ω⟩`.
+- **6 cheat classes rejected** (20/20 each; 8/8 across `p∈{2,3,7}` in selftest): self-consistent wrong quotient, bit-inconsistent quotient, corrupted remainder, non-Boolean bit, false claimed `C`, corrupted routing.
+- **Verifier flat in batch size**: `D` grows 16× (16→256) while verifier time grows ~2× — cost `O(m·Lv)=O(log²X)`, independent of `D` and of any quotient size. Prover works the `D≈√x` cube (vs the `2ⁿ≈x` table of the demo prover).
+
+**Honest scope** — recorded in the results file: the field caveat (demo `q=2³¹−1` holds because products stay `<q` at `n≤16`; production lifts to `|F|>X` or a small-field carry trace, with the bit-range tables load-bearing against the wrap-around forgery either way), and leaf claims closed by direct MLE evaluation as a commitment/line-batching stand-in. **Not done:** integration into the layer protocol (small/large-side dispatch, the affine index map for `dp≤√x`, chaining the `S̃(r_B)` claim, line-batching the two `Ub_j` point-claims).
+
+PROGRAM.md, the canonical doc, and the protocol-stack table are updated; NEXT ACTION set to step 2 (single-layer integration). No `__pycache__` left.
+--- cycle result: success (turns=20, duration=1016978ms) ---
+=== Cycle 2 finished — Sat Jun 13 03:19:35 UTC 2026 ===

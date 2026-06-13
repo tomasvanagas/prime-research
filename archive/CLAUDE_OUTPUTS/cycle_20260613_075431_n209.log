@@ -1,0 +1,86 @@
+=== Cycle 209 — Sat Jun 13 07:54:31 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: profile `run_chain` to attribute field wall-clock across kernels. Let me look at the relevant code.
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/ && echo "---" && wc -l experiments/constructions/p12_sumcheck
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me look at the core kernels in `compressed_prover_mult_trace.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me look at the wiring delegation functions and `verify_constraints`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me look at the wiring delegation in `lucy_dp_delegated_wiring.py`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "^def \|^    def "
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Let me check how `stats` timing relates to `sumcheck` calls — whether sumcheck time is captured in `t_prover`/`t_verifier`.
+  [tool: Bash] grep -n "stats\[" compressed_prover_mult_trace.py | head -40 && echo "=== does sumcheck touch stats? ===" && grep -n "st
+Let me empirically measure the gap between reported `t_prover+t_verifier` and actual wall time for `run_chain`.
+  [tool: Bash] python3 -c "
+import time, numpy as np
+import compressed_layer as cl
+for n in (14, 16):
+    x = (1<<n)-1
+    t0 = time.pe
+`t_prover + t_verifier` accounts for only **6.9%** of wall time — the `sumcheck` loop (untimed) dominates. That's itself a finding. Let me check the import structure so I patch the right bindings.
+  [tool: Bash] echo "=== lucy_dp_delegated_wiring imports ===" && grep -n "^import\|^from" lucy_dp_delegated_wiring.py && echo "=== luc
+Confirmed: only ~7% of wall time is in the accounted `t_prover+t_verifier` — the untimed `sumcheck` loop dominates. That's a finding to surface. Let me calibrate object-dtype (BIG_Q) timing to pick feasible n.
+  [tool: Bash] python3 -c "
+import time, numpy as np
+import compressed_layer as cl
+for n in (12, 14):
+    x = (1<<n)-1
+    t0 = time.pe
+Object dtype: n=12→2.3s, n=14→6.2s, so n=16≈25s is feasible. Let me run a quick cProfile to see the call-count landscape and which functions dominate, to inform the profiler design.
+  [tool: Bash] python3 -c "
+import cProfile, pstats, io, numpy as np
+import compressed_layer as cl
+pr = cProfile.Profile()
+pr.enable()
+
+This is decisive. At n=14 BIG_Q: **`fmul` is 52% of tottime with 1,021,440 calls**, and `sumcheck` cumtime is 92%. This confirms S500's "op-count-bound" hypothesis — a million tiny field multiplies. `verify_trace_region` is the dominant logical kernel (59% cumtime). Now let me build the profiling experiment that captures this plus the missing piece (mean array size).
+  [tool: Bash] grep -n "^def \|^    def \|sumcheck\|eq_table\|mle_eval\|np.add.at" lucy_dp_verification.py | head -30
+Now I understand the full kernel landscape. Let me write the profiling experiment.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/chain_profile.py
+  [tool: Bash] time python3 chain_profile.py --selftest
+Selftest passes. Now the headline profile at n=16 over the sound field (BIG_Q, object):
+  [tool: Bash] time python3 chain_profile.py --n 16 --field big
+Clean and decisive. Let me get the uint64 (`q`) field for contrast — op-count is dtype-independent but per-call cost differs.
+  [tool: Bash] python3 chain_profile.py --n 16 --field q 2>&1 | sed -n '1,16p'
+Consistent across fields (fmul ~47-56%, same ~30-elem mean, same op-count). Let me confirm how `chain_layer_reduce_structured` issues its sum-checks so I describe it accurately.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Confirmed: `chain_layer_reduce_structured` calls the regular `sumcheck` twice per call (1712 total) on tiny 2^l-cubes; `_sumcheck_rec` is test-only. My attribution is accurate. Now let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/chain_profile_results.md
+Now let me update PROGRAM.md — record this cycle's output, update the open list, and set the next concrete action.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION section:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the cleanup checks from CLAUDE.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== missing _results.md ===" && find experiments/ -path "*/.lake" -prune -o
+The missing `_results.md` files are all pre-existing legacy scripts from other topics, not mine — my `chain_profile.py` has its results file. Let me remove the `__pycache__` dir.
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && echo "removed" && ls experiments/constructi
+Cycle complete. Here's what this cycle (S501) produced.
+
+## Summary
+
+I executed the recorded NEXT ACTION — profile `run_chain` to attribute its field wall-clock across kernels — and in doing so **corrected the premise of the action itself**.
+
+**New artifact:** `experiments/constructions/p12_sumcheck_pi_verification/chain_profile.py` (+ `_results.md`), a read-only two-pass profiler (cProfile for timing/call-counts/caller-breakdowns + a count-only monkeypatch for per-primitive mean array size). `--selftest` passes (~19s).
+
+### Finding 0 — the NEXT-ACTION premise was wrong (honest correction)
+PROGRAM.md asked the profiler to "assert the profile sums match `run_chain`'s `t_prover+t_verifier`." That's false: `sumcheck()` never touches `stats`, and **every** chain `sumcheck` call sits outside the timed regions. So the reported `t_prover+t_verifier` is only **6.4%** of wall (n=16, BIG_Q). Earlier cycles' per-layer stats undercount the true wall **~15×**. The selftest asserts the right things instead (faithfulness, instrument agreement, the gap, fmul-dominance).
+
+### Finding 1 — `fmul` is the wall; arrays are tiny (S500 confirmed)
+n=16, BIG_Q, K=54: `fmul` = **55.6% of wall, 2.32M calls, mean array size ~30 elements**. Plus 27% in `sumcheck`'s own Python loop. This is the op-count-bound signature S500 predicted — a few million tiny element-wise field multiplies, each paying full Python+numpy dispatch.
+
+### Finding 2 — logical ranking
+- **`verify_constraints` (the trace zero-test): 53% of wall** in just 54 calls (deg-3, up to 133 terms over Lv+2Lr bit tables) — *fattest single kernel*.
+- **Wiring delegation (`chain_layer_reduce_structured`): 30% of wall but 76% of all sumcheck calls** (1712) on tiny 2^l-cubes.
+
+### Highest-leverage batching target
+**Batch the K independent per-layer trace zero-tests into one random-linear-combination sum-check over a stacked (K·2^nb) cube.** Each layer's witness is independent of the carried chain claim, so it's a textbook batched sum-check. This cuts the fmul *count* ~K-fold while widening each fmul ~K-fold — converting op-count-bound→width-bound, which is the precondition that flips S500's fast-Mersenne path from a loss to a net win.
+
+**PROGRAM.md** updated: S501 done-entry, and the new NEXT ACTION (build the batched trace zero-test with a bit-equivalent-soundness selftest and a fmul-count/width bench on both object and `--fast-big` paths). No BREAKTHROUGH.md — this is structural measurement, not the goal.
+--- cycle result: success (turns=27, duration=779524ms) ---
+=== Cycle 209 finished — Sat Jun 13 08:07:31 UTC 2026 ===
