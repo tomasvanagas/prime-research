@@ -182,8 +182,70 @@ width-spectrum theory, census law, open program). Code:
 - The guess-comparison geography (`experiments/analytic/
   guess_comparison_oracle/`) — decision-version facts, complete as is.
 
-## Done this era (S491–S501 cycles, 2026-06-13)
+## Done this era (S491–S503 cycles, 2026-06-13)
 
+- Batched wiring delegation (S503): the SECOND big chain kernel (S501: 30% of
+  `run_chain` wall, **76% of all sum-check calls**), built and measured.
+  `experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py` —
+  replaces the K = π(√x) INDEPENDENT per-layer `inner_verify_div` chains (each a
+  GKR chain: sum-check #0 + n backward-sweep layers + base, on a tiny `2^{l_ℓ}`
+  cube) with ONE batched inner GKR chain over all K wiring obligations. Defer-and-
+  batch: collect `(p_ℓ, r_v_ℓ, r_u_ℓ, claim_ℓ, accept_rem_ℓ)`, discharge together.
+  **Data-parallel GKR with a NON-UNIFORM per-layer wiring**: add `Lk=⌈log₂K⌉`
+  layer vars, MSB-zero-pad each cube to `2^{l_max}`, share one `(r_L,ρ)`
+  trajectory + a `γ` combiner. Keeping the layer index a genuine sum-check
+  variable makes the round-poly final factorize, so the heterogeneous wiring
+  (`R_j^ℓ`, `[σ<p_ℓ]` depend on `p_ℓ`; `wv_ℓ[j],wu_ℓ[j]` on the per-layer query
+  point) is recomputed by the VERIFIER in `O(K·l)` via `Σ_ℓ χ_ℓ(r_L)·⟨MLE_ℓ⟩` —
+  the trace's `av` trick generalized to a point-dependent operator. **No dense
+  `2^{2l}` table is built**: each backward layer rides the layer axis INSIDE the
+  S496 structured phase split (phase 1 binds σ', phase 2 binds σ), so every
+  prover table is `K·2^{l_max}` WIDE not `2^{Lk+2l_max}` dense; the per-step
+  wiring factors are absorbed into the next step's verifier weight (eq-tracking
+  `eq(r_L1,r_L2)`). **Verified by AGREEMENT** with the AND of K independent
+  `inner_verify_div` (selftest): honest accepts; any single corrupted obligation
+  (wrong claim / self-consistent lying chain / broken leaf) rejected first/mid/last
+  layer, over Q & BIG_Q, div/affine/mixed wirings; K=1 edge; fast==object
+  bit-identical; comm drop. Matches BOTH delegated wirings `run_chain` emits
+  (small division `accept_rem=None` line 657; large affine `accept_rem=p−1`, the
+  `inner_verify_div` core of `verify_waff_value` line 273), uniform depth `nb`.
+  **`--bench`: fmul CALL count ↓ 2.0→18.1× / per-fmul WIDTH ↑ 6→40× over n=8..16
+  (K=6..54)** — the op-count→width conversion S501 named (net fmul-element-work
+  only ~2×). **The fast-Mersenne sign flip is reproduced**: unbatched the fast
+  path LOSES (n=16: 15.9 s fast vs 6.2 s object), batched it WINS (n=16: 1.31 s
+  fast vs 4.77 s object) → speedup vs the unbatched fast baseline **8.99× @n=14,
+  12.1× @n=16**, growing with K. Standalone primitive + bench only; the
+  `run_chain(batch_trace, batch_wiring)` + `FAST_BIG` re-measure is the NEXT
+  ACTION (needs the defer-and-batch restructure of `small_reduce`/
+  `verify_waff_value` + the latter's separate `[e≤ecut]` comparator fold).
+- Batched trace zero-test (S502): the S501 lever, built and measured.
+  `experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py` —
+  replaces the K = π(√x) independent per-layer `verify_constraints` sum-checks
+  (53% of `run_chain` wall, S501) with ONE degree-3 sum-check over the stacked
+  `(K·2^nb)` cube. The K witnesses stack along a `2^Lk` layer axis (`Lk=⌈log₂K⌉`,
+  MSB-zero-padded bit tables → one shared term list); `BETA_EQ[ℓ,e] =
+  (β^ℓ if ℓ<K else 0)·eq~(tau,e)` folds the inter-layer combiner, the eq-selector,
+  AND the layer-valid mask into one multilinear table (the `EQ→BETA_EQ` swap in
+  `build_terms`); the verifier recomputes `BETA_EQ~(r)` and the factored wiring
+  MLE `av=(Int(r_e)+dstart)·Σ_{ℓ<K}pₗχ_ℓ(r_L)` in O(K) — within the chain's
+  existing O(K) budget, so still Õ(√x). **`--bench`: fmul COUNT ↓26× / per-fmul
+  WIDTH ↑37× at n=16 (K=54), exactly the op-count→width conversion S501 named.
+  The fast-Mersenne sign flip is real**: unbatched the fast path loses on the
+  chain (small arrays), batched it wins and the win grows 0.6×→3.54× over
+  n=8..16; the isolated trace kernel goes 8.5 s (unbatched object, today) →
+  **1.7 s (batched+fast) = 5.0×**. Selftest: structural (comm 1728→56 at n=16),
+  honest+soundness over Q & BIG_Q (every per-layer cheat — wrong/self-consistent
+  quotient, corrupted bit, wrong remainder, non-bit — rejected at first/mid/last
+  layer), agreement with the AND of the K per-layer tests, K=1 edge, fast==object
+  bit-identical, and the fmul-count/width win. **Wired into `run_chain` via
+  `batch_trace=True`** (skip per-layer `verify_constraints`, run one batched check
+  before the loop; `compressed_layer.py` selftest 18 confirms unchanged verdict
+  honest/delta_pi/liar over Q & BIG_Q). **Honest end-to-end:** batch_trace (object)
+  is **1.14–1.44×** on `run_chain` (n=16: 15.5→13.6 s) — only the trace half;
+  globally enabling fast-Mersenne is a NET LOSS (22 s vs 16 s) because
+  `_cpmt.FAST_BIG` is global and penalises the still-tiny unbatched WIRING cubes
+  (30%, 76% of sum-check calls). The wiring defer-and-batch is the gate to the
+  combined fast-path win — the new NEXT ACTION.
 - Chain wall-clock attribution + premise correction (S501):
   `experiments/constructions/p12_sumcheck_pi_verification/chain_profile.py` — a
   read-only two-pass profiler over `run_chain` (cProfile for tottime/cumtime/
@@ -322,37 +384,45 @@ width-spectrum theory, census law, open program). Code:
 
 ## NEXT ACTION (single, concrete)
 
-The S501 profile is in: `run_chain`'s wall is **`fmul` (56%, 2.3M calls,
-~30-elem arrays) + `sumcheck`'s Python loop (27%)** — op-count-bound, exactly as
-S500 predicted. The fattest cleanly-batchable kernel is the **trace zero-test
-(`verify_constraints`, 53% of wall in K independent per-layer sum-checks)**.
+Both big chain kernels now have standalone batched primitives: the trace
+(S502, wired into `run_chain` via `batch_trace=True`) and the wiring
+(S503, `batched_wiring.py`, validated + benched — fast-path sign flip
+reproduced, 8.99–12.1× isolated speedup). The remaining step is the
+**end-to-end integration + re-measure** the S503 bench sets up.
 
-**NEXT: build the batched trace zero-test** — replace the K per-layer
-`verify_constraints` calls (each a deg-3 sum-check over its own nb-cube witness,
-fresh tau/alpha) with ONE random-linear-combination sum-check over the stacked
-`(K·2^nb)` cube. Each layer's witness `build_witness(x, pₗ, nb)` is independent
-of the carried chain claim, so this is a textbook batched sum-check (combine the
-K zero-tests by powers of a random β, share one tau across the stacked cube).
-Deliverable: a new experiment (e.g. `experiments/.../batched_trace.py`, or a
-`--batch-trace` path in `compressed_layer.py`) with `--selftest` proving
-bit-equivalent soundness (honest accepts; every per-layer cheat — wrong
-quotient, corrupted bit, wrong claimed C — still rejected) and a `--bench`
-showing the fmul COUNT drop ~K-fold and the per-fmul array WIDTH rise ~K-fold,
-measured on BOTH the object and `--fast-big` uint64 paths (the latter is where
-the width win should flip S500's "fast path loses on the chain" to a net gain).
-Target metric: end-to-end `run_chain` wall at n=16 BIG_Q down from ~15 s.
+**NEXT: wire `batched_wiring.verify_wiring_batched` into `run_chain` by
+defer-and-batch, then re-measure with `FAST_BIG=True`.** Concretely, add a
+`batch_wiring=True` path to `compressed_layer.run_chain`:
+(1) make `small_reduce` and `verify_waff_value` (via `large_reduce`/
+`verify_affine_region`) RETURN their wiring obligation `(p, r_v, r_u, claim,
+accept_rem)` instead of calling `inner_verify_div` inline (keep the inline path
+for `batch_wiring=False`, so all prior artifacts stay verbatim); (2) collect the
+2K obligations across all layers (small-division `accept_rem=None`; large-affine
+`accept_rem=p−1`); (3) discharge them in ONE `verify_wiring_batched` call after
+the layer loop. The obligation shape is **confirmed identical** to
+`synth_obligations` (uniform depth `nb`), so the primitive drops in. Two real
+sub-tasks: (a) `verify_waff_value` wraps its `inner_verify_div(accept_rem=p−1)`
+in a separate `[e≤ecut]` comparator sum-check (the O(2^nb) `le_eval` fold) that
+`verify_wiring_batched` does NOT cover — either batch those comparator folds
+too (they are p-independent, easy) or leave them per-layer (still cheap); (b)
+thread the field `q` (the primitive already takes it).
 
-Note the verifier-cost caveat: the stacked sum-check has nb+⌈log₂K⌉ rounds and
-the layers share challenges, so re-confirm the verifier stays Õ(√x) and
-soundness error stays ~(deg·rounds)/q. If the trace batch lands, the second
-target is the wiring delegation (30%, 76% of sumcheck calls) via defer-and-batch
-(collect all `(r_v,r_u,claim)` obligations, discharge in one inner protocol).
+**Then re-measure `run_chain(batch_trace=True, batch_wiring=True, FAST_BIG=True)`
+at n=16 BIG_Q.** With BOTH big kernels widened, globally enabling the fast path
+should finally be a net end-to-end win (S502 left it a loss: 22 s vs 16 s,
+because the unbatched wiring cubes penalised `FAST_BIG`). Target: well under the
+15.5 s baseline; then the first sound large-n `π(2ⁿ)==sieve` run over `BIG_Q`
+within reach (the item-5 headline).
 
-Fallback headline (if batching proves hard): a **slow but sound** item-5 run —
-the object chain already verifies `π(2ⁿ)==sieve` over `BIG_Q` end-to-end; n=22–24
-is ~7–20 min of pure object arithmetic. That is the headline application of open
-item 1 (exact π at x≈10⁷ behind an Õ(√x) verifier over a sound prime), just not
-yet fast.
+Selftest the integration: `compressed_layer.py` selftest asserts unchanged
+verdict (honest / delta_pi / self-consistent liar) for `batch_wiring=True` vs
+`False` over Q & BIG_Q at n∈{8,10,12} — exactly as S502 did for `batch_trace`.
+
+Fallback headline (if the integration proves fiddly): a **slow but sound** item-5
+run NOW — the object chain already verifies `π(2ⁿ)==sieve` over `BIG_Q` with
+`batch_trace=True`; n=22–24 is ~min-scale object arithmetic. Headline application
+of open item 1 (exact π at x≈10⁷ behind an Õ(√x) verifier over a sound prime),
+independent of the wiring integration.
 
 Also still open (multi-cycle, lower priority): a real outer poly-commitment for
 the leaf/`S_0` openings (currently `mle_eval` stand-ins).

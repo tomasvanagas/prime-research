@@ -29,3 +29,64 @@ Now update `run_chain` to accept `batch_trace` and run the batched zero-test onc
   [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
   [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
   [tool: Bash] timeout 900 python3 compressed_layer.py --selftest 2>&1 | tail -20
+While the selftest runs, let me check on it shortly. Let me wait for completion.
+  [tool: Bash] sleep 60; tail -5 /tmp/claude-0/-apps-aplikacijos-prime-research/6f722ef8-07f5-469f-a620-e22062caec8b/tasks/b1hof2xkk.ou
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/6f722ef8-07f5-469f-a620-e22062caec8b/tasks/b1hof2xkk.output
+The selftest is still running (it only prints at the end). Let me draft the results file for `batched_trace.py` with the bench numbers I already have while it completes.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/6f722ef8-07f5-469f-a620-e22062caec8b/tasks/b1hof2xkk.output
+`compressed_layer.py` selftest passes with the batch_trace integration. Now let me measure the **end-to-end** `run_chain` wall — the target metric — at n=16 BIG_Q across configs.
+  [tool: Bash] timeout 900 python3 -c "
+import time, numpy as np
+import compressed_prover_mult_trace as _cpmt
+import compressed_layer a
+The honest end-to-end picture is now clear. Let me confirm the `batch_trace` (object) win scales, with a quick n-sweep:
+  [tool: Bash] timeout 900 python3 -c "
+import time, numpy as np
+import compressed_prover_mult_trace as _cpmt
+import compressed_layer a
+The `batch_trace` (object) win is consistent (1.14–1.44×). The honest end-to-end picture: batching the trace (one of two big kernels) gives a modest win; globally enabling fast-Mersenne is a *net loss* (22s vs 16s) because the still-unbatched tiny-cube wiring is penalized by it. Let me record the real numbers.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+Now cleanup and update the live state. Let me clean `__pycache__` and verify no missing results files:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null;
+All pre-existing (other experiments). My two new files are both present. Now update `PROGRAM.md`:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now rewrite the NEXT ACTION to point at the wiring batch:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The unicode characters are causing match issues. Let me rewrite the NEXT ACTION section by line range with a script:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] python3 - <<'PYEOF'
+path = "PROGRAM.md"
+with open(path, encoding="utf-8") as f:
+    lines = f.readlines()
+# Replace line
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The PROGRAM.md update looks good. Let me verify the tail is intact:
+  [tool: Bash] tail -8 PROGRAM.md
+Let me do a final confirmation run of the new file's selftest and clean up:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 batche
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short | grep -E "batched_trace|compressed_layer" 
+  [tool: Bash] echo "=== full status of the experiment dir ===" && git status --short experiments/constructions/p12_sumcheck_pi_verific
+  [tool: Bash] echo "=== git status for the two py files ===" && git status --short -- experiments/constructions/p12_sumcheck_pi_verifi
+  [tool: Bash] echo "=== recent commits (last 5) ===" && git log --oneline -5; echo "=== was batched_trace.py committed? ===" && git lo
+Everything is complete. The concurrent `run.sh` loop already committed the code (commit `7858289`, which includes `batched_trace.py` and the 8 `batch_trace` occurrences in `compressed_layer.py`); `batched_trace_results.md` and `PROGRAM.md` are staged for the next loop commit. That's expected v2 behavior — the loop manages commits.
+
+## Cycle summary (S502)
+
+**Built the batched trace zero-test** — the highest-leverage kernel the S501 profile identified (the trace zero-test was 53% of `run_chain`'s wall, as K = π(√x) independent tiny per-layer sum-checks).
+
+**Mechanism** (`experiments/.../batched_trace.py`): stack the K layer witnesses along a `2^Lk` axis (`Lk=⌈log₂K⌉`, MSB-zero-padded bit tables so one shared term list serves all layers), and run ONE degree-3 sum-check over the joint `(K·2^nb)` cube. A single multilinear table `BETA_EQ[ℓ,e] = (β^ℓ if ℓ<K else 0)·eq~(tau,e)` folds the inter-layer combiner, the eq-selector, *and* the layer-valid mask together (just an `EQ→BETA_EQ` swap in the existing `build_terms`). The verifier recomputes `BETA_EQ~(r)` and the *factored* wiring MLE `av = (Int(r_e)+dstart)·Σ_{ℓ<K} pₗ·χ_ℓ(r_L)` in O(K) — within the chain's existing O(K) budget, so still **Õ(√x)**.
+
+**Measured (the win is exactly as predicted):**
+- fmul **COUNT ↓26×**, per-fmul **WIDTH ↑37×** at n=16 (K=54) — the op-count→width conversion.
+- The **fast-Mersenne sign flip is real**: unbatched, the fast path loses on the chain; batched, it wins and the win grows `0.6×→3.54×` over n=8..16. The isolated trace kernel goes **8.5 s → 1.7 s (5.0×)**.
+- Comm: **1728 → 56** field elems at n=16.
+
+**Wired into `run_chain(batch_trace=True)`**; selftest case 18 confirms the verdict is unchanged (honest/`delta_pi`/self-consistent-liar over Q & BIG_Q).
+
+**Honest end-to-end result:** batching the trace alone is only **1.14–1.44×** on `run_chain`, because the chain has *two* big kernels and globally enabling fast-Mersenne is a *net loss* (52 s "fast only") — the global `FAST_BIG` flag penalises the still-tiny **unbatched wiring** cubes (30% of wall, 76% of all sum-check calls). So the trace batch is the landed first half; **the wiring defer-and-batch is now the bottleneck and the new NEXT ACTION** — the precondition to globally enable the fast path and capture the combined win.
+
+Both selftests pass; results file and PROGRAM.md updated with the mechanism, the measurements, and the falsifiers.
+--- cycle result: success (turns=41, duration=1473882ms) ---
+=== Cycle 210 finished — Sat Jun 13 08:32:21 UTC 2026 ===
