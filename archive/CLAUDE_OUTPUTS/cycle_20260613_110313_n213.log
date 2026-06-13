@@ -1,0 +1,183 @@
+=== Cycle 213 — Sat Jun 13 11:03:13 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me look at the relevant code files for the NEXT ACTION.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && ls -la && echo "---WC---"
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py
+Now let me look at the `run_chain` and the wiring call sites in `compressed_layer.py`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "def run_chain\|d
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read `inner_verify_div` and `inner_chain_vectors` to understand the exact obligation semantics.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "def inner_verify
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Let me look at the rest of `compressed_layer.py` — the selftest (especially the batch_trace test §18), main, and bench functions, plus the FAST_BIG mechanism.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me run the existing selftests to confirm a clean baseline before editing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && python3 batched_wiring.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && timeout 600 python3 compr
+While that runs, let me check the batched_trace integration pattern and the current end-to-end timing baseline.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "def verify_const
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Let me check the selftest result.
+  [tool: Bash] sleep 5; cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/bmlh9yidj.output 
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/bmlh9yidj.output 2>&1 | ta
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/bmlh9yidj.output; echo "EX
+  [tool: Bash] ls -la /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/bmlh9yidj.output && wc 
+The selftest is still running in the background (it's ~19s+). Let me wait for it while I plan the implementation in detail.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && python3 -c "
+import compr
+Selftest passes. Now let me find all callers of `verify_waff_value` and `verify_affine_region` (whose return signatures I'll change) across the codebase.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -rn "verify_waff_val
+Let me check the `FAST_BIG` / `fast_big` mechanism and `_modmul_arr`/`fmul` to ensure the batched-wiring fast path is correctly gated.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "FAST_BIG\|def fa
+I have a complete understanding now. Let me check the `_modmul_arr` and the end of `compressed_prover_mult_trace.py` bench helpers quickly, then implement.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/lucy_dp_delegated_wiring.py
+Now I'll implement. First, add `chain_obligation` and `verify_wiring_obligations` to `batched_wiring.py`.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py
+Now `compressed_layer.py`. First, `verify_waff_value` — add the `defer` parameter and deferral path.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_affine_region` — add `defer` and thread to `verify_waff_value`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `large_reduce` — add `defer` and thread it:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `small_reduce` — add `defer` and the deferral path:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `small_reduce`'s docstring and the `defer` doc:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update `run_two_sided_layer` to support `batch_wiring`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `run_chain` — the main integration. Update signature and docstring:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread the `defer` accumulator into the layer loop and discharge it after:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me do a quick manual sanity check of the integration before adding selftest cases:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && python3 -c "
+import numpy
+Honest runs accept and match the sieve. Now test that cheats are rejected:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && python3 -c "
+import numpy
+Both the chain-level and wiring-specific cheats are rejected, over Q and BIG_Q. Now let me add the selftest case (§19) to `compressed_layer.py`. Let me view the end of the selftest:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now I'll insert the §19 selftest block before `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add the end-to-end measurement bench (the headline). Let me insert after `bench_big`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the full `compressed_layer.py` selftest to confirm all cases pass:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && timeout 600 python3 compr
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && python3 batched_wiring.py
+  [tool: Bash] sleep 45; cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/b4v1apxba.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/b4v1apxba.output
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/b4v1apxba.output; echo "[e
+Let me wait for the selftest to complete using a monitor loop:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && until [ -s /tmp/claude-0/
+Full selftest passes (exit 0). Now the headline measurement — run `bench_combined` at n=16 BIG_Q in the background:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && timeout 600 python3 compr
+While the benchmark runs, let me verify the structural win (comm drop) and faithfulness at n=12 won't compete much — but to avoid skewing the n=16 timing, I'll wait for it. Let me monitor:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && until grep -q "wiring (FA
+This is the headline result. Let me capture it clearly:
+
+- **baseline (no batch, obj): 17075 ms**
+- batch_trace (obj): 13998 ms (1.22×)
+- batch_trace+wiring (obj): 12784 ms (1.34×) — comm 87226 → **16509** (5.3× drop)
+- batch_trace (FAST): 25452 ms (0.67× — **the S502 loss reproduced**)
+- **batch_trace+wiring (FAST): 8873 ms (1.92× vs base)** ← the target
+
+The fast-Mersenne sign flip is now resolved end-to-end: FAST_BIG was a loss with only the trace batched (the tiny wiring cubes penalized it), and becomes a 1.92× net win once both kernels are widened. 8.87s is well under the 15.5s baseline.
+
+Let me probe the reach at larger n with the winning config (the item-5 headline — sound π(2ⁿ) over BIG_Q):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && timeout 590 python3 -c "
+
+While the reach test runs, let me look at the results files I need to update.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && head -30 compressed_layer
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "S502\|S503\|batc
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n -e "S502" -e "S50
+Let me check the reach test progress:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-49a2-a6b5-0a62f6a9b32c/tasks/b8dfb23o1.output
+  [tool: Bash] cat /tmp/reach_test.txt 2>/dev/null; echo "[marker]"
+The reach test output is pipe-buffered; I'll wait for it. Meanwhile, let me update documentation. First, `batched_wiring_results.md`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && tail -30 batched_wiring_r
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && grep -n "follow-on\|defer
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring_results.md
+I'll update the "What this does NOT yet claim" section to reflect that the integration is now done:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring_results.md
+Let me check the reach test result:
+  [tool: Bash] cat /tmp/reach_test.txt 2>/dev/null; echo "[marker]"; cat /tmp/claude-0/-apps-aplikacijos-prime-research/c2613c8f-efe8-4
+Let me add the S503/S504 integration section to `compressed_layer_results.md`. First, view the insertion area:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+I'll insert the S503/S504 batching section right before "## Falsification":
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Bash] cat /tmp/reach_test.txt
+The reach test confirms sound π(2ⁿ)==sieve over BIG_Q up to **n=20 (x≈10⁶, V=1023, K=172): π=82025 in 66s**. This is the item-5 headline. Let me add the scaling table to the results:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Now let me run the cleanup checks from CLAUDE.md — check for missing `_results.md` and `__pycache__`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -path "*/.lake" -prune -o -name "*.py" -print | while read f; d
+The MISSING files are all pre-existing in unrelated experiments (not from this cycle). Let me clean up the `__pycache__`:
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && echo "cleaned"
+Now update `PROGRAM.md`. First the "Done this era" header and add the S504 entry:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update item 5 in the open list and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now replace the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me add a row to the protocol stack table for the batched-kernel milestone:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run a final confirmation of both selftests to verify the committed state is green:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && echo "=== batched_wiring 
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && until grep -q "selftest O
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ && until [ $(grep -c "selfte
+Both selftests green. Final cleanup of `__pycache__` created by the test runs:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/constructions/p12_sumcheck_pi_verification -name "__pycache__" -
+Cycle complete. Everything is verified green and cleaned up. Here's the summary.
+
+## What this cycle did (S504): wired batched wiring into the chain + resolved the fast-path sign flip
+
+The recorded NEXT ACTION was the end-to-end integration of the S503 batched-wiring primitive into `run_chain`, then a re-measure with `FAST_BIG=True`. Both done.
+
+**Integration (defer-and-batch).** Added two entry points to `batched_wiring.py`:
+- `chain_obligation(...)` — builds one wiring obligation from a deferred chain check (prover-supplied claim, honest-or-lying chain over the shared `l_max` cube),
+- `verify_wiring_obligations(...)` — discharges a list of obligations in one batched chain.
+
+In `compressed_layer.py` I threaded a `defer` accumulator through `large_reduce`/`verify_affine_region`/`verify_waff_value` (large affine, `accept_rem=p−1`) and `small_reduce` (small division, `accept_rem=None`). With `run_chain(batch_wiring=True)` (delegate only), each layer **appends** its wiring obligation instead of calling `inner_verify_div` inline; all `2K−1` obligations discharge in one batched chain after the loop. The `verify_waff_value` `[e≤ecut]` comparator fold stays per-layer (p-independent), as the action specified. Default `batch_wiring=False` keeps every prior artifact byte-for-byte.
+
+**Verification** (`compressed_layer.py` selftest §19/§19b, both green): chain verdict unchanged (honest == sieve; `delta_pi` + self-consistent liar rejected) over `q` & `BIG_Q`, structured & dense, alone and composed with `batch_trace`; the wiring-specific liars (`small_forge`, `small_chain`, `waff_chain`, `waff_forge`) all rejected **through** the batched discharge; `batch_wiring` without `delegate` raises.
+
+**Headline measurement** (`--n 16 --bench-combined`, BIG_Q, delegate+structured):
+
+| config | wall (ms) | comm | vs base |
+|---|---|---|---|
+| baseline (no batch, obj) | 17075 | 87226 | 1.00× |
+| batch_trace (obj) | 13998 | 85554 | 1.22× |
+| batch_trace+wiring (obj) | 12784 | **16509** | 1.34× |
+| batch_trace (FAST) | 25452 | 85554 | 0.67× ← **S502 loss reproduced** |
+| **batch_trace+wiring (FAST)** | **8873** | **16509** | **1.92×** |
+
+The fast Mersenne path was a *loss* with only the trace batched (tiny per-layer wiring cubes penalize the 24-op mulmod) and becomes a **1.92× net win** once both kernels are widened — well under the 15.5 s target. Wiring batch also cuts communication **5.3×**.
+
+**Item-5 delivered.** In the winning config, `claimed π == sieve` over the sound-characteristic `BIG_Q=2⁶¹−1`: n=16 π=6542 (9.3 s), n=18 π=23000 (22 s), **n=20 π(1048575)=82025 (66 s)** — exact π at x≈10⁶ behind an Õ(√x) verifier, Õ(x) prover, both wirings delegated.
+
+**Honest scope:** this is the verification/certification line, not the computation goal — verifier is Õ(√x), prover Õ(x), and leaf openings are still `mle_eval` stand-ins (no `BREAKTHROUGH.md`). I set the **NEXT ACTION** to building a real multilinear polynomial-commitment opening to replace those stand-ins — the last O(√x)-per-open term keeping the Õ(√x)-verifier claim from being unconditional.
+
+Updated `PROGRAM.md`, `batched_wiring_results.md`, `compressed_layer_results.md`; removed `__pycache__`.
+--- cycle result: success (turns=90, duration=1661386ms) ---
+=== Cycle 213 finished — Sat Jun 13 11:30:55 UTC 2026 ===

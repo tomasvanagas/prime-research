@@ -37,6 +37,7 @@ measured (all unconditionally sound, all with cheating-prover tests):
 | structured prover IN the compressed chain (step 6) | same, on the REAL compressed √x-state chain | unchanged Õ(√x) | done — `--structured` threaded through `compressed_layer.py`; bit-identical (selftest 15); `--prover-bench` ratio→46× @p=1021, both wirings |
 | field-lifted compressed chain (step 7) | same, over an **arbitrary prime** (no `u·a<q` shortcut) | unchanged Õ(√x) | done (S499) — `--field {q,big,small}`; bit-identical at default q; chain over `BIG_Q=2⁶¹−1` (object dtype) `claimed π==sieve` n≤12 all modes; chain-config alias rejected by lift, accepted by demo prime |
 | fast Mersenne-61 field path (step 8) | same, `BIG_Q=2⁶¹−1` on uint64 not object | unchanged Õ(√x) | done (S500) — numpy `_mul61`/`_sum61` (`2⁶¹≡1` fold), threaded chain-wide via `fmul`; bit-identical fast-vs-object (selftests §8/§17). **Speedup is large-array-only:** certifier wins 1.7–3.8× at n=24–28; the **chain is SLOWER** (0.2–0.3×, op-count-bound on many small cubes) — see correction below |
+| cross-cube batched chain (step 9) | same, **both big kernels batched** (trace + wiring) | unchanged Õ(√x) | done (S502 trace + S504 wiring) — `run_chain(batch_trace, batch_wiring)`; widens the per-fmul array so the fast Mersenne path WINS: BIG_Q n=16 **8.87 s vs 17.1 s baseline (1.92×)**, comm 5.3×↓. Sound `π(2ⁿ)==sieve` over BIG_Q to **n=20 (x≈10⁶, 66 s)** |
 
 Canonical doc: `novel/succinct_verification_of_pi.md` (protocol stack,
 width-spectrum theory, census law, open program). Code:
@@ -168,7 +169,13 @@ width-spectrum theory, census law, open program). Code:
    analytic count: surjection inclusion-exclusion has catastrophic
    cancellation; DFS is enumeration-bound at A₁₂₈ ~ e²⁵. Transfer-
    matrix / generating-function attack is the well-posed route.
-5. **Large-x benchmark** — gated on item 1.
+5. **Large-x benchmark** — PARTIALLY DELIVERED (S504). The winning config
+   (delegate+structured, batch_trace+batch_wiring, FAST_BIG, BIG_Q) verifies
+   `π(2ⁿ)==sieve` over a sound-characteristic prime to **n=20 (x≈10⁶, 66 s)**.
+   Remaining: push reach (n=22 ≈ 4 min, n=24 ≈ 15 min — prover-bound on the
+   √x-cube layer sum-checks, NOT field- or DP-bound) and/or a real outer
+   poly-commitment so the Õ(√x) verifier claim is unconditional (currently
+   `mle_eval` leaf stand-ins).
 
 ## SECONDARY LINES (valid, not currently active)
 
@@ -182,8 +189,39 @@ width-spectrum theory, census law, open program). Code:
 - The guess-comparison geography (`experiments/analytic/
   guess_comparison_oracle/`) — decision-version facts, complete as is.
 
-## Done this era (S491–S503 cycles, 2026-06-13)
+## Done this era (S491–S504 cycles, 2026-06-13)
 
+- Batched wiring INTEGRATION + the fast-path sign flip resolved (S504): wired
+  `batched_wiring.verify_wiring_obligations` into `compressed_layer.run_chain` by
+  the planned defer-and-batch. New `batch_wiring=True` path (delegate only): a
+  `defer` accumulator threaded through `large_reduce`/`verify_affine_region`/
+  `verify_waff_value` (large affine, `accept_rem=p−1`) and `small_reduce` (small
+  division, `accept_rem=None`) COLLECTS each layer's wiring obligation `(p,r_v,r_u,
+  accept_rem,claim,lie)` — the claim being the scalar the outer sum-check already
+  pinned — instead of calling `inner_verify_div` inline; all `2K−1` obligations
+  discharge in ONE batched chain after the layer loop. Two new entry points in
+  `batched_wiring.py` (`chain_obligation` builds an obligation from a deferred
+  check — prover-supplied claim, honest-or-lying chain over the shared `l_max`
+  cube; `verify_wiring_obligations` discharges the list). `verify_waff_value`'s
+  `[e≤ecut]` comparator fold (O(2^nb), p-independent) stays per-layer, as planned;
+  default `batch_wiring=False` keeps every prior artifact verbatim. **Selftest
+  §19/§19b:** chain verdict unchanged (honest==sieve; `delta_pi` + self-consistent
+  liar rejected) over q & BIG_Q, structured & dense, alone and composed with
+  `batch_trace`; the wiring-specific liars (`small_forge` at sum-check #0,
+  `small_chain`/`waff_chain` in the batched backward sweep, `waff_forge` in the
+  comparator fold) all rejected THROUGH the batched discharge; `batch_wiring`
+  without `delegate` raises. **Headline (`--n 16 --bench-combined`, BIG_Q,
+  delegate+structured):** with BOTH big kernels batched the global fast Mersenne
+  path is finally a NET END-TO-END WIN — baseline (obj) 17.1 s → batch_trace (obj)
+  14.0 s → batch_trace+wiring (obj) 12.8 s → **batch_trace+wiring+FAST 8.87 s
+  (1.92×)**; FAST alone with only trace batched is a LOSS (25.5 s, the S502 22-vs-16
+  sign flip reproduced — tiny per-layer wiring cubes penalise the 24-op mulmod).
+  Wiring batch also cuts comm 5.3× (87226→16509: K chain transcripts → one).
+  **Item-5 delivered (winning config, `claimed π==sieve` over the sound BIG_Q):**
+  n=16 π=6542 (9.3 s), n=18 π=23000 (22.2 s), **n=20 π(1048575)=82025 (66 s)** —
+  exact π at x≈10⁶ behind an Õ(√x) verifier over a sound-characteristic prime,
+  Õ(x) prover, both wirings delegated. The S500 lever ("reduce the COUNT of small
+  field-ops, not the per-multiply cost") is confirmed end-to-end.
 - Batched wiring delegation (S503): the SECOND big chain kernel (S501: 30% of
   `run_chain` wall, **76% of all sum-check calls**), built and measured.
   `experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py` —
@@ -384,45 +422,34 @@ width-spectrum theory, census law, open program). Code:
 
 ## NEXT ACTION (single, concrete)
 
-Both big chain kernels now have standalone batched primitives: the trace
-(S502, wired into `run_chain` via `batch_trace=True`) and the wiring
-(S503, `batched_wiring.py`, validated + benched — fast-path sign flip
-reproduced, 8.99–12.1× isolated speedup). The remaining step is the
-**end-to-end integration + re-measure** the S503 bench sets up.
+The compressed Õ(√x)-verifier / Õ(x)-prover π(x) chain is now COMPLETE and
+FAST: both big kernels batched (trace S502, wiring S504), the fast Mersenne path
+a net 1.92× end-to-end win over BIG_Q, sound `π(2ⁿ)==sieve` to n=20 (x≈10⁶, 66 s).
+The one remaining gap between this and an UNCONDITIONAL Õ(√x) verifier is the
+**leaf-opening stand-in**: every `mle_eval(S, point, q)` in `compressed_layer.py`
+(the two `S_0` bases in `run_chain`, the `line_batch_pair`/`batch_on_table`
+closes, the region-opening checks `s2==mle_eval(...)`) is an O(√x) DIRECT MLE
+evaluation standing in for a polynomial-commitment opening. That O(√x)-per-open
+cost is the LAST p-/√x-linear term in the verifier; with K layers it is the only
+thing keeping the verifier from being honestly polylog-per-layer.
 
-**NEXT: wire `batched_wiring.verify_wiring_batched` into `run_chain` by
-defer-and-batch, then re-measure with `FAST_BIG=True`.** Concretely, add a
-`batch_wiring=True` path to `compressed_layer.run_chain`:
-(1) make `small_reduce` and `verify_waff_value` (via `large_reduce`/
-`verify_affine_region`) RETURN their wiring obligation `(p, r_v, r_u, claim,
-accept_rem)` instead of calling `inner_verify_div` inline (keep the inline path
-for `batch_wiring=False`, so all prior artifacts stay verbatim); (2) collect the
-2K obligations across all layers (small-division `accept_rem=None`; large-affine
-`accept_rem=p−1`); (3) discharge them in ONE `verify_wiring_batched` call after
-the layer loop. The obligation shape is **confirmed identical** to
-`synth_obligations` (uniform depth `nb`), so the primitive drops in. Two real
-sub-tasks: (a) `verify_waff_value` wraps its `inner_verify_div(accept_rem=p−1)`
-in a separate `[e≤ecut]` comparator sum-check (the O(2^nb) `le_eval` fold) that
-`verify_wiring_batched` does NOT cover — either batch those comparator folds
-too (they are p-independent, easy) or leave them per-layer (still cheap); (b)
-thread the field `q` (the primitive already takes it).
+**NEXT: build a real multilinear polynomial-commitment opening for the
+committed `S_i^{small,large}` tables and thread it through `compressed_layer.py`,
+replacing the `mle_eval` stand-ins.** Concretely, prototype a sum-check-based
+opening (the standard "evaluate a committed MLE at a point via one sum-check
+against an `eq(point,·)` table" — e.g. a Brakedown/FRI-free PCS suffices for the
+demo, or even just a sum-check-delegated `eq`-fold whose own leaf is the next
+layer's claim) in a new
+`experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py`
+(`--selftest`, `--bench`), verify it agrees with `mle_eval` and rejects a forged
+opening, then wire it behind a `pcs=True` flag in `run_chain` exactly as
+`batch_trace`/`batch_wiring` were threaded (default off → artifacts verbatim).
+This closes the "Honest scope" caveat that has stood since step 1 and makes the
+Õ(√x) verifier claim end-to-end real rather than modulo-leaf-openings.
 
-**Then re-measure `run_chain(batch_trace=True, batch_wiring=True, FAST_BIG=True)`
-at n=16 BIG_Q.** With BOTH big kernels widened, globally enabling the fast path
-should finally be a net end-to-end win (S502 left it a loss: 22 s vs 16 s,
-because the unbatched wiring cubes penalised `FAST_BIG`). Target: well under the
-15.5 s baseline; then the first sound large-n `π(2ⁿ)==sieve` run over `BIG_Q`
-within reach (the item-5 headline).
-
-Selftest the integration: `compressed_layer.py` selftest asserts unchanged
-verdict (honest / delta_pi / self-consistent liar) for `batch_wiring=True` vs
-`False` over Q & BIG_Q at n∈{8,10,12} — exactly as S502 did for `batch_trace`.
-
-Fallback headline (if the integration proves fiddly): a **slow but sound** item-5
-run NOW — the object chain already verifies `π(2ⁿ)==sieve` over `BIG_Q` with
-`batch_trace=True`; n=22–24 is ~min-scale object arithmetic. Headline application
-of open item 1 (exact π at x≈10⁷ behind an Õ(√x) verifier over a sound prime),
-independent of the wiring integration.
-
-Also still open (multi-cycle, lower priority): a real outer poly-commitment for
-the leaf/`S_0` openings (currently `mle_eval` stand-ins).
+Smaller follow-ons (either is a clean cycle):
+- **Reach push:** run the winning config at n=22 (≈4 min) / n=24 (≈15 min) for a
+  larger item-5 headline (`π(x)` at x≈10⁷); prover-bound, no code changes.
+- **`bench_combined` is `--n`-parameterised** but defaults to 16; add an n-sweep
+  row set if a scaling curve of the fast-path win vs n is wanted (it should widen
+  with K as the per-fmul width grows).

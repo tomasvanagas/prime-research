@@ -484,6 +484,67 @@ both **corrects this**:
   default because it is faster at reachable `n`. The clean, measured win of the
   mulmod is the **certifier** (one large `√x`-cube: 1.7–3.8× at n=24–28).
 
+## Cross-cube batching: trace (S502) + wiring (S504) → fast path wins (S504)
+
+The S500 mechanism named the lever: **reduce the number of small field-ops**
+(widen them by cross-cube batching) so the fast Mersenne path is exercised. Two
+batched primitives were built standalone — the trace zero-test
+(`batched_trace.py`, S502, wired via `run_chain(batch_trace=True)`) and the
+wiring delegation (`batched_wiring.py`, S503) — and this cycle (**S504**) wired
+the wiring batch end-to-end via `run_chain(batch_wiring=True)`.
+
+**Defer-and-batch.** With `batch_wiring=True` (delegate only), the per-layer
+delegated wiring chains are no longer discharged inline: a `defer` accumulator
+threaded through `large_reduce`/`verify_affine_region`/`verify_waff_value`
+(large affine image, `accept_rem=p−1`) and `small_reduce` (small division,
+`accept_rem=None`) **collects** each obligation `(p, r_v, r_u, accept_rem,
+claim, lie)` — the claim being the scalar the layer's outer sum-check already
+pinned — and all `2K−1` obligations discharge in ONE
+`batched_wiring.verify_wiring_obligations` after the layer loop. The
+`verify_waff_value` `[e≤ecut]` comparator fold (O(2^nb), p-independent) stays
+per-layer. Default `batch_wiring=False` keeps every prior artifact verbatim.
+
+**Verdict unchanged** (selftest §19/§19b, over `q` & `BIG_Q`, structured &
+dense, alone and composed with `batch_trace`): honest accepts & matches the
+sieve; `delta_pi` and the self-consistent liar rejected; the wiring-specific
+liars (`small_forge` at sum-check #0; `small_chain`/`waff_chain` in the batched
+backward sweep; `waff_forge` in the per-layer comparator fold) rejected through
+the batched discharge. Transcript is **not** bit-identical (the batch draws rng
+after the layer loop), so only verdict/claimed are asserted, not comm.
+
+**End-to-end headline** (`--n 16 --bench-combined`, BIG_Q, delegate+structured):
+
+  | config | wall (ms) | comm | vs baseline |
+  |---|---|---|---|
+  | baseline (no batch, obj) | 17075 | 87226 | 1.00× |
+  | batch_trace (obj) | 13998 | 85554 | 1.22× |
+  | batch_trace+wiring (obj) | 12784 | **16509** | 1.34× |
+  | batch_trace (FAST) | 25452 | 85554 | 0.67× ← **S502 loss reproduced** |
+  | **batch_trace+wiring (FAST)** | **8873** | **16509** | **1.92×** |
+
+The wiring batch cuts communication **5.3×** (the `K` chain transcripts collapse
+to one). The decisive result: globally enabling FAST_BIG is a **loss** with only
+the trace batched (the still-tiny per-layer wiring cubes penalise the 24-op
+Mersenne mulmod, reproducing the S502 22-vs-16 s loss) and a **1.92× net win**
+once **both** kernels are widened — `8.87 s`, well under the 15.5 s baseline. The
+S500 prediction ("the right lever is reducing the count of small field-ops, not
+the per-multiply cost") is confirmed end-to-end.
+
+**Item-5 headline — sound large-n π(2ⁿ) over `BIG_Q` in the winning config**
+(delegate+structured, batch_trace+batch_wiring, FAST_BIG; `claimed π == sieve`):
+
+  | n | x | V=√x | K=π(√x) | wall (s) | π(x) |
+  |---|---|---|---|---|---|
+  | 16 | 65535 | 255 | 54 | 9.3 | 6542 |
+  | 18 | 262143 | 511 | 97 | 22.2 | 23000 |
+  | 20 | 1048575 | 1023 | 172 | 66.2 | 82025 |
+
+This is exact π(x) at **x ≈ 10⁶** behind an **Õ(√x) verifier** over a
+**sound-characteristic** prime (`BIG_Q=2⁶¹−1` — the wrap-around alias the demo
+prime admits above its field is rejected, S498), Õ(x) prover, both wirings
+delegated, both big kernels batched. The chain remains prover-bound (the √x-cube
+layer sum-checks); the ~3× wall per +2 in `n` tracks the 4× growth in `x`.
+
 ## Falsification
 
 Falsified by: the compressed DP disagreeing with a sieve (checked n≤20); an

@@ -169,6 +169,38 @@ def make_obligation(p, n, l_max, r_v, r_u, accept_rem, q=Q, cheat=None):
                 claim=claim, vs=vs)
 
 
+def chain_obligation(p, n, l_max, r_v, r_u, accept_rem, claim, q=Q, lie=False):
+    """Build ONE wiring obligation for the batched protocol from a DELEGATED chain
+    layer's DEFERRED wiring check (compressed_layer.run_chain with
+    batch_wiring=True).  Unlike make_obligation -- which reads the honest value off
+    the chain -- the `claim` here is the PROVER-SUPPLIED wiring scalar that the
+    layer's outer sum-check already pinned (wv_claim for the small division,
+    phi_claim for the large affine image): honest on an honest run, or a forged
+    scalar (the small_forge / waff_forge cheat) the batched chain must reject at
+    sum-check #0.  vs is the honest division/affine chain over the COMMON l_max
+    cube (MSB-zero-pad; valid states stay < p), or a self-consistent lying chain
+    when lie=True -- the small_chain / waff_chain cheat, mirroring
+    inner_verify_div(lie=True) verbatim (corrupt vs[n//2][0], re-propagate)."""
+    vs = inner_chain_vectors(r_v, r_u, p, l_max, n, q)
+    if lie:
+        vs = [v.copy() for v in vs]
+        dim = 1 << l_max
+        vs[n // 2][0] = (int(vs[n // 2][0]) + 1) % q
+        for j in range(n // 2, n):
+            wv, wu = bit_weights(r_v[j], q), bit_weights(r_u[j], q)
+            nv = np.zeros(dim, dtype=_dt(q))
+            for s in range(p):
+                for a in (0, 1):
+                    for b in (0, 1):
+                        y = 2 * s + a - b * p
+                        if 0 <= y < p:
+                            nv[y] = (int(nv[y]) + int(vs[j][s]) * wv[a] % q
+                                     * wu[b]) % q
+            vs[j + 1] = nv
+    return dict(p=p, n=n, r_v=list(r_v), r_u=list(r_u),
+                accept_rem=accept_rem, claim=int(claim) % q, vs=vs)
+
+
 def synth_obligations(x, n, accept_mode="div", q=Q, seed=0, cheat=None,
                       cheat_layer=0):
     """Synthesize the K = pi(sqrt x) wiring obligations a delegated run_chain emits
@@ -389,6 +421,22 @@ def verify_wiring_batched(obs, n, l_max, rng, stats, q=Q):
     res = (claim % q) == base
     stats["t_verifier"] += time.perf_counter() - t0
     return res
+
+
+def verify_wiring_obligations(raw, n, l_max, rng, stats, q=Q):
+    """Discharge a list of DEFERRED chain wiring obligations in ONE batched chain
+    -- the integration entry point for compressed_layer.run_chain(batch_wiring=
+    True).  Each raw item is a tuple (p, r_v, r_u, accept_rem, claim, lie) emitted
+    by the deferred small_reduce (division, accept_rem=None) / verify_waff_value
+    (affine image, accept_rem=p-1) paths.  Builds the obligation dicts (honest
+    chain vectors over the shared l_max cube; the prover-supplied claim) and runs
+    ONE verify_wiring_batched -- the single replacement for the len(raw) inline
+    inner_verify_div calls a delegated run_chain makes today."""
+    if not raw:
+        return True
+    obs = [chain_obligation(p, n, l_max, r_v, r_u, ar, claim, q, lie)
+           for (p, r_v, r_u, ar, claim, lie) in raw]
+    return verify_wiring_batched(obs, n, l_max, rng, stats, q)
 
 
 # ----------------------------------------------------------------------

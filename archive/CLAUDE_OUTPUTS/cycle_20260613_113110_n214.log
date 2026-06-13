@@ -1,0 +1,94 @@
+=== Cycle 214 — Sat Jun 13 11:31:10 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build a real multilinear polynomial-commitment opening to replace the `mle_eval` stand-ins, the last √x-linear term in the verifier. Let me understand the current state before building.
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/
+  [tool: Bash] grep -n "mle_eval" experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py | head -60
+Let me read the canonical doc and the core helper definitions.
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now let me examine the core helpers (`mle_eval`, `sumcheck`, `eq_table`, `eq_point`) in `compressed_prover_mult_trace.py`.
+  [tool: Bash] grep -n "^def \|^class \|^    def \|FAST_BIG\|^Q =\|^BIG_Q\|^SMALL_Q\|def mle_eval\|def sumcheck\|def eq_table\|def eq_p
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me read the chain structure in `compressed_layer.py` around the `mle_eval` sites.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I have a clear picture of the chain. Let me look at the remaining pieces: the `small_reduce` signature, the selftest structure, and the CLI in `compressed_layer.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me check the exact signatures of `verify_affine_region` and the selftest/CLI structure.
+  [tool: Bash] grep -n "def verify_affine_region\|def verify_waff_value\|def verify_layer\|def line_batch_pair\|def batch_on_table\|def
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me look at the selftest and CLI structure in `compressed_layer.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me establish a baseline by running the existing selftest before making any changes.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 compre
+While that runs, let me check the `FIELDS` dict definition and `int_of_point`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "FIELDS\s*=\|DEFAU
+Now let me write the `leaf_open.py` primitive.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/b2xu04bcr.output
+Baseline passes. Now let me run the new `leaf_open.py` selftest.
+  [tool: Bash] timeout 300 python3 leaf_open.py --selftest 2>&1 | tail -20
+The primitive passes. Let me see the bench numbers.
+  [tool: Bash] timeout 300 python3 leaf_open.py --bench 2>&1 | tail -15 && echo "---- batch ----" && timeout 300 python3 leaf_open.py -
+The primitive works exactly as intended: `open_eval`'s verifier is flat in table size (8→17 µs) while the `mle_eval` close it replaces grows as O(2^nb) — a speedup that **grows** with nb (6.5× → 432×). `open_batch` beats line-restriction folding 13–34×.
+
+Now let me thread `pcs=True` into the chain. First the import:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `line_batch_pair` and `batch_on_table` with a `pcs` path:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_affine_region` — add `pcs` and skip the redundant close when pcs:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `verify_trace_region` — add `pcs` and skip the line-402 close:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `large_reduce` — add `pcs` and thread it to the three callees:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now `run_chain` — add `pcs` and thread to `large_reduce` and `batch_on_table`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `pcs` into the two `run_chain` call sites (`large_reduce` and `batch_on_table`):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me test the `pcs=True` chain path with a quick script before adding selftest cases:
+  [tool: Bash] timeout 300 python3 -c "
+import numpy as np, compressed_layer as cl
+for n in (8,10,12):
+    x=(1<<n)-1; truth=cl.sieve_p
+PCS works: honest accepts, delta_pi + liar rejected, automaton + delegated, n≤12. Verifier drops ~20%. Let me make the cost claims in `leaf_open.py` precise (distinguishing prover vs verifier for the line baseline), since the line restriction's *verifier* cost is one close per pair, while its *prover* cost carries the `nb` factor.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/leaf_open.py
+Now let me add a selftest case (20) for the PCS chain path. Let me insert it before the final print:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add a `bench_pcs` function and CLI flag to measure the chain verifier reduction. Let me add it after `bench()`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now thread `--pcs` into `main()`. Let me update the signature and the headline chain runs:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me run the full `compressed_layer.py` selftest (including the new case 20) and the `bench_pcs`:
+  [tool: Bash] timeout 900 python3 compressed_layer.py --selftest 2>&1 | tail -5
+While the full selftest runs, let me verify `leaf_open.py` still passes (docstring edits only) and run `bench_pcs`:
+  [tool: Bash] timeout 120 python3 leaf_open.py --selftest 2>&1 | tail -2 && echo "=== bench_pcs ===" && timeout 600 python3 compressed
+`bench_pcs` confirms a stable ~1.2–1.36× verifier reduction (constant-factor, not growing with n — consistent with the remaining 429 Ub openings dominating). Let me check the full selftest:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bn1vrkds5.output 2>/dev/nu
+The selftest only prints at the end. Let me wait for it to finish.
+  [tool: Bash] while kill -0 $(pgrep -f "compressed_layer.py --selftest" | head -1) 2>/dev/null; do sleep 5; done; echo "=== done ===";
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bn1vrkds5.output
+Full selftest passes (including case 20). Let me kill the redundant monitor and run the headline `--pcs` demo plus the BIG_Q bench for the results files.
+  [tool: Bash] pkill -f "kill -0" 2>/dev/null; timeout 300 python3 compressed_layer.py --n 16 --delegate --pcs --cheat-trials 6 2>&1 | 
+  [tool: Bash] timeout 300 python3 compressed_layer.py --n 16 --delegate --pcs --cheat-trials 6 2>&1 | head -20
+  [tool: Bash] timeout 200 python3 leaf_open.py --bench --field big 2>&1 | tail -10
+Over BIG_Q the speedup is even larger (21×–3605×) since object-array `mle_eval` is costly while the opening verifier stays O(nb). Let me check the n=16 headline run:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/a36e7b4a-6fd4-44f1-afc0-5552550c0f00/tasks/bh7zbil41.output 2>/dev/nu

@@ -118,17 +118,53 @@ Reading it:
   independent chains (n=10: 927 vs 5166 field elems; checked `< baseline` in the
   selftest).
 
-## What this does NOT yet claim
+## Integration into `run_chain` (S504) — DONE
 
-- This is the **standalone batched primitive + bench**, the deliverable the
-  PROGRAM.md NEXT ACTION specified ("a `batch_wiring` path … with `--selftest` …
-  and `--bench`"). The **`run_chain(batch_trace=True, batch_wiring=True)` with
-  `FAST_BIG=True` re-measure** is the follow-on: it needs the defer-and-batch
-  restructure of `compressed_layer.small_reduce` / `verify_waff_value` to
-  *collect* obligations instead of discharging them inline, plus handling
-  `verify_waff_value`'s separate `[e≤ecut]` comparator fold (which the
-  `inner_verify_div` core does not include). The obligation shape is confirmed
-  identical, so the primitive drops in.
+The defer-and-batch restructure is built. Two entry points were added to this
+file and wired into `compressed_layer.run_chain`:
+
+- `chain_obligation(p, n, l_max, r_v, r_u, accept_rem, claim, q, lie)` — builds
+  ONE obligation dict from a deferred chain wiring check. Unlike
+  `make_obligation`, the **`claim` is the prover-supplied wiring scalar** the
+  layer's outer sum-check already pinned (honest, or a forged scalar the batch
+  must reject at sum-check #0); `vs` is the honest chain over the shared `l_max`
+  cube, or a self-consistent lying chain when `lie=True` (mirroring
+  `inner_verify_div(lie=True)` verbatim — the `small_chain` / `waff_chain` cheat).
+- `verify_wiring_obligations(raw, n, l_max, rng, stats, q)` — discharges a list
+  of `(p, r_v, r_u, accept_rem, claim, lie)` tuples in ONE `verify_wiring_batched`
+  call. The single replacement for the `len(raw)` inline `inner_verify_div`.
+
+`compressed_layer.py` now threads a `defer` accumulator through
+`small_reduce` / `large_reduce` / `verify_affine_region` / `verify_waff_value`:
+with `run_chain(batch_wiring=True)` (delegate only), each layer **appends** its
+wiring obligation instead of calling `inner_verify_div` inline, and all `2K−1`
+obligations (large affine `accept_rem=p−1`, small division `accept_rem=None`,
+small skipped at layer K) discharge in one batched chain after the layer loop.
+The `verify_waff_value` `[e≤ecut]` comparator fold (O(2^nb), p-independent) stays
+per-layer, as planned. `compressed_layer.py` **selftest §19/§19b** assert the
+chain's verdict is unchanged (honest accepts & matches the sieve; `delta_pi` and
+the self-consistent liar rejected) over `q` & `BIG_Q`, structured & dense, alone
+and composed with `batch_trace`, plus the wiring-specific liars
+(`small_forge`/`small_chain`/`waff_chain`/`waff_forge`) rejected **through** the
+batched discharge.
+
+**End-to-end re-measure** (`compressed_layer.py --n 16 --bench-combined`, BIG_Q,
+delegate+structured): with both big kernels batched the global fast path is
+finally a **net end-to-end win** — the S502 sign flip is resolved.
+
+  | config | wall (ms) | comm | vs baseline |
+  |---|---|---|---|
+  | baseline (no batch, obj) | 17075 | 87226 | 1.00× |
+  | batch_trace (obj) | 13998 | 85554 | 1.22× |
+  | batch_trace+wiring (obj) | 12784 | **16509** | 1.34× |
+  | batch_trace (FAST) | 25452 | 85554 | 0.67× ← **S502 loss reproduced** |
+  | **batch_trace+wiring (FAST)** | **8873** | **16509** | **1.92×** |
+
+The wiring batch alone cuts comm **5.3×** (87226→16509: `K` chain transcripts
+collapse to one). FAST_BIG is a **loss** with only the trace batched (tiny
+per-layer wiring cubes penalise the 24-op Mersenne mulmod), and a **1.92× win**
+once both kernels are widened — 8.87 s, well under the 15.5 s target.
+
 - The leaf/`S_0` openings remain `mle_eval` stand-ins (unchanged, orthogonal).
 
 ## What would falsify the result

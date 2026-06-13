@@ -103,6 +103,7 @@ from compressed_prover_mult_trace import (DEFAULT_Q as Q, BIG_Q, SMALL_Q,
                                           fast_big)
 from lucy_dp_verification import ge_const_eval, w_div_eval
 from lucy_dp_delegated_wiring import inner_verify_div, inner_chain_vectors
+import leaf_open as _lo
 
 
 # ----------------------------------------------------------------------
@@ -221,7 +222,7 @@ def waff_eval(r_v, r_u, p, ecut, n, q=Q):
 
 
 def verify_waff_value(waffv, r_v, r_u, p, ecut, nb, rng, stats,
-                      lie_chain=False, structured=False, q=Q):
+                      lie_chain=False, structured=False, q=Q, defer=None):
     """Prove the affine-wiring scalar
         waffv = waff_eval(r_v, r_u) = sum_{e<=ecut} eq(r_v,e) eq(r_u,(e+1)p-1)
     with an O(nb log p) verifier that NEVER divides -- the delegated drop-in
@@ -240,7 +241,14 @@ def verify_waff_value(waffv, r_v, r_u, p, ecut, nb, rng, stats,
     its backward chain sweep in O(nb*p) prover work (chain_layer_reduce_
     structured) instead of the dense O(nb*p^2) product-of-5-tables sweep, with
     a BIT-IDENTICAL transcript -- accept/reject and comm are unchanged.  Only
-    affects the delegated path; the comparator fold above is already O(2^nb)."""
+    affects the delegated path; the comparator fold above is already O(2^nb).
+
+    defer (S503): when a list is passed, the inner affine-image chain is NOT run
+    inline; instead the obligation (p, dividend=r_u, quotient=r_e, accept_rem=p-1,
+    claim=phi_claim, lie_chain) is appended and the function returns True after the
+    comparator fold.  run_chain(batch_wiring=True) collects these across all layers
+    and discharges them in ONE batched_wiring.verify_wiring_obligations call.  The
+    O(2^nb) comparator fold is p-independent and stays per-layer."""
     Dml = 1 << nb
     t0 = time.perf_counter()
     eqrv = eq_table(r_v, q)
@@ -270,6 +278,10 @@ def verify_waff_value(waffv, r_v, r_u, p, ecut, nb, rng, stats,
         return False
     # delegate phi_claim = D~(r_e over quotient e, r_u over dividend e'),
     # D(e',e)=[e=floor(e'/p) and e' mod p = p-1]  <=>  e'=p*e+(p-1).
+    if defer is not None:                       # batch_wiring: collect, discharge later
+        defer.append((p, list(r_u), list(r_e), p - 1, int(phi_claim) % q,
+                      lie_chain))
+        return True
     return inner_verify_div(phi_claim, r_u, r_e, p, nb, rng, stats,
                             accept_rem=p - 1, lie=lie_chain,
                             structured=structured, q=q)
@@ -280,7 +292,8 @@ def verify_waff_value(waffv, r_v, r_u, p, ecut, nb, rng, stats,
 # ----------------------------------------------------------------------
 
 def verify_affine_region(S_large, r_v, claimed, p, ecut, nb, rng, stats,
-                         cheat=None, delegate=False, structured=False, q=Q):
+                         cheat=None, delegate=False, structured=False, q=Q,
+                         defer=None, pcs=False):
     """g1_aff = sum_{e<=ecut} eq(r_v,e) S_large((e+1)p-1).  Routed by image
     index e': g1_aff = sum_{e'} Waff[e'] S_large(e').  The wiring scalar
     Waff~(r_u) = waff_eval(r_v, r_u) is either evaluated by the O(nb*p)
@@ -308,11 +321,15 @@ def verify_affine_region(S_large, r_v, claimed, p, ecut, nb, rng, stats,
     if not okB:
         return False, None, None
     s2 = scal["S"]
-    t0 = time.perf_counter()
-    ok_open = s2 == mle_eval(S_large, r_u, q)
-    stats["t_verifier"] += time.perf_counter() - t0
-    if not ok_open:
-        return False, None, None
+    # pcs (S505): s2 = S~_large(r_u) is line-batched into the large carried claim
+    # (new_z, new_claim) by the caller and grounded transitively at the base, so
+    # the per-layer O(2^nb) close is redundant and skipped.  Default: close it.
+    if not pcs:
+        t0 = time.perf_counter()
+        ok_open = s2 == mle_eval(S_large, r_u, q)
+        stats["t_verifier"] += time.perf_counter() - t0
+        if not ok_open:
+            return False, None, None
 
     if not delegate:
         t0 = time.perf_counter()
@@ -340,12 +357,12 @@ def verify_affine_region(S_large, r_v, claimed, p, ecut, nb, rng, stats,
         return False, None, None
     okw = verify_waff_value(waffv, r_v, r_u, p, ecut, nb, rng, stats,
                             lie_chain=(cheat == "waff_chain"),
-                            structured=structured, q=q)
+                            structured=structured, q=q, defer=defer)
     return (True, r_u, s2) if okw else (False, None, None)
 
 
 def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
-                        skip_constraints=False):
+                        skip_constraints=False, pcs=False):
     """g1_trace = sum_{lo<=e<=hi} eq(r_v,e) S_small(floor(x/((e+1)p))).
     Certify every u_e by the step-1 trace zero-test, then route the masked
     small-side lookup. The band mask T(e)=[lo<=e<=hi] zeroes the affine /
@@ -385,9 +402,14 @@ def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
     stats["comm"] += 3 * nb
     if not okB1:
         return False, None, None
+    # pcs (S505): s_B = sB1["S"] = S~_small(r_B) is folded into the small carried
+    # claim by the caller (batch_on_table) and grounded at the base, so its
+    # per-layer O(2^nb) close is redundant and skipped; the wiring-consistency
+    # check finalB1 == s_B * omega~(r_B) stays (grounds g1_trace to the lookup).
     t0 = time.perf_counter()
-    okf = ((finalB1 % q) == sB1["S"] * sB1["W"] % q
-           and sB1["S"] == mle_eval(S_small, r_B, q))       # opening of S_small
+    okf = (finalB1 % q) == sB1["S"] * sB1["W"] % q
+    if not pcs:
+        okf = okf and sB1["S"] == mle_eval(S_small, r_B, q)  # opening of S_small
     stats["t_verifier"] += time.perf_counter() - t0
     if not okf:
         return False, None, None
@@ -425,10 +447,21 @@ def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
 # claim aggregation: fold same-table point-claims by line restriction
 # ----------------------------------------------------------------------
 
-def line_batch_pair(S, pt0, val0, pt1, val1, nb, rng, stats, q=Q):
+def line_batch_pair(S, pt0, val0, pt1, val1, nb, rng, stats, q=Q, pcs=False):
     """Reduce val0=S~(pt0), val1=S~(pt1) to ONE claim (new_pt, new_claim) via
     the degree-nb line restriction h(t)=S~((1-t)pt0+t pt1). Endpoint checks
-    anchor a false input; new_claim is closed by mle_eval (the PCS stand-in)."""
+    anchor a false input; new_claim is closed by mle_eval (the PCS stand-in).
+
+    pcs (S505): replace the line restriction + its closing mle_eval with a real
+    sum-check OPENING (leaf_open.open_batch over the two claims). The returned
+    (new_pt, new_claim) is then the sum-check RESIDUAL -- NOT closed here, but
+    threaded by the caller as a carried chain claim and discharged transitively
+    at the base. Verifier O(nb) instead of the line close's O(2^nb); a wrong
+    val0/val1 propagates to a wrong residual and is caught at the base."""
+    if pcs:
+        res = _lo.open_batch(S, [(list(pt0), val0), (list(pt1), val1)],
+                             rng, stats, q)
+        return res["r"], res["residual"], res["ok"]
     t0 = time.perf_counter()
     hs = []
     for t in range(nb + 1):
@@ -449,9 +482,19 @@ def line_batch_pair(S, pt0, val0, pt1, val1, nb, rng, stats, q=Q):
     return new_pt, new_claim, ok
 
 
-def batch_on_table(S, claims, nb, rng, stats, q=Q):
+def batch_on_table(S, claims, nb, rng, stats, q=Q, pcs=False):
     """Fold k same-table point-claims into one by sequential line restriction.
-    claims: list of (point, value). Returns (point, value, ok)."""
+    claims: list of (point, value). Returns (point, value, ok).
+
+    pcs (S505): fold all k claims in ONE sum-check opening (leaf_open.open_batch)
+    and RETURN the residual without closing it -- the caller carries it as the
+    chain's small-side claim, discharged at the base. Replaces the (k-1) line
+    closes' O(k*2^nb) verifier work with O(k*nb); the single-claim case becomes a
+    plain open_eval (no anchoring close)."""
+    if pcs:
+        res = _lo.open_batch(S, [(list(pt), val) for (pt, val) in claims],
+                             rng, stats, q)
+        return res["r"], res["residual"], res["ok"]
     pt, val = claims[0]
     if len(claims) == 1:                                    # still anchor it
         t0 = time.perf_counter()
@@ -478,7 +521,7 @@ def pad(tab, nb, q=Q):
 
 def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
                  rng, stats, cheat=None, delegate=False, structured=False,
-                 q=Q, skip_trace=False):
+                 q=Q, skip_trace=False, defer=None, pcs=False):
     """Reduce S~_i^large(z)=C to: a large point-claim (new_z,new_claim) on
     S_{i-1}^large (line-batched s1@r_v + s2_aff@r_u) and a small point-claim
     (r_B,s_B) on S_{i-1}^small (trace region). cheat in
@@ -543,7 +586,7 @@ def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
         S_prev_large, r_v, g1_aff, p, ecut, nb, rng, stats,
         cheat=(cheat if cheat in ("waff", "waff_forge", "waff_chain")
                else None),
-        delegate=delegate, structured=structured, q=q)
+        delegate=delegate, structured=structured, q=q, defer=defer, pcs=pcs)
     if not okAff:
         return dict(accepted=False)
 
@@ -555,13 +598,13 @@ def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
         W["tabs"]["U"][d] = (int(W["tabs"]["U"][d]) + 1) % q
     okTr, r_B, s_B = verify_trace_region(
         W, S_prev_small, r_v, g1_trace, lo, hi, nb, rng, stats, q,
-        skip_constraints=skip_trace)
+        skip_constraints=skip_trace, pcs=pcs)
     if not okTr:
         return dict(accepted=False)
 
     # ---- line-batch s1@r_v and s2_aff@r_u (both on S_prev_large) ----
     new_z, new_claim, okL = line_batch_pair(
-        S_prev_large, r_v, s1, r_u, s2_aff, nb, rng, stats, q)
+        S_prev_large, r_v, s1, r_u, s2_aff, nb, rng, stats, q, pcs=pcs)
     if not okL:
         return dict(accepted=False)
 
@@ -570,7 +613,7 @@ def large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, z, C,
 
 
 def small_reduce(x, p, sp, nb, S_prev_small, z, C, rng, stats, cheat=None,
-                 delegate=False, structured=False, q=Q):
+                 delegate=False, structured=False, q=Q, defer=None):
     """Reduce S~_i^small(z)=C to TWO point-claims on S_{i-1}^small:
     (r_v,s1) [the v itself] and (r_u,s2) [floor(v/p)]. The wiring v->floor(v/p)
     stays entirely small-side (value->value): the existing division automaton.
@@ -578,7 +621,11 @@ def small_reduce(x, p, sp, nb, S_prev_small, z, C, rng, stats, cheat=None,
     the padding). cheat in {None,'small_G','small_u','small_forge',
     'small_chain'}; 'small_C' via C.  delegate routes the division wiring
     scalar W~(r_v,r_u) through the SAME carry-chain (inner_verify_div);
-    structured makes that chain prover O(nb*p) (S496 drop-in, delegate only)."""
+    structured makes that chain prover O(nb*p) (S496 drop-in, delegate only).
+    defer (S503, delegate only): when a list is passed, the division chain is NOT
+    run inline; the obligation (p, r_v, r_u, accept_rem=None, claim=wv_claim,
+    lie=small_chain) is appended for ONE batched discharge (run_chain
+    batch_wiring=True)."""
     V = isqrt(x)
     ci = sp % q
     p2 = p * p
@@ -654,6 +701,10 @@ def small_reduce(x, p, sp, nb, S_prev_small, z, C, rng, stats, cheat=None,
     stats["t_verifier"] += time.perf_counter() - t0
     if not okB2:
         return dict(accepted=False)
+    if defer is not None:                       # batch_wiring: collect, discharge later
+        defer.append((p, list(r_v), list(r_u), None, int(wv_claim) % q,
+                      cheat == "small_chain"))
+        return dict(accepted=True, claims=[(r_v, s1), (r_u, s2)])
     if not inner_verify_div(wv_claim, r_v, r_u, p, nb, rng, stats,
                             accept_rem=None, lie=(cheat == "small_chain"),
                             structured=structured, q=q):
@@ -706,10 +757,18 @@ def run_layer(x, layer, rng, z=None, cheat=None, delegate=False,
 
 
 def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
-                        structured=False, q=Q):
+                        structured=False, q=Q, batch_wiring=False):
     """Verify ONE full two-sided layer: (large-claim, small-claim) ->
     (large-claim', small-claim'). Small-side claims about S_{i-1}^small (s_B
-    from the large trace + the two from the small layer) are folded to one."""
+    from the large trace + the two from the small layer) are folded to one.
+
+    batch_wiring (S503, delegate only): both delegated wiring chains (large affine
+    image + small division) are DEFERRED and discharged in ONE
+    batched_wiring.verify_wiring_obligations -- the single-layer analogue of
+    run_chain(batch_wiring=True), used to confirm the deferred/batched integration
+    still rejects the wiring-specific cheats (small_forge/small_chain/waff_chain)."""
+    if batch_wiring and not delegate:
+        raise ValueError("batch_wiring requires delegate=True")
     V = isqrt(x)
     nb = max(1, V.bit_length())
     primes, sm_layers, lg_layers = compressed_lucy(x)
@@ -732,19 +791,22 @@ def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
     if cheat == "small_C":
         CS = (CS + 1) % q
 
+    defer = [] if batch_wiring else None
     lres = large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large, zL, CL,
                         rng, stats,
                         cheat=(cheat if cheat in ("G", "split", "u", "waff",
                                                   "waff_forge", "waff_chain")
                                else None),
-                        delegate=delegate, structured=structured, q=q)
+                        delegate=delegate, structured=structured, q=q,
+                        defer=defer)
     if not lres["accepted"]:
         return dict(accepted=False, x=x, p=p, nb=nb, ecut=ecut, **stats)
     sres = small_reduce(x, p, sp, nb, S_prev_small, zS, CS, rng, stats,
                         cheat=(cheat if cheat in ("small_G", "small_u",
                                                   "small_forge", "small_chain")
                                else None),
-                        delegate=delegate, structured=structured, q=q)
+                        delegate=delegate, structured=structured, q=q,
+                        defer=defer)
     if not sres["accepted"]:
         return dict(accepted=False, x=x, p=p, nb=nb, ecut=ecut, **stats)
 
@@ -757,6 +819,11 @@ def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
     out_ok = (okb
               and CS2 == mle_eval(S_prev_small, zS2, q)
               and lres["new_claim"] == mle_eval(S_prev_large, lres["new_z"], q))
+    if batch_wiring and defer:                  # discharge both deferred wirings at once
+        import batched_wiring as _bw
+        l_max = max(1, (p - 1).bit_length())
+        out_ok = out_ok and _bw.verify_wiring_obligations(
+            defer, nb, l_max, rng, stats, q)
     return dict(accepted=out_ok, x=x, p=p, nb=nb, ecut=ecut,
                 CS2=CS2, zS2=zS2, new_claim=lres["new_claim"],
                 new_z=lres["new_z"], S_prev_small=S_prev_small,
@@ -768,7 +835,8 @@ def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
 # ----------------------------------------------------------------------
 
 def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
-              structured=False, q=Q, batch_trace=False):
+              structured=False, q=Q, batch_trace=False, batch_wiring=False,
+              pcs=False):
     """Chain all K layers from S_K^large(e=0)=pi(x) down to S_0 (opened on
     both sides). cheat='delta_pi' lies about pi(x); corrupt_layer=i0 is a
     self-consistent liar. delegate routes BOTH wirings (small division,
@@ -791,7 +859,40 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
     chain claim, so this is a faithful detach -- the chain's soundness vs
     delta_pi / self-consistent liar lives in phase-A and the base check, not the
     trace test, so accept/claimed are unchanged.
+
+    batch_wiring (S503, delegate only): the K delegated per-layer wiring chains
+    (76% of all sum-check CALLS by the S501 profile -- the small division and large
+    affine-image inner_verify_div, each on a TINY 2^l cube) are DEFERRED via the
+    `defer` accumulator and discharged in ONE batched chain over the stacked
+    (2^Lk * 2^l_max) cube (batched_wiring.verify_wiring_obligations) AFTER the layer
+    loop.  fmul CALL count drops ~K-fold / per-fmul WIDTH rises ~K-fold -- with
+    batch_trace this is the precondition for the fast-Mersenne path (FAST_BIG) to be
+    a net end-to-end win.  The per-layer comparator fold of verify_waff_value
+    (O(2^nb), p-independent) stays per-layer.  The obligations are deterministic in
+    (x, p_l) and the per-layer outer sum-checks pin each claim BEFORE deferral, so
+    the detach is faithful: the chain's soundness vs delta_pi / liar lives in
+    phase-A and the base check; the wiring batch additionally rejects a forged
+    wiring scalar or a self-consistent lying inner chain (small_forge/small_chain/
+    waff_chain), exactly as the K inline inner_verify_div did.
+
+    pcs (S505): replace the per-layer carried-claim LEAF OPENINGS -- the
+    line_batch_pair / batch_on_table folds and the redundant s2/s_B closes in
+    verify_affine_region/verify_trace_region -- with real sum-check OPENINGS
+    (leaf_open.open_batch).  Each fold becomes a degree-2 sum-check whose RESIDUAL
+    is carried as the next layer's claim and discharged transitively at the base
+    (the two S_0 mle_eval closes, a one-time O(sqrt x)).  This removes the
+    line-restriction folding's O(k*nb*2^nb) per-layer verifier work; the only
+    remaining per-layer O(2^nb) term is verify_trace_region's nb Ub-bit-table
+    openings (line 429 -- still mle_eval; their residuals are per-layer witness
+    data with no carried claim to thread to, so they want the batched-trace
+    integration, a documented follow-on).  UNCONDITIONAL: no commitment -- the
+    sum-check soundness rides the existing GKR layer reductions to the closed base.
+    delta_pi / self-consistent liar are caught in phase-A round-1 (untouched by the
+    leaf openings), so the verdict is preserved.  Default pcs=False keeps every
+    prior artifact verbatim (the transcript is NOT bit-identical under pcs).
     Returns dict(accepted, claimed, layers, ...)."""
+    if batch_wiring and not delegate:
+        raise ValueError("batch_wiring requires delegate=True")
     V = isqrt(x)
     nb = max(1, V.bit_length())
     primes, sm_layers, lg_layers = compressed_lucy(x)
@@ -817,6 +918,8 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
         if not _bt.verify_constraints_batched(Ws, primes, x, nb, rng, stats, q):
             return fail()
 
+    defer = [] if batch_wiring else None   # collect K wiring obligations; discharge once
+
     for i in range(K, 0, -1):
         p = primes[i - 1]
         sp = sm_layers[i - 1][p - 1]
@@ -826,22 +929,29 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
 
         lres = large_reduce(x, p, sp, ecut, nb, S_prev_small, S_prev_large,
                             z_large, C_large, rng, stats, delegate=delegate,
-                            structured=structured, q=q, skip_trace=batch_trace)
+                            structured=structured, q=q, skip_trace=batch_trace,
+                            defer=defer, pcs=pcs)
         if not lres["accepted"]:
             return fail()
         small_claims = [(lres["r_B"], lres["s_B"])]
         if C_small is not None:                             # skipped at i=K
             sres = small_reduce(x, p, sp, nb, S_prev_small, z_small, C_small,
                                 rng, stats, delegate=delegate,
-                                structured=structured, q=q)
+                                structured=structured, q=q, defer=defer)
             if not sres["accepted"]:
                 return fail()
             small_claims += sres["claims"]
         z_small, C_small, okb = batch_on_table(S_prev_small, small_claims,
-                                               nb, rng, stats, q)
+                                               nb, rng, stats, q, pcs=pcs)
         if not okb:
             return fail()
         z_large, C_large = lres["new_z"], lres["new_claim"]
+
+    if batch_wiring and defer:             # ONE batched chain for all 2K-1 wirings
+        import batched_wiring as _bw
+        l_max = max(max(1, (pp - 1).bit_length()) for pp in primes)
+        if not _bw.verify_wiring_obligations(defer, nb, l_max, rng, stats, q):
+            return fail()
 
     # base: open S_0 on both sides (leaf-opening stand-in, O(sqrt x) once)
     t0 = time.perf_counter()
@@ -1270,6 +1380,101 @@ def selftest():
                                      batch_trace=True)["accepted"]
                        for t in range(3)), (n, qf, "liar batch")
 
+    # 19. BATCHED WIRING (S503): replacing the K delegated per-layer inner wiring
+    #     chains (inner_verify_div, 76% of all sum-check CALLS by the S501 profile)
+    #     with ONE batched chain -- DEFERRED via batch_wiring=True and discharged by
+    #     batched_wiring.verify_wiring_obligations after the layer loop -- leaves the
+    #     chain's verdict UNCHANGED: honest accepts & matches the sieve; delta_pi
+    #     and the self-consistent liar still rejected.  Tested over q AND BIG_Q,
+    #     structured AND dense, ALONE and COMPOSED with batch_trace (the full target
+    #     config).  (Transcript not bit-identical: the batched wiring draws its rng
+    #     after the layer loop, so only verdict/claimed pi are asserted, not comm.)
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        for qf in (Q, BIG_Q):
+            for struct in (False, True):
+                for bt in (False, True):
+                    r = run_chain(x, np.random.default_rng(5), delegate=True,
+                                  structured=struct, q=qf, batch_trace=bt,
+                                  batch_wiring=True)
+                    assert r["accepted"] and r["claimed"] == truth, \
+                        (n, qf, struct, bt, r)
+            assert all(not run_chain(x, np.random.default_rng(800 + t),
+                                     delegate=True, cheat="delta_pi", q=qf,
+                                     batch_trace=True,
+                                     batch_wiring=True)["accepted"]
+                       for t in range(3)), (n, qf, "delta_pi batch_wiring")
+            assert all(not run_chain(x, np.random.default_rng(900 + t),
+                                     delegate=True, corrupt_layer=max(1, K // 2),
+                                     q=qf, batch_trace=True,
+                                     batch_wiring=True)["accepted"]
+                       for t in range(3)), (n, qf, "liar batch_wiring")
+    # batch_wiring requires delegate (the wirings it batches only exist delegated)
+    try:
+        run_chain((1 << 8) - 1, np.random.default_rng(0), batch_wiring=True)
+        assert False, "batch_wiring without delegate must raise"
+    except ValueError:
+        pass
+
+    # 19b. The deferred/batched wiring still rejects the WIRING-SPECIFIC liars
+    #      (forged wiring scalar / self-consistent lying inner chain), exercised at
+    #      the two-sided single layer (run_chain injects only chain-level cheats).
+    #      waff_forge is caught in the per-layer comparator fold (before deferral);
+    #      small_forge by sum-check #0 of the batch; small_chain / waff_chain by the
+    #      batched backward sweep -- all THROUGH verify_wiring_obligations.
+    for qf in (Q, BIG_Q):
+        x = (1 << 12) - 1
+        K = len(compressed_lucy(x)[0])
+        layer = max(1, K // 2)
+        assert run_two_sided_layer(x, layer, np.random.default_rng(5),
+                                   delegate=True, q=qf,
+                                   batch_wiring=True)["accepted"], qf
+        for ch in ("small_forge", "small_chain", "waff_chain", "waff_forge"):
+            assert all(not run_two_sided_layer(
+                x, layer, np.random.default_rng(1000 + t), cheat=ch,
+                delegate=True, q=qf, batch_wiring=True)["accepted"]
+                for t in range(4)), (qf, ch)
+
+    # 20. PCS LEAF OPENINGS (S505): pcs=True replaces the per-layer carried-claim
+    #     leaf openings (line_batch_pair / batch_on_table folds + the redundant
+    #     s2/s_B closes) with real sum-check openings (leaf_open.open_batch) whose
+    #     residuals thread to the base.  The chain VERDICT is unchanged -- honest
+    #     accepts & matches the sieve; delta_pi and the self-consistent liar still
+    #     rejected -- over q AND BIG_Q, automaton AND delegated+structured, and
+    #     COMPOSED with batch_trace + batch_wiring (the full winning config).  The
+    #     residual-threading grounds every carried scalar at the S_0 base; the
+    #     liar is caught in phase-A round-1 (untouched), so soundness is preserved.
+    #     (Transcript not bit-identical -- a sum-check fold replaces a line
+    #     restriction -- so only verdict/claimed pi are asserted.)
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        for qf in (Q, BIG_Q):
+            # honest: automaton, delegated+structured, and the full batched config
+            cfgs = [dict(delegate=False),
+                    dict(delegate=True, structured=True),
+                    dict(delegate=True, structured=True, batch_trace=True,
+                         batch_wiring=True)]
+            for kw in cfgs:
+                r = run_chain(x, np.random.default_rng(5), q=qf, pcs=True, **kw)
+                assert r["accepted"] and r["claimed"] == truth, \
+                    (n, qf, kw, "pcs honest")
+            # delta_pi and self-consistent liar rejected under pcs (full config)
+            assert all(not run_chain(x, np.random.default_rng(600 + t),
+                                     cheat="delta_pi", delegate=True,
+                                     structured=True, q=qf, batch_trace=True,
+                                     batch_wiring=True, pcs=True)["accepted"]
+                       for t in range(3)), (n, qf, "pcs delta_pi")
+            for i0 in sorted(set([K, max(1, K // 2), 1])):
+                assert all(not run_chain(x, np.random.default_rng(700 + i0 + t),
+                                         corrupt_layer=i0, delegate=True,
+                                         structured=True, q=qf, batch_trace=True,
+                                         batch_wiring=True, pcs=True)["accepted"]
+                           for t in range(3)), (n, qf, "pcs liar", i0)
+
     print("selftest OK")
 
 
@@ -1292,6 +1497,36 @@ def bench():
               f"{a['layers']:>4} {a['claimed']:>7} "
               f"{a['t_verifier']*1000:>11.3f} {d['t_verifier']*1000:>12.3f} "
               f"{ratio:>9.2f} {a['comm']:>10} {d['comm']:>11}")
+
+
+def bench_pcs():
+    """The S505 measurement: pcs=True replaces the per-layer carried-claim LEAF
+    openings (line_batch_pair / batch_on_table folds + the redundant s2/s_B closes)
+    with sum-check openings whose residuals thread to the base.  Headline is the
+    VERIFIER term -- pcs removes ~5 direct O(2^nb) leaf closes per layer, leaving
+    only verify_trace_region's nb Ub-bit-table openings (line 429) as the remaining
+    per-layer O(2^nb) cost (the documented batched-trace follow-on).  So this is a
+    CONSTANT-FACTOR verifier win, NOT yet the asymptotic Õ(sqrt x): the per-layer
+    leaf cost drops from ~(nb+5) to ~nb direct openings.  Comm rises a little (a
+    degree-2 sum-check fold has more round scalars than a line poly).  Reports
+    delegated chain, pcs off vs on.  Falsifier: pcs t_verifier not below pcs-off,
+    or claimed pi changing."""
+    print("delegated compressed chain: leaf-opening stand-in (pcs off) vs "
+          "sum-check openings (pcs on)")
+    print(f"{'n':>3} {'V':>6} {'nb':>3} {'K':>4} {'pi(x)':>7} "
+          f"{'tV_off_ms':>10} {'tV_pcs_ms':>10} {'tV_ratio':>9} "
+          f"{'comm_off':>9} {'comm_pcs':>9}")
+    for n in (8, 10, 12, 14, 16):
+        x = (1 << n) - 1
+        a = run_chain(x, np.random.default_rng(n), delegate=True, pcs=False)
+        b = run_chain(x, np.random.default_rng(n), delegate=True, pcs=True)
+        assert a["accepted"] and a["claimed"] == sieve_pi(x)
+        assert b["accepted"] and b["claimed"] == sieve_pi(x)
+        ratio = a["t_verifier"] / b["t_verifier"] if b["t_verifier"] else 0
+        print(f"{n:>3} {isqrt(x):>6} {max(1, isqrt(x).bit_length()):>3} "
+              f"{a['layers']:>4} {a['claimed']:>7} "
+              f"{a['t_verifier']*1000:>10.3f} {b['t_verifier']*1000:>10.3f} "
+              f"{ratio:>9.2f} {a['comm']:>9} {b['comm']:>9}")
 
 
 def wiring_bench(nb=12, trials=5):
@@ -1420,8 +1655,49 @@ def bench_big(seed=1, ns=(8, 10, 12, 14, 16)):
         _cpmt.FAST_BIG = saved
 
 
+def bench_combined(n=16, seed=1):
+    """The S503 headline: end-to-end run_chain over BIG_Q with BOTH big kernels
+    batched (batch_trace S502 + batch_wiring S503).  The S501 profile found the
+    trace zero-test (53% of wall) and the wiring delegation (30% of wall, 76% of
+    sum-check calls) were the two op-count-bound kernels that made FAST_BIG a NET
+    LOSS unbatched (S502: 22 s vs 16 s, because the tiny per-layer wiring cubes
+    penalised the 24-op Mersenne mulmod).  With BOTH widened, globally enabling the
+    fast path should finally win end-to-end.  Reports wall across configs; asserts
+    every config returns the correct pi(x).  Falsifier: batch_trace+wiring+FAST
+    not beating the baseline, or any config mis-counting pi(x)."""
+    x = (1 << n) - 1
+    V = isqrt(x); K = len(compressed_lucy(x)[0]); truth = sieve_pi(x)
+    saved = _cpmt.FAST_BIG
+    configs = [
+        ("baseline (no batch, obj)",  dict(batch_trace=False, batch_wiring=False), False),
+        ("batch_trace (obj)",         dict(batch_trace=True,  batch_wiring=False), False),
+        ("batch_trace+wiring (obj)",  dict(batch_trace=True,  batch_wiring=True),  False),
+        ("batch_trace (FAST)",        dict(batch_trace=True,  batch_wiring=False), True),
+        ("batch_trace+wiring (FAST)", dict(batch_trace=True,  batch_wiring=True),  True),
+    ]
+    print(f"end-to-end run_chain over BIG_Q=2^61-1 (delegate+structured), "
+          f"n={n}: x=2^{n}-1, V={V}, K={K}, pi={truth}")
+    print(f"{'config':>28} {'wall_ms':>10} {'comm':>10} {'pi==sieve':>10}")
+    base_ms = None
+    try:
+        for label, kw, fast in configs:
+            _cpmt.FAST_BIG = fast
+            t0 = time.perf_counter()
+            r = run_chain(x, np.random.default_rng(seed), delegate=True,
+                          structured=True, q=BIG_Q, **kw)
+            wall = (time.perf_counter() - t0) * 1000
+            if base_ms is None:
+                base_ms = wall
+            ok = r["accepted"] and r["claimed"] == truth
+            print(f"{label:>28} {wall:>10.1f} {r['comm']:>10} "
+                  f"{('yes' if ok else 'NO!'):>10}  ({base_ms/max(wall,1e-9):.2f}x vs base)")
+            assert ok, (label, r["claimed"], truth)
+    finally:
+        _cpmt.FAST_BIG = saved
+
+
 def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
-         fast_big_flag=False):
+         fast_big_flag=False, pcs=False):
     q = FIELDS[field]
     # The uint64 Mersenne path wins only on LARGE arrays; the chain is dominated
     # by many SMALL per-layer cubes, so it is SLOWER at reachable n (see
@@ -1442,7 +1718,9 @@ def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
 
     # ---- full compressed chain (the headline) ----
     res = run_chain(x, np.random.default_rng(seed), delegate=delegate,
-                    structured=structured, q=q)
+                    structured=structured, q=q, pcs=pcs)
+    if pcs:
+        mode += ", PCS leaf openings (residuals threaded to base)"
     print(f"x = 2^{n}-1 = {x}, V = floor(sqrt x) = {V}, compressed cubes "
           f"2^{nb} = {1 << nb}, layers K = {K}")
     fld = ("  [uint64 Mersenne]" if fast_big(q)
@@ -1460,14 +1738,14 @@ def main(n, layer, cheat_trials, seed, delegate, structured=False, field="q",
           f"comm = {res['comm']} field elems (~{res['comm']*4/1024:.1f} KB)")
     rej = sum(not run_chain(x, np.random.default_rng(seed + 10 + t),
                             cheat="delta_pi", delegate=delegate,
-                            structured=structured, q=q)["accepted"]
+                            structured=structured, q=q, pcs=pcs)["accepted"]
               for t in range(cheat_trials))
     print(f"  chain cheat delta_pi (claim pi+1):           "
           f"rejected {rej}/{cheat_trials}")
     for i0 in sorted(set([K, max(1, K // 2), 1])):
         rej = sum(not run_chain(x, np.random.default_rng(seed + 100 + i0 + t),
                                 corrupt_layer=i0, delegate=delegate,
-                                structured=structured, q=q)["accepted"]
+                                structured=structured, q=q, pcs=pcs)["accepted"]
                   for t in range(cheat_trials))
         print(f"  chain self-consistent liar @ layer {i0:>2}/{K}:        "
               f"rejected {rej}/{cheat_trials}")
@@ -1512,22 +1790,34 @@ if __name__ == "__main__":
     ap.add_argument("--bench", action="store_true")
     ap.add_argument("--bench-big", action="store_true",
                     help="BIG_Q chain: uint64 Mersenne vs object speedup")
+    ap.add_argument("--bench-combined", action="store_true",
+                    help="end-to-end run_chain over BIG_Q across batch_trace/"
+                         "batch_wiring/FAST_BIG configs (S503 headline)")
     ap.add_argument("--fast-big", action="store_true",
                     help="opt into the uint64 Mersenne path for --field big "
                          "(pays off only at large n; slower for small chains)")
     ap.add_argument("--wiring-bench", action="store_true")
     ap.add_argument("--prover-bench", action="store_true")
+    ap.add_argument("--bench-pcs", action="store_true",
+                    help="leaf-opening stand-in vs sum-check openings (S505)")
+    ap.add_argument("--pcs", action="store_true",
+                    help="use real sum-check leaf openings (S505), residuals "
+                         "threaded to the base")
     args = ap.parse_args()
     if args.selftest:
         selftest()
     elif args.bench:
         bench()
+    elif args.bench_pcs:
+        bench_pcs()
     elif args.bench_big:
         bench_big()
+    elif args.bench_combined:
+        bench_combined(args.n)
     elif args.wiring_bench:
         wiring_bench()
     elif args.prover_bench:
         prover_bench()
     else:
         main(args.n, args.layer, args.cheat_trials, args.seed, args.delegate,
-             args.structured, args.field, args.fast_big)
+             args.structured, args.field, args.fast_big, args.pcs)
