@@ -82,3 +82,85 @@ Let me see the headline of that chain run:
   [tool: Bash] python3 compressed_layer.py --n 12 --delegate --structured --field big --pcs --commit-base --commit-code expander --chea
 Full chain end-to-end with expander base works: π(4095)=564 correct, all cheats rejected. Now let me run the full `compressed_layer.py` selftest (includes the new case 24) to confirm nothing regressed:
   [tool: Bash] time python3 compressed_layer.py --selftest 2>&1 | tail -6
+While that runs, let me verify the expander bench holds over BIG_Q and small fields too:
+  [tool: Bash] echo "=== expander over BIG_Q ===" && python3 pcs_commit.py --bench --code expander --field big 2>&1 | grep -E "fitted|a
+Expander slope is field-independent (0.524 over q, BIG_Q, and small) — sub-sqrt everywhere. Let me check the full selftest:
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/d943cd70-626a-4740-9e48-964662b1e821/tasks/baj9yqwon.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/d943cd70-626a-4740-9e48-964662b1e821/tasks/baj9yqwon.output
+The selftest is still running. Let me read the existing `pcs_commit_results.md` to prepare the update:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Let me check whether the background selftest has finished:
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/d943cd70-626a-4740-9e48-964662b1e821/tasks/baj9yqwon.output ];
+Full `compressed_layer.py` selftest passes (4m12s, exit 0) including the new expander case 24. Now let me update the results docs. First `pcs_commit_results.md`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Now append the full S514 section at the end of the results file:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Now let me check the canonical doc for any RS field-size caveat to update:
+  [tool: Bash] grep -n -i "expander\|N <= q\|N≤q\|field-size\|Ligero\|Brakedown\|RS \|Reed" /apps/aplikacijos/prime-research/novel/succ
+  [tool: Read] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+  [tool: Edit] /apps/aplikacijos/prime-research/novel/succinct_verification_of_pi.md
+Now PROGRAM.md. Let me add a protocol-table row after the tensor-PCS step (step 13):
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry at the top of that list:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION (the field-size-free commitment is now done):
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now cleanup — remove `__pycache__`, the temp prototype, and check for missing `_results.md`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+rm -f /tmp/proto_exp.py
+find experiments/ -name __pycache__ -type d -prune -exec rm 
+The missing `_results.md` files are all pre-existing legacy experiments unrelated to this cycle. My two touched files (`pcs_commit.py`, `compressed_layer.py`) both have their results files. Let me add a brief note to `compressed_layer_results.md` about the new `commit_code` option for consistency:
+  [tool: Bash] grep -n "commit-base\|commit_base\|S508\|S514\|commit_code\|commit-code" compressed_layer_results.md | head
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && ls *_results.md | head; ec
+  [tool: Bash] grep -n "commit.base\|commit_code\|S508\|--commit" compressed_layer_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer_results.md
+Let me do a final sanity pass — confirm RS path is byte-for-byte the documented baseline and clean any new pycache:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+python3 pcs_commit.py --selft
+Let me clean the new pycache and verify the `.py` files show as modified (the grep above only showed results files):
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+find experiments -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null
+git 
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== check if files tracked / ignored ==="
+git check-ignore experiments/constru
+The `.py` files don't show as modified even though my edits are live (the selftests prove it). Let me investigate — this could affect whether my work gets committed:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== ls-files -v (lowercase = assume-unchanged/skip-worktree) ==="
+git ls-files
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== recent commits ==="
+git log --oneline -5
+echo "=== does HEAD's pcs_commit.
+A background auto-commit (`89d6468`, 17:26) already captured my `.py` edits — HEAD's `pcs_commit.py` has the expander code. My doc edits (made after) are pending and will be picked up by the next auto-commit. Let me confirm `compressed_layer.py`'s changes are in HEAD too, and that the committed code self-tests cleanly:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== HEAD compressed_layer.py has commit_code + case 24? ==="
+git show HEAD:exp
+Everything is consistent. The background `run.sh` auto-commit (`89d6468`, 17:26) already captured both `.py` files; my documentation edits are pending and will be picked up by the next auto-commit. Nothing is lost. The cycle is complete.
+
+## Cycle summary (S514) — field-size-free expander row code
+
+**Delivered the S513 NEXT ACTION:** swapped the Reed–Solomon row code in `pcs_commit.py` for a **Brakedown-style linear-time expander code**, behind the *same* `commit/prove/verify` interface, gated by a `code=` selector (`"rs"` default keeps every prior artifact byte-for-byte verbatim — confirmed: nb=14 still `vops=16512`, slope 0.500).
+
+**What was built:**
+- Recursive systematic code `Enc_n(x) = x ‖ Enc_⌈n/2⌉(A·x) ‖ B·Enc_⌈n/2⌉(A·x)` (Spielman/Druk–Ishai, as in Brakedown) with **column-regular** sparse `A,B` over `F_q`. The matrices are a fixed *public* map (seed + size → q-free column indices), so prover-commit and verifier-reencode build the identical linear code over any prime.
+- Column-regularity is load-bearing — I measured that a plain low-density generator leaves some input coordinate unused → a weight-1 basis codeword → an uncatchable forge. Making every input column hit `coldeg=4` output rows lifts the measured min basis-codeword relative weight **0.003 → ≈0.45**.
+
+**Measured / verified:**
+- Verifier op-count slope **0.524 (α≈0.262), sub-√x, identical over q / BIG_Q / SMALL_Q** — same as RS (0.500); the expander codeword is even shorter (N=380 vs RS 512 at nb=14).
+- All **4 cheat classes rejected** with `code="expander"` over q & BIG_Q & SMALL_Q; honest opens `== mle_eval`; distance `≥0.3` asserted; codeword-support field-independence asserted.
+- **The concrete win** (selftest case 9): over a tiny prime **q=17**, RS *refuses to commit* (Ncode=64>17) while the expander commits (N=44), verifies, and rejects cheats.
+- Threaded `commit_code` through `run_chain` + `--commit-code` (default `"rs"`); **chain verdict UNCHANGED** with the expander base over q & BIG_Q (selftest case 24, n∈{8,10,12}; full `compressed_layer.py --selftest` passed in 4m12s). End-to-end: `π(4095)=564`, all 13 layer cheats + delta_pi + liar rejected.
+
+**Honest scope:** distance is the security parameter and is *measured* here (δ≈0.45 at demo params), not proven from the asymptotic expander bound (Brakedown's analyzed params: δ≈0.07, t≈148 for 100-bit security). Still computational (CRH/RO) like the RS PCS — the swap changes only the field dependence, not the unconditional-vs-computational boundary.
+
+**Docs updated:** `PROGRAM.md` (table row step 18, Done-this-era entry, new NEXT ACTION = cert-info sharpening), `pcs_commit_results.md` (full S514 section), `compressed_layer_results.md`, and the canonical `novel/succinct_verification_of_pi.md`.
+
+**New NEXT ACTION:** cert-info sharpening — extend `cert_incompressibility.py`'s SVD-rank measurement to a wider window (W≈192·K) to push α_rank toward 0.5 and confirm the per-layer hard-bit profile is dense across all K checkpoints, strengthening the information lower bound to match the construction-side √x.
+--- cycle result: success (turns=72, duration=1360912ms) ---
+=== Cycle 541 finished — Sat Jun 13 17:33:51 UTC 2026 ===

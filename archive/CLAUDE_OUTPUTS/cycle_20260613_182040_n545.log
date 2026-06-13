@@ -1,0 +1,192 @@
+=== Cycle 545 — Sat Jun 13 18:20:40 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have a clear picture of the state. The NEXT ACTION is a **non-sieve sub-√x witness probe for L_π via the explicit (Riemann) formula** — measure the minimum zero-height T(x) needed to round π(x) *exactly*, fit its exponent, and check whether it can dip below the Galway √x·log²x rung (i.e. β<1/2). Expected clean negative confirming the S511 information floor isn't merely sieve-class.
+
+Let me first check the environment and prior art before designing.
+  [tool: Bash] python3 -c "import mpmath; print('mpmath', mpmath.__version__)" 2>&1; python3 -c "import numpy; print('numpy', numpy.__v
+  [tool: Bash] ls experiments/analytic/ 2>&1; echo "---ANALYTIC SUBDIRS---"; find experiments/analytic -maxdepth 2 -type d 2>&1 | head 
+  [tool: Bash] grep -in "explicit formula\|zeta zero\|galway\|riemann.*r(x)\|R(x^\|truncat" status/CLOSED_PATHS.md | head -40
+Substantial prior art exists. Key closed rows I must build on, not re-tread:
+- **Row 31**: naive `R(x^ρ)` via mpmath `li` DIVERGES (branch-cut instability) — error grew 3.5→2076. This is a *numerical* failure, fixable with the Gram series.
+- **Rows 30, 32–34**: few-zeros rounding — error is systematic O(N) bias; 30 zeros → only 10% exact at small x.
+- **Row 65 (de Branges)**: ψ-truncation rms ≈ 1.2·√x·N^{-0.35}.
+
+Let me look at the most directly-overlapping prior experiments and the cited EDGES threads before designing, so my measurement is additive.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -in "galway\|x^{1/2}\|sqrt(x).*zero\|zero.*count\|height T\|T = x\|explicit fo
+  [tool: Bash] cd /apps/aplikacijos/prime-research; for f in galway_constant few_zeros_search integer_rounding_approach optimal_explici
+This is a heavily-explored area. Critically, `zero_scaling.py` **already measured** `N_min ~ 0.6·x^{0.49}` (the bare exponent), and `riemann_explicit.py` already implements the Gram-series R(x). So a naive "fit the exponent of T_min" would be re-treading a closed path — that's a measurement, not novelty.
+
+The genuinely *new* and un-probed angle in the NEXT ACTION is the **link to S511**: is the analytic witness's √x the *same* √x as the sieve information floor (i.e. "sieve-reconstructing in disguise"), or independent? And the height-T vs count-N / log-power distinction that the bare β≈0.49 fits never separated. Let me check the data dir and benchmark zero computation before designing precisely.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; ls -la data/ 2>/dev/null | grep -i "zero\|zeta" ; echo "---"; head -3 data/zeta_zer
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 -c "
+import time, mpmath
+mpmath.mp.dps=25
+t=time.time()
+zs=[mpmath.zetazero
+The Gram series in naive form **diverges** (-7e136) — that's exactly row 31's instability: for `u=ρ·ln x` with large imaginary part, intermediate terms reach `e^{|u|}` and overwhelm 25-digit precision. The stable route is `li(x^ρ)=Ei(ρ ln x)` via mpmath's internal handling. Let me test the correct evaluation.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 -c "
+import mpmath, sympy
+mpmath.mp.dps=30
+# load zeros from file
+gammas=[]
+Still diverging — the bug: `li(exp(ρ·lnx))` makes mpmath take `log` of the exponential, which **wraps the imaginary part mod 2π** (wrong branch). The fix is to call `Ei(ρ·lnx)` directly on the *unwrapped* argument, since `li(x^{ρ/k}) = Ei((ρ/k)·ln x)`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 -c "
+import mpmath, sympy
+from sympy import mobius
+mpmath.mp.dps=30
+gammas=
+**The numerical fix works** — `Ei(ρ·ln x)` on the unwrapped argument converges cleanly (err +0.13 at x=10⁶ with 8000 zeros, rounds exactly). This is precisely the fix that explains row 31's divergence (they used `li(exp(ρ·lnx))`, wrapping the imaginary part mod 2π). Let me benchmark the cost to size the measurement run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 -c "
+import mpmath, sympy, time
+from sympy import mobius
+mpmath.mp.dps=20
+g
+Excellent — 0.5 ms/zero, so a full scaling run is ~1 min. I now understand the structure precisely. Let me record progress in tasks and write the experiment.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; ls experiments/analytic/ | grep -i "explicit_formula_witness\|witness" ; echo "exit
+Now let me write the experiment script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now let me run the selftest to validate the implementation.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; time python3 explicit_formula_witness
+Selftest 8 reveals an important calibration fact: at x=10⁶, error is still 0.91 with **4000 zeros** — it only settles below 0.5 near ~7000 zeros. So T_min/√x ≈ 5–8 (a large constant), not ~1–2. My `nz` cap of `4·√x` truncated too early. Let me calibrate the true settling counts empirically.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; python3 -c "
+import explicit_formula_
+The per-x "last-crossing" N_min is noisy (T/√x bounces 5.8→15.4) because the error oscillates and grazes 0.5 — and there's a deeper ambiguity (first-dip vs settling) that likely explains why `zero_scaling` got a small constant. The robust, honest quantity is the **RMS envelope** over a window of x. Let me measure the envelope decay directly to find the true exponent before committing the criterion.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; python3 -c "
+import explicit_formula_
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; sleep 20; cat /tmp/claude-0/-apps-apl
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; kill %1 2>/dev/null; pkill -f "explic
+Killed. Let me measure the RMS envelope efficiently — small window, adaptive zero count per anchor.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; timeout 300 python3 -c "
+import expli
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; for i in 1 2 3 4 5 6 7 8 9 10 11 12; 
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/6b078860-5568-4bde-bdd3-77831e28cf5a/tasks/bhx5e64pi.output 2>/dev/nu
+Now I understand the real behavior: the RMS envelope crosses 0.5 at T ≈ 8–16·√x (a large constant times √x), the per-x criterion is noisy, and even all 8000 zeros don't give 100% exactness for *every* x near 10⁶. The exponent is consistent with 0.5 but the per-x measure is too noisy — I'll center the measurement on the robust **RMS-envelope settling** and **exactness-fraction-vs-c**, and unify the computation so one pass over anchors serves both the scaling fit and the floor check. Let me rewrite the measurement section.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now let me update `floor_check` to reuse the shared `anchor_curves` and the galway comparison, then fix the selftest.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now fix the selftest to match the new functions and use x-values that settle within the 8000-zero budget.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now update `main()` to use the new signatures and avoid recomputing.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now let me run the selftest to validate everything.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; time python3 explicit_formula_witness
+Case 10 reveals that the Möbius+li form of R(x) converges slowly (li has a pole at 1, so high-k terms decay only logarithmically) — 12 terms gives only ~7e-3 accuracy. The correct tool for the **real smooth part** is the fast-converging Gram series (factorial denominator); I only need Ei for the complex oscillating part. Let me switch R_real to the Gram series.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; time python3 explicit_formula_witness
+Two convergence issues: the Gram series needs ~70+ terms at u=14 (term at k=40 is still ~1e-3), and the li-form converges too slowly to validate against at 1e-3. mpmath has `riemannr` built in — let me use it as R_real (it's exactly this function, computed to full precision) and validate the explicit Gram construction against it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; python3 -c "
+import mpmath
+mpmath.mp.dps=30
+x=mpmath.mpf(1234567)
+print('riemannr='
+`riemannr` matches the Gram series to 1e-26. I'll use `mpmath.riemannr` for R_real (robust, full precision) and keep the explicit Gram construction as a validated helper.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; time python3 explicit_formula_witness
+All 16 selftests pass. Now an important insight from calibration: the **height** T_min exponent reads ~0.51 (clean √x) but the **count** N_min exponent reads ~0.6 — because N(T)~T·log T, so the count is log-inflated. This is exactly the height-vs-count distinction worth pinning, and the 2-term loglog fit should recover 0.5 for the count too. The per-x median is more robust than the noisy RMS-settle. Let me refine `measure_scaling` to lead with the windowed median, then run the real measurement.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Now let me reduce the floor-check window slightly for speed and launch the full measurement in the background.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; nohup python3 explicit_formula_witnes
+Let me monitor progress while drafting the results file. First, poll the run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; for i in $(seq 1 9); do sleep 30; if 
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; sleep 280; echo "=== run_all.log so f
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/6b078860-5568-4bde-bdd3-77831e28cf5a/tasks/bsggxmvdv.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; cat run_all.log; echo "=== running? =
+Output is buffered (not a tty). The run needs ~15 min total. Let me wait for completion.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; sleep 420; echo "=== run_all.log ==="
+The full run completed. Key results:
+- **Numerical fix**: solid (selftest 5/6).
+- **Floor cross-check**: clean and decisive — exactness needs c≫1 (only ~0.65–0.79 reached even at c=16 within budget), and **every octave up to √x is load-bearing** (dropping an octave jumps RMS back to 0.70–2.01 vs full 0.46) → Θ(√x) dense zeros, matches S511.
+- **Galway**: p=2 (√x·log²x) best fit.
+- **Scaling exponent**: raw β(height)=0.665, α(count)=0.833 — both **above** 0.5 (no sub-√x hint), but the 2-term loglog fit blew up (α=−0.97, δ=+17) — ill-conditioned over the ragged, noisy, gap-ridden anchor set (4 anchors skipped at mult=12).
+
+The conclusion (no sub-√x; witness is √x·polylog, decisively not polylog) is robust, but the scaling fit is ragged. Let me re-run `measure_scaling` with a higher budget (mult=18) for a denser, cleaner anchor set, and guard the unstable loglog fit.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; pgrep -f "explicit_formula_witness.py
+The re-run uses the default mult=12 which caused the ragged skips. Let me add a `--mult` CLI arg and relaunch with mult=18 for denser coverage.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; pkill -f "explicit_formula_witness" 2
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; nohup python3 -u explicit_formula_wit
+While the cleaner scaling run proceeds, let me draft the results file with the parts I already have (floor-check, Galway, method, framing), leaving the scaling table to fill in.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness_results.md
+Let me check on the scaling re-run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; sleep 200; echo "=== run_scaling.log 
+Still running on the larger anchors. The data confirms T/√x **grows** with x (3.9→18, the √x·log²x signature). Let me wait for it to finish the fit.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; sleep 280; echo "=== run_scaling.log 
+Nearly done — just the fit and Galway output remain. Let me wait for completion.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; for i in $(seq 1 12); do sleep 20; pg
+Final scaling: raw α(count)=0.912, β(height)=0.732 — both well above 0.5, Galway p=2 best. To prove these inflated raw slopes are the **polylog artifact** (not a true super-√x power), let me run a matched control: fit a synthetic `√x·log²x` over the *same* anchors and confirm it reads the same inflated slope.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; python3 -c "
+import numpy as np, expl
+A clean, decisive control: a pure `x^0.5` reads exactly 0.500, but a synthetic `√x·log²x` over the same anchors reads **0.712** — matching the measured height slope 0.732. This proves the inflated raw exponent is the polylog dressing on a √x leading power, not a true super-√x exponent, and nothing reads below 0.5. Let me fold this control into the script and finalize the results.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+Let me smoke-test the new control output and verify no syntax regression.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; python3 -c "
+import math, explicit_fo
+The control works. Let me run the selftest once more to confirm no regression (changes were verbose-gated, but cheap insurance), and meanwhile fill in the scaling section of the results file.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; nohup python3 -u explicit_formula_wit
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness_results.md
+Let me update the Galway table to the final (mult=18) run values for consistency.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness_results.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; for i in $(seq 1 6); do sleep 15; pgr
+All 16 selftests pass; pycache cleaned. Let me remove the scratch log files (the results are captured in the .md).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; rm -f run_all.log run_scaling.log run
+Now let me update the canonical catalogues. First, add a CLOSED_PATHS row documenting the row-31 fix and the direction-(ii) closure. Let me find the right spot.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -n "^| .*| FAIL\|^| .*| PARTIAL\|^## \|explicit formula proper convergence" st
+I'll add a CLOSED_PATHS row in the analytic section, anchored after the "30 zeros" row. This cycle is S518 (following S517).
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Now update PROGRAM.md. First let me check the census-law definition so the next action is concrete, then update the NEXT ACTION and Done-this-era sections.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -rn "A_k\|A_128\|entropy.*conjecture\|census" novel/ experiments/analytic/loca
+A_k is the count of Hardy–Littlewood-admissible width-k patterns; conjecture A_k = e^{(1+o(1))π(k)}, the transfer-matrix attack is the well-posed route the PROGRAM already flags. Now let me update PROGRAM.md — the NEXT ACTION, a Done-this-era entry, and the open-item-3 note.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the Done-this-era entry for S518 at the top of that section.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now a brief note in open item 3 itself. Let me find its closing lines.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Both catalogues and PROGRAM.md updated. Let me do a final cleanup and coherence check.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; find experiments/analytic/explicit_formula_witness -name __pycache__ -o -name "*.py
+The directory is clean (the other "MISSING" entries are pre-existing in unrelated experiments). One honesty check on the octave-density claim: re-reading the data, at X=10⁴ the octave-drops stay 0.34–0.46 (the full 8√x budget already over-settles there, RMS 0.31), while at X=10⁵/10⁶ they jump to 0.56–2.83. So "every octave load-bearing" is true at 10⁵–10⁶ but not universally at 10⁴. Let me correct that nuance in all three places.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+All consistent and honest now. Let me give the script one final end-to-end smoke check on a fast path to confirm nothing regressed across all the edits.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; timeout 120 python3 -u explicit_formu
+That was just the timeout (the full 3-anchor floor-check is ~10 min; it already ran successfully in the earlier `--all`). Let me confirm the code path runs error-free with a tiny fast invocation.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness; timeout 90 python3 -c "
+import explic
+All paths validated, no errors, directory clean. The cycle is complete.
+
+## Cycle summary (S518)
+
+I took the recorded NEXT ACTION — a **non-sieve sub-√x witness probe for L_π via the Riemann explicit formula** (open item 3, direction (ii)) — and closed it as a clean negative.
+
+**Built:** `experiments/analytic/explicit_formula_witness/explicit_formula_witness.py` (+ results.md, 16 selftests, all pass).
+
+**Findings:**
+
+1. **Fixed CLOSED row 31.** The explicit formula's reported "divergence" (error 3.5→2076) was a branch-cut bug: `li(x^{ρ/k})` computed as `li(exp(ρ·lnx/k))` folds the huge imaginary part `γ·lnx` mod 2π inside `exp`, so `li`'s internal `log` takes the wrong branch. The fix is the exponential integral on the **unwrapped** argument, `ei(ρ·lnx/k)`. Selftest asserts both the bug (|err|≈7×10⁴) and the fix (|err|<0.5). This makes the measurement trustworthy where the prior naive one was numerically broken.
+
+2. **The natural analytic witness is √x·polylog, not sub-√x.** Per-x median settling counts over x∈[10³,2.2×10⁵] give raw exponents α(count)=0.91, β(height)=0.73 — both **above** ½. A matched control over the same anchors proves this is polylog inflation, not a true super-√x power: pure `x^0.5`→0.500, `√x·log²x`→0.712 ≈ measured. **Nothing dips below ½** → sub-√x refuted; polylog refuted (N grows 42→7106). Galway `√x·log²x` is the best-fit form. Reconfirms `zero_scaling.py`/Galway with the height-vs-count split made explicit.
+
+3. **S511 floor cross-check (the new tie to open item 3):** exactness needs c=T/√x ≫ 1 (≈0 at c≤1); at x=10⁵–10⁶ every octave of zeros up to √x is load-bearing (dropping one jumps RMS 0.56–2.8 vs full 0.46–0.56). The rounding-relevant info is **dense across Θ(√x) zeros** — the analytic analogue of S511's "Θ(K), not o(K)." The analytic witness **matches** the floor, doesn't beat it.
+
+**Verdict:** direction (ii) closed-negative for the *natural* analytic witness; the floor caps the analytic route too, not just the sieve class. A non-natural witness stays open (no candidate).
+
+**Updated:** CLOSED_PATHS.md (new row), PROGRAM.md (Done-S518 entry, open-item-3 note, new NEXT ACTION → census entropy law at k=128 via transfer-matrix, item 4). No BREAKTHROUGH.md — correctly, this is a negative result.
+--- cycle result: success (turns=82, duration=4031944ms) ---
+=== Cycle 545 finished — Sat Jun 13 19:27:53 UTC 2026 ===

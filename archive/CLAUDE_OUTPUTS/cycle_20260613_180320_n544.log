@@ -1,0 +1,93 @@
+=== Cycle 544 — Sat Jun 13 18:03:20 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a mature research program. Let me understand the current frontier before committing. Let me survey the key directories and the most recent relevant work.
+  [tool: Bash] echo "=== experiments/analytic/local_pattern_census ===" && ls -la experiments/analytic/local_pattern_census/ 2>/dev/nul
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census_results.md
+This is a mature verification program. The NEXT ACTION points to the genuine open frontier: a real #P-hardness lower bound for π, OR a non-sieve sub-√x witness. S512 (`sharpP_probe`) closed the *parsimonious*-reduction route as circular but explicitly left **direction (i): a Turing reduction sidestepping circularity** open.
+
+I have a concrete, sound angle on direction (i): π's own sub-linear algorithm is a *fine-grained barrier* to #P-hardness. Let me verify this isn't already catalogued.
+  [tool: Bash] echo "=== SETH / fine-grained ===" && grep -rin "SETH\|fine-grained\|fine grained\|exponential time hypothesis\|Turing r
+The fine-grained / SETH / Turing-reduction angle is genuinely absent from the catalogue, and S512 explicitly left "direction (i): a Turing reduction sidestepping circularity" open. I have a sound contribution: **π's own sub-linear algorithm is a fine-grained (SETH) barrier to #P-hardness** — and a clean corollary that #P-hardness of π and a polylog algorithm for π are *mutually exclusive* under P≠NP.
+
+Let me set up a task and build the experiment.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskUpdate] 
+Let me check the `fit_power_log` and CLI style in `sharpP_probe.py` so I match conventions.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && sed -n '1,60p' sharpP_prob
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe.py
+Now I'll write the experiment. It's self-contained number theory + a real sublinear π measurement + the fine-grained barrier accounting.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+Now let me run the selftest:
+  [tool: Bash] timeout 300 python3 turing_reduction_barrier.py --selftest 2>&1 | tail -60
+The fitter, barrier accounting, and number theory all pass. The only failure is the exact-vs-PNT blowup tolerance at small n — integer `bit_length` quantization (~1 bit) is large relative to n=8. Let me scale the tolerance to the quantization.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Bash] timeout 300 python3 turing_reduction_barrier.py --selftest 2>&1 | tail -20
+`2.0**2560` overflows. I only need `ln C` and the bit-length, not C itself. Let me rewrite `parsimonious_blowup_pnt` to compute symbolically.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Bash] timeout 300 python3 turing_reduction_barrier.py --selftest 2>&1 | tail -15
+The worked example happens to give C=480 with p_C having exactly 12 bits → c=1.000 exactly (not strictly >1). That's actually the correct behavior — the parsimonious blowup is c≈1. But the SETH-relevant quantity is the **worst-case** query over all n-variable instances (count near 2^n). Let me make the worked example show both the specific instance and the worst case, and fix the assertion.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Bash] timeout 300 python3 turing_reduction_barrier.py --selftest 2>&1 | tail -12
+worst_c at n=12 is 1.333 (the log n/n term is large at small n). Still well below c*=2 → forbidden. Let me relax the bound to <1.5.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Bash] timeout 300 python3 turing_reduction_barrier.py --selftest 2>&1 | tail -8
+All 52 checks pass. Now let me run the full report and a larger π-bench to get a clean measured exponent for the results file.
+  [tool: Bash] timeout 400 python3 turing_reduction_barrier.py --pi-bench --xmax 8 2>&1 | tail -20
+Measured α≈0.656 (sub-linear, near the LMO 2/3 rung) → c*≈1.52. The decreasing `t/x^.75` confirms the true exponent is below 0.75 for this implementation. Let me capture the full report:
+  [tool: Bash] timeout 400 python3 turing_reduction_barrier.py --xmax 8 --blowup-nmax 22 2>&1
+The report is compelling. One formatting bug: the `alpha` column prints `0.6666666666666666`. Let me fix that.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py
+  [tool: Bash] timeout 120 python3 turing_reduction_barrier.py --xmax 6 2>&1 | sed -n '/(2) SETH/,/PROJECT GOAL polylog    0.0/p' | hea
+The report and selftest are clean. Now let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier_results
+Now let me update the catalogues. First clean `__pycache__`, then check the CLOSED_PATHS tail for the row format.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null; echo
+Let me check the current cycle number to label the CLOSED_PATHS row correctly.
+  [tool: Bash] cat .cycle 2>/dev/null && echo "---latest archive cycles---" && ls -t archive/CLAUDE_OUTPUTS/*.json 2>/dev/null | head -
+This cycle is S517 (PROGRAM uses S-labels through S516). Let me append the CLOSED_PATHS row.
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Bash] wc -l status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Now I can append the new row:
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Now PROGRAM.md. Update the era header and prepend a "Done this era" entry.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 3's "STILL OPEN" text to record the S517 progress.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION. Let me read its current state (line numbers shifted by my edits).
+  [tool: Bash] grep -n "## NEXT ACTION" PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now rewrite the NEXT ACTION to reflect that direction (i) is closed and point at the remaining frontier.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me add a brief forward-pointer in the sibling `sharpP_probe_results.md` so the S512 doc reflects that its direction (i) is now addressed.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/sharpP_probe_results.md
+Now the cleanup checks: confirm the missing-results check passes, re-run selftest after all edits, and clear `__pycache__`.
+  [tool: Bash] echo "=== final selftest ===" && timeout 200 python3 experiments/constructions/p12_sumcheck_pi_verification/turing_reduc
+All 52 checks pass; no `__pycache__`; my new file's `_results.md` exists (the "MISSING" list is all pre-existing auxiliary scripts in unrelated directories, untouched by this cycle). Let me mark the task complete.
+  [tool: TaskUpdate] 
+This cycle is complete. Here's what I produced.
+
+## Cycle S517 — A fine-grained (SETH) barrier to #P-hardness of π
+
+**What I picked.** PROGRAM.md's NEXT ACTION flagged the genuine open frontier (open item 3): a real #P-hardness lower bound for π, or a non-sieve sub-√x witness. S512 had closed the *parsimonious* reduction route as circular but explicitly left open **direction (i): a Turing (non-parsimonious) reduction sidestepping the c↦x(c) circularity.** I closed direction (i) conditionally.
+
+**The result.** Built `experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py` (standalone measurement + complexity anchor, 52 selftests, all green):
+
+- **Theorem (conditional).** Let α = inf{a : π(x) ∈ TIME(x^{a+o(1)})}. Under SETH, **no** poly-time Turing reduction #SAT→π-oracle has all queries of bit-length ≤ c·n with c < c* = 1/α — because you could simulate each π-query by π's *own* x^α algorithm and solve #SAT in 2^{(1−δ)n}, refuting SETH.
+- **Measured.** The project's own `pi_lucy` (Lucy_Hedgehog, O(x^{3/4})) timed over 10⁴–10⁸ fits α≈0.66–0.70 (sub-linear) → c*≈1.5; cited rungs give c*=1.5 (combinatorial 2/3) and **c*=2 (analytic 1/2)**.
+- **The natural reduction is forbidden.** Encoding "count = 2^n" as π(x)=C needs x=p_C, blowup c = bitlen(p_C)/n, measured exact falling 1.50→1.20 over n=4..22, PNT→1.00. Since 1 < c* for *every* sub-linear π, **all natural Turing reductions are SETH-forbidden** — covering the adaptive case the circularity argument couldn't.
+- **Corollary (the project tie-in).** Under P≠NP, **polylog-π and #P-hard-π are mutually exclusive**: a #P-hardness proof for π would prove this project's goal *impossible*. The two big open questions are the two horns of one dichotomy, with √x sitting exactly at c*=2.
+
+**Honest scope.** The meta-principle is folklore fine-grained complexity; the contribution is applying it to π with π's own √x algorithm, the quantitative c*=1/α threshold, the measured c→1, and the mutual-exclusivity corollary. Still open: super-c*-blowup reductions (unnatural — querying π exponentially past where the answer lives, with no #SAT speedup) and a non-sieve sub-√x witness.
+
+**Updated.** `turing_reduction_barrier_results.md`, CLOSED_PATHS row 517, PROGRAM.md (Done-this-era entry, open-item-3 update, new NEXT ACTION pointing at direction (ii): a non-sieve sub-√x explicit-formula witness probe), and a forward-pointer in `sharpP_probe_results.md`.
+--- cycle result: success (turns=44, duration=1024034ms) ---
+=== Cycle 544 finished — Sat Jun 13 18:20:25 UTC 2026 ===

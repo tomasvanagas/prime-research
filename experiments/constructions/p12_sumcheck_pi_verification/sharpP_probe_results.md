@@ -152,3 +152,15 @@ examined here. `L_π` is, on present evidence, an **NP-intermediate-flavoured
 counting problem with a √x certificate and no proven poly(N) one** — exactly the
 status the verification program's Õ(√x) construction (S491–S509) realizes from
 above and S511 pins from below.
+
+**FOLLOW-UP (S517, `turing_reduction_barrier.py`):** direction (i) above — "a
+Turing (not parsimonious) reduction sidestepping the c↦x(c) circularity" — is now
+**conditionally closed.** Under SETH, no poly-time Turing reduction `#SAT → π` has
+query-blowup `c < c* = 1/α` (α = π's time exponent: measured `pi_lucy` α≈0.66–0.70
+→ c*≈1.5, analytic α=1/2 → c*=2), because simulating π by its own `x^α` algorithm
+would solve #SAT in `2^{<n}`, refuting SETH. The natural (parsimonious) blowup is
+`c → 1 < c*` (measured exact, n=4..22), so every natural Turing reduction is
+forbidden — a complexity wall matching the circularity of (D), now covering
+adaptive reductions. COROLLARY (P≠NP): **polylog-π and #P-hard-π are mutually
+exclusive** — a #P-hardness proof for π proves the project goal impossible. Still
+open: super-`c*`-blowup reductions (unnatural) and the non-sieve sub-√x witness.

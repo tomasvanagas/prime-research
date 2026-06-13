@@ -1,0 +1,139 @@
+=== Cycle 542 — Sat Jun 13 17:34:06 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, especially the NEXT ACTION at the end.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: sharpen the certificate-info lower bound in `cert_incompressibility.py`. Let me read the existing experiment and its results.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me read the existing results file to understand what's measured.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+I now understand the state and the NEXT ACTION precisely. Let me verify the current script runs, then implement the sharpening. First, run the selftest and a baseline sweep.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 cert_i
+Selftest passes. Let me run a baseline sweep to see current numbers and timing.
+  [tool: Bash] timeout 400 python3 cert_incompressibility.py --xmax $((1<<22)) --kmin 16 2>&1 | tail -45
+Baseline at 2^22: α_rank=0.475 (W=64·K). Now let me check timing for a wide window (W=192·K) at the top of the range before committing to the design.
+  [tool: Bash] timeout 400 python3 -c "
+import time, math
+import numpy as np
+import cert_incompressibility as ci
+t0=time.time()
+spf, pr
+At W=192·K, rank/K is high (0.88–0.98) but slightly declining with k. Let me get the full wide sweep k=16..22 and fit the exponent over all points, to see if more points give a cleaner α.
+  [tool: Bash] timeout 500 python3 -c "
+import time, math
+import numpy as np
+import cert_incompressibility as ci
+spf, primes = ci.sieve
+Key finding: at W=192·K, **rank/K is uniformly high (0.88–0.98, no downward drift)** and **α_rank=0.396 ≈ α_K=0.405** (ratio 0.98). So rank tracks K as a constant ≈0.9 fraction — the honest signal is "rank = Θ(K)", not "α_rank→0.5" (the finite-window α_K is itself only ~0.4). Let me verify how α_K approaches 0.5 as the range extends, to frame this correctly.
+  [tool: Bash] timeout 200 python3 -c "
+import math
+import numpy as np
+import cert_incompressibility as ci
+# alpha_K = exponent of K=pi
+α_K itself only reaches ~0.42 over the reachable range and creeps to 0.5 only as the PNT 1/ln(x) discount fades — so the honest sharpening is "rank/K bounded below by a constant ≈0.9 with no decay ⇒ rank=Θ(K)=Θ(√x)", with α_rank tracking α_K. Now let me explore the per-layer density structure to design that measurement.
+  [tool: Bash] timeout 300 python3 -c "
+import math
+import numpy as np
+import cert_incompressibility as ci
+
+def residual_matrix(X0, spf
+This is a clear and strong density signal:
+- **Per-layer hard-bits: uniform ~8–10 bits/layer across all deciles** (active fraction ~1.0 everywhere).
+- **Prefix rank grows linearly**: rank(R[:,:j])/j ≈ 0.76→0.98, and rank(first K/2)/rank(K) ≈ 0.49 — the info is spread across Θ(K) layers, not o(K).
+- Energy is end-loaded (deciles 0,9 carry ~22%,27%) but that's scale-driven (φ~x at small a); bits and rank are the right, uniform measures.
+
+Now I'll implement the sharpening. Let me set up a task list and refactor the code.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+Now let me refactor. First, replace `integer_rank` with the split helpers:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me rewrite `rank_sweep` to add the wide-window sweep, α_rank/α_K + floor reporting, and the density profile:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now update `run_sweep` and `main()` to thread a `--wfactors` CLI option:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now update `main()` to add the `--wfactors` CLI:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Now let me add the new selftest cases (refactor safety + density-profile separation). Let me insert before the final PASS print:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility.py
+Let me run the selftest to verify the refactor and new cases:
+  [tool: Bash] timeout 300 python3 cert_incompressibility.py --selftest 2>&1 | tail -35
+All 30 checks pass, and the density profile cleanly separates dense from both concentration modes. Now run the full headline sweep at xmax=2^23 to capture the sharpened numbers.
+  [tool: Bash] timeout 590 python3 cert_incompressibility.py --xmax $((1<<23)) --kmin 16 2>&1 | tail -55
+This is a clean, complete result. Let me update task status and capture the headline numbers.
+  [tool: ToolSearch] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+Let me clean up `__pycache__` and update the results file. First the cleanup:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/nul
+Now update the results file. First the selftest count and code description:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+Now add the S515 sharpening section after the headline. Let me insert it right after section 1 (the rank sweep):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+Now update the falsifiability section to reflect the corrected falsifier criteria:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+Let me update the self-correction section to record the S515 sharpening:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+Let me update the "Finite range" scope note that referenced the old α_rank framing:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+Now update the headline to incorporate the S515 strengthening:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/cert_incompressibility_results.m
+The results file is complete. Now update PROGRAM.md. First, let me add a concise table row for the S515 sharpening after the step-16 (incompressibility) row:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me add a brief note to open item 3's lower-bound text. Let me find it:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry at the top and update the NEXT ACTION. Let me read the current "Done this era" header and the NEXT ACTION:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION section. Let me read its current state:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me do a final verification — re-run the selftest to confirm the final file state, and check for stray `__pycache__`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 200 python3 cert_i
+Let me run the hygiene checks from the project root:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "---- missing _results.md check ----"; find experiments/ -path "*/.lake" -pr
+Selftest passes (ALL PASS); the "MISSING" files are all pre-existing helper scripts in unrelated experiment topics (not mine) — `cert_incompressibility_results.md` exists. No `__pycache__`. Let me do one quick sanity check that the single `--wfactors 192` CLI path (cited in the reproduction notes) runs cleanly:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 200 python3 cert_i
+The single-window path works cleanly and gives consistent numbers (α_rank/α_K=1.044, rank/K∈[0.88,0.98], rank_half_ratio=0.47, DENSE verdict). Everything is complete and verified.
+  [tool: TaskUpdate] 
+This cycle (S515) is complete. Here's what was produced.
+
+## Summary
+
+**Closed the S514 NEXT ACTION: cert-info sharpening — solidified the Θ(√x) joint-information floor (lower-bound face of open item 3).**
+
+I extended `cert_incompressibility.py` (refactored `integer_rank` → reusable `build_residual_matrix` + `min_exact_rank`; added `layer_density_profile`, `--wfactors`) and measured two things:
+
+**(A) Wide window (W=192·K) — and an honest self-correction.** S511 proposed pushing `α_rank` from 0.459 toward the ideal 0.5. That premise was slightly wrong: α_rank can't exceed α_K, and the **finite-window α_K is itself only ≈0.42** (the PNT 1/ln x log-log discount — K=π(√x)~2√x/ln x reads √x as ~x^0.42 at x~2²²), so 0.5 is an asymptote, not a reachable finite-window target. The 64·K α_rank=0.459 was *inflated* by rank/K climbing across the window (under-sampling at low k). The wide window:
+
+| window | α_rank | α_K | α_rank/α_K | rank/K floor |
+|---|---|---|---|---|
+| W=64·K  | 0.459 | 0.415 | 1.106 | 0.75 |
+| W=192·K | 0.396 | 0.405 | **0.978** | **0.88** |
+
+The robust √x signal is the **rank/K FLOOR** (0.88, no decay ⇒ rank=Θ(K)=Θ(√x)) with α_rank/α_K→1 — *not* the raw exponent. Raw α_rank went *down*, yet the result is *strengthened*.
+
+**(B) Per-layer density.** The √x info is spread across **all** K=π(√x) layers, not o(K): per-layer hard bits uniform (`bits_uniformity`=0.77, active fraction 0.98), prefix integer-rank **linear** (`rank_half_ratio`=rank(K/2)/rank(K)=0.52). Energy is end-loaded but that's pure scale (φ~x at small a); bits and rank — the scale-free measures — are uniform.
+
+**Verification:** 30 selftest cases pass (added 8: `min_exact_rank` refactor safety + density-profile separation of dense vs rank-concentrated vs bit-concentrated controls). New falsifiers (rank/K decay or α_rank/α_K→0; `rank_half_ratio`→1) — none observed.
+
+**Files updated:** `cert_incompressibility.py`, `cert_incompressibility_results.md` (§1b/§1c, falsifiability, self-correction, scope), `PROGRAM.md` (table row, item 3, Done-this-era S515 entry, new NEXT ACTION).
+
+**Next action set:** the expander distance/soundness sweep (S514 follow-on) — the one clean single cycle remaining; turn S514's single-point δ≈0.45 measurement into a δ-vs-k curve up to k≈512 plus an empirical forge-rate vs (1−δ)^t check.
+
+No BREAKTHROUGH.md — this is an information-theoretic lower-bound measurement (the goal, exact polylog π(x), remains blocked). `__pycache__` cleaned; results file present.
+--- cycle result: success (turns=54, duration=876623ms) ---
+=== Cycle 542 finished — Sat Jun 13 17:48:44 UTC 2026 ===

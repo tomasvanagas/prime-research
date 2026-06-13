@@ -22,7 +22,7 @@ MODEL="claude-opus-4-8[1m]"
 EFFORT="xhigh"
 OUTDIR="archive/CLAUDE_OUTPUTS"
 CYCLE_FILE=".cycle"
-SLEEP_BETWEEN=15
+SLEEP_BETWEEN=600
 
 mkdir -p "$OUTDIR"
 [ -f "$CYCLE_FILE" ] || echo 0 > "$CYCLE_FILE"

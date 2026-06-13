@@ -42,10 +42,11 @@ measured (all unconditionally sound, all with cheating-prover tests):
 | batched Ub openings (step 11) | same, **the LAST per-layer O(2^nb) verifier term** (`verify_trace_region`'s nb Ub-bit openings) discharged in ONE sum-check vs the committed stacked Ub cube | **per-layer verifier leaf-eval-free → honestly Õ(√x) end-to-end** | done (S506) — `batched_trace.verify_ub_openings_batched` (γ-RLC `Σ_w B·C`, B verifier-anchored, C the committed Ub fold); `run_chain(--batch_ub`, needs pcs+batch_trace); selftest 21 + bt §7; verdict unchanged over q & BIG_Q; **`ub_leaf_v`: K·nb→0** at every n (moved to prover); wall-clock tV ~1.1–1.2× (flat — vectorised mle_eval cheap vs Python recomputes; the win is op-count, correcting the S505 "ratio grows" prediction) |
 | verifier op-count CURVE (step 12) | the milestone as a **measured scaling law**, not a per-n fact | n/a (measurement) | done (S507) — `_acct_vleaf` tallies VERIFIER large-table (`mle_eval` over a √x-size cube) evals, split per-layer vs one-time; `--bench-verifier-ops` over n∈{8..18}, 3 configs. **Falsifiable claim CONFIRMED:** per-layer leaf-op count `K·(nb+5)−1` (no-pcs) / `K·nb` (pcs) / **0** (pcs+batch_trace+batch_ub); whole-chain `vleaf_ops` fitted exponent **α=0.961 / 0.998 / 0.500** (Θ(x)→Θ(√x)); config (c) total = one-time `2·2^nb` only. `comm` slope ~0.60 (Õ(√x)) confirms the non-leaf residual never re-introduces a Θ(x) term. selftest 22 (counts over q & BIG_Q) |
 | tensor-PCS base closes (step 13) | the two one-time S₀ base closes — the LAST x-scaling verifier term — via a **hash-based multilinear commitment**, **sub-√x** | **whole-chain verifier sub-√x** (computational, under a CRH/RO); O(x^{1/4}·polylog) base | done (S508) — `pcs_commit.py` (Ligero/Brakedown tensor: reshape 2^nb→r×k, RS-encode rows, Merkle-commit N columns; `S~(pt)=a^T M b`; eval-proof verifier `O(t·(r+k))=O(x^{1/4})`). `commit/prove/verify`, Fiat–Shamir, sha256. `run_chain(--commit-base)`; selftest 23 + standalone selftest (honest==mle_eval; **4 cheat classes rejected**: wrong claim / forged opening / tampered codeword row / tampered revealed column). `--bench-verifier-ops` config (d): whole-chain `vleaf_ops` exponent **α=0.258 (Θ(x^{1/4}))** vs (c)'s 0.500 — **Θ(x)→Θ(√x)→Θ(x^{1/4})**. Verdict unchanged over q & BIG_Q. **Trades unconditionality for full succinctness; win is the SLOPE** (absolute crossover at nb≈14/n≈28) |
+| field-size-free expander row code (step 18) | the tensor PCS over an **arbitrary field** — the RS `N=blowup·k ≤ q` demo constraint removed | unchanged sub-√x verifier (computational) | done (S514) — `pcs_commit.py` `code=` selector (`"rs"` default verbatim; `"expander"`). Brakedown-style linear-time **column-regular** recursive code `Enc_n(x)=x‖Enc_{⌈n/2⌉}(Ax)‖B·Enc_{⌈n/2⌉}(Ax)`, fixed public map (q-free indices), any prime. Verifier re-encodes v,w once `O(N)=O(k)` then indexes columns — **slope 0.524 (α≈0.262), same as RS, over q/BIG_Q/SMALL_Q**, codeword shorter (N=380 vs 512 @nb=14). **4 cheat classes rejected** (forge diff = δ·Enc(e_{j0}), weight ≥δN, measured δ≈0.45); concrete win: over **q=17 RS refuses to commit (N=64>17), expander commits+verifies+rejects cheats**. `run_chain(--commit-code expander)`; selftest cases 9 (tiny-field) + 24 (chain verdict unchanged over q & BIG_Q). **Honest:** distance MEASURED (δ≈0.45 demo params), not the asymptotic expander bound (Brakedown analyzed: δ≈0.07, t≈148 @100-bit); still computational (CRH/RO). **S516: δ measured as a CURVE** (`--distance-sweep`/`--forge-rate`) — δ declines 0.65→0.40 over k=8→512 but DECELERATES (decrements shrink, tail-floor est ≈0.34, NOT →0); empirical forge accept tracks `(1−δ)^t` (emp/pred ≤1, no query correlation); t for 2^−100 grows only 67→134 |
 | certificate-SIZE profile + comm wall localized (step 14) | the FULL non-interactive certificate: **size, verifier ops, prover wall** as fitted exponents + comm **attributed by source** | n/a (measurement) | done (S509) — `run_chain` partitions `comm` into `comm_outer/bt/bw/ub/base` (additive snapshots, sum==comm asserted); `certificate_profile.py` over n∈{8..18}, full config (delegate+structured+pcs+batch_trace+batch_ub+**batch_wiring**+commit_base). **Cert size α=0.473 (Θ(√x)), DOMINATED by `comm_outer` α=0.522 (60%→90%→100% of comm)** = the K=π(√x) SEQUENTIAL outer layer reductions; every batched discharge polylog (α≤0.18), base Θ(x^{1/4}) (α=0.30), verifier ops α=0.258. Batching wiring cuts comm 5.3× @n=18. **Honesty sharpening of S508: verifier READS the Õ(√x) proof ⇒ total verification Θ(√x); the x^{1/4} is the large-table sub-term only.** Membership: `L_π` has a **CRH-based NI certificate of size Õ(√x), Õ(x^{1/4}) large-table opens**; polylog hits the SAME ⌊v/p⌋-semigroup wall as open item 2. selftest 5 cases (attribution closes over q & BIG_Q honest, cheats reject; field-indep count; exponent bounds) |
 | merged-layer COMM probe — √x is layering-inherent (step 15) | the merged depth-j layer's **comm**: is the Õ(√x) cert size inherent to the layering or just the unbatched chain? | n/a (measurement) | done (S510) — `merged_layer_comm.py` collapses j consecutive small-side Lucy layers into ONE reduction over the 2^j-subset inclusion-exclusion form `M[S](v)=Σ_T(−1)^|T|GateProd_T(v)S(⌊v/m_T⌋)` (== direct composition, selftest 1); two SOUND modes (DIRECT 2^j openings; BATCHED stacks the 2^j on a j-bit axis), cheat-tested over q & BIG_Q. **Chain TOTAL comm exponent ~0.5 for EVERY j∈{1,2,4} in BOTH modes → √x LAYERING-INHERENT.** DIRECT comm_fill=(2^j+1)(3nb+2) grows ~2^j (merging makes comm *worse*, min at j=2 then grows); BATCHED pushes the 2^j OUT of comm (fill flat 27) but into **verifier WORK** (`vwork` ~2^j, ratio 5.7× @j:1→4) AND prover, comm floored at ⌈K/j⌉(j+nb)→K=√x; **prover fill total ⌈K/j⌉·2^j·2^nb → x^{3/2}** (/x: 0.42→2.25 @j:1→6) — open problem 2's m·K²/2 on the VERIFICATION face. comm prime- & field-independent (selftest 4) |
 | #P / NP-membership probe — the COMPUTATIONAL lower-bound face (step 17) | item 3's other half: is `L_π∈NP` at all, and is π #P-hard? | n/a (measurement + complexity anchor) | done (S512) — `sharpP_probe.py`. **(A)** π(x), φ(x,a) are #P FUNCTIONS of binary x (count ≤2^N candidates under a poly(N) predicate) ⇒ `L_π∈C_=P`, `{π≥c}∈PP⊆P^#P`; the φ subset-witness is 2^{π(√x)} (doubly-exp in N). **(B)** π a function ⇒ `L_π∈NP ⟹ NP∩coNP ⟹` NP-complete forces NP=coNP — the live question is mere NP-MEMBERSHIP (polylog witness). **(C) witness-size ladder** (leading-power α, 2-term fit separating power from polylog): enumeration NP-cert α=0.985 (Θ(x)); sieve transcript α=0.490 (matches S509 0.473); S511 info floor α=0.486; zeta-zero/explicit-formula witness α=0.500 (Galway √x·log²x, **cited**) — THREE natural families converge at √x (max\|α−0.5\|=0.014), enumeration a full power higher, polylog (α=0) ruled out (S511). NO natural witness reaches poly(N). **(D)** parsimonious #P-hardness reduction is CIRCULAR (target-count realization c↦x(c) IS the inverse-prime p(·)=the goal; sieve sets lattice-structured, no instance richness) ⇒ hardness, if real, is value-incompressibility (the S511 face). **(E)** corrected CLOSED row 175 ("exact π #P-hard" unsubstantiated). 40 selftests |
-| certificate INCOMPRESSIBILITY probe — √x is **information-forced** too (step 16) | the lower-bound face of item 3: is the Õ(√x) cert size an INFORMATION floor, or just construction shape (S510)? | n/a (measurement) | done (S511) — `cert_incompressibility.py`. Per-layer checkpoint = Legendre partial sieve `φ(x,a)=#{n≤x : P⁻(n)>p_a}` (the large-side survivor count). Measures the JOINT hard bits of `{φ(x,a)}_{a=1..K}` beyond a polylog smooth predictor, at INTEGER precision. **Authoritative measure = integer-reconstruction SVD rank of the residual matrix** (smooth-model-free: SVD subsumes the best low-rank/smooth model). rank≤min(W,K); window-sensitivity at x=2¹⁹ shows rank/K **0.09→0.97** as W/K 1→187 ⇒ **FULL RANK once W≫K**. Adaptive-window sweep (W=64K): rank≈K, **α_rank=0.459 ≈ α_K=0.415 ≈ √x**. ⇒ the K checkpoints are integer-INDEPENDENT, joint info **Θ(√x)·polylog** ⇒ the √x cert is **information-forced for any sieve-reconstructing verifier** (polylog cert RULED OUT; sub-√x RULED OUT for this class). Corroborated per-x (gzip α=0.39, AR α=0.56 track K). Single-value control reproduces S36: |π(x)−Li(x)| is O(log x) bits (slope 0.089) — the barrier is JOINT, not per-value. **Self-corrected** a narrow-fixed-window artifact (W=4096 → rank~x^0.35 sub-√x) via the window-sensitivity check. Scope: sieve-reconstruction class only; a UNIVERSAL bound still needs #P-hardness (item 3 formal half). selftest 22 cases |
+| certificate INCOMPRESSIBILITY probe — √x is **information-forced** too (step 16) | the lower-bound face of item 3: is the Õ(√x) cert size an INFORMATION floor, or just construction shape (S510)? | n/a (measurement) | done (S511) — `cert_incompressibility.py`. Per-layer checkpoint = Legendre partial sieve `φ(x,a)=#{n≤x : P⁻(n)>p_a}` (the large-side survivor count). Measures the JOINT hard bits of `{φ(x,a)}_{a=1..K}` beyond a polylog smooth predictor, at INTEGER precision. **Authoritative measure = integer-reconstruction SVD rank of the residual matrix** (smooth-model-free: SVD subsumes the best low-rank/smooth model). rank≤min(W,K); window-sensitivity at x=2¹⁹ shows rank/K **0.09→0.97** as W/K 1→187 ⇒ **FULL RANK once W≫K**. Adaptive-window sweep (W=64K): rank≈K, **α_rank=0.459 ≈ α_K=0.415 ≈ √x**. ⇒ the K checkpoints are integer-INDEPENDENT, joint info **Θ(√x)·polylog** ⇒ the √x cert is **information-forced for any sieve-reconstructing verifier** (polylog cert RULED OUT; sub-√x RULED OUT for this class). Corroborated per-x (gzip α=0.39, AR α=0.56 track K). Single-value control reproduces S36: |π(x)−Li(x)| is O(log x) bits (slope 0.089) — the barrier is JOINT, not per-value. **Self-corrected** a narrow-fixed-window artifact (W=4096 → rank~x^0.35 sub-√x) via the window-sensitivity check. Scope: sieve-reconstruction class only; a UNIVERSAL bound still needs #P-hardness (item 3 formal half). selftest 22 cases. **Sharpened (S515):** wide window (W=192K) lifts rank/K **floor to 0.88** (no drift, k=16..22), **α_rank/α_K=0.978≈1** ⇒ robust signal is rank=Θ(K)=Θ(√x), NOT the exponent (α_rank≈α_K≈0.40 = shared PNT 1/ln x discount, →0.5 only as x→∞; the 64K α_rank=0.459 was inflated by an across-window rank/K climb — self-corrected). Per-layer info **DENSE** across all K layers (bits uniform 0.77, active 0.98, prefix rank LINEAR `rank_half_ratio`=0.52) — Θ(K) layers, not o(K). 30 selftests |
 
 Canonical doc: `novel/succinct_verification_of_pi.md` (protocol stack,
 width-spectrum theory, census law, open program). Code:
@@ -182,9 +183,15 @@ width-spectrum theory, census law, open program). Code:
    the √x is an INFORMATION floor, not just construction shape — the K=π(√x)
    sieve checkpoints `{φ(x,a)}` carry Θ(√x)·polylog JOINT hard bits at integer
    precision (residual matrix is FULL integer-rank once W≫K: rank/K→0.97,
-   α_rank≈α_K≈√x). So **no sieve-reconstructing verifier has a polylog or
-   sub-√x certificate** — the construction-side √x (S510) is matched on the
-   information side. Single π(x) value remains O(log x) bits (S36) — the
+   α_rank≈α_K≈√x). **Sharpened (S515):** the robust √x signal is the rank/K
+   FLOOR (0.88 at W=192K, no decay) ⇒ rank=Θ(K)=Θ(√x), with α_rank/α_K=0.978≈1
+   (the finite-window exponents ≈0.40 are the shared PNT 1/ln x discount, not a
+   rank deficiency; the S511 α_rank=0.459 was inflated by an across-window
+   rank/K climb — self-corrected). The info is also DENSE across all K layers
+   (uniform per-layer hard bits, LINEAR prefix rank, `rank_half_ratio`=0.52) ⇒
+   carried by Θ(K) layers, not o(K). So **no sieve-reconstructing verifier has a
+   polylog or sub-√x certificate** — the construction-side √x (S510) is matched
+   on the information side. Single π(x) value remains O(log x) bits (S36) — the
    barrier is JOINT across layers. **Still open / the remaining universal
    lever:** the bound is for the sieve-reconstruction CLASS only; a different
    witness (cf. factoring) is not ruled out, so a universal sub-√x impossibility
@@ -203,16 +210,52 @@ width-spectrum theory, census law, open program). Code:
    inverse-prime `p(·)`=the goal, and the sieve/φ instance is lattice-structured
    (no embedding richness) ⇒ #P-hardness, if true, must be value-incompressibility
    (the S511 face), not instance-embedding. **Corrected** CLOSED row 175 ("exact
-   π(x) #P-hard" was an unsubstantiated S7 assertion). **STILL OPEN (filed, not
-   closed):** a genuine #P-hardness proof OR a non-sieve sub-√x witness — neither
-   delivered. On present evidence `L_π` is an NP-intermediate-flavoured counting
-   problem: a √x certificate (S491–S509 from above, S511 from below), no proven
-   poly(N) one. Either answer to the remaining #P-hardness question is major.
-4. **Census entropy law at k = 128** — conjecture A_k = e^{(1+o(1))π(k)}
-   (enumeration-verified to k = 64, geometric convergence). Needs an
-   analytic count: surjection inclusion-exclusion has catastrophic
-   cancellation; DFS is enumeration-bound at A₁₂₈ ~ e²⁵. Transfer-
-   matrix / generating-function attack is the well-posed route.
+   π(x) #P-hard" was an unsubstantiated S7 assertion). **TURING-REDUCTION FACE
+   CONDITIONALLY CLOSED (S517, `turing_reduction_barrier.py`):** S512's direction
+   (i) is ruled out under SETH for all sub-c*-blowup Turing reductions. THEOREM:
+   with α=inf{a:π∈TIME(x^{a+o(1)})} and SETH, no poly-time Turing reduction #SAT→π
+   has all queries ≤c·n bits with c<1/α (simulate π by its own x^a' algorithm →
+   sub-2^n #SAT → refutes SETH); critical blowup c*=1/α, measured `pi_lucy`
+   α≈0.66–0.70 → c*≈1.5, analytic α=1/2 → **c*=2**. The natural (parsimonious)
+   blowup is c→1<c* (measured exact n=4..22), so EVERY natural Turing reduction is
+   forbidden. COROLLARY (P≠NP): **polylog-π XOR #P-hard-π** — a #P-hardness proof
+   for π proves the project goal impossible; the two questions are one dichotomy
+   with √x at c*=2. **STILL OPEN (filed, not closed):** (a) super-c*-blowup Turing
+   reductions (query π exponentially past p_C≈2^n — no natural construction, no
+   #SAT speedup), and (b) a genuine #P-hardness proof OR a non-sieve sub-√x witness
+   that also beats the S511 info floor. On present evidence `L_π` is an
+   NP-intermediate-flavoured counting problem: a √x certificate (S491–S509 from
+   above, S511 from below), no proven poly(N) one, #P-hardness ruled out for every
+   natural reduction (S512+S517). Either answer to the remaining #P-hardness
+   question is major. **DIRECTION (ii) NATURAL WITNESS CLOSED (S518,
+   `explicit_formula_witness.py`):** the most natural non-sieve witness — the truncated Riemann
+   explicit formula over real low-lying zeros — is √x·polylog (Galway √x·log²x best-fit), NOT
+   sub-√x (raw exponent reads ABOVE ½; matched control confirms ½ leading power; nothing dips
+   below ½) and NOT polylog. Its rounding-relevant information is DENSE across Θ(√x) zeros (no
+   octave up to √x droppable at x=10⁵–10⁶), so it MATCHES the S511 floor rather than beating it — the floor
+   caps the analytic route too, not just the sieve class. (Also fixed CLOSED row 31: the
+   "divergence" was a li-branch-cut bug.) Residual (b): a genuinely NON-natural sub-√x witness
+   stays open (no candidate).
+4. **Census entropy law at k = 128** — conjecture A_k = e^{(1+o(1))π(k)}.
+   **Transfer-matrix route CLOSED (S519, `census_transfer_matrix.py`):** the
+   natural position-DP carrying per-prime occupied-residue sets has **Θ(A_k)
+   states** — measured collapse factor A_k/states = 1.55–2.37 (bounded, not
+   growing), ln(states) slope 1.020 ≈ ln A_k slope 1.011 — so it is
+   exponential with A_k's own exponent and strictly worse than DFS (Θ(A_k)
+   memory vs Θ(k)). No new clean-family exact point is reachable (k=128 is the
+   next power, A₁₂₈~10¹¹). **Two scaling structural facts delivered instead:**
+   (a) an exact **active-prime reduction** — A_k depends only on primes ≤
+   B(k), B(k)=3,5,7,13,23,47 at k=8,16,32,64,128,256 (A₁₂₈ uses only 8 primes
+   {3..23}; rigorous, two independent proofs: count-stabilisation + a
+   W(B)-weight bound via branch-and-bound min-union, agreeing); (b) the
+   identity **W(B(k)) = ρ*(k) = maximal admissible-tuple size** = 3,5,9,16,28,
+   52, matching H() exactly at k=64 (H(16)=60<H(17)=66) and k=128 (H(28)=126<
+   H(29)=132) — this explains ln A_k=Θ(π(k)) (admissibles live in the ρ*(k)≈
+   k/ln k geometry). The entropy slope→1 (1.01) is re-confirmed. **Still
+   open:** the constant→1 needs an analytic / generating-function /
+   cluster-expansion argument (separate from exact counting); an exact A₁₂₈
+   needs a genuinely sub-A_k algorithm (none found — TM exponential, IE has
+   catastrophic cancellation / term blow-up).
 5. **Large-x benchmark** — ADVANCED (S513). Now driven by
    `experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py`
    (a clean reproducible driver, `--selftest`/`--n`), running the **FULL
@@ -286,8 +329,180 @@ width-spectrum theory, census law, open program). Code:
 - The guess-comparison geography (`experiments/analytic/
   guess_comparison_oracle/`) — decision-version facts, complete as is.
 
-## Done this era (S491–S513 cycles, 2026-06-13)
+## Done this era (S491–S519 cycles, 2026-06-13)
 
+- Census A_k WITHOUT enumeration — open item 4 transfer-matrix route CLOSED + two scaling
+  structural facts (S519): answered the S518 NEXT ACTION ("count A_k by a transfer matrix /
+  generating function, validate vs known A_k, push to k=128 OR prove the state space is
+  exponential"). Built
+  `experiments/analytic/local_pattern_census/census_transfer_matrix.py` (one script,
+  `--selftest`/`--k`/`--scan`/`--reduce`; 9 selftest groups; TM reproduces every known A_k
+  bit-for-bit, brute==DFS==TM). **(1) Transfer-matrix route CLOSED:** the natural position-DP
+  (state = per-prime occupied-residue SET, dead-state pruned) has **Θ(A_k) states** — measured
+  collapse factor A_k/states = 1.86,1.66,2.37,1.55 (bounded, NOT growing) at k=8,16,32,64;
+  ln(states) slope **1.020** ≈ ln A_k slope **1.011** ⇒ same entropy exponent ⇒ exponential and
+  strictly WORSE than DFS (Θ(A_k) memory vs Θ(k); final live-state count is order-independent
+  ≈A_k/2, so no offset ordering helps). k=128 (A₁₂₈~10¹¹) unreachable by both. **(2)
+  Active-prime reduction (rigorous, two independent proofs that AGREE — selftest 8):** enforcing
+  a prime is a monotone filter, so A_k depends only on primes ≤ B(k); found by count-stabilisation
+  (`minimal_B`) AND by a no-count W(B)-weight bound (`reduce_primes` via branch-and-bound
+  min-union `minkill_bb`, exact, selftest 9). **B(k)=3,5,7,13,23,47** at k=8,16,32,64,128,256 —
+  **A₁₂₈ uses only 8 primes {3,5,7,11,13,17,19,23}**, the 9 larger enforceable primes provably
+  never bind. (Shrinks the problem but does not break the exponential wall.) **(3) Identity
+  W(B(k)) = ρ*(k) = maximal admissible-tuple size** = 3,5,9,16,28,52: the weight bound is tight (a
+  weight-W(B) subset missing a class mod all of B is itself admissible), so it equals the densest
+  admissible aligned-k tuple; **matches H() (OEIS A008407) exactly** at k=64 (H(16)=60≤63<H(17)=66)
+  and k=128 (H(28)=126≤127<H(29)=132), extending the prior k≤32 cross-check. ρ*/(k/lnk)=0.78→1.13
+  over k=8…256 (Hensley–Richards). **This explains the entropy law's exponent**: admissibles live
+  in the ρ*(k)≈k/lnk geometry ⇒ ln A_k=Θ(π(k)); the entropy slope→1 (1.01) is re-confirmed
+  independently of the DFS. **Honest scope:** no new clean-family exact A_k point is reachable (the
+  contribution is the closure + the reduction + the weight identity, NOT a new A_k value); the
+  constant→1 still needs an analytic/generating-function/cluster-expansion argument (separate from
+  exact counting), and an exact A₁₂₈ needs a genuinely sub-A_k algorithm (none found — TM
+  exponential, IE catastrophic-cancellation/term-blowup). `census_transfer_matrix_results.md`;
+  `local_pattern_census_results.md` extended.
+- Non-sieve sub-√x witness probe via the explicit formula — open item 3 direction (ii) closed
+  for the NATURAL analytic witness (S518): answered the explicit S517 NEXT ACTION. Built
+  `experiments/analytic/explicit_formula_witness/explicit_formula_witness.py`, a STANDALONE
+  measurement (not a protocol). **(numerical fix, CLOSED row 31)** the explicit formula's
+  reported DIVERGENCE ("error 3.5→2076") was a branch-cut bug: `li(x^{ρ/k})` computed as
+  `li(exp(ρ·lnx/k))` folds the huge imaginary part `ρ·lnx∼γ·lnx` mod 2π inside `exp`, so `li`'s
+  internal `log` takes the wrong branch. Fix = the exponential integral on the UNWRAPPED
+  argument `ei(ρ·lnx/k)`; smooth `R(x)` via `mpmath.riemannr` (=Gram series, validated 1e-20).
+  Selftest asserts BOTH the bug (|err|≈7e4) AND the fix (|err|<0.5). **(witness exponent)**
+  per-x window-median settling count over x∈[10³,2.2×10⁵] with 8000 zeros (height ≤8148): raw
+  log-log COUNT slope α=0.91, HEIGHT slope β=0.73 — both ABOVE ½. **Matched control over the
+  SAME anchors**: pure x^0.5→slope 0.500, √x·log²x→0.712≈β, so the >½ raw slope is the polylog
+  dressing on a ½ LEADING POWER, not a genuine super-√x exponent; **NO measurement dips below
+  ½** ⇒ sub-√x REFUTED, polylog (slope 0) REFUTED (N grows 42→7106). Galway-form fit: √x·log²x
+  best (rms 3.2→1.8→0.93 for p=0,1,2), reconfirming Galway/zero_scaling.py with the height/count
+  split made explicit. **(S511 floor link)** exactness fraction is ~0 for c=T/√x≤1 at every
+  anchor (10⁴,10⁵,10⁶) and only ~0.6–0.8 even at the full 8000-zero budget; at x=10⁵,10⁶ dropping
+  ANY octave `[T/2,T]` of zeros up to √x jumps the RMS remainder back >0.5 (0.56–2.8 vs full
+  0.46–0.56), none droppable (at x=10⁴ the full budget over-settles, RMS 0.31, so drops stay
+  0.34–0.46; the signal sharpens with x) ⇒ the rounding-relevant information is DENSE across
+  Θ(√x) zeros — the analytic analogue of S511's "Θ(K), not o(K)". The natural analytic witness MATCHES the √x floor, does
+  NOT beat it. **Honest scope:** reconfirms the long-closed √x scaling (rows 30–34/39/267,
+  `zero_scaling.py`); the NEW content is the row-31 numerical fix, the height-vs-count
+  separation, and the floor cross-check tying it to open item 3. Closes the NATURAL analytic
+  witness only — a non-natural witness is not ruled out (item-3 universal question open). 16
+  selftest cases. `explicit_formula_witness_results.md`; CLOSED row added.
+- Fine-grained (SETH) barrier to #P-hardness of π — direction (i) of open item 3
+  conditionally CLOSED (S517): answered the lever S512 left open ("a Turing, not
+  parsimonious, reduction sidestepping the c↦x(c) circularity"). Built
+  `experiments/constructions/p12_sumcheck_pi_verification/turing_reduction_barrier.py`,
+  a STANDALONE measurement + complexity anchor (not a protocol). **THEOREM
+  (conditional):** with α=inf{a:π(x)∈TIME(x^{a+o(1)})} and SETH, NO poly-time
+  Turing reduction #SAT→π-oracle has all queries of bit-length ≤c·n with c<1/α
+  (else simulate π by its own time-x^a' algorithm → #SAT in 2^{a'cn}, a'c<1 →
+  refutes SETH). Critical query-blowup **c*=1/α**. **MEASURED:** the project's own
+  `pi_lucy` (Lucy_Hedgehog O(x^{3/4})) over x=10⁴..10⁸ fits time-exponent α≈0.66–0.70
+  (sub-linear; t/x^{0.75} decreases) ⇒ c*≈1.5; cited rungs c*=1.5 (combinatorial
+  LMO/Deléglise–Rivat 2/3) and **c*=2 (analytic Lagarias–Odlyzko 1/2)**. **Natural
+  (parsimonious) reduction has blowup c→1<c***: encode "count=C=2^n" as π(x)=C needs
+  smallest x=p_C, bitlen≈n+log n ⇒ c=bitlen(p_C)/n falls 1.50→1.20 over n=4..22
+  (exact via sieve), PNT c=1+log₂(ln C)/n→1.00 — so EVERY parsimonious-blowup Turing
+  reduction is SETH-forbidden, matching S512's circularity with a complexity wall
+  that also covers adaptive non-parsimonious reductions. **COROLLARY (the project
+  tie-in): polylog-π XOR #P-hard-π under P≠NP** — α→0 (the goal) ⇒ c*=∞, a polylog
+  π-oracle answers every query in poly(N) so a poly-time Turing #P-hardness reduction
+  gives #SAT∈P ⇒ P=#P; thus a #P-hardness PROOF for π proves no polylog algorithm
+  exists (this project impossible). The two open questions are the two horns of one
+  dichotomy; √x sits between them at c*=2. **Still open (scope):** super-c*-blowup
+  reductions (query π at x≥2^{(1/α)n}, exponentially past where p_C≈2^n lives — no
+  natural construction, analytic-π there already costs ≥2^n so no #SAT speedup) and a
+  non-sieve sub-√x witness for L_π (the other NEXT-ACTION half, must also beat the
+  S511 info floor). Honest: the meta-principle is folklore fine-grained complexity;
+  the contribution is applying it to π with π's own √x algorithm, the quantitative
+  c*=1/α + the measured parsimonious c→1, and the mutual-exclusivity corollary. 52
+  selftest cases. `turing_reduction_barrier_results.md`.
+- Expander distance/soundness as a measured CURVE — the S514 single-point δ claim
+  upgraded (S516): closed the S515 NEXT ACTION (the "clean single cycle"). Extended
+  `experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py` with two
+  `--selftest`-gated measurements behind new flags. **(a) `--distance-sweep`:**
+  `_min_basis_rel_weight(code,k,q)` (code-agnostic generalization of S514's
+  `_exp_min_basis_rel_weight`; RS via the incremental power table `c^j`, expander via
+  `_exp_encode`) tabulates the soundness parameter `δ = min_j |Enc(e_j)|/N` vs k up to
+  512 for BOTH row codes over q & BIG_Q & SMALL_Q. **RS δ→1** ((N−1)/N, increasing).
+  **Expander δ DECLINES 0.650→0.404 over k=8→512 but DECELERATES** — per-doubling
+  decrements shrink (+0.082→+0.019, mean ratio 0.77), geometric-tail floor estimate
+  **≈0.34**; **δ does NOT decay to 0**, field-independent (q-free indices). Practical:
+  the t for 2^−100 forge soundness (`t≥100/−log₂(1−δ)`) grows only **67→134** over
+  k=8→512 (sub-linear, because δ floors above 0). **(b) `--forge-rate`:** worst-case
+  Monte-Carlo — the adversary bends honest `v` at the min-weight coordinate
+  `j0=argmin weight(Enc(e_j))`, support `δN`; across many random openings (independent
+  FS challenges) the empirical accept rate **tracks `(1−δ)^t` and stays at/below it**
+  (emp/pred ≤ ~1.0, hugging the tighter hypergeometric), fitted `δ_eff≥δ` — the forge
+  dies at least as fast as the bound, **no query correlation** (the falsifier `emp≫
+  (1−δ)^t` never observed; max ~1.02, a 3σ blip), field-independent over q & BIG_Q.
+  Selftest **cases 10/11** assert the falsifiers: δ bounded below + decelerating (not
+  →0); `_hyper_miss ≤ (1−δ)^t` monotone; empirical accept ≤ `(1−δ)^t` within binomial
+  tolerance at every t, monotone, `t=1≈1−δ`, `δ_eff≥δ−0.1`. **Honest scope:** the
+  asymptotic constant distance is Brakedown's PROVEN, cited (not re-proved); this adds
+  the MEASUREMENT that demo-scale δ declines but decelerates to a positive floor; the
+  geometric extrapolation is an estimate, not a bound; recipe = measure δ at the actual
+  k, pick `t=⌈λ/−log₂(1−δ)⌉`. `pcs_commit_results.md` S515 section.
+- Certificate-info sharpening — the Θ(√x) joint-info floor solidified + per-layer
+  density (S515): closed the S514 NEXT ACTION. Extended `cert_incompressibility.py`
+  (refactored `integer_rank` → reusable `build_residual_matrix`+`min_exact_rank`;
+  added `layer_density_profile`, `--wfactors`). **(A) Wide window (W=192·K):** the
+  rank/K **floor rises 0.75→0.88** (uniform, no downward drift over k=16..22) and
+  **α_rank/α_K = 1.106→0.978 ≈ 1**. **Corrected the S511 premise** that α_rank should
+  approach 0.5: α_rank cannot exceed α_K, and the finite-window α_K is itself only
+  ≈0.42 (PNT 1/ln x log-log discount on √x), so 0.5 is an asymptote, not a reachable
+  target; the 64·K α_rank=0.459 was *inflated* by an across-window rank/K climb
+  (under-sampling at low k), not faster-than-K growth. The sampling-robust √x signal
+  is the **rank/K FLOOR ⇒ rank=Θ(K)=Θ(π(√x))=Θ(√x)**, with the raw exponent reading
+  ~0.40 the shared discount (both → 0.5 only as x→∞). Raw α_rank went *down*
+  (0.459→0.396) yet the result is *strengthened* (floor lifted, ratio →1). **(B)
+  Per-layer DENSITY:** the √x info is spread across ALL K=π(√x) layers, not o(K) —
+  per-layer hard bits uniform (deciles 9.8–12.7, `bits_uniformity`=0.77, active
+  fraction 0.98), prefix integer-rank LINEAR (rank/j 0.84→0.88, `rank_half_ratio`=
+  rank(K/2)/rank(K)=0.52). Energy is end-loaded (scale: φ~x at small a) but bits/rank,
+  the scale-free measures, are uniform. **New falsifiers:** rank/K decay or
+  α_rank/α_K→0 (not α_rank<0.45 — that's the expected PNT tracking value);
+  `rank_half_ratio`→1 or `bits_uniformity`/`active_frac`→0 (√x carried by o(K) layers)
+  — none observed. 30 selftest cases (+8: `min_exact_rank` refactor safety, density
+  separation of dense vs rank-concentrated (duplicate cols) vs bit-concentrated
+  (sparse) controls). `cert_incompressibility_results.md` §1b/§1c.
+- Field-size-free commitment — the RS `N≤q` demo artifact removed (S514): built the
+  Brakedown-style linear-time **expander row code** the S513 NEXT ACTION called for,
+  behind the SAME `commit/prove/verify` interface in
+  `experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py`, gated by a
+  `code=` selector (`"rs"` default = every prior artifact verbatim; `"expander"`).
+  Construction (Spielman/Druk–Ishai recursive, as in Brakedown): systematic
+  `Enc_n(x)=x‖Enc_{⌈n/2⌉}(A·x)‖B·Enc_{⌈n/2⌉}(A·x)` with **column-regular** sparse A,B
+  over F_q (coldeg=4) + a dense base case; the matrices are a fixed PUBLIC map (seed +
+  size → q-free column indices, values mod q), so prover-commit and verifier-reencode
+  build the identical linear code. The tensor reduction `S~(pt)=a^T M b` and the
+  homomorphic column check `⟨a,Mhat[:,c]⟩=Enc(v)[c]` hold for ANY linear Enc, so the
+  `O(t(r+k))=O(x^{1/4})` verifier is unchanged — the verifier re-encodes v,w ONCE
+  (`O(N)=O(k)`, linear-time) then indexes the t queried columns. **Column-regularity is
+  load-bearing:** a plain low-density generator leaves some input column unused → a
+  weight-1 basis codeword → the forge cheat at that coordinate is uncatchable; making
+  every input column hit coldeg output rows lifts the measured min basis-codeword
+  relative weight from ≈0.003 (row-regular) to **≈0.45** (the quantity that governs the
+  forge cheat, since the forged-v difference is exactly δ·Enc(e_{j0})). **Measured
+  (`--bench --code expander`):** verifier op-count slope **0.524 (α≈0.262), sub-√x, same
+  as RS (0.500), IDENTICAL over q/BIG_Q/SMALL_Q** (op count is field-independent —
+  indices not values set the structure); the expander codeword is SHORTER than RS's
+  (N=380 vs 512 @nb=14) so `commit_vops` is actually lower at large nb. **4 cheat classes
+  rejected** with `code="expander"` over q & BIG_Q & SMALL_Q (wrong claim / forged
+  opening / tampered codeword row / tampered revealed column); honest opens == `mle_eval`;
+  same map as the chain base close. **The field-size-free win is concrete (selftest case
+  9):** over a tiny prime **q=17** at nb=8 (k=16 → RS Ncode=64>17) RS REFUSES to commit
+  while the expander commits (N=44), verifies, and rejects the cheats. Threaded
+  `commit_code` through `run_chain` (default "rs" verbatim) + `--commit-code`; **chain
+  verdict UNCHANGED** with the expander base over q AND BIG_Q (selftest case 24, n∈{8,10,
+  12}: honest π==sieve, delta_pi + self-consistent liar rejected, per-layer still
+  leaf-free, base opens still sub-√x `vcommit_ops==vleaf_ops_ot`). **Honest scope:**
+  distance is the security parameter and is MEASURED here (δ≈0.45 at demo params, selftest
+  asserts ≥0.3 for k∈{8,16,32,64}), not proven from the asymptotic expander bound —
+  Brakedown's analyzed params give δ≈0.07 with t≈148 queries for 100-bit security; the
+  construction shape is theirs, the constants are demo-scale and distance-measured. Still
+  computational (CRH/RO, sha256) like the RS PCS — this swap changes only the field
+  dependence, not the unconditional-vs-computational boundary. `pcs_commit_results.md`
+  S514 section; canonical-doc protocol stack + leaf-openings section updated.
 - Large-x benchmark reach push — item 5 advanced (S513): built
   `experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py`,
   a clean reproducible driver (the "large-x benchmark" line had no dedicated
@@ -803,35 +1018,35 @@ width-spectrum theory, census law, open program). Code:
 
 ## NEXT ACTION (single, concrete)
 
-S513 advanced item 5: `large_x_benchmark.py` runs the FULL succinct config over the
-sound BIG_Q and verifies exact `π(2ⁿ)==sieve` at **n=22 (x≈4.2×10⁶, 252.8 s)** and
-**n=24 (x≈1.7×10⁷)**, with the asymptotic profile confirmed at the reach (per-layer
-verifier leaf-ops 0, comm ~95% the K sequential reductions, base opens Θ(x^{1/4})) and
-soundness witnessed (delta_pi rejected at n=22). The reach is now **prover-bound and
-effectively maxed for a per-cycle wall budget** — n=26 ≈ ~50 min (above the 10-min
-foreground cap), so pushing further is not a clean single cycle. The benchmark line is
-banked; the highest-value CONCRETE next move is a clean single-cycle build that unblocks
-the production face of the now-stress-tested certificate:
+S519 answered the S518 NEXT ACTION on open item 4: the transfer-matrix / position-DP route to
+A_k is CLOSED (state space Θ(A_k), exponential, measured slope 1.02≈A_k's 1.01, collapse factor
+bounded ~2× — strictly worse than DFS), and we delivered the two facts that DO scale instead —
+the rigorous active-prime reduction (A₁₂₈ uses only 8 primes {3..23}) and the identity
+W(B(k))=ρ*(k)=maximal admissible-tuple size (matching H() at k=64,128), which explains
+ln A_k=Θ(π(k)). `census_transfer_matrix.py`. An EXACT A₁₂₈ would need a genuinely sub-A_k
+algorithm — none found; inclusion-exclusion has the catastrophic cancellation / term blow-up
+noted in open item 4. So the exact-count push is parked (likely needs new combinatorics); the
+entropy CONSTANT→1 is now the analytic question (generating-function / cluster-expansion).
 
-**NEXT: field-size-free commitment — swap the Reed–Solomon row code in `pcs_commit.py`
-for a Brakedown-style linear-time expander code, behind the SAME `commit/prove/verify`
-interface.** The RS path requires the codeword length `N = blowup·k ≤ q`, a demo
-constraint that caps the committable table size and forced the BIG_Q runs onto a 61-bit
-field; an expander/linear code removes the `N≤q` requirement (and keeps the
-`O(t·(r+k))=Õ(x^{1/4})` verifier and the 4-class cheat panel — wrong claim, forged
-opening, tampered codeword row, tampered revealed column). Gate it behind a `code=`
-selector so the RS path stays verbatim; selftest must show the expander path agrees with
-`mle_eval` and rejects all 4 cheats over q & BIG_Q, and `--bench` the verifier slope
-stays 0.5/nb. This is the documented requirement for any production-scale (n≳120)
-commitment and directly extends the S508 work item 5 just exercised at a larger table.
+**NEXT (concrete, single-cycle-feasible): the census entropy constant via a GENERATING-FUNCTION /
+CLUSTER-EXPANSION asymptotic of A_k on the active-prime-reduced problem (open item 4, the part
+that survives S519).** S519 reduced A_k to a count over only the primes ≤ B(k)≈ρ*(k)~k/ln k, and
+showed admissibles live inside the ρ*(k)-bounded geometry. The remaining question is purely
+asymptotic: does ln A_k/(k/ln k)→1? Build a standalone experiment that estimates the entropy
+constant WITHOUT exact counting — e.g. (a) a transfer/cluster expansion treating the per-prime
+"miss-a-class" events with their pairwise/triple correlations (the leading term is the
+independent-prime product Π_q P[miss mod q]; corrections are the CRT overlaps), giving an
+analytic prediction for the constant; or (b) a rigorous two-sided bracket on A₁₂₈ (lower
+A_k≥2^{ρ*(k)} already gives ratio≥0.69·ρ*/(k/lnk)=0.735 at k=128; find a matching upper bound via
+the union/Janson inequality over the covering events) to pin the ratio between DFS-confirmed
+points. VALIDATE the estimator against the exact A_k (k≤64) before extrapolating to k=128/256.
+Deliverable: an analytic value (or rigorous bracket) for the constant with a falsifiable error
+bar, or a clean statement of why the correlations prevent it. `--selftest` reproduces small-k A_k.
 
-Smaller follow-ons (each a clean cycle):
-- **#P-hardness theory (the harder open gap):** attempt the formal reduction
-  #(integers free of a prime set, sets given explicitly) → counting hardness, or a
-  Turing reduction from a #P-complete count to a π-oracle; OR a non-sieve witness
-  family for L_π that beats √x. S512 argues all natural routes are √x-bounded — this
-  is the genuine open frontier, likely multi-cycle / new-math.
-- **Cert-info sharpening:** extend S511's rank measurement to W=192·K at the top of
-  the range (push α_rank from 0.46 toward the ideal 0.5) and/or confirm the per-layer
-  bit-content profile is dense across all K layers (not concentrated in the late ones)
-  — a small follow-on solidifying the Θ(√x) joint-info number.
+Other open frontiers (each its own track):
+- **#P-hardness theory (harder, multi-cycle / new-math):** super-c*-blowup Turing reductions
+  (S517 leaves these formally open but no construction exists) OR a value-incompressibility
+  proof. S512+S517 close every natural reduction; this is the genuine remaining gap.
+- **A NON-NATURAL sub-√x witness for L_π (item 3, direction (ii) residue):** S518 closed only
+  the natural analytic witness; a genuinely non-arithmetic witness that beats the S511 floor is
+  not ruled out (but no candidate exists — likely needs new math).

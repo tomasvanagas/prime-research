@@ -275,12 +275,12 @@ def fit_exponent(xs, ys):
     return float(slope), float(inter)
 
 
-def integer_rank(X0, spf, primes, window, degree):
-    """Cross-check vs S65/CLOSED_PATHS row 737: build the residual matrix
-    M[i,a]=phi(X0+i, a) - smooth_fit over a DENSE window of x (incremental, O(W·K)),
-    subtract the polylog smooth fit per row, and find the minimal SVD rank whose
-    reconstruction rounds to the EXACT integer residuals. Returns (rank, K, W).
-    rank ~ K  => integer-incompressible (cert info-forced);  rank polylog => not.
+def build_residual_matrix(X0, spf, primes, window, degree):
+    """Build the integer residual matrix R[i,a]=round(phi(X0+i,a) - smooth_fit) over
+    a DENSE window i=0..window-1 of x, columns a=1..K (K=π(√(X0+window))). Incremental
+    O(W·K); per-row polylog smooth fit subtracted (one shared spline basis at the
+    window-midpoint u, since ln x is ~constant across the window -> multi-RHS lstsq).
+    Returns (R, K, window, rrms, pls).
 
     Incremental: phi(x+1,a)=phi(x,a)+[a < idx(spf(x+1))] (x+1 is p_a-rough iff
     spf(x+1)>p_a)."""
@@ -309,31 +309,90 @@ def integer_rank(X0, spf, primes, window, degree):
     fit = (B @ coef).T                                 # (window, K) densities
     R = np.rint(M - fit * xcol)
     rrms = float(np.sqrt(np.mean(R ** 2)))
+    return R, K, window, rrms, pls
+
+
+def min_exact_rank(R):
+    """Minimal SVD rank whose truncated reconstruction rounds to the EXACT integer
+    matrix R (R already integer-valued, rint'd). Binary search on the spectrum.
+    SVD subsumes the BEST low-rank (= best smooth) model, so this is the smooth-
+    model-free integer degrees-of-freedom of R. rank ~ #cols => integer-incompressible
+    (cert info-forced); rank polylog => compressible."""
+    if R.size == 0:
+        return 0
     U, S, Vt = np.linalg.svd(R, full_matrices=False)
     n = len(S)
 
     def exact_at(r):
+        if r == 0:
+            return bool(np.max(np.abs(R)) < 0.5)
         approx = (U[:, :r] * S[:r]) @ Vt[:r]
-        return np.max(np.abs(np.rint(approx) - R)) < 0.5
+        return bool(np.max(np.abs(np.rint(approx) - R)) < 0.5)
 
     if not exact_at(n):
-        rank = n                                   # not exact even at full numeric rank
-    else:                                          # binary-search minimal exact rank
-        lo, hi = 1, n
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if exact_at(mid):
-                hi = mid
-            else:
-                lo = mid + 1
-        rank = lo
-    return rank, K, window, rrms
+        return n                                   # not exact even at full numeric rank
+    lo, hi = 0, n                                  # binary-search minimal exact rank
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if exact_at(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+
+
+def integer_rank(X0, spf, primes, window, degree):
+    """Cross-check vs S65/CLOSED_PATHS row 737: minimal exact-integer-reconstruction
+    rank of the smooth-removed checkpoint residual matrix over a dense window of x.
+    Returns (rank, K, window, rrms). rank ~ K => integer-incompressible (cert
+    info-forced); rank polylog => not."""
+    R, K, window, rrms, pls = build_residual_matrix(X0, spf, primes, window, degree)
+    return min_exact_rank(R), K, window, rrms
+
+
+def layer_density_profile(R, K, nbins=10, fracs=(0.1, 0.25, 0.5, 0.75, 1.0)):
+    """Is the joint √x information SPREAD across all K=π(√x) layers, or carried by
+    o(K) of them? Two density statistics on the residual matrix R (W×K):
+
+      * per-layer HARD-BITS profile, binned into nbins equal layer-index bins:
+        mean ceil(log2(1+|r|)) per layer in each bin, plus the 'active fraction'
+        (layers with >=1 hard bit) and the residual-ENERGY fraction. Uniform bits
+        (every bin carries ~the same bits/layer) ⇒ dense; energy is scale-loaded
+        (phi~x at small a) so bits/rank are the fair density measures.
+      * PREFIX integer-reconstruction rank rank(R[:,:j]) at j=⌈f·K⌉: a LINEAR curve
+        rank(j)≈(rank_K/K)·j means each block of layers adds fresh independent
+        directions (dense); saturation (rank(K/2)≈rank(K)) means the rank — hence
+        the info — lives in a vanishing prefix.
+
+    Two scalar density metrics:
+      bits_uniformity = min-bin / max-bin bits-per-layer   (→1 dense, →0 concentrated)
+      rank_half_ratio = rank(R[:,:⌈K/2⌉]) / rank(R)         (→0.5 dense, →1 concentrated)
+    """
+    bits = np.where(np.abs(R) < 0.5, 0.0, np.ceil(np.log2(1.0 + np.abs(R))))
+    colbits = bits.mean(axis=0)                       # mean bits/layer, per layer a
+    colE = np.sum(R ** 2, axis=0)                     # residual energy, per layer a
+    bins = np.array_split(np.arange(K), nbins)
+    bin_bits = np.array([colbits[b].mean() for b in bins])
+    bin_active = np.array([float(np.mean(colbits[b] > 0.5)) for b in bins])
+    Etot = max(colE.sum(), 1e-30)
+    bin_Efrac = np.array([colE[b].sum() / Etot for b in bins])
+    rank_K = min_exact_rank(R)
+    prefix = []
+    for f in fracs:
+        j = max(2, int(round(f * K)))
+        prefix.append((f, j, min_exact_rank(R[:, :j])))
+    rank_half = next((r for f, j, r in prefix if abs(f - 0.5) < 1e-9), rank_K)
+    return dict(bin_bits=bin_bits, bin_active=bin_active, bin_Efrac=bin_Efrac,
+                prefix=prefix, rank_K=rank_K,
+                bits_uniformity=float(bin_bits.min() / max(bin_bits.max(), 1e-30)),
+                rank_half_ratio=float(rank_half / max(rank_K, 1)),
+                active_frac=float(np.mean(colbits > 0.5)))
 
 
 # ----------------------------------------------------------------------------
 # Main measurement over a dyadic sweep
 # ----------------------------------------------------------------------------
-def run_sweep(xmax, ks=None, degree=8, verbose=True):
+def run_sweep(xmax, ks=None, degree=8, verbose=True, wfactors=(64, 192)):
     if ks is None:
         kmax = int(math.floor(math.log2(xmax)))
         ks = list(range(14, kmax + 1))
@@ -390,19 +449,62 @@ def run_sweep(xmax, ks=None, degree=8, verbose=True):
 
     if verbose:
         _report(rows, degree)
-        rank_sweep(spf, primes, xmax, degree)
+        rank_sweep(spf, primes, xmax, degree, wfactors=wfactors)
     return rows
 
 
-def rank_sweep(spf, primes, xmax, degree, wfactor=64):
-    """Headline ROBUST measurement: required SVD integer-reconstruction rank of the
-    smooth-removed checkpoint residual matrix, over a dyadic sweep of x. SVD
-    subsumes the BEST low-rank (= best smooth) model, so this is smooth-model-free.
+def _rank_sweep_pts(spf, primes, xmax, degree, wfactor, kmin=16, verbose=True):
+    """Integer-reconstruction rank over a dyadic sweep of x, adaptive window
+    W=wfactor*K. Returns the list of (x, K, rank). Window MUST scale with K
+    (rank<=min(W,K); resolving all K modes needs W>>K)."""
+    if verbose:
+        print(f"\n=== integer-rank sweep (adaptive window W={wfactor}*K; S65/row-737 link) ===")
+        print(f"{'k':>3} {'x':>12} {'K=π(√x)':>8} {'W':>8} {'rank':>6} {'rank/K':>7} {'rRMS':>9}")
+    pts = []
+    kmax = int(math.floor(math.log2(xmax)))
+    for k in range(kmin, kmax + 1):
+        X0 = 2 ** k
+        K0 = int(np.searchsorted(primes, int(math.isqrt(X0)), side='right'))
+        W = wfactor * K0
+        if X0 + W >= xmax:
+            continue
+        rank, K, w, rrms = integer_rank(X0, spf, primes, W, degree)
+        pts.append((X0, K, rank))
+        if verbose:
+            print(f"{k:>3} {X0:>12} {K:>8} {W:>8} {rank:>6} {rank/K:>7.2f} {rrms:>9.1f}")
+    return pts
 
-    The window MUST scale with K: rank <= min(W, K), and resolving all K modes
-    needs W >> K samples in x (else rank is under-sampled -- see window-sensitivity
-    below). Window W = wfactor*K. rank/K -> 1 ⇒ K independent integer pieces ⇒
-    joint info Θ(K)=Θ(√x) ⇒ info-forced at √x; rank/K -> 0 ⇒ sub-√x info floor."""
+
+def _report_sweep_exponents(pts, wfactor):
+    """α_rank, α_K, their ratio, and the rank/K floor over a sweep. The robust
+    Θ(√x) statement is the rank/K FLOOR (rank>=c·K, no decay), independent of the
+    finite-window log-log discount that depresses BOTH α_rank and α_K below 0.5."""
+    if len(pts) < 3:
+        print("  (too few points for an exponent fit)")
+        return None
+    xs = [p[0] for p in pts]
+    s_rank, _ = fit_exponent(xs, [p[2] for p in pts])
+    s_K, _ = fit_exponent(xs, [p[1] for p in pts])
+    ratios = [p[2] / p[1] for p in pts]
+    ratio_aa = s_rank / s_K if s_K else float('nan')
+    print(f"  W={wfactor}*K:  α_rank={s_rank:+.3f}  α_K={s_K:+.3f}  "
+          f"α_rank/α_K={ratio_aa:.3f}   rank/K∈[{min(ratios):.2f},{max(ratios):.2f}]")
+    return dict(wfactor=wfactor, s_rank=s_rank, s_K=s_K, ratio_aa=ratio_aa,
+                rk_min=min(ratios), rk_max=max(ratios), pts=pts)
+
+
+def rank_sweep(spf, primes, xmax, degree, wfactors=(64, 192)):
+    """Headline ROBUST measurement: integer-reconstruction rank of the smooth-removed
+    checkpoint residual matrix over a dyadic sweep of x, at one or more adaptive window
+    factors W=wfactor*K. SVD subsumes the BEST low-rank (= best smooth) model, so this
+    is smooth-model-free.
+
+    THE SHARPENING (this cycle): the finite-window α_rank tracks α_K (NOT 0.5) because
+    K=π(√x)~2√x/ln x carries the SAME 1/ln x log-log discount -- so the honest Θ(√x)
+    signal is (i) rank/K bounded below by a constant with NO downward drift, hence
+    rank=Θ(K)=Θ(√x), and (ii) α_rank/α_K -> 1. A wider window (W=192K vs 64K) lifts the
+    rank/K floor and removes the across-window rank/K climb that inflates α_rank at 64K,
+    giving the cleaner α_rank≈α_K reading."""
     # window-sensitivity at one x: the convincing demonstration that the residual
     # is full-rank once adequately sampled (narrow windows under-count).
     kw = max(18, int(math.floor(math.log2(xmax))) - 4)
@@ -416,39 +518,78 @@ def rank_sweep(spf, primes, xmax, degree, wfactor=64):
         rank, K, w, rrms = integer_rank(X0w, spf, primes, W, degree)
         print(f"    W={W:>7} (W/K={W//K:>3})  rank={rank:>4}  K={K}  rank/K={rank/K:.2f}")
 
-    print(f"\n=== integer-rank sweep (adaptive window W={wfactor}*K; S65/row-737 link) ===")
-    print(f"{'k':>3} {'x':>12} {'K=π(√x)':>8} {'W':>8} {'rank':>6} {'rank/K':>7} {'rRMS':>9}")
-    pts = []
+    summaries, pts_for_profile = [], None
+    for wf in wfactors:
+        pts = _rank_sweep_pts(spf, primes, xmax, degree, wf)
+        s = _report_sweep_exponents(pts, wf)
+        if s is not None:
+            summaries.append(s)
+        if pts:
+            pts_for_profile = pts                      # keep the last (widest) sweep's pts
+
+    # --- α_K reference over an EXTENDED dyadic range (no rank): shows BOTH α_rank and
+    #     α_K -> 0.5 only as the PNT 1/ln x discount fades; the finite-window ~0.4 is
+    #     the shared discount, not a sub-√x rank deficiency. ---
     kmax = int(math.floor(math.log2(xmax)))
-    for k in range(16, kmax + 1):
-        X0 = 2 ** k
-        K0 = int(np.searchsorted(primes, int(math.isqrt(X0)), side='right'))
-        W = wfactor * K0
-        if X0 + W >= xmax:
-            continue
-        rank, K, w, rrms = integer_rank(X0, spf, primes, W, degree)
-        pts.append((X0, K, rank))
-        print(f"{k:>3} {X0:>12} {K:>8} {W:>8} {rank:>6} {rank/K:>7.2f} {rrms:>9.1f}")
-    if len(pts) >= 3:
-        xs = [p[0] for p in pts]
-        s_rank, _ = fit_exponent(xs, [p[2] for p in pts])
-        s_K, _ = fit_exponent(xs, [p[1] for p in pts])
-        ratios = [p[2] / p[1] for p in pts]
-        print(f"\n  rank exponent  α_rank = {s_rank:+.3f}   "
-              f"(K exponent α_K = {s_K:+.3f};  √x ⇒ 0.5)")
-        print(f"  rank/K (well-sampled): {min(ratios):.2f}..{max(ratios):.2f}")
-        print("\n  INTERPRETATION:")
-        if min(ratios) > 0.80 or s_rank > 0.85 * s_K:
-            print(f"   Well-sampled rank ≈ K ~ x^{s_rank:.2f} (≈ α_K={s_K:.2f}): the K")
-            print("   checkpoint residuals are integer-INDEPENDENT (no smaller smooth+low-rank")
-            print("   model reconstructs them exactly). Joint checkpoint information is")
-            print("   Θ(K)=Θ(√x)·polylog ⇒ the √x certificate is INFORMATION-FORCED for any")
-            print("   sieve-reconstructing verifier -- a barrier, not mere construction shape.")
-        elif s_rank > 0.30:
-            print(f"   rank ~ x^{s_rank:.2f}: super-polylog (no polylog cert) but possibly sub-√x.")
+    Kref = [(2 ** k, int(np.searchsorted(primes, int(math.isqrt(2 ** k)), side='right')))
+            for k in range(16, kmax + 1)]
+    if len(Kref) >= 3:
+        sKfull, _ = fit_exponent([x for x, _ in Kref], [K for _, K in Kref])
+        print(f"\n  α_K over full k=16..{kmax} = {sKfull:+.3f}  "
+              f"(→0.5 as x→∞: d log K/d log x = 0.5 − 1/ln x + o(1); the finite-window")
+        print("   reading is the PNT discount shared by rank — rank/K floor, not the")
+        print("   exponent, is the sampling-robust √x statement)")
+
+    print("\n  INTERPRETATION:")
+    if summaries:
+        best = summaries[-1]                           # widest window = most-sampled
+        if best['rk_min'] > 0.80 and best['ratio_aa'] > 0.85:
+            print(f"   Well-sampled rank ≈ {best['rk_min']:.2f}..{best['rk_max']:.2f} × K with NO")
+            print(f"   downward drift, and α_rank/α_K={best['ratio_aa']:.2f}≈1: the K checkpoint")
+            print("   residuals are integer-INDEPENDENT (no smaller smooth+low-rank model")
+            print("   reconstructs them exactly), so rank=Θ(K)=Θ(√x)·polylog ⇒ the √x")
+            print("   certificate is INFORMATION-FORCED for any sieve-reconstructing verifier")
+            print("   -- a barrier, not mere construction shape.")
+        elif best['s_rank'] > 0.30:
+            print(f"   rank ~ x^{best['s_rank']:.2f}: super-polylog (no polylog cert) but possibly sub-√x.")
         else:
-            print(f"   rank ~ x^{s_rank:.2f}: (near-)polylog ⇒ √x cert NOT info-forced.")
-    return pts
+            print(f"   rank ~ x^{best['s_rank']:.2f}: (near-)polylog ⇒ √x cert NOT info-forced.")
+
+    # --- per-layer DENSITY profile at the top of the (widest) sweep ---
+    if pts_for_profile:
+        X0p = pts_for_profile[-1][0]
+        wf = wfactors[-1]
+        K0p = int(np.searchsorted(primes, int(math.isqrt(X0p)), side='right'))
+        Wp = wf * K0p
+        if X0p + Wp < xmax:
+            print(f"\n=== per-layer hard-bit DENSITY profile at x={X0p}=2^{int(round(math.log2(X0p)))} "
+                  f"(W={Wp}, the widest sweep top) ===")
+            R, K, w, rrms, pls = build_residual_matrix(X0p, spf, primes, Wp, degree)
+            prof = layer_density_profile(R, K)
+            print("  decile (by layer index a/K):  bits/layer  active-frac  energy-frac")
+            for i, (bb, ba, be) in enumerate(zip(prof['bin_bits'], prof['bin_active'],
+                                                 prof['bin_Efrac'])):
+                bar = '#' * int(round(20 * bb / max(prof['bin_bits'].max(), 1e-9)))
+                print(f"    dec {i}: {bb:6.2f}    {ba:5.2f}      {be:5.3f}  {bar}")
+            print(f"  prefix integer-rank rank(R[:,:⌈fK⌉]):")
+            for f, j, r in prof['prefix']:
+                print(f"    f={f:.2f}  j={j:>4}  rank={r:>4}  rank/j={r / j:.2f}")
+            print(f"\n  DENSITY metrics:")
+            print(f"   bits_uniformity (min/max decile bits/layer) = {prof['bits_uniformity']:.2f}"
+                  f"   (→1 uniform/dense; →0 concentrated)")
+            print(f"   active fraction (layers with ≥1 hard bit)    = {prof['active_frac']:.2f}")
+            print(f"   rank_half_ratio = rank(first K/2)/rank(K)    = {prof['rank_half_ratio']:.2f}"
+                  f"   (→0.5 dense/linear; →1 carried by the prefix)")
+            dense = (prof['bits_uniformity'] > 0.4 and prof['active_frac'] > 0.9
+                     and 0.35 < prof['rank_half_ratio'] < 0.65)
+            if dense:
+                print("   ⇒ DENSE: the √x information is spread ~uniformly across all K=π(√x)")
+                print("     layers (prefix rank grows LINEARLY, every layer carries ~equal hard")
+                print("     bits), NOT carried by an o(K) subset -- so the joint info is genuinely")
+                print("     Θ(K)=Θ(√x), not a handful of fat layers.")
+            else:
+                print("   ⇒ NON-uniform: inspect -- the √x may be carried by o(K) layers.")
+    return pts_for_profile
 
 
 def _report(rows, degree):
@@ -656,6 +797,60 @@ def selftest():
               len(S))
     check(f"full-entropy integer matrix needs near-full rank {rr}>=20 (of 25)", rr >= 20)
 
+    # 11. min_exact_rank REFACTOR SAFETY: the extracted helper reproduces the inline
+    #     binary search, and integer_rank == build_residual_matrix + min_exact_rank.
+    spf3, primes3 = sieve_spf(1 << 19)
+    X0t = 1 << 16
+    K0t = int(np.searchsorted(primes3, int(math.isqrt(X0t)), side='right'))
+    Wt = 64 * K0t
+    Rt, Kt, wt, rrmst, plst = build_residual_matrix(X0t, spf3, primes3, Wt, 8)
+    rk_helper = min_exact_rank(Rt)
+    rk_intfn, _, _, _ = integer_rank(X0t, spf3, primes3, Wt, 8)
+    check(f"integer_rank == build+min_exact_rank (both {rk_helper})", rk_helper == rk_intfn)
+    # min_exact_rank reproduces the inline-SVD binary search on an exact low-rank int matrix
+    Alr = np.rint(np.outer(np.arange(60) % 9, np.arange(30) % 6)).astype(float)  # rank<=2
+    U, S, Vt = np.linalg.svd(Alr, full_matrices=False)
+    inline = next((r for r in range(0, len(S) + 1)
+                   if np.max(np.abs(np.rint((U[:, :r] * S[:r]) @ Vt[:r]) - Alr)) < 0.5),
+                  len(S))
+    check(f"min_exact_rank matches inline on rank-2 matrix ({min_exact_rank(Alr)}=={inline})",
+          min_exact_rank(Alr) == inline)
+    check("min_exact_rank(zeros)=0", min_exact_rank(np.zeros((10, 5))) == 0)
+
+    # 12. layer_density_profile SEPARATION: it must distinguish a DENSE residual
+    #     (info spread across all K layers) from two kinds of CONCENTRATED residual.
+    #     rank_half_ratio and (bits_uniformity, active_frac) are COMPLEMENTARY
+    #     discriminators -- the conjunction is what the verdict uses.
+    rng2 = np.random.default_rng(7)
+    Wd, Kd = 2000, 80
+    # (a) DENSE: all K columns independent integer surprises.
+    R_dense = rng2.integers(-300, 301, size=(Wd, Kd)).astype(float)
+    pd = layer_density_profile(R_dense, Kd)
+    check(f"dense: rank_half≈0.5 (got {pd['rank_half_ratio']:.2f})",
+          0.35 < pd['rank_half_ratio'] < 0.65)
+    check(f"dense: active≈1 ({pd['active_frac']:.2f}) & bits uniform ({pd['bits_uniformity']:.2f}>0.4)",
+          pd['active_frac'] > 0.9 and pd['bits_uniformity'] > 0.4)
+    # (b) RANK-concentrated: second half = exact COPIES of first-half columns. Every
+    #     column is "active" with uniform bits, but the rank lives entirely in the
+    #     first K/2 -> rank_half_ratio≈1. Only the rank metric catches this.
+    half = Kd // 2
+    R_rc = np.empty((Wd, Kd))
+    R_rc[:, :half] = rng2.integers(-300, 301, size=(Wd, half)).astype(float)
+    R_rc[:, half:] = R_rc[:, :half]                      # duplicate -> no new rank
+    prc = layer_density_profile(R_rc, Kd)
+    check(f"rank-concentrated caught: rank_half>0.9 (got {prc['rank_half_ratio']:.2f}) "
+          f"though bits uniform ({prc['bits_uniformity']:.2f})",
+          prc['rank_half_ratio'] > 0.9)
+    # (c) BIT-concentrated: only ~log2(K) columns carry surprises, the rest exact (0).
+    R_bc = np.zeros((Wd, Kd))
+    nnz = max(2, int(math.log2(Kd)))
+    cols = rng2.choice(Kd, size=nnz, replace=False)
+    R_bc[:, cols] = rng2.integers(-300, 301, size=(Wd, nnz)).astype(float)
+    pbc = layer_density_profile(R_bc, Kd)
+    check(f"bit-concentrated caught: active<0.5 ({pbc['active_frac']:.2f}) & "
+          f"bits_uniformity<0.1 ({pbc['bits_uniformity']:.2f})",
+          pbc['active_frac'] < 0.5 and pbc['bits_uniformity'] < 0.1)
+
     print(f"\n{'ALL PASS' if fails == 0 else str(fails)+' FAILED'}")
     return fails == 0
 
@@ -669,6 +864,9 @@ def main():
     ap.add_argument('--degree', type=int, default=8,
                     help='polylog smooth-fit polynomial degree (predictor F)')
     ap.add_argument('--kmin', type=int, default=14)
+    ap.add_argument('--wfactors', type=int, nargs='+', default=[64, 192],
+                    help='adaptive rank-window factors W=wfactor*K to sweep '
+                         '(default 64 192: the 64->192 sharpening of α_rank/α_K)')
     args = ap.parse_args()
 
     if args.selftest:
@@ -677,7 +875,7 @@ def main():
 
     kmax = int(math.floor(math.log2(args.xmax)))
     ks = list(range(args.kmin, kmax + 1))
-    run_sweep(args.xmax, ks=ks, degree=args.degree)
+    run_sweep(args.xmax, ks=ks, degree=args.degree, wfactors=tuple(args.wfactors))
 
 
 if __name__ == '__main__':

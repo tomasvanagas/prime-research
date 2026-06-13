@@ -84,6 +84,28 @@ k-tuple conjecture every admissible S occurs as an *exact* pattern
      order is the truth with constant 1. This constant sets the
      plateau→cliff corner of the χ_P width profile asymptotically.
 
+## Counting A_k without enumeration — transfer-matrix route closed (S519)
+
+`census_transfer_matrix.py` answered "can A_k be counted without
+enumerating all A_k patterns (to push the entropy law to k=128)?" with a
+**clean negative for the natural method, plus two scaling structural facts**:
+
+- **Transfer-matrix / position-DP (state = per-prime occupied-residue set)
+  has Θ(A_k) states** — measured collapse factor A_k/states = 1.55–2.37
+  (bounded, not growing), ln(states) slope 1.020 ≈ ln A_k slope 1.011 over
+  k = 8,16,32,64. So the DP is exponential with A_k's own exponent and is
+  strictly worse than the DFS (Θ(A_k) memory vs Θ(k)). The transfer-matrix
+  route to k=128 is closed. (Re-confirms the entropy slope → 1 independently.)
+- **Active-prime reduction (rigorous):** A_k depends only on primes ≤ B(k),
+  B(k) = 3,5,7,13,23,47 at k = 8,16,32,64,128,256 — A₁₂₈ uses only the 8
+  primes {3..23}. Two independent proofs (count-stabilisation; a W(B)-weight
+  bound via branch-and-bound min-union) agree.
+- **W(B(k)) = ρ*(k) = maximal admissible-tuple size** = 3,5,9,16,28,52,
+  extending the k≤32 H()-cross-check (here matched exactly at k=64 via
+  H(16)=60<H(17)=66 and k=128 via H(28)=126<H(29)=132). This is why
+  ln A_k = Θ(π(k)): admissible patterns live inside the ρ*(k) ≈ k/ln k
+  admissible geometry. See `census_transfer_matrix_results.md`.
+
 ## Consequences for the verification thread
 
 The cliff height being A_k + 1 (not polylog) re-confirms quantitatively

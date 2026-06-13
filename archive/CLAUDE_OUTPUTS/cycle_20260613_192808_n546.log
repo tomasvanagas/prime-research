@@ -1,0 +1,131 @@
+=== Cycle 546 — Sat Jun 13 19:28:08 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, long-running research project. Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: the census entropy law at k=128 (open item 4) via a transfer-matrix / generating-function count of A_k, without enumerating all patterns. Let me first understand exactly what A_k is by reading the existing census code and results.
+  [tool: Bash] ls -la /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census_results.md
+This is a deep combinatorial counting problem. The NEXT ACTION asks me to count A_k (admissible aligned-k patterns) via a transfer-matrix/generating-function method without enumerating all A_k patterns, validate against known values (k≤80), and push toward k=128 — or prove the state space is exponential.
+
+Let me first confirm the known values and timing of the existing DFS.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && time python3 -c "
+from local_pattern_ce
+DFS confirmed: A_80=5.78M in ~22s; A_128~e^25~10^11 is hopelessly far for DFS. Let me explore the key structural lever — the **active-prime reduction** (admissible patterns have bounded weight, so only small primes constrain).
+  [tool: Bash] python3 -c "
+from local_pattern_census import primes_upto
+import itertools
+
+def allowed_offsets(k):
+    dp=[q for q in p
+The active-prime reduction works cleanly: A_k depends only on primes ≤ B(k), with B growing slowly (B=13 suffices at k=64). My brute W(B) computation blew up at k=128, but I don't actually need it — I can establish sufficiency rigorously by **count stabilization** (enforcing prime q can only shrink the count; if the count is unchanged, q never binds). 
+
+The real question is whether the **transfer-matrix state space** (coverage-tuple states) is ≪ A_k. Let me build the DP and measure this directly — that's the crux.
+  [tool: TaskCreate] 
+I'll skip the task tracker and build directly. Let me write the transfer-matrix census counter.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+I left a typo (`int+ = 0`) in `fit_entropy`. Let me fix it.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+  [tool: Bash] time python3 census_transfer_matrix.py --selftest
+All selftests pass — TM reproduces every known A_k bit-for-bit. Now the crux measurement: how does the state space grow vs A_k? Let me scan.
+  [tool: Bash] time python3 census_transfer_matrix.py --scan 8 80 --powers --max-states 30000000
+**Crux result found:** the TM state count is a *constant fraction* of A_k (ratio 0.42–0.65, not shrinking) — `states/A_k = 1.86, 1.66, 2.37, 1.55` collapse factor, bounded. So the transfer-matrix state space is **Θ(A_k) — exponential with the same entropy exponent as A_k itself**. The TM does not beat the enumeration barrier; it's actually worse than DFS (O(A_k) memory vs O(k)). This is exactly the "prove the state space is exponential, closing the method" branch of the deliverable.
+
+Let me sharpen this. First, let me establish the active-prime reduction for k=128 structurally (which primes bind) via a vectorized W(B) computation, since the DP can't reach k=128 to use stabilization.
+  [tool: Bash] python3 -c "
+import numpy as np
+from census_transfer_matrix import allowed_offsets, enforceable_primes
+
+# W(B) = |allowe
+While that computes, let me add a proper state-exponent fit to the script's output so the "exponential state space" conclusion is quantitative. Let me check on the background job first.
+  [tool: Bash] sleep 20; cat /tmp/claude-0/-apps-aplikacijos-prime-research/00f90a9e-a13c-43c4-8ec9-03ba5cf3a66f/tasks/bo9s7yz5s.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/00f90a9e-a13c-43c4-8ec9-03ba5cf3a66f/tasks/bo9s7yz5s.output
+Output is buffered in the background process. Let me improve the script meanwhile — record state counts in the scan and fit both the A_k and state-count exponents, so the "exponential state space" conclusion is quantitative.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+Now let me update `fit_entropy` to take state counts and fit both exponents:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+Now update the scan to pass peak states into the records:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+Let me check the W(B) background job:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/00f90a9e-a13c-43c4-8ec9-03ba5cf3a66f/tasks/bo9s7yz5s.output 2>/dev/nu
+It's stuck on the 5M-tuple brute for k=128. Let me kill it and use a smarter min-union (branch-and-bound) that gives W(B) exactly without iterating all drop-tuples.
+  [tool: Bash] pkill -f "Wbound" 2>/dev/null; pkill -f "from census_transfer_matrix import allowed" 2>/dev/null; sleep 1; echo "killed"
+Killed. Let me compute W(B) exactly via branch-and-bound min-union (avoids iterating all drop-tuples) to pin down which primes bind at k=128.
+  [tool: Bash] timeout 120 python3 -c "
+from census_transfer_matrix import allowed_offsets, enforceable_primes
+
+def minkill_bb(allowed,
+B&B confirms **B(128) = {3,5,7,11,13,17,19,23}** (8 primes); the 9 larger enforceable primes never bind (W=28 < 29). It matches the DP-stabilization result at k=64 (B=13), validating the method. This is a clean rigorous structural fact even though A_128 itself is unreachable.
+
+Let me fold this into the script as a reproducible, tested method.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+Now add a selftest group that checks `reduce_primes` agrees with the DP-stabilization `minimal_B`, and a `--reduce` CLI mode:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+I referenced a `_union` helper that doesn't exist. Let me fix selftest 9 to compute the union inline:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+Now add the `--reduce` CLI mode and wire it in:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+  [tool: Bash] time python3 census_transfer_matrix.py --selftest 2>&1 | tail -20
+All 9 selftest groups pass. Now let me run the definitive measurement scan and the reduction report for the key k values:
+  [tool: Bash] echo "=== ENTROPY + STATE-SPACE SCAN (clean family) ==="; python3 census_transfer_matrix.py --scan 8 64 --powers --max-s
+This is a clean, complete result set with a beautiful cross-validation. Key findings:
+
+1. **TM state space is Θ(A_k)** — `ln(states)` slope **1.0202** ≈ `ln(A_k)` slope **1.0105**; collapse factor bounded in [1.55, 2.37]. The transfer-matrix route is **exponential with the same entropy exponent as A_k**, so it cannot reach k=128 (and is actually worse than DFS — O(A_k) memory vs O(k)).
+
+2. **Active-prime reduction** (rigorous, W-based agrees with count-stabilization): B(k) = 3,5,7,13,23,47 at k=8,16,32,64,128,256. A_128 depends on only **8 primes** {3..23}.
+
+3. **W(B(k)) = ρ*(k) = max admissible weight** = 3,5,9,16,28,52 — matching the classical narrowest-admissible-tuple function H(k) (the existing results validated 3,5,9; this extends to 16,28,52 and cross-checks against w(16)=60<64, w(17)=66>64 etc.). This explains the entropy law's k/ln k scaling.
+
+Let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix_results.md
+Let me refine the H(k) cross-check wording to match the existing results.md convention (H(k) = minimal diameter, OEIS A008407) and be precise:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix_results.md
+Let me clean up `__pycache__` and verify the final state of the script:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/analytic/local_pattern_census -name __pycache__ -type d -exec rm
+The MISSING files are all pre-existing helper scripts in unrelated experiment directories — my new `census_transfer_matrix.py` has its `_results.md`. Let me do a final confirmation run:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 census_transfer_matrix.py --red
+Everything works. Now let me update the canonical census results file with a cross-reference, then update PROGRAM.md.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census_results.md
+Now update PROGRAM.md — the "Done this era" entry, open item 4, and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check the cycle numbering convention before finalizing the labels:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== .cycle ===" && cat .cycle 2>/dev/null | head -5; echo "=== latest archi
+  [tool: Bash] echo "=== S-numbers cited in n543-n546 logs ===" && for f in archive/CLAUDE_OUTPUTS/cycle_*_n54{3,4,5,6}.log; do echo "-
+n545→S518, so this cycle is **S519** (n547). Let me fix the labels I wrote as S547/n547:
+  [tool: Bash] grep -rn "S547\|n547" PROGRAM.md experiments/analytic/local_pattern_census/*.md 2>/dev/null
+  [tool: Bash] sed -i 's/route closed (n547)/route closed (S519)/' experiments/analytic/local_pattern_census/local_pattern_census_resul
+All labels are now S519. Now let me add the "Done this era" entry and update the NEXT ACTION in PROGRAM.md:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me update the NEXT ACTION at the bottom of PROGRAM.md, since open item 4's transfer-matrix route is now closed:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me add a CLOSED_PATHS row (the contract says to record closed approaches with the mechanism). Let me check the format:
+  [tool: Bash] tail -8 status/CLOSED_PATHS.md && echo "=== header ===" && head -25 status/CLOSED_PATHS.md | grep -n "|" | head -6
+  [tool: Bash] grep -n "^| *Approach\|^| *approach\|^|---\|^| # \|^| ID" status/CLOSED_PATHS.md | head -3; echo "=== first table-ish li
+  [tool: Bash] tail -3 status/CLOSED_PATHS.md | cut -c1-160; echo "=== line count ==="; wc -l status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Bash] cat >> status/CLOSED_PATHS.md << 'EOF'
+| Transfer-matrix / position-DP exact count of the HL-admissible census A_k (carr
+Now let me do a final verification — run the selftest one more time to confirm the script is intact, and clean up:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 census_transfer_matrix.py --sel
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git status --short experiments/analytic/local_pattern_census/ PROGRAM.md status/C
+Cycle complete. All artifacts are in place, selftests pass (9 groups), `__pycache__` cleaned.
+
+## Summary — S519 (open item 4: census A_k without enumeration)
+
+I answered the NEXT ACTION: count A_k by a transfer matrix instead of enumerating all ~A_k patterns, validate bit-for-bit, push toward k=128 **or** prove the state space is exponential. The result is the latter (the explicitly-offered deliverable), plus two structural facts that *do* scale.
+
+**Built** `experiments/analytic/local_pattern_census/census_transfer_matrix.py` (one script, `--selftest`/`--k`/`--scan`/`--reduce`, 9 selftest groups; TM reproduces every known A_k bit-for-bit, `brute == DFS == TM`).
+
+**(1) Transfer-matrix route CLOSED.** The natural position-DP — state = per-prime occupied-residue *set*, with fully-covered primes pruned as absorbing dead states — has **Θ(A_k) distinct states**. Measured collapse factor `A_k/states = 1.86, 1.66, 2.37, 1.55` at k=8,16,32,64 (bounded, not growing); `ln(states)` slope **1.020** ≈ `ln A_k` slope **1.011**. Same entropy exponent ⇒ exponential, and *strictly worse* than the existing DFS (Θ(A_k) memory vs Θ(k); the final live-state count is offset-ordering-independent ≈ A_k/2). k=128 (A₁₂₈≈10¹¹) is unreachable by either; inclusion-exclusion has the known catastrophic cancellation. No new exact A_k value is obtainable — stated honestly.
+
+**(2) Active-prime reduction (rigorous, two independent agreeing proofs — count-stabilization and a no-count W(B) branch-and-bound min-union).** A_k depends only on primes ≤ B(k): **B(k) = 3,5,7,13,23,47** at k=8,16,32,64,128,256. **A₁₂₈ uses only 8 primes {3,5,7,11,13,17,19,23}**; the 9 larger enforceable primes provably never bind.
+
+**(3) Identity W(B(k)) = ρ*(k) = maximal admissible-tuple size** = 3,5,9,16,28,52 — the weight bound is tight, so it equals the densest admissible aligned-k tuple, **matching the classical H() (OEIS A008407) exactly** at k=64 (H(16)=60<H(17)=66) and k=128 (H(28)=126<H(29)=132). With ρ*/(k/ln k) = 0.78→1.13, this explains *why* `ln A_k = Θ(π(k))` — admissibles live in the ρ*(k)≈k/ln k geometry. The entropy slope→1 (1.01) is re-confirmed independently of the DFS.
+
+**Updated** PROGRAM.md (open item 4, done-this-era entry, new NEXT ACTION → the entropy *constant*→1 via a generating-function/cluster-expansion asymptotic on the reduced problem), `local_pattern_census_results.md`, and added a CLOSED_PATHS row. **Honest residual:** an exact A₁₂₈ needs a genuinely sub-A_k algorithm (none found); the constant→1 is now an analytic question, separate from exact counting.
+--- cycle result: success (turns=51, duration=1625652ms) ---
+=== Cycle 546 finished — Sat Jun 13 19:55:15 UTC 2026 ===

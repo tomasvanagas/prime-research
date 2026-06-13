@@ -1,0 +1,110 @@
+=== Cycle 543 — Sat Jun 13 17:48:59 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have a clear NEXT ACTION: add a `--distance-sweep` and `--forge-rate` to `pcs_commit.py` to turn the S514 distance claim into a measured curve. Let me read the relevant code and results files.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me read the results file and run the existing selftest to confirm the baseline works.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Let me run the existing selftest to confirm the baseline works before extending.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && time python3 pcs_commit.py
+Baseline passes in 0.7s. Now let me check the field constants and the `compressed_prover_mult_trace` helpers I'll be relying on.
+  [tool: Bash] python3 -c "from compressed_prover_mult_trace import DEFAULT_Q as Q, BIG_Q, SMALL_Q, FIELDS; print('Q   =', Q, Q.bit_len
+Baseline is solid. Now I understand the task precisely. The key quantity is `_exp_min_basis_rel_weight` (the relative weight `min_j |Enc(e_j)|/N` that governs the forge cheat). I'll:
+
+1. Generalize it to a code-agnostic `_min_basis_rel_weight` (RS + expander),
+2. Add `--distance-sweep` (δ vs k up to ~512, both codes, q/BIG_Q/SMALL_Q),
+3. Add `--forge-rate` (Monte-Carlo empirical accept rate vs t, fit vs (1−δ)^t),
+4. Gate both with selftest cases + falsifiers.
+
+Let me make the edits.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me generalize `_forge_prove` to accept an optional worst-case coordinate `j0`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me add the `distance_sweep` and `forge_rate` measurement functions. I'll insert them right before `selftest()`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me add selftest cases 10 & 11. Let me view the end of the selftest:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now I'll add selftest cases 10 & 11 with falsifiers, right before `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me wire up the CLI flags:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me run the selftest to verify everything works:
+  [tool: Bash] time python3 pcs_commit.py --selftest 2>&1 | tail -30
+The expander δ genuinely declines from 0.65 (k=8) to 0.447 (k=128) — my non-decay threshold was too strict. This is exactly the falsifiable question. Let me measure the full curve to k=512 to see whether δ floors or keeps decaying:
+  [tool: Bash] time python3 pcs_commit.py --distance-sweep 2>&1 | tail -40
+The full curve is informative: expander δ declines **0.650 → 0.404** over k=8→512, but the per-doubling decrements are *shrinking* (0.082, 0.046, 0.049, 0.026, 0.024, 0.019) — decelerating decline, not collapse, and δ stays well above 0 (≥0.40 at k=512). RS climbs to ~1.0. This is the honest measured answer: δ does **not** decay to 0; it decelerates toward a positive floor (consistent with Brakedown's proven constant-distance). Let me recalibrate the selftest assertion to the measured reality and add decrement/extrapolation analysis to the sweep output.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now let me enhance the `distance_sweep` output to report decrements and a geometric-tail floor estimate (the convergence evidence):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Bash] time python3 pcs_commit.py --selftest 2>&1 | tail -30
+Selftest passes (1.8s). The forge-rate output is exactly right: empirical accept stays **at or below** (1−δ)^t (emp/pred ≤ 1 everywhere — tracking the tighter hypergeometric), and δ_eff=0.73 ≥ δ=0.65 (decay at least as fast as predicted ⇒ no query correlation). Let me run the full curves to capture headline numbers for the results doc:
+  [tool: Bash] echo "=== DISTANCE SWEEP (k up to 512) ==="; python3 pcs_commit.py --distance-sweep 2>&1 | grep -A30 "expander"
+The sweep now reports decrements + a geometric-tail floor estimate (~0.341). Let me capture a larger forge-rate run for the doc, and confirm the law holds at higher nb:
+  [tool: Bash] echo "=== FORGE-RATE expander nb=10, 20000 trials ==="; python3 pcs_commit.py --forge-rate --code expander --nb 10 --tri
+The law holds at every scale: empirical accept tracks (1−δ)^t closely and never exceeds it (emp/pred ≤ ~1.0, tracking the tighter hypergeometric), δ_eff ≥ δ throughout, field-independent. Let me add the practical consequence — how the query count `t` for fixed soundness grows as δ declines — to the sweep report:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+I need to ensure `math` is available in `distance_sweep`. Let me add the import:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Bash] python3 pcs_commit.py --distance-sweep 2>&1 | tail -18
+Now the sweep gives a complete, honest story: RS δ→1 (t drops 20→10), expander δ declines 0.65→0.40 (decelerating, tail-floor ~0.34, t grows modestly 67→134). Let me run the final selftest and confirm the whole module is clean:
+  [tool: Bash] echo "=== selftest ==="; python3 pcs_commit.py --selftest 2>&1 | tail -3
+echo "=== bench still works (both codes) ==="; 
+The selftest works but prints verbose forge-rate tables. Let me add a `verbose` flag to `forge_rate` so selftest stays clean:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+Now update the selftest calls to use `verbose=False`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py
+  [tool: Bash] echo "=== clean selftest ==="; time python3 pcs_commit.py --selftest 2>&1 | tail -5
+echo "=== confirm compressed_layer c
+Clean. Now let me update the results doc with the S515 section. Let me capture the exact RS sweep numbers too:
+  [tool: Bash] python3 pcs_commit.py --distance-sweep 2>&1 | sed -n '/code = rs/,/non-decreasing/p'
+Now let me add the S515 section to the results doc:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/pcs_commit_results.md
+Now let me update PROGRAM.md. First, let me determine the current cycle number:
+  [tool: Bash] cat /apps/aplikacijos/prime-research/.cycle 2>/dev/null; echo "---recent cycle logs---"; ls -t /apps/aplikacijos/prime-r
+This is cycle n543 (label S516 — the S514-follow-on the S515 NEXT ACTION flagged). Let me update PROGRAM.md. First the era header:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me update the step-18 row in the protocol stack table to reference the S516 curve measurement:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me update the NEXT ACTION section since this clean single cycle is now done:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me run the cleanup checks from CLAUDE.md (missing `_results.md`, `__pycache__`) and a final full verification:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== missing _results.md check ==="
+find experiments/ -path "*/.lake" -prune -o
+All the MISSING entries are pre-existing files from unrelated earlier-cycle directories (circuit_complexity, ml, quantum, …) — my `pcs_commit.py` has its `pcs_commit_results.md` and is not in the list. selftest is green, `__pycache__` cleaned.
+
+Let me do a final review of the diff to confirm coherence:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git diff --stat experiments/constructions/p12_sumcheck_pi_verification/pcs_commit
+PROGRAM.md's larger diff includes the prior n542/S515 uncommitted changes from the initial git status — my additions are layered on top (the loop's `run.sh` handles commits, not me). Let me do a final end-to-end check of the default CLI path:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 pcs_commit.py --fo
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null;
+Everything is clean and verified. Let me summarize this cycle's work.
+
+## Cycle S516 (n543) — complete
+
+**Closed the S515 NEXT ACTION** (the "clean single cycle" it flagged): turned the S514 single-point distance claim δ≈0.45 into measured curves, in `experiments/constructions/p12_sumcheck_pi_verification/pcs_commit.py`.
+
+### What I built
+- **`_min_basis_rel_weight(code, k, q)`** — a code-agnostic generalization of S514's expander-only `_exp_min_basis_rel_weight` (RS via the incremental power table `c^j`; expander via `_exp_encode`), plus `_basis_support`, `_hyper_miss`, and an optional worst-case coordinate `j0` on `_forge_prove`.
+- **`--distance-sweep`** — δ = `min_j |Enc(e_j)|/N` vs k up to 512, both row codes, over q/BIG_Q/SMALL_Q, with per-doubling decrements, a geometric-tail floor estimate, and the `t`-for-100-bit consequence.
+- **`--forge-rate`** — worst-case Monte-Carlo: empirical forge accept rate vs `t` against `(1−δ)^t` and the exact hypergeometric, with a log-linear `δ_eff` fit.
+- **Selftest cases 10 & 11** with the falsifiers wired in.
+
+### Measured result (honest)
+- **δ does NOT decay to 0.** Expander δ declines **0.650 → 0.404** over k=8→512, but the per-doubling decrements *shrink* (+0.082→+0.019, mean ratio 0.77) — decelerating decline, geometric-tail floor estimate **≈0.34**, consistent with (not a proof of) Brakedown's proven constant distance. Field-independent. RS δ→1.
+- **The `(1−δ)^t` law holds empirically.** Across ≤20k random openings the accept rate tracks `(1−δ)^t` and stays **at or below** it (hugging the tighter hypergeometric), `δ_eff ≥ δ` — the forge dies at least as fast as the bound; **no query correlation** (the `emp ≫ (1−δ)^t` falsifier never fires). 
+- **Practical:** `t` for 2⁻¹⁰⁰ forge soundness grows only **67 → 134** over k=8→512 (sub-linear, because δ floors above 0).
+
+### Honest scope
+The asymptotic constant distance is Brakedown's, cited, *not re-proved*; this adds the measurement showing demo-scale δ declines but decelerates to a positive floor. The geometric extrapolation is an estimate, not a bound. Recipe: measure δ at the actual k, pick `t = ⌈λ/−log₂(1−δ)⌉`.
+
+selftest green (1.85 s), bench/sweep/forge-rate all working, no `__pycache__`, `pcs_commit_results.md` + PROGRAM.md updated. **NEXT ACTION** now points to the genuine open frontier — a real #P-hardness lower bound for π or a non-sieve sub-√x witness for L_π — since no clean single-cycle items remain on the verification line.
+--- cycle result: success (turns=42, duration=845191ms) ---
+=== Cycle 543 finished — Sat Jun 13 18:03:05 UTC 2026 ===

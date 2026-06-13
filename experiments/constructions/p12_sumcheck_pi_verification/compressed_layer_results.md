@@ -737,6 +737,19 @@ commitment** (Θ(x^{1/4}), S508). Soundness at the reach is witnessed: the
 `delta_pi` liar (claim π+1) is **REJECTED** at n=22 (66.9 s). Details in
 `large_x_benchmark_results.md`.
 
+**`commit_code` — the row code for the base commitment (S514).** `run_chain` and
+`main` take `commit_code` / `--commit-code` (default `"rs"`, verbatim) selecting
+the `pcs_commit` row code: `"rs"` (Reed–Solomon, needs codeword length `N≤q`) or
+`"expander"` (Brakedown-style linear-time code, **field-size-free**). The expander
+removes the `N≤q` demo constraint that otherwise caps the committable base-table
+size; same sub-√x base-open verifier. Chain verdict is UNCHANGED either way —
+selftest **case 24** asserts honest `π==sieve`, `delta_pi` + self-consistent liar
+rejected, per-layer still leaf-free, base opens still sub-√x
+(`vcommit_ops==vleaf_ops_ot`) with `commit_code="expander"` over q AND BIG_Q at
+`n∈{8,10,12}`. End-to-end demo: `--n 12 --delegate --structured --field big --pcs
+--commit-base --commit-code expander` → `π(4095)=564`, all cheats rejected. Full
+expander-code documentation in `pcs_commit_results.md` (S514 section).
+
 ## Falsification
 
 Falsified by: the compressed DP disagreeing with a sieve (checked n≤20); an

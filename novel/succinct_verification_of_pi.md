@@ -272,6 +272,27 @@ x = 2²⁴ with matched-random control:
   below that (the S506 crossover pattern); and RS's N≤q point requirement is a demo
   artifact that a field-size-free linear code (Brakedown's expander code) removes behind
   the same interface.
+- **Field-size-free row code (S514) — the N≤q demo artifact removed.** The RS row
+  code needs the codeword length N=blowup·k ≤ q (distinct evaluation points), which
+  caps the committable table size and forces large runs onto the 61-bit BIG_Q.
+  `pcs_commit.py` now offers a **Brakedown-style linear-time expander code** behind the
+  SAME commit/prove/verify, gated by `code=` (`commit_code=` on `run_chain`); default
+  "rs" keeps every prior artifact verbatim. Construction (Spielman/Druk–Ishai recursive,
+  as in Brakedown): systematic `Enc_n(x)=x ‖ Enc_{⌈n/2⌉}(A·x) ‖ B·Enc_{⌈n/2⌉}(A·x)` with
+  **column-regular** sparse A,B over F_q (every input coordinate hits coldeg=4 output
+  rows — load-bearing: it kills the weight-1 basis codewords a plain LDGM would have,
+  measured min basis-codeword rel-weight ≈0.003 row-regular → ≈0.45 column-regular). The
+  matrices are a fixed public map (seed + size set the q-free indices). The tensor
+  identity and the homomorphic column check hold for any linear Enc, so **the O(t(r+k))
+  = O(x^{1/4}) verifier is unchanged** — measured slope 0.524 (α≈0.262) over q, BIG_Q,
+  SMALL_Q, identical to RS, and the codeword is shorter (N=380 vs RS 512 at nb=14). Same
+  4-class cheat panel rejected (the forge difference is δ·Enc(e_{j0}), weight ≥δN, caught
+  w.p. ≥1−(1−δ)^t); concrete field-size win demonstrated over q=17, where RS refuses to
+  commit (Ncode 64 > 17) but the expander commits & verifies & rejects cheats. Chain
+  verdict UNCHANGED with `commit_code="expander"` over q & BIG_Q (selftest case 24).
+  **Honest scope:** distance is the security parameter, MEASURED here (δ≈0.45 at demo
+  params) not proven from the asymptotic expander bound (Brakedown's analyzed params give
+  δ≈0.07, t≈148 for 100-bit security); still computational (CRH/RO), like the RS PCS.
 - **Certificate SIZE characterized — the Õ(√x) comm wall localized (S509).** With the
   verifier's large-table work down to Õ(x^{1/4}), the binding Õ(√x) quantity is the
   certificate SIZE itself (the Fiat–Shamir transcript, `stats["comm"]`, slope ~0.5 in

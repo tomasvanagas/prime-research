@@ -318,18 +318,11 @@ def _exp_encode(msg, q, plan=None, ops=None):
 
 
 def _exp_min_basis_rel_weight(k, q):
-    """min over basis vectors e_j of  weight(Enc(e_j)) / N  -- the quantity that
-    governs the forge cheat (the forged-v difference is delta*Enc(e_{j0})).  A
-    MEASURED lower bound on the code's relative distance for the soundness claim."""
-    pl = _exp_plan(k, q)
-    N = pl[2]
-    wmin = N
-    for j in range(k):
-        e = [0] * k
-        e[j] = 1
-        cw = _exp_encode(e, q, pl)
-        wmin = min(wmin, sum(1 for v in cw if v % q != 0))
-    return wmin / N
+    """min over basis vectors e_j of  weight(Enc(e_j)) / N  for the expander code --
+    the quantity that governs the forge cheat (the forged-v difference is
+    delta*Enc(e_{j0})).  A MEASURED lower bound on the code's relative distance for
+    the soundness claim.  Thin wrapper over the code-agnostic _min_basis_rel_weight."""
+    return _min_basis_rel_weight("expander", k, q)
 
 
 def _code_ncode(code, k, q, blowup):
@@ -339,6 +332,71 @@ def _code_ncode(code, k, q, blowup):
     if code == "expander":
         return _exp_plan(k, q)[2]
     raise ValueError("unknown code %r" % (code,))
+
+
+def _rs_basis_codeword(j, N, q):
+    """Enc(e_j) for the RS row code: the j-th basis message is the monomial x^j, so
+    its codeword is [c^j mod q]_{c=0..N-1} (the verifier's evaluation points).
+    Measured (modular exponentiation), not assumed."""
+    return [pow(c, j, q) for c in range(N)]
+
+
+def _rs_basis_weights(k, N, q):
+    """weight(Enc(e_j)) for every basis j of the RS row code, via the INCREMENTAL
+    power table c^j = c^{j-1}*c (O(N*k) field mults, measured -- no closed-form
+    shortcut).  For a prime q > N-1 this gives N (j=0) and N-1 (j>=1: zero only at
+    the point c=0), but we COMPUTE it rather than assume it."""
+    weights = [0] * k
+    for c in range(N):
+        p = 1                                    # c^0
+        for j in range(k):
+            if p != 0:
+                weights[j] += 1
+            p = (p * c) % q
+    return weights
+
+
+def _min_basis_rel_weight(code, k, q, blowup=4, return_all=False):
+    """min over basis messages e_j of weight(Enc(e_j))/N -- the conservative
+    soundness parameter governing the forge cheat (the forged-v difference is
+    exactly s*Enc(e_{j0}), caught at a queried column iff that column lies in
+    supp(Enc(e_{j0}))).  Code-agnostic; field-size-free for the expander (its
+    support is set by q-free indices).  Returns rel (or (rel, jmin, N, weights))."""
+    N = _code_ncode(code, k, q, blowup)
+    if code == "rs":
+        if N > q:
+            raise ValueError("RS needs N<=q distinct points (N=%d > q=%d)" % (N, q))
+        weights = _rs_basis_weights(k, N, q)
+    elif code == "expander":
+        pl = _exp_plan(k, q)
+        weights = []
+        for j in range(k):
+            e = [0] * k
+            e[j] = 1
+            cw = _exp_encode(e, q, pl)
+            weights.append(sum(1 for v in cw if int(v) % q != 0))
+    else:
+        raise ValueError("unknown code %r" % (code,))
+    wmin = min(weights)
+    jmin = weights.index(wmin)
+    rel = wmin / N
+    return (rel, jmin, N, weights) if return_all else rel
+
+
+def _basis_support(code, j0, k, q, blowup=4):
+    """supp(Enc(e_{j0})) (the set of codeword columns the forge cheat at coordinate
+    j0 perturbs) and the codeword length N.  The forge false-accepts iff none of the
+    t queried columns lands in this set."""
+    N = _code_ncode(code, k, q, blowup)
+    if code == "rs":
+        cw = _rs_basis_codeword(j0, N, q)
+    elif code == "expander":
+        e = [0] * k
+        e[j0] = 1
+        cw = _exp_encode(e, q, _exp_plan(k, q))
+    else:
+        raise ValueError("unknown code %r" % (code,))
+    return frozenset(c for c in range(N) if int(cw[c]) % q != 0), N
 
 
 # ----------------------------------------------------------------------
@@ -493,11 +551,13 @@ def _tamper_row(com, i0, rng):
     return com2
 
 
-def _forge_prove(com, pt, true_val, wrong_val, t=32):
+def _forge_prove(com, pt, true_val, wrong_val, t=32, j0=None):
     """A cheating opener: forge a message v' with <v',b>=wrong_val (so it passes the
     evaluation binding) by perturbing ONE coordinate of the honest v.  Everything
     else is opened honestly.  The queried-column consistency Enc(v')[c]=<a,col> must
-    then fail (v' != a^T M)."""
+    then fail (v' != a^T M).  `j0` selects the bent coordinate (default: first with
+    b[j0]!=0); the WORST-CASE adversary picks j0 = argmin_j weight(Enc(e_j)) among
+    {j : b[j]!=0} -- the forge-rate Monte-Carlo passes that coordinate in."""
     q = com["q"]
     r, k, n1, Ncode = com["r"], com["k"], com["n1"], com["Ncode"]
     pt = [int(x) % q for x in pt]
@@ -509,15 +569,190 @@ def _forge_prove(com, pt, true_val, wrong_val, t=32):
     v = [sum(a[i] * M[i][j] for i in range(r)) % q for j in range(k)]
     w = [sum(rho[i] * M[i][j] for i in range(r)) % q for j in range(k)]
     # bend v at a coordinate with b[j0] != 0 so <v',b> = wrong_val
-    j0 = next(j for j in range(k) if b[j] != 0)
+    if j0 is None:
+        j0 = next(j for j in range(k) if b[j] != 0)
+    else:
+        assert b[j0] != 0, "forge coordinate j0 must have b[j0] != 0 to pass binding"
     delta = (wrong_val - true_val) % q
-    v[j0] = (v[j0] + delta * pow(b[j0], q - 2, q)) % q
+    v[j0] = (v[j0] + delta * pow(int(b[j0]), q - 2, q)) % q
     seed1 = _digest(seed0, _ser(v, q), _ser(w, q))
     cols = _distinct_challenges(seed1, b"col", min(t, Ncode), Ncode)
     opened = [(c, [com["Mhat"][i][c] for i in range(r)],
                _merkle_path(com["levels"], c)) for c in cols]
     return dict(v=v, w=w, opened=opened, r=r, k=k, n1=n1, Ncode=Ncode,
                 nb=com["nb"], code=com["code"])
+
+
+# ----------------------------------------------------------------------
+# S515 -- the distance/soundness curves (turning S514's single-point delta
+# measurement into a measured curve in k, and the forge false-accept law in t)
+# ----------------------------------------------------------------------
+
+def _hyper_miss(N, W, t):
+    """P(t DISTINCT random columns all miss a W-subset of [N]) = prod_{i<t}
+    (N-W-i)/(N-i) -- the sampling-WITHOUT-replacement (hypergeometric) false-accept
+    probability of the forge cheat.  <= (1-W/N)^t (the with-replacement bound)."""
+    if W >= N:
+        return 0.0
+    p = 1.0
+    for i in range(t):
+        num = N - W - i
+        if num <= 0:
+            return 0.0
+        p *= num / (N - i)
+    return p
+
+
+def distance_sweep(fields=("q", "big", "small"),
+                   codes=("rs", "expander"),
+                   ks=(8, 16, 32, 64, 128, 256, 512)):
+    """S514 follow-on (a): turn the single-point distance claim into a MEASURED
+    CURVE.  Tabulates delta = min_j weight(Enc(e_j))/N (the soundness parameter --
+    forge false-accept <= (1-delta)^t) vs k for BOTH row codes over q & BIG_Q &
+    SMALL_Q, up to k~512.  Confirms delta does NOT decay toward 0 as k grows.
+    FALSIFIER: delta -> 0 with k (would break the bounded-distance soundness)."""
+    import math
+    print("S515 distance sweep -- min basis-codeword relative weight")
+    print("  delta = min_j |Enc(e_j)|/N   (forge false-accept prob <= (1-delta)^t)")
+    print("  FALSIFIER: delta -> 0 as k grows.\n")
+    summary = {}
+    for code in codes:
+        print(f"--- code = {code} ---")
+        print(f"{'k':>5} " + "".join(f"{('N['+f+']'):>10}" for f in fields)
+              + "  | " + "".join(f"{('d['+f+']'):>9}" for f in fields))
+        for k in ks:
+            ns, ds = [], []
+            for f in fields:
+                q = FIELDS[f]
+                try:
+                    rel, jmin, N, _ = _min_basis_rel_weight(code, k, q, return_all=True)
+                    ns.append(str(N))
+                    ds.append(f"{rel:.3f}")
+                    summary[(code, f, k)] = rel
+                except ValueError:
+                    ns.append("skip(N>q)")
+                    ds.append("   -")
+            print(f"{k:>5} " + "".join(f"{n:>10}" for n in ns) + "  | "
+                  + "".join(f"{d:>9}" for d in ds))
+        # report the trend over the largest few k for the first available field:
+        # per-doubling decrements + a geometric-tail extrapolation of the floor.
+        for f in fields:
+            xs = [k for k in ks if (code, f, k) in summary]
+            if len(xs) >= 3:
+                dv = [summary[(code, f, k)] for k in xs]
+                decr = [dv[i] - dv[i + 1] for i in range(len(dv) - 1)]
+                print(f"    [{f}] delta: k={xs[0]} -> {dv[0]:.3f}   "
+                      f"k={xs[-1]} -> {dv[-1]:.3f}   (min over k = {min(dv):.3f})")
+                print(f"    [{f}] per-doubling decrements (delta_k - delta_2k): "
+                      + " ".join(f"{d:+.3f}" for d in decr))
+                # if the decline is decelerating geometrically, estimate the floor
+                pos = [d for d in decr if d > 1e-4]
+                if len(pos) >= 2 and pos[-1] < pos[0]:
+                    ratios = [pos[i + 1] / pos[i] for i in range(len(pos) - 1)
+                              if pos[i] > 0]
+                    rho = sum(ratios) / len(ratios) if ratios else 0.0
+                    if 0 < rho < 1:
+                        tail = decr[-1] * rho / (1 - rho)   # sum of remaining drops
+                        print(f"    [{f}] decrements shrink (mean ratio {rho:.2f}); "
+                              f"geometric-tail floor estimate ~ {dv[-1] - tail:.3f} "
+                              f"(MEASURED decline decelerates, not -> 0)")
+                else:
+                    print(f"    [{f}] non-decreasing -> bounded below by {dv[0]:.3f}")
+                # practical consequence: query count t for 100-bit soundness
+                # ((1-delta)^t <= 2^-100  =>  t >= 100 / -log2(1-delta)).
+                def _t100(d):
+                    return int(math.ceil(100.0 / -math.log2(1 - d)))
+                print(f"    [{f}] t for 2^-100 forge soundness: k={xs[0]} -> "
+                      f"t={_t100(dv[0])},  k={xs[-1]} -> t={_t100(dv[-1])} "
+                      f"(grows only modestly as delta declines)")
+                break
+        print()
+    return summary
+
+
+def forge_rate(code="expander", field="q", nb=8, trials=8000, tmax=12, seed=2024,
+               verbose=True):
+    """S514 follow-on (b): the empirical forge false-accept rate vs the column count
+    t, against the predicted (1-delta)^t and the exact hypergeometric.  The
+    WORST-CASE adversary bends the honest v at the min-weight basis coordinate
+    j0=argmin_j weight(Enc(e_j)) (subject to b[j0]!=0), so the difference codeword
+    has support delta*N -- the conservative bound.  Across `trials` random openings
+    (independent FS challenges via random pt + wrong value), we measure the fraction
+    accepted at each t.  FALSIFIER: empirical accept rate >> (1-delta)^t would mean
+    the column queries are correlated (FS not behaving as a random oracle here)."""
+    q = FIELDS[field]
+    rng = np.random.default_rng(seed)
+    S = np.array([int(rng.integers(0, q)) for _ in range(1 << nb)], dtype=object)
+    com = commit(S, q, code=code)
+    r, k, n1, Ncode = com["r"], com["k"], com["n1"], com["Ncode"]
+    M, root = com["M"], com["root"]
+    rel, jmin, N, weights = _min_basis_rel_weight(code, k, q, return_all=True)
+    supp_glob = _basis_support(code, jmin, k, q)[0]
+    order = sorted(range(k), key=lambda j: weights[j])     # min-weight coords first
+    supp_cache = {jmin: supp_glob}
+    delta = rel
+    tmax = min(tmax, Ncode)
+    acc = [0] * (tmax + 1)
+    for _ in range(trials):
+        pt = [int(rng.integers(0, q)) for _ in range(nb)]
+        a = [int(x) % q for x in np.asarray(eq_table(pt[:n1], q)).tolist()]
+        b = [int(x) % q for x in np.asarray(eq_table(pt[n1:], q)).tolist()]
+        # worst-case admissible coordinate (b[j0]!=0); almost always = global argmin
+        j0 = jmin if b[jmin] != 0 else next(j for j in order if b[j] != 0)
+        if j0 not in supp_cache:
+            supp_cache[j0] = _basis_support(code, j0, k, q)[0]
+        supp = supp_cache[j0]
+        v = [sum(a[i] * M[i][j] for i in range(r)) % q for j in range(k)]
+        true = sum(v[j] * b[j] for j in range(k)) % q
+        wrong = (true + 1 + int(rng.integers(0, q - 1))) % q   # any value != true
+        seed0 = _digest(root, _ser(pt, q), _ser([wrong], q))
+        rho = _challenges(seed0, b"rho", r, q)
+        w = [sum(rho[i] * M[i][j] for i in range(r)) % q for j in range(k)]
+        vf = list(v)
+        vf[j0] = (vf[j0] + (wrong - true) * pow(int(b[j0]), q - 2, q)) % q
+        seed1 = _digest(seed0, _ser(vf, q), _ser(w, q))
+        cols = _distinct_challenges(seed1, b"col", tmax, Ncode)
+        hit = tmax + 1                          # first (1-indexed) column in supp
+        for i, c in enumerate(cols):
+            if c in supp:
+                hit = i + 1
+                break
+        for t in range(1, tmax + 1):
+            if hit > t:                         # none of the first t columns hit
+                acc[t] += 1
+    import math
+    emp = [acc[t] / trials for t in range(tmax + 1)]
+    if verbose:
+        print(f"S515 forge-rate Monte-Carlo  code={code} field={field} nb={nb} "
+              f"(r={r}, k={k}, N={Ncode}); trials={trials}")
+        print(f"  worst-case j0=argmin weight: delta = |Enc(e_j0)|/N = "
+              f"{len(supp_glob)}/{N} = {delta:.4f}")
+        print(f"  {'t':>3} {'emp_accept':>11} {'(1-d)^t':>10} {'hypergeom':>10} "
+              f"{'emp/pred':>9}")
+    # log-linear fit of the empirical accept rate -> effective delta
+    fit_t, fit_ly = [], []
+    for t in range(1, tmax + 1):
+        pred_wr = (1 - delta) ** t
+        pred_hg = _hyper_miss(N, len(supp_glob), t)
+        ratio = emp[t] / pred_wr if pred_wr > 0 else float("nan")
+        if verbose:
+            print(f"  {t:>3} {emp[t]:>11.5f} {pred_wr:>10.5f} {pred_hg:>10.5f} "
+                  f"{ratio:>8.2f}x")
+        if emp[t] > 0:
+            fit_t.append(t)
+            fit_ly.append(math.log(emp[t]))
+    delta_eff = float("nan")
+    if len(fit_t) >= 2:
+        sl = _slope(fit_t, fit_ly)              # ln(accept) ~ sl * t
+        delta_eff = 1 - math.exp(sl)
+        if verbose:
+            print(f"  fitted delta_eff (from d ln(accept)/dt) = {delta_eff:.4f}   "
+                  f"measured delta = {delta:.4f}")
+    if verbose:
+        print("  (emp/pred ~ <=1 confirms uncorrelated queries; >>1 would falsify "
+              "FS randomness)")
+    return dict(emp=emp, delta=delta, delta_eff=delta_eff, N=N,
+                W=len(supp_glob), tmax=tmax, trials=trials)
 
 
 def selftest():
@@ -645,6 +880,76 @@ def selftest():
     assert not verify(com["root"], pt, wrong,
                       _forge_prove(com, pt, true, wrong), q=qt)[0]
 
+    # 10. S515 DISTANCE SWEEP (falsifier: delta -> 0 as k grows).  The min
+    #     basis-codeword relative weight is the soundness parameter; confirm it
+    #     stays BOUNDED BELOW as k climbs (here to 128) for BOTH row codes over
+    #     q & BIG_Q & SMALL_Q, and is field-independent for the expander (q-free
+    #     indices).  RS sits near (N-1)/N; the expander floors well above 0.
+    import math
+    for code in ("rs", "expander"):
+        for f in ("q", "big", "small"):
+            q = FIELDS[f]
+            ks = (8, 16, 32, 64, 128)
+            ds = []
+            for k in ks:
+                if code == "rs" and _code_ncode("rs", k, q, 4) > q:
+                    continue                            # RS: skip when N>q
+                ds.append(_min_basis_rel_weight(code, k, q))
+            assert len(ds) >= 3, (code, f, "too few measurable k")
+            floor = 0.5 if code == "rs" else 0.40        # measured thresholds (k<=128)
+            # (a) DELTA DOES NOT DECAY TO 0 -- the real falsifier.
+            assert min(ds) >= floor, ("distance below floor", code, f, ds)
+            # (b) the decline is DECELERATING (not collapsing): the per-doubling
+            #     decrement at the largest k is no bigger than at the smallest k.
+            #     RS increases (decrements <= 0); the expander declines but with a
+            #     SHRINKING decrement (consistent with a positive asymptotic floor,
+            #     Brakedown's proven constant relative distance).
+            decr_first = ds[0] - ds[1]
+            decr_last = ds[-2] - ds[-1]
+            assert decr_last <= decr_first + 0.02, \
+                ("delta decline accelerating (would point to ->0)", code, f, ds)
+    # expander distance is field-independent (support set by q-free indices)
+    for k in (16, 64):
+        dq = _min_basis_rel_weight("expander", k, Q)
+        db = _min_basis_rel_weight("expander", k, BIG_Q)
+        dsm = _min_basis_rel_weight("expander", k, SMALL_Q)
+        assert dq == db == dsm, ("expander distance field-dependent", k, dq, db, dsm)
+    # the hypergeometric helper is a valid <= (1-delta)^t bound, decreasing in t
+    for (N, W) in ((44, 20), (64, 63), (380, 170)):
+        prev = 1.0
+        for t in range(1, 9):
+            hg = _hyper_miss(N, W, t)
+            assert 0.0 <= hg <= (1 - W / N) ** t + 1e-12, ("hyper > with-repl", N, W, t)
+            assert hg <= prev + 1e-12                    # monotone non-increasing
+            prev = hg
+
+    # 11. S515 FORGE-RATE LAW (falsifier: empirical accept >> (1-delta)^t -> the
+    #     column queries are correlated).  Run the worst-case-coordinate Monte-Carlo
+    #     at small nb for both codes; assert (a) the empirical accept rate is at most
+    #     the with-replacement bound (1-delta)^t within binomial tolerance at every
+    #     t, (b) it is monotone non-increasing in t, (c) the fitted delta_eff tracks
+    #     the measured delta, (d) t=1 accept ~ (1-delta).  This is the empirical
+    #     confirmation that t queries drive the false-accept to (1-delta)^t.
+    for code in ("rs", "expander"):
+        res = forge_rate(code=code, field="q", nb=6, trials=4000, tmax=7, seed=99,
+                         verbose=False)
+        emp, delta, N, W = res["emp"], res["delta"], res["N"], res["W"]
+        for t in range(1, res["tmax"] + 1):
+            pred = (1 - delta) ** t
+            tol = 4 * math.sqrt(max(pred, 1e-9) * (1 - pred) / res["trials"]) + 0.02
+            assert emp[t] <= pred + tol, \
+                ("forge accept >> (1-delta)^t (correlated queries?)", code, t,
+                 emp[t], pred)
+            if t >= 2:
+                assert emp[t] <= emp[t - 1] + 1e-9, ("accept not monotone", code, t)
+        # t=1 accept ~ (1-delta) (one column catches with prob ~ delta)
+        assert abs(emp[1] - (1 - delta)) <= 0.05, \
+            ("t=1 accept != 1-delta", code, emp[1], 1 - delta)
+        # fitted decay rate tracks the measured distance (not slower => not falsified)
+        if not math.isnan(res["delta_eff"]):
+            assert res["delta_eff"] >= delta - 0.10, \
+                ("decay slower than (1-delta)^t", code, res["delta_eff"], delta)
+
     print("selftest OK")
 
 
@@ -703,10 +1008,22 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--bench", action="store_true")
+    ap.add_argument("--distance-sweep", action="store_true",
+                    help="S515: min basis-codeword rel weight delta vs k (curve)")
+    ap.add_argument("--forge-rate", action="store_true",
+                    help="S515: empirical forge accept rate vs t vs (1-delta)^t")
     ap.add_argument("--field", choices=list(FIELDS), default="q")
     ap.add_argument("--code", choices=("rs", "expander"), default="rs")
+    ap.add_argument("--nb", type=int, default=8, help="table bits for --forge-rate")
+    ap.add_argument("--trials", type=int, default=8000, help="--forge-rate trials")
+    ap.add_argument("--kmax", type=int, default=512, help="largest k for --distance-sweep")
     args = ap.parse_args()
     if args.bench:
         bench(FIELDS[args.field], args.code)
+    elif args.distance_sweep:
+        ks = tuple(k for k in (8, 16, 32, 64, 128, 256, 512) if k <= args.kmax)
+        distance_sweep(ks=ks)
+    elif args.forge_rate:
+        forge_rate(code=args.code, field=args.field, nb=args.nb, trials=args.trials)
     else:
         selftest()
