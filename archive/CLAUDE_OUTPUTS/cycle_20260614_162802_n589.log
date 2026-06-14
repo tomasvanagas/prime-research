@@ -77,3 +77,76 @@ Baseline still running (n=22 is the long pole). Python block-buffers when piped.
   [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
 sleep 180
 echo "=== task out
+The canonical run completed. Let me read the full output.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+cat reach_utime_crosscheck_r
+This is a clean, decisive result. Let me capture a final live snapshot and check reach status before writing up.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach status ==="
+
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+rm -rf __pycache__ && echo "
+Now let me write the results file with the full falsifier analysis.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck_results.m
+That failed notification was just my stale poll loop — ignore. Now let me verify the reach is still running and check the `.cycle` counter convention, then update PROGRAM.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+pgrep -f 'large_x_benchmark.
+Reach still running (no DONE). Now update PROGRAM.md — add the S536 entry and refresh the reach NEXT ACTION block. Let me read the exact current header text.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION block to record the S536 utime-side resolution and the current reach state.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me update the bottom "NEXT (single, concrete)" paragraph to reflect S536's utime-side resolution.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "NEXT (single, concrete)" PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now run the CLAUDE.md cleanup checks and a final reach status check.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== missing _results.md check ==="
+find experiments/ -path "*/.lake" -prune -o
+All clean — the "MISSING" files are pre-existing legacy helpers in other directories (not mine; my new script has its `_results.md`). No `__pycache__`. Reach untouched and still running. 
+
+This finding is a natural continuation of an existing memory. Let me update it with the S536 utime-side resolution and the reusable methodological insight.
+  [tool: Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/reach-wall-is-dram-plateau.md
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/reach-wall-is-dram-plateau.md
+Let me update the MEMORY.md index line to reflect the S536 addition.
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+  [tool: Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+Cycle complete. Final verification:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "reach: $(pgrep -f 'lar
+Cycle complete. Here's what this cycle (S536) produced.
+
+## What I did
+
+The recorded NEXT ACTION is to harvest the detached n=26 reach when it shows DONE. **It's still running** (PID 1592836, ~3.5 h in, CPU 12.4 ks, no DONE) — so I could not harvest, and must not start a second reach. I took contention-safe fresh ground that *advances* the reach falsifier: **I resolved the UTIME side that S535 left open.**
+
+The situation S535 anticipated has materialized: the n=26 reach's **wall has passed S529's predicted band [5.9, 7.9] ks** (>12 ks CPU and climbing). On the raw wall test the super-Θ(x) falsifier would fire. S535's sharpened test says the discriminator is `stime`/`utime`, but it couldn't do the clean n=24→26 *utime* ratio — **n=24's split was lost on process exit**.
+
+## Key insight & result
+
+**utime (CPU user time) is contention-robust** — the reach steals wall-clock, not CPU-seconds — so I measured the chain's utime baseline at small RAM-light n *while the reach runs*, and cross-checked the live reach against the measured Θ(x) op-count. New script `reach_utime_crosscheck.py` (`--live`/`--baseline`/`--dram-factor`/`--predict`/`--selftest`, all selftests pass).
+
+**Falsifier NOT triggered (F1–F4 all un-fired):**
+- **F1**: chain per-op utime **DECLINES** monotonically 204→85→46.5→27.9→**20.8 ns/op** (n=14..22) as arrays widen — the opposite of super-linear.
+- **F2**: reach realized per-op (21.5 ns/op, lower bound) ≈ the DRAM-resident **n=22 anchor 20.8 ns/op (1.04×)** — on the declining trend.
+- **F3**: reach cum `stime_frac` = 0.70 (still allocation-bound).
+- **F4**: reused-buffer `_mul61` per-elem utime **saturates** at ~23 ns (2.26×/L1, last step 0.99×).
+
+⇒ **utime grows no faster than the Θ(x) op-count; the >5.4× wall excess is the `stime`/allocation leg (70% of wall).** A bonus corroboration: the baseline `stime_frac` rises 0.004→0.219 with n, independently extrapolating to the reach's 0.70 — S535's allocation mechanism, measured from a second angle. The three wall legs are now all measured: `opcount(Θ(x)) × compute/cache(≤2.3× saturating) × allocation/stime(rising with working set)`.
+
+## Honest caveats (recorded)
+- The reach isn't done, so utime=3549 s is a **lower bound** on final utime(26); the exact final per-op multiple awaits DONE (tooling ready: `--predict 1592836`).
+- `opcount(26)`=1.65e11 is a model extrapolation from measured n=24.
+- Scope: an in-cycle measurement resolving the open utime side — **not** a goal advance; polylog π(x) stays blocked.
+
+## Files
+- `reach_utime_crosscheck.py` + `_results.md` + `_run.log`
+- `PROGRAM.md`: S536 entry + refreshed reach NEXT ACTION (DONE harvest now only needs π-confirm + final wall/RSS/split + `--predict`)
+- Memory updated (the contention-robust-utime trick + 3-leg model)
+
+The reach is untouched and still computing; no `__pycache__`; no BREAKTHROUGH (correctly — this is a measurement).
+--- cycle result: success (turns=47, duration=1646630ms) ---
+=== Cycle 589 finished — Sun Jun 14 16:55:29 UTC 2026 ===

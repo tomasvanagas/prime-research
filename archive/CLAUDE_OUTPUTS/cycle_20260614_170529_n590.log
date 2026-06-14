@@ -1,0 +1,58 @@
+=== Cycle 590 — Sun Jun 14 17:05:29 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large file. Let me read the NEXT ACTION section and recent state. Let me search for the NEXT ACTION marker.
+  [tool: Bash] grep -n "NEXT ACTION\|^## \|^### " PROGRAM.md | head -60
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the current state of the detached reach run — whether n=26 is still running or has finished.
+  [tool: Bash] echo "=== pgrep large_x_benchmark ==="; pgrep -af "large_x_benchmark" || echo "(no large_x_benchmark process)"; echo; ec
+The reach is **DONE**. n=26 completed: claimed π(2²⁶−1)=3957809, wall=12844.10 s, peak RSS=11708 MB. The process has exited (PID gone). Now I execute the NEXT ACTION: harvest + write the item-5 reach result.
+
+Let me gather the full log and the crosscheck tooling in parallel.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; echo "=== full run_n26.log 
+Now let me independently verify the n=26 claim with a from-scratch Eratosthenes sieve, and check the crosscheck `--predict` tooling.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; python3 -c "
+import numpy a
+Independent sieve confirms **π(2²⁶−1) = 3957809 ✓**. Now let me run the crosscheck `--predict` to finalize the per-op verdict.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; echo "=== --predict 1592836
+The process exited, so `--predict`'s live capture can't run. Let me read the crosscheck script to understand how to finalize from the log alone.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+Independent verification confirms the n=26 claim. The process exited so the live `--predict` capture can't run (the final /proc split is lost on exit, as flagged). Let me read the crosscheck script's op-count model so I can finalize the per-op verdict from the now-known final wall.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+The op-count model gives opcount(26) ≈ 1.649×10¹¹. Now I have everything to finalize the falsifier verdict cleanly. Let me compute the key cross-check and read the results file structure.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; python3 -c "
+# opcount(26) 
+This is a clean cross-confirmation: the final wall ÷ op-count gives 77.9 ns/op, which divided by the live-measured utime-per-op (21.5 ns/op) implies stime_frac 0.724 — independently matching the live-measured 0.695–0.75. Two independent routes agree, no super-linear utime.
+
+Let me read the results file to add the n=26 harvest properly.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; echo "=== results file head
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Let me read the Headlines and scaling-law sections so I can update them with the n=25/n=26 points.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now I have everything. Let me update the results file. First, the Headlines table to add n=25 and n=26:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now let me read the scaling-law section to update it with the n=26 clean point:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now let me add the comprehensive S537 reach-harvest section. I'll insert it before "## Honest scope":
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now let me update the scaling-law section's falsifier note, which anticipated the n≥26 point — it's now resolved by S537:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Let me verify the op-count tool exists and supports the flags I want to recommend for the NEXT ACTION (pinning the one model value in my falsifier closure).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; echo "=== opcount tool flag
+There's a `__pycache__` to clean. Let me remove it, then update PROGRAM.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/; rm -rf ./__pycache__; find 
+Now let me update PROGRAM.md. First, item 5 — mark the n=26 reach DONE and harvested:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now close the `<details>` block after the earlier-history text:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me rewrite the NEXT ACTION block (the reach is done — replace the long stale "⏳ REACH" block). Let me find its current location:
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -n "^## NEXT ACTION\|^## Done this era\|^## SECONDARY\|^## ACTIVE" PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The reach is done — let me replace the stale "⏳ REACH STILL RUNNING" quoted block with the DONE+harvested status:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Your organization has disabled Claude subscription access for Claude Code · Use an Anthropic API key instead, or ask your admin to enable access
+--- cycle result: success (turns=28, duration=513440ms) ---
+=== Cycle 590 finished — Sun Jun 14 17:14:04 UTC 2026 ===

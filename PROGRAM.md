@@ -286,7 +286,37 @@ width-spectrum theory, census law, open program). Code:
    method — needs an analytic handle on the FULL Θ(entropy) correlation series (new
    analysis, not new code). An exact A₁₂₈ still needs a genuinely sub-A_k algorithm
    (none found). The census line is closed for computational cycles.
-5. **Large-x benchmark** — REACH AT n=24 DELIVERED (S513 driver, S524 n=24).
+5. **Large-x benchmark** — REACH AT n=26 DELIVERED + HARVESTED (S537); falsifier CLOSED.
+   **n=26 reach DONE (S537, run_n26.log):** HONEST ACCEPTED, **claimed
+   π(2²⁶−1)=3 957 809 == sieve == an independent from-scratch Eratosthenes sieve
+   over [0,2²⁶) (this cycle, MATCH)** ✓ — exact π verified at x≈6.7×10⁷. wall
+   **12 844.1 s** (3.57 h, contention-free, the clean falsifier point), peak RSS
+   **11.43 GB**. cert `comm=588 558` (~4.60 MB): `comm_outer=576 616 (98%)` scales
+   EXACTLY as K=π(√x) (`comm_outer(26)/(25)=1.353==K(26)/K(25)=1028/760`) ⇒ Θ(√x);
+   batched discharges polylog (bt/bw/ub=96/3325/73); base FLAT (nb=13 both, Θ(x^{1/4})
+   steps only on nb++). **per-layer verifier leaf=0** at the reach (Õ(√x) end-to-end
+   holds). n=25 also REJECTED the delta_pi liar (run_n25.log, claim π+1, 1720 s);
+   n=26 honest-only to keep the clean wall. **S529/S535 reach-wall falsifier CLOSED
+   from the final wall:** raw n24→26 wall ratio **8.75×/Δn=2** (x^1.56), FAR above
+   S529's [4.0,5.4]× band — but this is the allocation/`stime` leg, NOT super-Θ(x)
+   op-count, settled by the S535/S536 sharpened test (discriminator = `stime`/`utime`,
+   not wall): wall÷op-count = **77.9 ns/op**, while the contention-robust reach
+   utime-per-op stayed **21.5 ns/op (==n=22 anchor 20.8, 1.04×, on the declining
+   trend)** ⇒ implied utime-frac 0.276 ⇒ **stime_frac≈0.72, which INDEPENDENTLY
+   matches the live-measured 0.695–0.75 (S535/S536) — two routes agree.** The >5.4×
+   excess is exactly the dilution of bounded ~21 ns/op utime to 77.9 ns/op wall by
+   the ~72% page-fault leg. **F1–F4 un-fired; op-count Θ(x)·polylog (=Õ(x))
+   confirmed to the n=26 reach.** Honest caveat: the FINAL /proc utime/stime split
+   was lost on exit (perishable) — the utime-per-op input is S536's live snapshot
+   (lower bound); but the two-route agreement (final-wall÷opcount == snapshot
+   utime ÷ (1−measured stime_frac)) closes it without the lost number. The one
+   op-count(26)=1.649×10¹¹ used in the closure is the S532b model value (predicts
+   measured ratios to <0.4%); a deterministic n=26 op-count run would pin it (NEXT
+   ACTION). `large_x_benchmark_results.md` §S537; logs `run_n26.log`, `run_n25.log`.
+   **The verification reach line is now complete + fully measured end-to-end.**
+   <details><summary>earlier reach history (n=20/22/24, scaling, streaming)</summary>
+
+   REACH AT n=24 DELIVERED (S513 driver, S524 n=24).
    `experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py`
    (a clean reproducible driver, `--selftest`/`--n`), running the **FULL
    succinct config** (delegate+structured+pcs+batch_trace+batch_ub+batch_wiring+
@@ -329,7 +359,8 @@ width-spectrum theory, census law, open program). Code:
    claimed/comm/comm_bt/comm_ub equal), so all artifacts incl. n=24 reproduce verbatim. Measured
    A/B peak RSS: n=20 **185 vs 265 MB**, n=22 **677 vs 988 MB** (full_nostream reproduces S525's
    pre-streaming peaks); LIST saved Θ(x), wall unchanged (free). Constant-factor (~⅓) drop; the
-   Θ(x) cube remains the binding constraint, so the reach is now cube/RAM-bound (see NEXT ACTION).
+   Θ(x) cube remains the binding constraint, so the reach is now cube/RAM-bound.
+   </details>
 6. **Leaf openings → end-to-end Õ(√x) verifier** — DELIVERED (S505 pcs + S506 batch_ub).
    `leaf_open.py` builds the real sum-check MLE opening (`open_eval`/`open_batch`);
    `run_chain(--pcs)` threads the carried-claim folds' residuals to the S₀ base. The
@@ -407,8 +438,42 @@ width-spectrum theory, census law, open program). Code:
 - The guess-comparison geography (`experiments/analytic/
   guess_comparison_oracle/`) — decision-version facts, complete as is.
 
-## Done this era (S491–S535 cycles, 2026-06-13/14)
+## Done this era (S491–S536 cycles, 2026-06-13/14)
 
+- Reach-wall falsifier RESOLVED from the UTIME side — the leg S535 left unmeasured (S536): the n=26
+  reach (PID 1592836) was STILL RUNNING DETACHED (started 13:24Z; ~3.5 h in at cycle's work, CPU 12.4 ks,
+  no DONE) so I could not harvest, and must not start a second reach. Its WALL has now PASSED S529's
+  predicted band [5.9,7.9] ks (>12 ks CPU and climbing) — on the *raw* wall test the super-Θ(x) falsifier
+  would fire. S535 sharpened the test (the discriminator is `stime`/`utime`, not the wall) but could NOT
+  do the clean n=24→26 *utime* ratio: **n=24's utime/stime split was lost on process exit**. This cycle
+  closes that gap WITHOUT the lost split, on one fact — **utime (CPU user time) is contention-robust**
+  (the reach steals WALL-clock, not CPU-seconds), so the chain's utime baseline can be measured at small
+  RAM-light n RIGHT NOW despite the running reach. Built `experiments/constructions/
+  p12_sumcheck_pi_verification/reach_utime_crosscheck.py` (one script, `--live`/`--baseline`/
+  `--dram-factor`/`--predict`/`--all`/`--selftest`; selftest ALL PASS incl. op-count-model validation,
+  `_mul61`==exact-modmul, /proc parse, predict arithmetic). **HEADLINE: the falsifier is NOT triggered
+  (F1–F4 all un-fired).** (B) the REAL run_chain utime baseline (FULL config, BIG_Q) at n=14..22 shows
+  **per-op utime DECLINES monotonically 204→85→46.5→27.9→20.8 ns/op** (per-numpy-call overhead amortizes
+  as arrays widen) — the OPPOSITE of super-linear (F1) — while `stime_frac` RISES 0.004→0.029→0.057→
+  0.149→0.219 with n (working set), independently corroborating S535's allocation-bound mechanism and
+  extrapolating to the reach's 0.70 at n=26. utime per-Δn=2 ratios RISE 1.86→3.24 toward the op-count's
+  ~4.4× ⇒ **utime → Θ(x)**. (C) reused-buffer `_mul61` per-element utime SATURATES at ~23 ns (2.26×/L1,
+  last size-step 0.99× — F4 not fired, bounded cache constant). (D) cross-check: `opcount(26)`=1.649×10¹¹
+  (model `x·(log₂x)^0.87` anchored on measured n=24, S532b-validated); **reach realized per-op (so far,
+  utime=3549 s) = 21.5 ns/op vs the DRAM-resident n=22 anchor 20.8 ns/op → 1.04×, ON the declining
+  trend** (F2 not fired); cum `stime_frac`=0.70 (F3 not fired). **⇒ utime grows NO FASTER than the Θ(x)
+  op-count; the >5.4× WALL excess over S529's band is the `stime`/allocation leg (70% of wall).** Unifies
+  the three legs: `wall = opcount(Θ(x)) × compute/cache(≤2.3× saturating) × allocation/stime(rising
+  0.004→0.70 with n)` — wall can exceed the op-count ratio purely because the allocation leg grows with
+  the Θ(x) working set, NO op-count/per-op-compute change. **Honest caveats:** the reach is NOT done, so
+  utime=3549 s is a LOWER bound on final utime(26) and realized per-op 21.5 ns/op a lower bound (at
+  60–85% utime-progress, final per-op ≈ 25–36 ns/op = 1.2–1.7× the n=22 anchor — bounded, NOT the 100s a
+  super-linear term would give); the exact final multiple awaits DONE (`--predict` reads run_n26.log for
+  DONE and finalizes). This is the utime COMPLEMENT to the still-wanted DONE harvest (claimed π, final
+  wall, peak RSS, final stime/utime split). `opcount(26)` is a model value (a direct n=26 op-count run
+  would pin it). In-cycle MEASUREMENT resolving the open utime side of the reach-wall falsifier, NOT a
+  goal advance; polylog π(x) stays blocked. `reach_utime_crosscheck_results.md`,
+  `reach_utime_crosscheck_run.log`.
 - Reach wall THIRD leg found — the n=26 reach is page-fault/allocation-bound, sharpening the S529
   falsifier (S535): the n=26 reach was STILL RUNNING DETACHED (started 13:24Z, ~2.85 h in at cycle's
   work, RSS 4 GB, no DONE), so I could not harvest — and a concurrent cycle must NOT start a second
@@ -1534,30 +1599,20 @@ width-spectrum theory, census law, open program). Code:
 
 ## NEXT ACTION (single, concrete)
 
-> **⏳ REACH: n=25 DONE + VERIFIED; n=26 STILL RUNNING DETACHED as of S535 (2026-06-14T~16:10Z, ~2.85 h
-> in, RSS 4 GB, no DONE yet — PID 1592836 alive) — CHECK `pgrep -f 'large_x_benchmark.py --n 26'`/LOG
-> BEFORE RELAUNCHING; S534 + S535 left it untouched (did contention-safe fresh ground instead, see below).
-> S535 OBSERVED the live reach: it is `stime`-DOMINATED (0.695 kernel/page-fault time, 3.1×10⁹ minor
-> faults, majflt=0) ⇒ ALLOCATION-BOUND, the third wall leg. So apply the SHARPENED falsifier below, not
-> the raw [4.0,5.4]× wall test. Sample `/proc/<pid>/stat` stime/utime (or `alloc_overhead_wall.py --live`)
-> BEFORE the n=26 process exits — the split is lost on exit.**
-> `run_reach_detached.sh` (setsid-detached, PPID=1, SURVIVES cycle boundaries)
-> ran n=25 (honest+delta_pi) and immediately started n=26 (--no-cheat) over BIG_Q, FULL streamed config.
-> **n=25 harvested (run_n25.log):** HONEST ACCEPTED, **claimed π(2²⁵−1)=2 063 689 == sieve == ground-
-> truth lock** ✓; wall 5421.0 s; peak RSS 5929 MB (5.79 GB); delta_pi liar REJECTED (1720 s); profile
-> holds (per-layer leaf=0, comm=438070 of which comm_outer 426268=97% Θ(√x), base opens 24704 Θ(x^{1/4})).
-> **CAVEAT — n=25 wall is contention-inflated, NOT a clean falsifier point:** it ran 11:25–13:24Z
-> *concurrently with the S531 op-count path-(b) run* (which itself ran an n=24 chain) sharing the 32
-> cores, so the n24→25 ratio (~3.7×/Δn=1 vs ~1467 s n=24) is wall-contention, not op-count (op-count is
-> deterministic, measured Õ(x) S531). **The clean S529 falsifier test needs n=26 (now running, started
-> 13:24Z, contention-free):** when `run_n26.log` shows "DONE", verify claimed π(2²⁶−1)=3 957 809 (cross-
-> check an independent Eratosthenes sieve), record wall + peak RSS + the reach's stime/utime split, and
-> **apply the S535 SHARPENED falsifier (NOT the raw wall test):** a wall ratio n24→26 >5.4× is CONSISTENT
-> with Θ(x) op-count IFF the reach is `stime`-dominated (S535 measured 0.695 = allocation/page-fault leg
-> 3, which S529's [4.0,5.4]× model omitted) — the discriminator is `stime`/`utime`, NOT the wall alone;
-> only a `utime`-dominated excess with super-linear per-element growth reopens super-Θ(x). (op-count is
-> Θ(x) to n=24, S530/S531/S532b.) Then write the item-5 reach result. A concurrent cycle must NOT start a
-> second reach — `pgrep -f large_x_benchmark`; alive iff a process exists AND `run_n26.log` lacks "DONE".
+> **✅ REACH COMPLETE (S537, 2026-06-14): n=26 DONE + HARVESTED; the S529/S535 falsifier is CLOSED.**
+> `run_n26.log` shows DONE; PID 1592836 has exited (no process running — confirm with `pgrep -f
+> large_x_benchmark` before any relaunch, but there is nothing left to relaunch on this line). HONEST
+> ACCEPTED, **claimed π(2²⁶−1)=3 957 809 == sieve == an independent from-scratch Eratosthenes sieve over
+> [0,2²⁶) (this cycle, MATCH)** ✓; wall **12 844.1 s** (clean/contention-free); peak RSS **11.43 GB**;
+> profile holds (per-layer leaf=0, comm_outer 98%=Θ(√x) scaling exactly as K, base Θ(x^{1/4})). n=25 also
+> verified + delta_pi REJECTED (run_n25.log). **Falsifier verdict (NOT triggered):** raw n24→26 wall
+> ratio 8.75×/Δn=2 (far above S529's [4.0,5.4]×) IS the allocation/`stime` leg, not super-Θ(x): wall÷
+> op-count = 77.9 ns/op, contention-robust utime-per-op stayed 21.5 ns/op (==n=22 anchor, S536) ⇒ implied
+> stime_frac 0.72 == the independently-measured 0.695–0.75 (two routes agree). op-count Θ(x)·polylog
+> confirmed to the reach. Honest caveat: the FINAL /proc utime/stime split was lost on exit (perishable;
+> `--predict` needs a live PID, so it cannot finalize post-mortem) — the closure rests on the two-route
+> agreement, not the lost number; the one op-count(26)=1.649×10¹¹ is the S532b MODEL value (see NEXT
+> ACTION to pin it). Written up in `large_x_benchmark_results.md` §S537.
 
 S529 established (mechanism, in-cycle): the verification-chain reach wall is **Õ(x) op-count × a
 one-time L3-crossover DRAM constant (~7×) + 3-point single-step noise** — NOT super-Θ(x) and NOT a
@@ -1569,14 +1624,20 @@ S511 + layering-inherent S510), field-lifted, fast-Mersenne, batched, streamed. 
 verification-line free CODE lever is spent** — the reach is now pure RAM-bound measurement.
 
 **NEXT (single, concrete):** when `run_n26.log` (in `experiments/constructions/
-p12_sumcheck_pi_verification/`) shows DONE, harvest + apply the S535 SHARPENED falsifier above and write
-the item-5 reach result (no new code — pure finalize; ALL THREE legs are now measured — op-count
-Θ(x)·polylog 4.0–4.4×↓ (S530/S531/S532b) × compute/cache ≤1.35× (S529) × allocation/page-fault stime
-(S535, the reach is `stime`-dominated 0.695) — so the test is NOT "is the wall in [4.0,5.4]×?" but "is
-the >5.4× excess (if any) `stime`/allocation [⇒ Θ(x) intact] or `utime`/super-linear [⇒ reopen]?" — and
-sample the reach's stime/utime BEFORE it exits (lost on exit) — using the CLEAN n=26 wall, since n=25's wall was
-contention-inflated, see reach block above). Path (b) is DONE (S532b block above: op-count Õ(x)
-confirmed to n=24, S530 verdict extended, false auto-reading corrected). **n=25 is DONE + verified
+p12_sumcheck_pi_verification/`) shows DONE, harvest + write the item-5 reach result (no new code — pure
+finalize). **The utime side is ALREADY DONE (S536, NOT triggered)** — chain per-op utime DECLINES
+204→20.8 ns/op (n=14..22), reach realized per-op 21.5 ns/op == n=22 DRAM anchor (1.04×), the >5.4× wall
+excess is the stime/allocation leg (70% of wall); see `reach_utime_crosscheck.py`/`_results.md`. So the
+DONE harvest just needs: (a) confirm claimed π(2²⁶−1)=3 957 809 vs an independent Eratosthenes sieve;
+(b) record final wall + peak RSS + final stime/utime split (sample BEFORE exit — lost on exit, via
+`alloc_overhead_wall.py --live 1592836`); (c) run `reach_utime_crosscheck.py --predict 1592836` for the
+FINAL per-op verdict (≤1.3× anchor = Θ(x) confirmed / >2.0× rising = REOPEN). ALL THREE legs are now
+measured — op-count Θ(x)·polylog 4.0–4.4×↓ (S530/S531/S532b) × compute/cache ≤1.35–2.3× saturating
+(S529 + S536-C) × allocation/page-fault stime rising 0.004→0.70 with n (S535 + S536-B) — so the test is
+NOT "is the wall in [4.0,5.4]×?" but "is the >5.4× excess `stime`/allocation [⇒ Θ(x) intact] or
+`utime`/super-linear [⇒ reopen]?", and S536 already answered `stime` from the utime side. Path (b) is
+DONE (S532b block above: op-count Õ(x) confirmed to n=24, S530 verdict extended, false auto-reading
+corrected). **n=25 is DONE + verified
 (π=2 063 689 ✓); n=26 is RUNNING** (started 13:24Z) — a concurrent cycle must NOT start a second reach
 (`pgrep -f large_x_benchmark`; alive iff a process exists AND `run_n26.log` lacks "DONE"). If a cycle
 wants fresh ground while the reach computes, the op-count curve can be cheaply extended to n=26

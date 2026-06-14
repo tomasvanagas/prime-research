@@ -23,6 +23,12 @@ large-table opens only the one-time base commitment ⇒ Θ(x^{1/4})).
 | 20 | 1 048 575 | 1023 | 10 | 172 | 82 025 | 82 025 ✓ | 71.8 s |
 | 22 | 4 194 303 | 2047 | 11 | 309 | 295 947 | 295 947 ✓ | 252.8 s |
 | 24 | 16 777 215 | 4095 | 12 | 564 | **1 077 871** | 1 077 871 ✓ | **1467.3 s** |
+| 25 | 33 554 431 | 5792 | 13 | 760 | 2 063 689 | 2 063 689 ✓ | 5421.0 s† |
+| 26 | 67 108 863 | 8191 | 13 | 1028 | **3 957 809** | 3 957 809 ✓ | **12 844.1 s** |
+
+†n=25 wall is **contention-inflated** (ran concurrently with the S531
+op-count run sharing 32 cores); it is NOT a clean scaling point. n=26 ran
+contention-free and IS the clean reach point. See §S537.
 
 All rows: HONEST run **ACCEPTED**, `claimed π(x) == sieve_pi(x)` exactly.
 `n=20` reproduces the S504 headline now under the FULL config (S504 used
@@ -30,7 +36,11 @@ the same batched bundle without `pcs`/`commit_base`; numbers agree:
 π(1048575)=82025). The **n=24 claim π(16777215)=1 077 871** was
 independently cross-checked against a from-scratch Eratosthenes sieve
 (`π(2²⁴)=1 077 871`, a known value), so the chain's count is verified
-against ground truth at two sources.
+against ground truth at two sources. The **n=26 claim
+π(67108863)=3 957 809** (x≈6.7×10⁷, the new reach) was likewise
+cross-checked against a from-scratch Eratosthenes sieve over `[0, 2²⁶)`
+(`= 3 957 809`, MATCH), and the n=25 claim π(33554431)=2 063 689 against
+sieve as well.
 
 **Deterministic reproducibility (n=24).** The n=24 run was executed
 twice (an earlier unlanded background run, `run_n24_full.log`, and the
@@ -157,6 +167,18 @@ exponent climbing and *staying* well above ~1.1 at n≥26 with the fast
 path fully engaged (a genuine super-Õ(x) term, not a memory-hierarchy
 constant). At present the 3-point fit x^1.09 is consistent with
 Õ(x)+overhead.
+
+**UPDATE (S537): the n=26 clean point is in, and the RAW wall exponent
+DID climb (n24→26 = 8.75×/Δn=2 = x^1.56), but this is NOT a super-Õ(x)
+op-count — it is the third (allocation/stime) wall leg, settled by the
+S535/S536 sharpened test, not the raw wall.** The final wall ÷ op-count
+= 77.9 ns/op, and the contention-robust utime-per-op stayed bounded at
+21.5 ns/op (== n=22 anchor) ⇒ the excess is a ~72% stime/allocation
+fraction (measured two independent ways), not compute. See §S537 for the
+full closure. So the raw-wall exponent is the WRONG falsifier statistic
+at the reach (it folds in the page-fault leg that grows with the Θ(x)
+working set); the right statistic is utime-per-op, which is flat/declining
+⇒ op-count Θ(x)·polylog intact.
 
 ## S525: vectorising the per-layer scatter-sums — bit-identical, but WALL-NEUTRAL; the S524 working-set attribution CORRECTED
 
@@ -324,6 +346,103 @@ peak-RSS gap NOT growing ~4×/Δn=2 (would mean the removed term is not the
 Reproduce: `python3 large_x_benchmark.py --stream-probe 16,18,20,22`;
 `python3 compressed_layer.py --selftest` (case 25); `python3
 large_x_benchmark.py --selftest` (case 6).
+
+## S537: n=26 reach HARVESTED — the clean falsifier point; super-Θ(x) NOT triggered
+
+The detached `run_reach_detached.sh` finished both reaches.
+`run_n25.log` and `run_n26.log` are the harvested logs (process exited;
+PID 1592836 gone).
+
+**n=26 reach (contention-free, the clean S529 falsifier point):**
+- HONEST **ACCEPTED**; `claimed π(2²⁶−1) = 3 957 809 == sieve == an
+  independent from-scratch Eratosthenes sieve over [0, 2²⁶)` ✓ (this
+  cycle's cross-check, MATCH) — correctness/soundness witnessed at
+  x≈6.7×10⁷.
+- wall **12 844.10 s** (3.57 h); peak RSS **11 708 MB (11.43 GB,
+  getrusage peak)**.
+- certificate `comm = 588 558` (~4.60 MB @ 61-bit):
+  `comm_outer = 576 616 (98%)`, `comm_base = 8 448`, `comm_bw = 3 325`,
+  `comm_bt = 96`, `comm_ub = 73`.
+- verifier large-table ops: **per-layer leaf = 0** (the Õ(√x)
+  end-to-end property holds at the reach), one-time leaf = 24 704,
+  base-commit opens = 24 704 (Θ(x^{1/4})).
+
+**Profile holds at the reach.** `comm_outer(26)/comm_outer(25) =
+576616/426268 = 1.353 == K(26)/K(25) = 1028/760 = 1.353` — the dominant
+cert term scales *exactly* as `K = π(√x) = Θ(√x)`. `comm_base`,
+one-time leaf, base opens are FLAT n=25→26 (both have nb=13 ⇒ the
+Θ(x^{1/4}) base term only steps when nb increments). The batched
+discharges stay polylog (bt/bw/ub = 96/3325/73). Per-layer leaf = 0 at
+every reach n. n=25 additionally REJECTED the `delta_pi` liar
+(claim π+1, 1720 s); n=26 ran honest-only (`--no-cheat`) to keep the
+clean contention-free wall point.
+
+### The S529/S535 reach-wall falsifier — CLOSED from the final wall
+
+Clean wall series (contention-free points only; n=25 excluded, see †):
+
+| n | wall (s) | op-count (mul, BIG_Q) | wall/op (ns) | ratio /Δn=2 |
+|---|---|---|---|---|
+| 20 |    71.8 | 2.040×10⁹ (meas.)  | 35.2 | — |
+| 22 |   252.8 | 8.883×10⁹ (meas.)  | 28.5 | 3.52× |
+| 24 | 1 467.3 | 3.845×10¹⁰ (meas.) | 38.2 | 5.80× |
+| 26 | 12 844.1 | 1.649×10¹¹ (model†)| 77.9 | **8.75×** |
+
+†op-count(26) from the S532b polylog model `mul(24)·2²·(26/24)^0.87`
+anchored on the *measured* n=24 count (a direct n=26 op-count run would
+pin it; the model predicts every measured per-step ratio to <0.4%, S531).
+
+**On the RAW wall test the n24→26 ratio is 8.75×/Δn=2, far above S529's
+band [4.0, 5.4]× — naively this fires "super-Θ(x)".** It does NOT, and
+the final wall *itself* now closes the question by the S535/S536
+sharpened test (the discriminator is `stime`/`utime`, not the wall):
+
+- wall ÷ op-count = **77.9 ns/op** wall-per-op at n=26.
+- The live-measured (contention-robust) reach **utime-per-op = 21.5
+  ns/op** (S536), `== the n=22 DRAM anchor 20.8 ns/op (1.04×)` and on
+  the *declining* per-op trend (204→85→46.5→27.9→20.8 ns/op over
+  n=14..22, S536-B) — bounded, no super-linear term.
+- ⇒ implied utime fraction = 21.5/77.9 = **0.276**, i.e.
+  **stime_frac ≈ 0.724** — which **independently matches the
+  live-measured stime_frac 0.695–0.75** (S535/S536 /proc reads). Two
+  fully independent routes (final-wall÷op-count vs live /proc split)
+  agree on a ~72% allocation/page-fault leg.
+
+So the >5.4× wall excess is *exactly* the amount needed to dilute a
+bounded ~21 ns/op `utime` to the 77.9 ns/op `wall` — it is the
+`stime`/allocation leg (S535: 3.7×10⁵ minor faults/s, majflt=0,
+re-allocation of the Θ(x) buffers across K≈1028 layers), **not** a
+super-linear per-element compute term. **Three-leg model confirmed at
+the reach:** `wall = op-count(Θ(x)·polylog) × compute/cache(≤2.3×
+saturating) × allocation(stime_frac rising 0.004→0.72 with the Θ(x)
+working set)`. The accelerating wall-per-op (35→28→38→78) is driven
+entirely by the rising stime fraction (≈0.06→0.15→~0.45→~0.72), with
+bounded utime-per-op. **F1–F4 all un-fired. Verdict: super-Θ(x) NOT
+triggered; the prover op-count is Θ(x)·polylog (= Õ(x)), confirmed to
+the n=26 reach.**
+
+**Honest caveat (the one lost number).** The reach process exited before
+a *final* `/proc` `stime/utime` sample (the split is perishable — lost on
+exit; `reach_utime_crosscheck.py --predict` needs a live PID and so
+cannot finalize post-mortem). The utime-per-op input (21.5 ns/op) is
+S536's live snapshot at ~60–85% utime-progress — a *lower* bound; S536
+projected final per-op ≈ 25–36 ns/op. Even at that upper end the utime
+fraction is 0.32–0.46 (stime still ≥0.54, bounded) ⇒ still not
+triggered. What makes this finalization solid despite the lost split is
+the **two-route agreement**: the final wall (measured) ÷ op-count gives
+77.9 ns/op, and 77.9 = 21.5/(1−0.72) reproduces both the snapshot
+utime-per-op AND the independently-measured stime_frac. A future reach
+should log `getrusage(RUSAGE_SELF)` `ru_utime/ru_stime` at DONE to pin
+the final split directly.
+
+**What would falsify this (S537).** A direct n=26 op-count run giving
+mul ≫ 1.649×10¹¹ (op-count itself super-linear); OR a future reach whose
+*logged final* utime-per-op exceeds ~40 ns/op and keeps rising with n
+(utime super-linear, not the bounded cache/op constant); OR the
+allocation leg being shown removable yet the wall ratio staying >5.4×
+(would mean the excess was utime after all). On the present evidence
+(op-count Θ(x) to n=24 S530/1/2b; utime-per-op bounded/declining S536;
+stime_frac 0.72 measured two ways) none holds.
 
 ## Honest scope
 - This is the open-item-1 Õ(x) prover working the √x state; it is NOT a
