@@ -1,0 +1,68 @@
+=== Cycle 587 — Sun Jun 14 15:49:02 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The file is large. Let me find the current NEXT ACTION and recent cycle state.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+Let me read the current NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the status of the detached n=26 reach run, which is the gating NEXT ACTION.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== pgrep large_x_benc
+The n=26 reach is still running (PID 1592836, started 13:24Z, no DONE yet). Let me check how far along it is.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== current time UTC =
+The n=26 run started 13:24Z and it's now 15:49Z — that's **~2h25m = ~8680s elapsed, already ~5.9× the n=24 wall (1467s)** and still running. This is at/above the predicted clean window upper bound [4.0,5.4]×. Let me confirm it's actively progressing (the ps %CPU reading was unreliable due to an etime overflow) and compute the independent ground truth now so harvest is instant.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== sample CPU over 3s
+Confirmed: the n=26 reach is genuinely CPU-bound and progressing (~100% of one core, wchan=0, not blocked/swapping). At ~2h26m elapsed it's already ~5.9× the n=24 wall and still running — already above the predicted clean window's 5.4× upper bound. Let me compute the independent ground truth now so the cross-check is instant when it finishes.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+python3 - <<'PY'
+import nump
+Ground truth confirmed independently — all three match expected values:
+- π(2²⁴−1) = **1,077,871** ✓ (S524)
+- π(2²⁵−1) = **2,063,689** ✓ (S534 n=25)
+- π(2²⁶−1) = **3,957,809** ✓ (the value n=26 must claim)
+
+The reach is genuinely CPU-bound and progressing, now at ~2h26m = ~5.9× the n=24 wall and climbing — already past the predicted clean-window upper bound (5.4×). I'll wait for it to finish so I can harvest the real wall/RSS/claimed-π. Let me load the Monitor tool to wait on the log non-contendingly.
+  [tool: ToolSearch] 
+The reach is still running and I need its DONE output (real wall, peak RSS, claimed π) to harvest. I'll launch a background watcher that notifies me on any terminal state — DONE, process death, or timeout — without contending (it just polls the log).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+PID=1592836
+LOG=run_n26.log
+
+While the watcher runs, let me gather the n=24/n=25 reference data and the results-file structure so the harvest write is immediate when DONE fires.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "================ run_n
+I have all reference data. Key facts for the harvest:
+
+| n | x | K | wall (s) | peak RSS | claimed π = sieve |
+|---|---|---|---|---|---|
+| 24 | 2²⁴−1 | 564 | 1467.27 | ~265 MB | 1,077,871 ✓ |
+| 25 | 2²⁵−1 | 760 | 5421.03 (contention-inflated) | 5929 MB | 2,063,689 ✓ |
+| 26 | 2²⁶−1 | ? | **running, ~8800s+ ≈ 6.0× n=24 and climbing** | (peaked ~11.5 GB) | must = 3,957,809 |
+
+The reach is contention-free now (load 1.38) and in finalization (RSS fell to ~3.5 GB, big cubes freed). While the watcher waits, let me read the results file and the op-count script — I want to know whether the n=26 op-count (the deterministic leg of the wall decomposition) can be computed cheaply without a bandwidth-heavy chain that would contaminate the reach's clean wall.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== large_x_benchmark_
+The results file's "Scaling law" section (the n=20/22/24 series) is where the n=26 reach extends. Critical context: the **n=22→24 step was already 5.80×** (the L3-crossover). So n=26 is the decisive test of whether that 5.80× was *one-time* (⇒ n24→26 drops back to ~4–4.4×) or *persistent DRAM growth* (⇒ stays ~5.8–6×). Right now n=26 is at ~6.0× and climbing — preliminarily it looks persistent. I need the DONE numbers to state this.
+
+Let me check the op-count script (light read) to decide whether I can cheaply nail the deterministic op-count leg of the decomposition post-reach.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== how does prover_op
+`measure_chain` builds a full n=26 chain (~11 GB, bandwidth-heavy) — running it now would contend with and contaminate the reach's clean wall. I won't. I don't need it: the op-count leg is deterministic from S532b's forced model `x·(log₂x)^0.87`, giving opcount_ratio(n24→26) = 4·(26/24)^0.87 ≈ **4.29×** — so once I have the measured wall ratio I can decompose wall = op-count(4.29×) × DRAM-constant without any heavy run.
+
+Let me check `run_reach_detached.sh` to confirm what happens after n=26 (I must not let it silently launch an even larger n=27).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_reach_detached.sh
+Everything is confirmed and prepared:
+- **No runaway risk**: `run_reach_detached.sh` runs n=25 then n=26 and stops — no n=27 will launch.
+- **Ground truth** independently sieved: π(2²⁶−1) = **3,957,809** (the value n=26 must claim).
+- **Reference walls**: n=24 = 1467.27 s (clean); n=25 = 5421.03 s (contention-inflated, not a falsifier point).
+- **Op-count leg is deterministic** (no heavy run needed): S532b's forced model gives opcount_ratio(n24→26) = 4·(26/24)^0.87 ≈ **4.29×**, so the wall decomposition reduces to DRAM-constant = wall_ratio / 4.29.
+- **Decisive question**: the n=22→24 step was already 5.80×. n=26 tests whether that was a *one-time* L3 crossover (⇒ ratio drops to ~4.3–5.4×) or *persistent* DRAM growth (⇒ stays ~5.8–6×). The reach is currently at ~6.0× and climbing — preliminarily persistent.
+
+The watcher (background, non-contending) will notify me when n=26 hits DONE / crashes / or after 70 min. I won't run anything bandwidth-heavy meanwhile — that would contaminate the clean wall, which is the entire point of n=26. Yielding to wait for the reach to finish.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/8bc24d8e-b44b-4f65-b8aa-3f5eb5d0b259/tasks/bs3n3gfwz.output
+The watcher has produced no output yet (reach still running). I'll yield and wait for the background notification rather than spin or contend with the clean wall measurement.
+
+**Status this cycle so far:** The NEXT ACTION (harvest the n=26 reach) is gated on the detached run finishing. I've confirmed it's genuinely progressing (CPU-bound, ~100% of one core, contention-free at load 1.38), pre-computed and independently verified the ground truth (π(2²⁶−1)=3,957,809), gathered the n=24/n=25 reference walls, and worked out the deterministic op-count leg (4.29×) so the wall decomposition needs no bandwidth-heavy run. A background watcher will notify me on DONE/crash/timeout. Waiting for it now.
+--- cycle result: success (turns=15, duration=335230ms) ---
+=== Cycle 587 finished — Sun Jun 14 15:54:43 UTC 2026 ===

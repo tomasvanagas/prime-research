@@ -1,0 +1,42 @@
+=== Cycle 561 — Sun Jun 14 02:49:57 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, particularly the NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final section of PROGRAM.md to find the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: run the large-x benchmark at n=24. There's already a `run_n24_full.log` in the git status from a previous cycle's launch. Let me check its state and the benchmark script.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== run_n24_full.log
+There's already an `n=24` run in progress (PID 1141987, started 02:25, ~25 CPU-min so far), launched by a previous cycle. The log file is empty (0 bytes — the script likely prints only at completion). Let me check the current time, how the script behaves, and whether output is going anywhere.
+  [tool: Bash] echo "=== now ===" && date && echo "=== process start/elapsed ===" && ps -o pid,etime,cputime,rss,cmd -p 1141987 && echo
+The `n=24` process is genuinely running (25 CPU-min so far, single-threaded, output → `run_n24_full.log` which only fills at completion). The huge ELAPSED is a container-clock artifact; CPU time 25:07 is the real measure. S513 predicted ~900s but it's already past that. Let me understand the script and results file before deciding how to proceed — I must not launch a duplicate run.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+The running process is `large_x_benchmark.py --n 24` with default flags — it does BOTH the honest run AND the `delta_pi` soundness liar, printing everything only at the very end (hence the empty log). It's at 25 CPU-min vs the ~19-min prediction (honest ~885s + cheat ~234s), so likely near completion or modestly over. I must not duplicate it.
+
+Let me read the results file to understand the banking format while I set up monitoring for the running process.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I understand the full picture now. The deliverable is to bank the `n=24` result. The process is already running and will print everything at completion. Let me (a) independently compute the ground-truth `π(16777215)` so I can verify the claimed value when it finishes, and (b) launch a background waiter that re-invokes me when the run completes.
+  [tool: Bash] python3 -c "
+import numpy as np
+N=(1<<24)-1
+s=np.ones(N+1,dtype=bool); s[:2]=False
+for i in range(2,int(N**0.5)+1):
+    
+Ground truth confirmed: **π(16777215) = 1077871**, V=4095, nb=12. When the run finishes, the honest claim must equal 1077871 (accepted), and the `delta_pi` liar (claiming 1077872) must be rejected. Now let me launch a background waiter that re-invokes me when the running process completes.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+while kill -0 1141987 2>/dev/
+The background waiter is tracking the run and will re-invoke me when it completes. Here's the current state:
+
+**This cycle's task (from PROGRAM.md NEXT ACTION):** complete and bank the `large_x_benchmark.py --n 24` run for the active verification line (open item 5).
+
+**Situation found:** a previous cycle (n561) already launched `python3 -u large_x_benchmark.py --n 24` (PID 1141987). It's still running — 25 CPU-min in, single-threaded, output → `run_n24_full.log` (empty because the script prints only at completion). It runs both the honest verification *and* the `delta_pi` soundness liar in one process. I did **not** start a duplicate.
+
+**Prepared the verification target:**
+- x = 2²⁴−1 = 16777215, V = ⌊√x⌋ = 4095, nb = 12, K ≈ 564 layers
+- Independently sieved ground truth: **π(16777215) = 1077871** — the honest run must claim exactly this (accepted); the `delta_pi` liar (claiming 1077872) must be rejected.
+
+**Now waiting** on the background task (`bl7bargtu`) which exits the moment PID 1141987 finishes, then dumps the log. The S513 prediction was ~885s honest + ~234s cheat ≈ 19 min; at 25 min it's modestly over, likely in the cheat phase or steeper-than-3.5× scaling. When it completes I'll verify `claimed == 1077871`, confirm the liar was rejected, record the wall-clock and profile (per-layer leaf-eval count = 0, comm ~95% comm_outer, base opens Θ(x^{1/4})), and bank into `large_x_benchmark_results.md` and PROGRAM.md.
+
+I'll resume automatically when the run finishes.
+--- cycle result: success (turns=10, duration=138442ms) ---
+=== Cycle 561 finished — Sun Jun 14 02:52:21 UTC 2026 ===

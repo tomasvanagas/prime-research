@@ -1,0 +1,88 @@
+=== Cycle 583 — Sun Jun 14 12:48:09 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large, detailed program. Let me find the current NEXT ACTION and check on the detached reach.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | head -40
+  [tool: Bash] ls -la *.log run_*.log 2>/dev/null; echo "---reach logs---"; ls -la experiments/constructions/p12_sumcheck_pi_verificati
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification/ && echo "=== run_n25.log ==="; cat run_n25.log; echo "=== run
+Both background runs from prior cycles are still alive (reach n=25 not yet DONE; op-count path (b) at n=22, computing n=24). I must not start a third heavy run. Let me understand the fresh-territory options before committing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && free -g | head -3; echo "---host free RAM above---"; echo; echo "=== OPEN_POSITIV
+Plenty of RAM free (50 GB free, 93 available). Let me read the genuinely-open adjacent targets P8/P10 and P7.b in detail.
+  [tool: Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+I have plenty of RAM and a clear picture. Both background runs (reach n=25, op-count n=24) are deterministic and in-progress from prior cycles — I must not start a third. Let me find genuinely fresh, RAM-light territory. One candidate stands out: **P10 adaptive π-queries**. Let me check it hasn't already been closed, and probe the guess-comparison oracle line.
+  [tool: Bash] echo "=== CLOSED_PATHS: interpolation/Newton/Aggarwal/binary search/loglog ==="; grep -in "interpolation\|newton\|aggarw
+  [tool: Bash] echo "=== guess_comparison_oracle dir ==="; ls experiments/analytic/guess_comparison_oracle/ 2>/dev/null; echo "=== grep
+Found the key prior note (CLOSED_PATHS:613): "Binary search + local sieve — problem relocated, not solved" — that's about per-query *cost*, not query *count*. Let me check the guess-comparison oracle results, which is the closest prior work to adaptive queries.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/guess_comparison_oracle/guess_comparison_oracle_results.md
+The guess-comparison oracle (S491) establishes the *geography* (far zone polylog-decidable, hard zone width √x, R-guess comparison = fair coin) but never measured the **adaptive query complexity** of computing p(n) — which is exactly the open P10 target. That's a clean, fresh, RAM-light closure that won't contend with the two running deterministic jobs. Let me verify my analytic tooling is available before building.
+  [tool: Bash] python3 -c "import numpy; print('numpy', numpy.__version__)"; python3 -c "import mpmath; print('mpmath', mpmath.__versio
+All tooling present. I'll build the P10 closure: a measured analysis of the **adaptive query complexity** of computing p(n) from a π-oracle, with the mechanism tied to the project's SMOOTH+RANDOM split. Let me write the experiment.
+  [tool: Bash] mkdir -p experiments/analytic/adaptive_query_complexity
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+Now let me run the selftest first.
+  [tool: Bash] cd experiments/analytic/adaptive_query_complexity && python3 adaptive_query_complexity.py --selftest 2>&1 | tail -50
+Two bugs: (1) the R-derivative is missing a `1/k` factor (causing slow linear convergence), (2) selftest sieve too small for the test `n`. Let me fix both.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+  [tool: Bash] cd experiments/analytic/adaptive_query_complexity && python3 adaptive_query_complexity.py --selftest 2>&1 | tail -45
+  [tool: Bash] python3 adaptive_query_complexity.py --selftest 2>&1 | tail -45
+All selftests pass. Newton converges in 2–3 iterations (essentially constant = O(log log x)), interpolation count stays flat (~9) while binary grows (8→10→11). Now the full measurement.
+  [tool: Bash] python3 adaptive_query_complexity.py --measure --xmax 20000000 2>&1 | tail -70
+All measurements work. M1 (Newton iters 2–3, flat) and M3 (window residual ~x^{1/4}, doesn't drop with degree) are clean. But M2's raw log-log slope is 0.672 — that's single-sample noise on a fluctuating quantity (`|p(n)−R⁻¹(n)|` is itself a random variable). The robust signal is the *bounded* err/√(p(n)) ratio. Let me firm up M2 with a binned-RMS exponent over many samples.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+  [tool: Bash] python3 adaptive_query_complexity.py --measure --xmax 20000000 2>&1 | sed -n '/^M1:/,/^M3 /p' | head -20
+M2 is now robust: RMS|err| ~ x^0.488 (binned over 240 samples), err/√(p(n)) ratio bounded with trend slope −0.007 ≈ 0. Let me capture the full run to a log, then write the results file.
+  [tool: Bash] python3 adaptive_query_complexity.py --measure --xmax 20000000 > run_measure.log 2>&1; echo "exit=$?"; echo "=== window-
+The inside-window result is actually sharper than I first wrote: `interp_q` (9,9,13,13) ≈ `binary_q` (8,10,12,13) — interpolation does **not** beat binary inside the random window because there's no smooth signal. That's a stronger confirmation of the mechanism than "interp wins loglog." Let me correct the docstring and printed interpretation to match the measured reality.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py
+Let me re-run selftest + full measure to confirm everything still passes and capture the final log.
+  [tool: Bash] python3 adaptive_query_complexity.py --selftest 2>&1 | tail -2; echo "=== measure ==="; python3 adaptive_query_complexit
+All passing. Let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity/adaptive_query_complexity_results.md
+Now let me check the two background runs are still alive and update the catalogues. Let me look at the relevant CLOSED_PATHS region and OPEN_POSITIVE_TARGETS P10 header for edits.
+  [tool: Bash] echo "=== background jobs ==="; pgrep -af "large_x_benchmark|prover_opcount_scaling" | head; echo "=== reach n25 log ===
+Both background jobs still alive and undisturbed (reach n=25 computing; opcount at n=22→n=24). My work didn't interfere. Now let me add a CLOSED_PATHS row next to the related "Binary search + local sieve" entry.
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+Now mark P10 as closed in OPEN_POSITIVE_TARGETS.md.
+  [tool: Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+Now update PROGRAM.md — the secondary-lines open list, the era header, a new S532 entry, and the NEXT ACTION.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION's "fresh territory" section to reflect that P7.b and P10 are now closed (the harvest instructions for the two live runs stay valid).
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me run the cleanup checks from CLAUDE.md (missing results files, leftover pycache).
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== __pycache__ dirs ==="; find experiments/analytic/adaptive_query_complex
+Final confirmation that the two detached runs survived my cycle untouched, then I'll wrap up.
+  [tool: Bash] echo "=== detached runs still alive? ==="; pgrep -af "large_x_benchmark --n 25|prover_opcount_scaling" | grep -v pgrep; 
+The reach process (`large_x_benchmark --n 25`) dropped out of the pgrep results — let me check whether it finished, died, or my grep pattern just missed it.
+  [tool: Bash] echo "=== any large_x_benchmark proc? ==="; pgrep -af large_x_benchmark; echo "exit=$?"; echo "=== run_reach_detached.sh
+Both detached runs confirmed alive and undisturbed (my earlier pattern just missed the `.py`). Reach n=25 still computing; op-count path (b) still at n=22→n=24. Let me run the selftest one final time to certify the delivered script after my last text edits.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/adaptive_query_complexity && python3 adaptive_query_complexity.
+Cycle complete. 39/39 selftest assertions pass; no `__pycache__` left.
+
+## Summary
+
+This cycle I **closed OPEN_POSITIVE_TARGETS P10 (adaptive π-queries) — CLOSED-NEGATIVE with a mechanism**, chosen as fresh RAM-light ground because both prior-cycle detached runs (the reach n=25 and op-count path-(b) n=24) were still computing and must not be duplicated. I confirmed both stayed alive and undisturbed throughout.
+
+**Deliverable:** `experiments/analytic/adaptive_query_complexity/adaptive_query_complexity.py` (+`_results.md`, `run_measure.log`).
+
+**The question (P10):** can an *adaptive* π-query strategy beat Aggarwal binary search for computing p(n)? **Verdict: no.** The non-adaptive recipe — predict x̂ = R⁻¹(n) (Newton on polylog Riemann R), then sieve a Θ(√x) window once — is Õ(√x) with **zero queries**, and adaptivity cannot beat it.
+
+**Mechanism = the project's own SMOOTH+RANDOM split, measured as a query-complexity dichotomy:**
+- **M1** Smooth far zone (where interpolation's loglog edge lives) is already *free*: Newton converges in **2–3 iters, flat across 22 scales**.
+- **M2** Random hard zone has width **Θ(√x)**: RMS|p(n)−R⁻¹(n)| ~ **x^0.488** over 240 n; err/√(p(n)) median 0.145, **trend vs x = −0.007 ≈ 0** (bounded) — matches guess-oracle S491's 0.13/0.53.
+- **M3** That window has **no interpolable signal**: π residual stays at the √count≈x^{1/4} Poisson scale (flat ~0.12), no drop deg1→deg3 ⇒ **interp_q ≈ binary_q ≈ ½log₂x** inside it. Each probe is a √x π-eval, so one window sieve dominates any adaptive strategy.
+
+So adaptivity helps exactly where it's already free (smooth) and fails exactly where the cost lives (random √x). This is the query-complexity face of the information barrier (S511/S518) and sharpens the guess-comparison geography (S491) and the CLOSED "Binary search + local sieve — problem relocated" row into a full count-vs-cost dichotomy. All four pre-stated falsifiers (F1–F4) un-triggered.
+
+**Honest scope:** an adjacent NEGATIVE closure, **not** a goal advance (polylog π stays blocked); the "no strategy beats it" is a measurement-backed mechanism over natural strategies, not a formal universal adaptive lower bound. No BREAKTHROUGH.md (correctly).
+
+**Catalogue updates:** CLOSED_PATHS row added; OPEN_POSITIVE_TARGETS P10 marked CLOSED-NEGATIVE; PROGRAM.md Done-this-era entry + secondary-lines list + NEXT ACTION refreshed (P7.b and P10 now both off the open shelf — only P8/P9 remain, both flagged as likely info-barrier re-derivations).
+
+**Still pending (next cycle's harvest):** the detached reach (n=25/26) and op-count (n=24) runs — neither shows DONE yet; the recorded NEXT ACTION's harvest+falsifier-test instructions remain valid and untouched.
+--- cycle result: success (turns=39, duration=911770ms) ---
+=== Cycle 583 finished — Sun Jun 14 13:03:22 UTC 2026 ===

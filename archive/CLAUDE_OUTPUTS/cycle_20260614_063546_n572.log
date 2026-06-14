@@ -1,0 +1,295 @@
+=== Cycle 572 — Sun Jun 14 06:35:46 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large file. Let me find the current NEXT ACTION specifically.
+  [tool: Bash] grep -n -i "NEXT ACTION" PROGRAM.md | head -40
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now I have the clear NEXT ACTION. Let me examine the relevant code in `compressed_layer.py` around the two hot scatter-sums.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The code already references S525 and `scatter_fold61` — it seems a prior invocation of this cycle started the work. Let me check the git diff and current state carefully.
+  [tool: Bash] git diff --stat && echo "---SCATTER_FOLD61 occurrences---" && grep -rn "scatter_fold61" experiments/constructions/p12_su
+A prior invocation of this S525 cycle has done substantial work. Let me assess the current state — the implementation, selftests, benchmark log, and whether PROGRAM.md was updated.
+  [tool: Bash] cat .cycle; echo "=== run_s525_remeasure.log ==="; cat experiments/constructions/p12_sumcheck_pi_verification/run_s525_r
+The `.cycle` counter is 572 (cycle naming is S525 since S524 was last). A prior invocation implemented `scatter_fold61`, wired it in, added selftests, but the re-measurement log is incomplete (just a header). Let me read the implementation and run the selftests to verify correctness.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+The implementation looks careful and correct. Let me verify the helper primitives (`_reduce61`, `_M31`, `_S31`, `_mul61`) it depends on.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+All primitives are correct. Now let me run the selftests for both modified files to confirm the implementation is sound and bit-identical.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python compressed_prover_mult_trace.py --selfte
+  [tool: Bash] which python3 python3.11 python3.12 2>/dev/null; python3 --version 2>&1
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification && timeout 900 python3 compressed_prover_mult_trace.py --selft
+  [tool: Bash] timeout 900 python3 compressed_prover_mult_trace.py --selftest 2>&1 | tail -30
+The working directory persisted into the experiment folder. Let me confirm location and run the `compressed_layer.py` selftest (which contains the fast==object bit-identical assertions).
+  [tool: Bash] pwd; echo "=== compressed_layer selftest ==="; timeout 900 python3 compressed_layer.py --selftest 2>&1 | tail -30
+The selftest is running in background. Let me look at the second scatter-fold site (line 728) and the full git diff of `compressed_layer.py` while that runs.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me review the selftest additions in `compressed_prover_mult_trace.py` (the bit-identical assertions for `scatter_fold61`).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me check the background selftest progress and review what was changed in the benchmark driver.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b32fndcnp.output
+  [tool: Bash] git diff experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py 2>&1 | head -160
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git diff -- experiments/constructions/p12_sumcheck_pi_verification/large_x_benchm
+The prior invocation added a memory-localization probe. Let me check the selftest result and look at the current results file state.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b32fndcnp.output 2>/dev/nu
+Let me check the selftest completion status.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b32fndcnp.output 2>/dev/nu
+The selftest is still running (it exercises the full chain over many cheat classes). Let me track this cycle's remaining work and review the rest of the results diff while it runs.
+  [tool: Bash] git diff -- experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md | sed -n '120,220p'
+Let me check the selftest progress again.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b32fndcnp.output 2>/dev/nu
+The selftest exercises the full chain over cheat classes — still running. Let me give it time and check the size of the per-layer scatter arrays, since the S524 attribution (these scatter-sums build a 3.9 GB working set) deserves scrutiny — the omega/Wt arrays are only √x-size per layer.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b32fndcnp.output 2>/dev/nu
+Both selftests pass (`compressed_prover_mult_trace` and `compressed_layer`). The implementation is verified bit-identical. Now let me investigate the array sizes to scrutinize the S524 "3.9 GB from these scatter-sums" attribution. Let me set up the work directory and look.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n 'Dml\|"D"\]\|W\["D
+`Dml = 1<<nb ≈ √x` (4096 at n=24), so each per-layer scatter is only a few-thousand-element array — a single scatter cannot be the 3.9 GB working set. This makes the S524 attribution ("these scatter-sums are the source of the 3.9 GB") suspect. The prior invocation's mem-probe (FULL vs NOBATCH) was clearly built to test exactly this. 
+
+Let me add a clean A/B control toggle for the scatter path so I can isolate its effect precisely, then run the measurements. First let me see the module header.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I'll add a clean A/B control toggle (`USE_SCATTER_FOLD`) so the scatter-fold effect can be isolated precisely — a matched control, exactly what the contract asks for.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me wire `--no-scatter-fold` into the benchmark driver. Let me view the current main().
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me verify my toggle edits didn't break anything with the benchmark's own selftest, then launch the measurement runs.
+  [tool: Bash] timeout 300 python3 large_x_benchmark.py --selftest 2>&1 | tail -5
+Benchmark selftest passes with the toggle. Now let me launch the full measurement sweep in the background: mem-probe (localization) + n=22 A/B (scatter attribution) + n=20/22/24 headline (scaling re-measurement with the fast path).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+LOG=run_s525_remeasure.log
+{
+
+The sweep is running (~35 min expected). Let me poll that it started cleanly and, while it runs, extract the S524 baseline numbers from the existing n=24 run log for comparison.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+sleep 20; echo "=== current s
+Sweep is running on a 32-CPU/122GB host. The mem-probe runs first. Let me prepare the writeup while it computes, and poll periodically. Let me draft the analysis helper and check the S524 run logs for the full baseline split.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== S524 run_n24.log fu
+The mem-probe hasn't printed rows yet. Let me check the actual task output file for finer-grained progress.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/buxmab6n0.output 2>/dev/nu
+The mem-probe is progressing (now on n=18; output is buffered so it'll appear in chunks). Let me read the current results file fully to plan exactly where the S525 section goes, while the sweep runs.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I now have the full picture of what to write. Let me poll the sweep progress.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== sweep log ==="; cat
+The mem-probe is buffered and will flush when it completes (~3 min). Let me wait and poll.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+sleep 150
+echo "=== sweep log
+The poll got backgrounded due to the long sleep. Let me check the sweep log directly without sleeping.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; cat run_s525_remeasure.log; 
+The mem-probe is on its final run (n=20 NOBATCH); results will flush when it exits. Let me wait for the poll to return rather than spam checks.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bzlsoizws.output
+Let me set up task tracking for this multi-step cycle while the measurements run.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bzlsoizws.output
+Let me check the current state — the mem-probe should be done by now and into the n=22 A/B runs.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; cat run_s525_remeasure.log; 
+The n=20 NOBATCH run is taking a while (un-batched per-layer work is heavier). Let me check its elapsed CPU time to gauge progress.
+  [tool: Bash] ps -o pid,etime,time,rss,args -p 1319202 2>/dev/null; echo "---"; ps -o pid,etimes --no-headers -p 1316536 2>/dev/null
+CPU time ~58s into n=20 NOBATCH; memory still ramping. Let me launch a longer background poll and meanwhile draft the analysis tooling.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 240; echo "=== LOG ===
+While the sweep runs, let me prepare the exponent-analysis snippet I'll use once walls land (computes local exponents and least-squares fit vs S524 baseline).
+  [tool: Write] /tmp/exp_fit.py
+Now I'll wait for the poll to return with the mem-probe and A/B results.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bm9bxvtql.output
+  [tool: TaskUpdate] 
+I'll wait for the poll to complete and report progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bm9bxvtql.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/buxmab6n0.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; cat run_s525_remeasure.log; 
+The n=20 NOBATCH run seems slow. Let me check whether it's actually progressing (CPU advancing) or stuck.
+  [tool: Bash] for i in 1 2; do ps -o pid,time,rss --no-headers -p 1319202 2>/dev/null; sleep 3; done
+CPU is advancing (~100%), RSS holding at ~41MB — NOBATCH is compute-heavy but memory-light, an early hint the batched cubes drive peak memory. It's slower than expected. Let me wait for the queued poll to report.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bm9bxvtql.output
+Let me stop frequent polling and launch a single consolidated waiter, then wait for its notification.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 360; echo "=== LOG @ $
+I'll wait for the consolidated waiter (brpl90uv9) to report. Two earlier polls (bm9bxvtql) will also fire; I'll consolidate when results land.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bm9bxvtql.output
+I have three background waiters queued plus the main sweep. Rather than re-read stale files, I'll yield and let the next background notification re-invoke me. 
+
+Current state: mem-probe is on its final run (n=20 NOBATCH), which is compute-heavy. Early signal: NOBATCH holds only ~41 MB RSS even at n=20 — consistent with the hypothesis that peak memory is driven by the *batched-discharge cubes*, not the per-layer scatter-sums (which scatter_fold61 fixes). I'll confirm with the full numbers when they land.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bm9bxvtql.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; tail -40 run_s525_remeasure.
+Excellent — the mem-probe results are decisive:
+
+```
+  n     K   config   peak_MB   wall_s    claimed
+ 16    54     full        48      9.2       6542  ✓
+ 16    54  nobatch        43     34.9       6542  ✓
+ 18    97     full        92     24.4      23000  ✓
+ 18    97  nobatch        62     86.5      23000  ✓
+ 20   172     full       265     67.0      82025  ✓
+ 20   172  nobatch       138    197.5      82025  ✓
+```
+
+This **corrects the S524 attribution**. FULL peak RSS (265 MB @ n=20) is consistently *higher* than NOBATCH (138 MB) — so peak memory is driven by the **batched-discharge held cubes** (the K-witness stack for `batch_trace`/`batch_ub`, which are uint64), **not** the per-layer scatter-sums. Both configs ran scatter_fold61, so the per-layer scatter is not the memory driver. Also note n=20 FULL wall here is 67.0 s vs S524's object-path 71.8 s — a hint scatter_fold61 helps wall modestly.
+
+The n=22 A/B (ON vs OFF) is running (945 MB, growing — consistent with ~linear-in-x peak: 265 MB → ~1 GB → ~3.9 GB at n=24). Let me wait for it.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/brpl90uv9.output
+The mem-probe is done and already settles the central scientific question (peak memory = batched cubes, not the scatter-sums). The n=22 A/B and n=24 headline are still computing. I'll yield and let the next background notification re-invoke me rather than burn cycles polling.
+
+Summary of what's established so far this cycle:
+- `scatter_fold61` (built by the prior invocation) verified **bit-identical** via both selftests.
+- Added a clean A/B control (`--no-scatter-fold`).
+- **mem-probe corrects S524's attribution**: peak RSS is driven by the batched-discharge held cubes (uint64), not the per-layer object scatter-sums.
+
+Awaiting: n=22 ON vs OFF (scatter wall delta) and n=24 ON (new headline wall + peak RSS).
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/brpl90uv9.output
+I'll stop polling and wait for a background completion notification to re-invoke me.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/brpl90uv9.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sed -n '14,80p' run_s525_rem
+n=22 ON still running (~956 MB RSS). I'll wait for the queued 360 s waiter to report rather than keep polling. Yielding now.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/brpl90uv9.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 110; echo "=== LOG ===
+n=22 ON still running (RSS fluctuating 956→679 MB via GC; peak ~956 MB at n=22, consistent with linear-in-x ≈ 4× the n=20 265 MB). Let me advance and catch the n=22 ON result.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 110; echo "=== LOG ===
+n=22 ON landed: **wall 256.3 s, peak RSS 988 MB, claimed 295947 ✓**. Compare S524's object-path n=22 = 252.8 s — essentially identical (within noise). This already signals scatter_fold61 is **wall-neutral** at this scale. Peak RSS 988 MB ≈ 3.7× the n=20 265 MB → linear-in-x, projecting ~3.9 GB at n=24 — but driven by the batched cubes, not the scatter.
+
+The n=22 OFF (forced object scatter) run is the clean control. Let me capture it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; echo "=== LOG ===
+**Caught a bug in my A/B control.** The n=22 OFF run was REJECTED (comm=234, t_prover=429ms — aborted early). The cause: when `USE_SCATTER_FOLD=False` on the FAST_BIG path, the else branch uses `_dt(q)` which is **uint64** for BIG_Q-with-FAST — so `np.add.at` overflows before the `% q` fold, producing wrong residues (the chain correctly rejected them — soundness working). That's not the object-path control I intended. Let me check the original pre-scatter code to fix the toggle properly.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git diff -- experiments/constructions/p12_sumcheck_pi_verification/compressed_lay
+Now I understand the bug precisely. The original S524 code had a dedicated `if fast_big(q):` **object** branch; the prior invocation replaced it with scatter_fold61, and my toggle's `else` falls through to the `_dt(q)`=uint64 path (which overflows for BIG_Q). So the n=22 OFF result (122s, REJECTED) is invalid. I need an `elif fast_big(q):` object branch for the control. Good news from the same log: **n=20 ON = 67.75 s / 265 MB** (vs S524 object 71.8 s) and **n=24 ON is running at 3832 MB** (confirming ~3.9 GB peak = the batched cubes). Let me fix the toggle properly (safe — the running process already loaded the module).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add a selftest guarding this toggle (the boundary case I just debugged — the contract requires it). Let me view the benchmark's selftest.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me run the benchmark selftest to confirm the toggle fix is bit-identical and the new control case passes (runs concurrently with the n=24 process — no conflict, 32 cores available).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 400 python3 large_x_
+Toggle fixed and guarded (selftest case 5 passes). Now let me check the n=24 ON progress and the current full log.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== n=24 ON proc ===";
+n=24 ON is at 3918 MB (3.83 GB) — confirming the ~3.9 GB working set is present **with** scatter_fold61 active (so it's the batched cubes, not the object scatter). CPU ~3.5 min in; ~20 min to go. Let me queue the fixed n=22 OFF control to run automatically once n=24 finishes (clean, no CPU contention), appending to the log.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+LOG=run_s525_remeasure.log
+{
+
+Everything is now queued correctly:
+- n=24 ON (headline) running — at 3.9 GB RSS, confirming the working set is present *with* scatter_fold61 active.
+- Fixed n=22 OFF control queued to run after n=24 finishes (no contention).
+
+The picture is already clear and consistent: **scatter_fold61 is correct but wall-neutral** (n=20: 67.75 s vs S524 object 71.8 s; n=22: 256.3 s vs S524 252.8 s — equal within noise), and the **~3.9 GB working set is the batched-discharge held cubes** (mem-probe: FULL 265 MB ≫ NOBATCH 138 MB at n=20; uint64, not object scatter). This **corrects the S524 attribution**.
+
+Let me wait for the final two numbers (n=24 ON wall, fixed n=22 OFF) before writing up. I'll let the background completion notifications re-invoke me.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/buxmab6n0.output
+I'll yield now and resume when the n=24 ON run (and the queued n=22 OFF control) complete — that's the last data needed before writing up the results and updating PROGRAM.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; echo "n24 proc:";
+n=24 ON is ~28% done (CPU 414 s of ~1467 s; RSS now 2704 MB after the peak ~3918 MB — getrusage retains the peak). The memory conclusion is locked regardless of the final wall. Let me use the wait productively and draft the results.md S525 section to a scratch file, filling exact walls once n=24 lands.
+  [tool: Write] /tmp/s525_results_section.md
+Draft staged with placeholders. Let me also pre-draft the PROGRAM.md S525 entry to scratch while n=24 runs.
+  [tool: Write] /tmp/s525_program_entry.md
+Both writeup drafts are staged with placeholders. While n=24 runs, let me check for `__pycache__` cleanup and confirm the set of files this cycle touches.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== __pycache__ dirs under experiments ==="; find experiments -name __pycache
+`__pycache__` noted for end-cleanup. The files this cycle touches: `compressed_prover_mult_trace.py`, `compressed_layer.py`, `large_x_benchmark.py`, `large_x_benchmark_results.md`, `PROGRAM.md`. Now I wait for the n=24 ON wall + fixed n=22 OFF control. Let me advance and check.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; echo "n24 proc:";
+n=24 ON is ~43% done (CPU 628 s of ~1467 s). All conclusions are locked except the two final wall numbers. I'll yield until the background completion notification (n=24 ON + queued n=22 OFF control) re-invokes me, then fill in the two placeholders and finalize PROGRAM.md + results.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 700; echo "=== after w
+I'll wait for the background notification (n=24 ON completes, then the queued n=22 OFF control runs). Yielding until then.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+Yielding now — three things will re-invoke me: the n=24 ON completion (`buxmab6n0`), the queued n=22 OFF control completion (`blbagyuvs`), or my 700 s waiter (`bghq3294e`). When the final walls land I'll fill the two placeholders in the staged drafts and commit the results to `large_x_benchmark_results.md` and `PROGRAM.md`.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+Waiting on the background runs; no action needed until a completion notification arrives.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+I'll stop polling and wait for a real completion notification.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; ps -o time --no-headers -p 1
+n=24 ON still progressing (CPU ~800 s, ~55%). I'll wait for the 700 s waiter (`bghq3294e`) or the run completions to notify me. Standing by.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+I'll wait without further polling until a completion notification arrives.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/bghq3294e.output
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+n=24 ON at CPU 939 s (~64%). The follow-up control is already queued and waiting. Let me continue advancing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+n=24 ON at CPU ~1181 s (~80%). Almost there. Continuing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; ps -o time --no-h
+n=24 ON at CPU 1425 s — essentially at the ~1467 s mark. Should finish any moment. Let me catch the result.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 90; ps -o time --no-he
+**n=24 ON landed: wall = 1445.69 s, peak RSS = 3986 MB (3.89 GB), claimed 1077871 ✓.** Versus S524's object-path 1467.3 s — **~1.5% faster, i.e. wall-neutral**, and the 3.89 GB working set is present *with* scatter_fold61 active. The correction is confirmed. Let me compute the exact exponents on the ON path while the fixed n=22 OFF control finishes.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== ON path (scatter_fo
+Key result: the **local exponents are essentially identical** with and without scatter_fold61 — ON: x^0.96 (n20→22), x^1.25 (n22→24); S524 object: x^0.91, x^1.27. The acceleration **persists**, so it is intrinsic to the FULL config's Θ(x) working set, not the scatter dtype. The 5-point fit shows the local exponent climbing from ~0.70 (small n, in-cache) to ~1.25 (n=24, 3.9 GB, bandwidth-bound).
+
+Now I just need the fixed n=22 OFF control (running, ~halfway). Let me wait for it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; echo "=== n=22 OF
+n=22 OFF control at CPU 3:37 (~85%). Nearly done. Let me catch it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 70; echo "=== n=22 OFF
+**All S525 runs complete.** Final clean A/B at n=22 (same conditions):
+
+| path | wall | peak RSS | comm |
+|---|---|---|---|
+| ON (scatter_fold61, uint64) | 256.3 s | 988 MB | 146637 |
+| OFF (object np.add.at) | 249.2 s | 988 MB | 146637 |
+
+**comm identical (bit-identical transcript), peak RSS identical, wall within ~3% (OFF marginally *faster*)** — definitively wall-neutral, and the scatter representation doesn't touch peak memory. The correction is fully confirmed. Let me write the final results section now with real numbers.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now let me correct the wrong attribution paragraph (lines 146-157) to point to the S525 finding:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now let me insert the final S525 section (with all real numbers) before the "Honest scope" heading.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Results file done. Now let me update PROGRAM.md — first the NEXT ACTION section.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me verify my NEXT ACTION claim is grounded — that `batch_trace`/`batch_ub` actually materialize all K witnesses at once.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== where Ws / stacked
+Confirmed grounded — `batched_trace.py:110` materializes all K witnesses at once. The NEXT ACTION lever is real. Now let me add the S525 entry to the "Done this era" log and update the header.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me update open item 5 to note the S525 correction. Let me read its current end.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+PROGRAM.md updated (NEXT ACTION, Done-this-era entry, item 5 correction, header → S525). Now final verification: run both selftests after my edits, check `_results.md` companions, and prep cleanup.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_prover s
+Selftests running. Meanwhile, let me run the `_results.md` companion check from CLAUDE.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; find experiments/ -path "*/.lake" -prune -o -name "*.py" -print | while read f; do 
+These MISSING entries are all pre-existing from older experiments — none are files I touched. Let me confirm my three edited files have their `_results.md` companions.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; for f in compressed_prover_m
+All three `_results.md` companions exist; `compressed_prover` selftest passed. Waiting on the `compressed_layer` selftest (exercises the new toggle's elif branch). Let me check progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9f0866d3-434a-4375-94fb-43ace7938e89/tasks/b4px6nvbv.output
+Let me wait for the `compressed_layer` selftest to finish, then do final cleanup.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; cat /tmp/claude-0
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; ps -o pid,etimes,time --no-h
+The `compressed_layer` selftest is progressing (CPU 4:07). It's a thorough selftest (21+ cases with full chains). Let me wait.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; sleep 115; cat /tmp/claude-0
+Both selftests pass (`compressed_prover` and `compressed_layer`). The benchmark selftest passed earlier. Everything is verified. Now final cleanup — remove `__pycache__` and review the cycle's diff.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; find experiments -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; echo "pyc
+`__pycache__` removed; all changes in place. Let me verify the stray prior-invocation logs don't contradict my §S525 numbers (to avoid confusing future cycles), then close out.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; for f in run_n20_s525.log ru
+These corroborate my numbers (n=22 ~247 s, n=20 ~64 s — all consistent with wall-neutrality, no contradiction). They're the prior invocation's exploratory runs; harmless and corroborating. Let me do a final confirmation of the complete sweep log and close out the task.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== run_s525_remeasure
+The log is complete but contains both the buggy pre-fix n=22 OFF (§[2], REJECTED 122.54 s) and the fixed one (§[4], ACCEPTED 249.18 s). Let me append a clarifying note so future cycles aren't misled.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+cat >> run_s525_remeasure.log
+  [tool: TaskUpdate] 
+The cycle is complete. Summary of S525:
+
+## What this cycle (S525) did
+
+**Continued and finished** the S524 NEXT ACTION. A prior invocation had built `scatter_fold61` (a uint64-safe segmented scatter-fold) and wired it into both per-layer scatter sites, but left the re-measurement unfinished. This invocation:
+
+1. **Verified the implementation** — `scatter_fold61` is bit-identical to the object `np.add.at` (both file selftests + benchmark selftest pass).
+2. **Added a clean A/B control** (`--no-scatter-fold`), **caught and fixed a bug** in it (the toggle fell through to the `_dt(q)`=uint64 branch → overflow over BIG_Q → spurious REJECT), and guarded it with a new selftest case.
+3. **Ran the decisive measurements**: a FULL-vs-NOBATCH memory probe, a clean n=22 scatter A/B, and a full n=16→24 scaling re-measurement with peak-RSS tracking.
+
+## The headline finding — an honest correction
+
+**S524's attribution was wrong, and is now corrected.** scatter_fold61 is correct but **wall-neutral**:
+- n=20/22/24 = 67.8 / 256.3 / 1445.7 s — within ~2% of S524's object-path 71.8 / 252.8 / 1467.3 s.
+- n=22 A/B: ON vs object have **identical** `comm` (146637) and peak RSS (988 MB), wall within 3% (object marginally *faster*).
+- The local exponent climbs 0.70→0.74→0.96→**1.25** — essentially identical with and without the fix, so the super-linear `n22→24` step is **not** the scatter.
+
+The ~3.9 GB working set (measured 3986 MB at n=24, *with* the uint64 scatter active) is the **Θ(x) batched-discharge held cubes** — the mem-probe shows FULL peak RSS (265 MB) strictly above NOBATCH (138 MB) at n=20, and peak RSS scales ~4×/Δn=2 = Θ(x). The super-linear wall is a memory-hierarchy constant over a cache-busting Θ(x) working set, **not** Python-int GC (held cubes are uint64) and **not** the √x-size per-layer scatter.
+
+## Deliverables
+- Corrected `large_x_benchmark_results.md` (§S525 + fixed the wrong S524 paragraph) and `PROGRAM.md` (Done-this-era entry, item 5, new NEXT ACTION).
+- A genuinely uint64-pure scatter fast path (no behavioral change, but no longer object-boxed) + the A/B control.
+- **New NEXT ACTION** (grounded at `batched_trace.py:110`): stream the K-witness stack so `batch_trace`/`batch_ub` don't hold all K witnesses at once, dropping prover peak RSS from Θ(x) toward Õ(√x).
+
+No breakthrough — the goal stays blocked; this is an honest localization + correction on the verification line. `__pycache__` cleaned; no `BREAKTHROUGH.md` written.
+--- cycle result: success (turns=121, duration=3876437ms) ---
+=== Cycle 572 finished — Sun Jun 14 07:40:24 UTC 2026 ===

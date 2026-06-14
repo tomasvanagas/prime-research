@@ -1,0 +1,45 @@
+=== live reach capture ===
+  pid=1592836  state=R  RSS=3.6 GiB
+  cumulative:  utime=3549s  stime=8311s  cpu=11860s  stime_frac=0.701
+  window 4.0s:  stime_frac=0.752  minflt=3.705e+05/s  cum_minflt=3.688e+09  majflt=0
+
+=== chain utime baseline (FULL config, field=big, n=[14, 16, 18, 20, 22]) ===
+    n           x          mul_ops   utime_s   stime_s st_frac  ut_ns/op    wall_s  ok
+   14       16383       23,492,482      4.80      0.02   0.004    204.32      4.84  OK
+   16       65535      105,029,523      8.93      0.27   0.029     85.02      9.19  OK
+   18      262143      465,458,097     21.65      1.30   0.057     46.51     22.97  OK
+   20     1048575    2,040,403,997     56.94      9.98   0.149     27.91     66.95  OK
+   22     4194303    8,882,635,340    184.69     51.77   0.219     20.79    236.60  OK
+  per-Dn=2 ratios (utime vs op-count; per-op utime should NOT rise):
+    n=14->16: utime 1.860x   op 4.471x   per-op 0.416x
+    n=16->18: utime 2.424x   op 4.432x   per-op 0.547x
+    n=18->20: utime 2.630x   op 4.384x   per-op 0.600x
+    n=20->22: utime 3.244x   op 4.353x   per-op 0.745x
+
+=== cache->DRAM per-op utime factor ===
+  reused-buffer _mul61 UTIME per element (no allocation => stime~0):
+    size_elems      bytes     reps   ns/elem    xL1
+         4,096   32.0 KiB    16384    10.133   1.00
+        65,536  512.0 KiB     2048     7.078   0.70
+     1,048,576    8.0 MiB       64    14.156   1.40
+     8,388,608   64.0 MiB        4    22.948   2.26
+    67,108,864  512.0 MiB        1    22.799   2.25
+  DRAM/L1 per-op utime factor = 2.26x
+  last size-step utime ratio = 0.99x (saturating)
+
+=== predict utime(26) + compare to live (reach_done=False) ===
+  opcount(26) = 1.649e+11  (model x*(log2 x)^0.87, anchored on measured n=24)
+  baseline per-op utime (ns/op) -- DECLINES with n (overhead amortizes):
+    n=14:  204.32 ns/op
+    n=16:   85.02 ns/op
+    n=18:   46.51 ns/op
+    n=20:   27.91 ns/op
+    n=22:   20.79 ns/op
+  [context] naive Theta(x) band from n=22 anchor (op_ratio=18.6x, dram_bridge<=[1.0,2.26]): utime(26) ~ [3428s, 7764s]  (OVER-predicts: per-op declines)
+  reach utime(26) so far = 3549s  (stime=8311s, stime_frac=0.701)
+  reach realized per-op = 21.52 ns/op  [LOWER BOUND (reach running)]
+    vs anchor n=22 per-op 20.79 ns/op  (ratio 1.04x)
+  VERDICT: reach per-op utime sits ON/BELOW the declining baseline trend (<=1.3x the n=22 anchor) -- per-op is NOT rising, so utime grows no faster than the Theta(x) op-count. F1/F2 NOT triggered: the >5.4x WALL excess is the stime/allocation leg (70% of wall), Theta(x) op-count intact.
+  (per-op is a LOWER bound until DONE; final stays below the small-n per-op values -- monotone-declining trend.)
+  (context: reach wall so far ~= utime+stime = 11860s; stime carries 70% of it; the naive band over-predicts utime, so live<band is expected.)
+

@@ -1,0 +1,154 @@
+=== Cycle 584 — Sun Jun 14 13:13:22 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, particularly the NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a long file. Let me find the current NEXT ACTION at the end.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the status of the two detached runs mentioned in the NEXT ACTION before deciding what to do.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== pgrep large_x_benchmark (reach) ==="
+pgrep -af large_x_benchmark || echo "
+The reach run (n=25) is alive (PID 1505816). The op-count path (b) is NOT running — only the grep matched itself. Let me check both logs.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== run_n25.log (tail) ==="
+[ -f run_n25.log ] && tail -25 run_n25.log || echo
+Path (b) has **completed** and produced a result that, on its naive auto-reading, **contradicts** S530's headline. Let me look closely.
+
+The per-step op-count ratios are **monotonically declining**: 4.43 → 4.38 → 4.35 → 4.33 (heading toward 4.0). That is the signature of Θ(x)·polylog (Õ(x)), *not* super-Θ(x). Yet the script's auto-"READING" fit a *single* power over a short window, got α=1.064, and declared "super-Θ(x)". This is exactly the polylog-inflation artifact that S512's `sharpP_probe` 2-term fit was built to defeat. Let me read the script and results file to resolve this honestly.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+The detached path-(b) run completed. The result contains an internal tension I need to resolve honestly:
+
+- **Per-step ratios decline monotonically** 4.43→4.38→4.35→4.33 (toward 4.0) — the signature of Θ(x)·polylog (Õ(x)), and exactly the falsifier S530 filed ("turns back UP above 4.5× ⇒ super-Θ(x)") is **NOT triggered**.
+- **But the script's single-power auto-fit** over the short high-n window reads α=1.064 and prints "SUPER-Theta(x)".
+
+This is the classic polylog-inflation artifact that S512's `sharpP_probe` 2-term fit was built to defeat. Let me read the S530 results file and the lower-n data to resolve it.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+Now I have the full picture. Combined op-count data (deterministic, so the logged numbers are exact):
+
+| n | mul_ops | per-step ratio |
+|---|---|---|
+| 8 | 425,110 | — |
+| 10 | 2,074,457 | 4.880 |
+| 12 | 9,673,318 | 4.663 |
+| 14 | 23,492,482 | 2.429 (lump) |
+| 16 | 105,029,523 | 4.471 |
+| 18 | 465,458,097 | 4.432 |
+| 20 | 2,040,403,997 | 4.384 |
+| 22 | 8,882,635,340 | 4.353 |
+| 24 | 38,448,499,833 | 4.329 |
+
+From n=14 onward the ratio declines **monotonically** 4.47→4.33. A pure power x^α gives a *constant* ratio; a declining ratio is the fingerprint of Θ(x)·polylog. Let me confirm with the proper 2-term fit (power vs polylog separation) before editing anything.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+python3 - <<'PY'
+import numpy as np
+n  = np.array([8,10,12,14,16,18,20,22,24], float
+This is **decisive**. Over the clean band n=14..24 (the 6 points after the known low-n nb/K lump):
+
+- **2-term fit: α=1.012, polylog δ=+0.72, residual 0.0012** — i.e. Θ(x)·polylog = **Õ(x)**, with a residual ~17× tighter than the single-power fit (0.021).
+- An **x·(log₂x)^0.87 model** (α forced to 1.0) predicts every per-step ratio to **<0.4%**: pred 4.49/4.43/4.38/4.35/4.31 vs obs 4.47/4.43/4.38/4.35/4.33.
+- The single-power α=1.064 (path-b's auto-reading) is the polylog (log x)^0.87 read as a spurious extra power over a finite window — the **exact artifact** S512's `sharpP_probe` 2-term fit was built to defeat.
+- S530's filed live falsifier ("ratio turns back UP above ~4.5× at n≥22") is **NOT triggered** — ratios kept declining (4.353, 4.329).
+
+So the Θ(x) verdict **stands and is confirmed to n=24**; the script's naive single-power READING fired a false "super-Θ(x)". This is the cycle's work: harvest path (b), fix the fit to separate power from polylog, and correct the reading. Let me check the machine before the (cheap, deterministic) live confirmation.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "nproc: $(nproc)"
+echo "=== reach progress: any DONE in detached logs? ==="
+ls 
+32 cores, load 1.33 — plenty of headroom. Reach is alive at n=25 (RSS ~3GB). My live confirmation (n≤20, ~2 min, deterministic) is safe. Let me quickly check where the reach writes its log (to leave an accurate harvest note) and confirm the path-(b) log is complete, then proceed.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== recent logs anywhere ==="
+ls -lat *.log 2>/dev/null | head; echo "---"
+ls 
+The reach writes to `run_n25.log` (alive, ~1h45m in, RSS 3GB) — that's the harvest cycle's job. The path-(b) log is complete. 32 cores, ample RAM.
+
+My cycle: **harvest path (b), fix the fit to separate power from polylog (the S512 method the script lacked), and correct the false "super-Θ(x)" auto-reading.** Let me edit the script.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now update `run_scaling` to accept pre-measured deterministic points and to run the 2-term analysis. First the signature and point injection:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now replace the fits + reading block with the corrected 2-term analysis:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now add the `--points` CLI flag and selftest case [6]:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now add selftest case [6] codifying the resolved tension as a regression guard:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now run the selftest (chains up to n=12 plus the new instant fit-based case [6]):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+timeout 1200 python3 prover_o
+All 6 groups pass, including the new [6] codifying the resolution. Now produce the corrected analysis artifact: live-measure n=8..20 and fold in the deterministic n=22,24 op-counts from the detached path-(b) log (the count is structural/seed-independent — selftest [3] — so injection is bit-identical to re-running, saving a redundant ~30-min recompute that contends with the live reach).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+timeout 1200 python3 prover_o
+The corrected reading is produced and self-consistent. Let me verify the live n≤20 reproduced the exact deterministic counts (confirming the injection is consistent with a fresh measurement):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+head -12 opcount_scaling_corr
+The live n=8..20 reproduce S530's counts **bit-identically** (425110, 2074457, …, 2040403997) and the injected n=22,24 match the detached log — determinism confirmed again, the whole curve is self-consistent. Now update the results file. Let me make targeted edits documenting the S531 harvest and the corrected reading.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+Now update the selftest section and append the dedicated S531 section:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+Now append the dedicated S531 section at the end of the results file:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+Now update PROGRAM.md. First mark path (b) DONE in the NEXT ACTION block with the verdict:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the main NEXT ACTION text since path (b) is complete — the remaining concrete action is harvesting the reach (path a):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me re-read the current NEXT ACTION region to get exact text:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The path-(b) DONE block landed correctly. Now update the "NEXT (single, concrete)" intro text (path b no longer an option):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add a "Done this era" entry. Let me insert it at the top of that section:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now run the cleanup checks per the contract — verify no missing `_results.md`, remove `__pycache__`:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== missing _results.md check ==="
+find experiments/ -path "*/.lake" -prune -o
+`--help` failed — let me see why (the functional paths all ran fine, so this is a help-rendering issue):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+python3 prover_opcount_scalin
+Confirmed — a pre-existing bug (S530): the literal `%` in the `--wall-timing` help string breaks argparse's `%`-formatting on `--help`. Trivial fix (escape `%` → `%%`); I'm in the file, so I'll fix it:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+python3 prover_opcount_scalin
+Clean. The MISSING list is all pre-existing v1-era helper scripts (none from this cycle — my file has its `_results.md`). Final verification: confirm the reach is still alive (for the PROGRAM.md note's accuracy) and the module still imports cleanly.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== reach still alive? 
+The reach **n=25 just completed** ("n=25 reach DONE 2026-06-14T13:24:47Z"). My PROGRAM.md note saying it's "alive at n=25" is now stale. The module/fit helpers verify clean (band=[14..24], α=1.0116, δ=0.721). Let me read the n=25 result and check whether n=26 has started, so I can correct the note accurately and record the n=25 numbers for the harvest cycle.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== run_n25.log (full) 
+The reach **n=25 completed and is VERIFIED**: claimed π(2²⁵−1) = **2,063,689 == sieve == ground-truth lock** ✓, wall 5421s, peak RSS 5.79 GB, delta_pi liar REJECTED, profile holds (per-layer leaf=0, comm 97% comm_outer, base opens Θ(x^{1/4})). **n=26 is now running** (started 13:24:47Z, --no-cheat).
+
+This changed during my cycle, so my "alive at n=25" note is stale. Important caveat: the n=25 wall (3.70× over n=24's ~1467s per Δn=1) was measured **while the path-(b) op-count run was sharing the 32 cores**, so it's contention-inflated — not a clean falsifier point. The clean n24→26 test needs n=26. Let me update PROGRAM.md accurately. First the top reach-status block:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "REACH RUNNING DETACHED\|ALIVE at n=25\|run n=25 (honest" PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now fix the stale "ALIVE at n=25" line in the NEXT text:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me verify the script has no leftover dead code from the rewrite (the old `near` variable):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== check for leftover 
+Clean — the `near` matches are all docstring/comment text (no leftover variable), the script compiles, n=26 is running, pycache removed.
+
+## Cycle complete — summary
+
+**Picked item:** harvested the recorded NEXT-ACTION **path (b)** — the detached op-count curve extension to n=22,24 — which had completed (`opcount_scaling_n24.log`).
+
+**What I found:** the completed run contained a real tension. Its per-step op-count ratios **decline monotonically** (4.47→4.43→4.38→4.35→4.33, the fingerprint of Θ(x)·polylog — a pure power x^α has a *constant* ratio), yet the script's auto-"READING" fit a single power over the short high-n window, got α=1.064, and printed **"SUPER-Θ(x)"**. That α was the **polylog-inflation artifact** that S512's `sharpP_probe` 2-term fit was built to defeat — but this script only had a single-power fit.
+
+**What I did (honest correction of an earlier in-cycle auto-verdict):**
+- Added `_fit_power_log` (separates leading power x^α from polylog (log₂x)^δ), `_fit_polylog_fixed_alpha`, and a `_stable_band` detector; rewrote the verdict to use the **per-step trend + 2-term separation**, not a single-power threshold.
+- Added `--points` to fold in deterministic high-n counts (op-count is seed/contention-independent — selftest [3] — so injecting the logged n=22,24 is bit-identical to re-running, avoiding a redundant ~30-min recompute that would contend with the live reach).
+- **Verdict: op-count is Θ(x)·polylog = Õ(x), confirmed to n=24.** 2-term fit over n=14..24 gives **α=1.012, δ=+0.72** (residual 17× tighter than single-power); a forced-α=1 model **x·(log₂x)^0.87 predicts every per-step ratio to <0.4%**. S530's live falsifier ("ratio turns back up above 4.5× at n≥22") is **not triggered**.
+- Added selftest **[6]** codifying the resolution (6/6 pass); fixed a pre-existing `--help` crash (a literal `%` in a help string).
+- Live n≤20 reproduce S530 **bit-for-bit** (determinism re-confirmed).
+
+**Side event handled honestly:** the reach **n=25 finished mid-cycle** — claimed **π(2²⁵−1)=2 063 689 == sieve == ground-truth lock** ✓ (peak RSS 5.79 GB, delta_pi liar rejected, profile holds), and **n=26 auto-started**. I recorded n=25 in PROGRAM.md's reach block, flagged that its wall is **contention-inflated** (it shared cores with the path-(b) run, so the n24→25 ratio isn't a clean falsifier point — n=26 is), corrected the now-stale "alive at n=25" note, and left the full item-5 harvest to the n=26 cycle.
+
+**Deliverables:** `prover_opcount_scaling.py` (3 new fit helpers, corrected reading, `--points`, selftest [6], help fix); `prover_opcount_scaling_results.md` §S531; `opcount_scaling_corrected.log`; PROGRAM.md (S532b done-entry, reach-status correction, new NEXT ACTION). No landed-chain change, no `__pycache__`, no BREAKTHROUGH.md (this is a measurement correcting a fit artifact — polylog π stays blocked).
+--- cycle result: success (turns=44, duration=1018233ms) ---
+=== Cycle 584 finished — Sun Jun 14 13:30:22 UTC 2026 ===

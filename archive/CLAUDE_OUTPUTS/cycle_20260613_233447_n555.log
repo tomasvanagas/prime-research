@@ -1,0 +1,212 @@
+=== Cycle 555 — Sat Jun 13 23:34:47 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, especially the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: tighten the k=128 rigorous bracket for the census entropy constant (open item 4). Let me read the existing script and its results.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me read the results file and check the current state.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+I have a clear picture. The NEXT ACTION targets open item 4 (census entropy constant): tighten the k=128 rigorous bracket via (a) vectorising `joint_cover_prob` to reach higher cost caps, and/or (b) measuring whether the bracket width plateaus (the method's closure question). Let me first establish baseline timings and verify my cost calculations.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && timeout 600 python3 census_entropy_asym
+Baseline is green. Let me check the active primes and timing for k=128/256, and confirm cost calculations.
+  [tool: Bash] python3 -c "
+from census_transfer_matrix import allowed_offsets, enforceable_primes, reduce_primes
+import math
+for k in 
+Cost calculations confirmed. Key facts:
+- **k=128 upper is pinned at {3,5,7,11,13} (2^26) for all C ∈ [26, 39)** — next prefix jumps to 2^39 (infeasible).
+- **k=256 upper can improve** from {3,5,7,11} (2^15) to {3,5,7,11,13} (2^26), already reachable.
+
+Let me time the existing Python engine on these blocks.
+  [tool: Bash] python3 -c "
+import time
+from census_entropy_asymptotic import joint_cover_prob, P_miss
+from census_transfer_matrix impo
+Let me wait for that timing while I examine the transfer-matrix helpers I'll reuse.
+  [tool: Bash] sleep 20 && cat /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/ba6kvmjw9.outp
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/ba6kvmjw9.output 2>/dev/nu
+  [tool: Bash] sleep 45 && cat /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/ba6kvmjw9.outp
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/ba6kvmjw9.output; until [ -s
+Existing engine: ~204s per 2^26 block — too slow to sweep. The k=256 upper CAN improve ({3,5,7,11,13} at 2^26 gives joint-cover 0.982), but k=128 upper is pinned (next prefix is 2^39). Vectorisation is needed to make the sweep practical. Let me check numpy capabilities.
+  [tool: Bash] python3 -c "
+import numpy as np
+print('numpy', np.__version__)
+print('has bitwise_count:', hasattr(np, 'bitwise_count'))
+Vectorised popcount is available. Now I understand the full picture precisely:
+
+- **k=128 upper is pinned at `{3,5,7,11,13}` (2²⁶) for all feasible C** — the next prefix `{3,5,7,11,13,17}` costs 2³⁹ (infeasible), full closure needs 2⁷⁵.
+- **k=256 upper can be tightened** from `{3,5,7,11}` (2¹⁵) to `{3,5,7,11,13}` (2²⁶) — but the existing Python engine takes ~3.5 min per block.
+
+So I'll: (1) build a numpy-vectorised `joint_cover_prob` (validated bit-for-bit), (2) add a `--bracket-sweep` mode measuring bracket width vs cost budget, (3) deliver the k=256 upper tightening AND the conclusive plateau measurement. Let me set up task tracking and start building.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && rm -rf experiments/analytic/local_pattern_census/__pycache__ 2>/dev/null; git log
+Now let me build the vectorised engine. First, the imports and helper functions:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now rename the existing recursion to `_jc_py` and add the vectorised engine plus dispatcher:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me validate the vectorised engine against the Python reference bit-for-bit before integrating further:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 -c "
+import time
+from census_en
+The vectorised engine matches bit-for-bit and is ~10× faster (209s → 22s). Good enough for measurement runs. Now let me add the `--bracket-sweep` mode and `--no-vec` flag. Let me view the reporting section to place the new code:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me add the `bracket_sweep` function and reporter after `report_scan`. Let me find its end:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now wire `--bracket-sweep` and `--no-vec` into `main`, and add the selftest case for vec==py. Let me view and edit `main`:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Let me refine selftest [13] to avoid the slow 2²⁶ block (use cheap k=32 for the "shut" check, k=64 for monotonicity/plateau within 2²⁰):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Bash] time timeout 600 python3 census_entropy_asymptotic.py --selftest 2>&1 | tail -20
+All 13 selftest groups pass (vec==py validated across multi-limb k=32..256, bracket monotonicity confirmed). Now let me run the conclusive bracket-width sweeps at k=128 and k=256 in the background.
+  [tool: Bash] python3 census_entropy_asymptotic.py --bracket-sweep 128 --caps 8 12 15 20 24 26 30 34 2>&1
+  [tool: Bash] python3 census_entropy_asymptotic.py --bracket-sweep 256 --caps 8 12 15 20 24 26 30 34 2>&1
+While those run, let me verify my asymptotic "closing cost" reasoning is sound by tabulating it cleanly:
+  [tool: Bash] python3 -c "
+from census_transfer_matrix import allowed_offsets, enforceable_primes, reduce_primes
+import math
+print('cl
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/brr6gz846.output; echo "==
+k=128 confirms the plateau decisively: width is **stuck at 0.0160** for all C ≥ 26, upper pinned at {3,5,7,11,13} (ratio 0.9403), lower at 0.9243 — reproducing S520's `[0.9243, 0.9403]`. Next improvement needs 2³⁹ (infeasible), closure 2⁷⁵. Let me check the k=256 result and closing-cost table:
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b1ezvu6u8.output; until grep
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bg1631mia.output
+  [tool: Bash] python3 -c "
+from census_transfer_matrix import allowed_offsets, enforceable_primes, reduce_primes
+print('closing cost =
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bs0xnvlwi.output; until [ -s
+My short commands are being auto-backgrounded. Let me read the output files directly with the Read tool:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b1ezvu6u8.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bs0xnvlwi.output
+The k=256 sweep is still running. Let me wait for its completion notification.
+  [tool: Bash] echo "waiting for k=256 sweep task b1ezvu6u8"; f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-
+While the k=256 sweep runs, let me verify (honestly, for the writeup) that the un-includable large-prime block `{17,19,23}` is infeasible for the *transfer-matrix* engine too — not just the I-E — so the plateau isn't an artifact of one engine. Let me run a bounded count_tm check:
+  [tool: Bash] timeout 120 python3 -c "
+from census_transfer_matrix import allowed_offsets, count_tm
+allowed=allowed_offsets(128)
+# I-E
+Confirmed: `{17,19,23}` aborts the transfer-matrix engine too (>25M states, still growing) — the plateau is engine-independent, not an I-E artifact. Let me check the k=256 sweep and closing-cost outputs:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b1ezvu6u8.output
+The k=256 sweep is hanging — at C=34 the greedy lower-bound partition tries to build blocks costing up to 2³⁴ (~hours via I-E). My cap ceiling was too high for k=256 (14 primes → mid-range merges get expensive). Let me kill it and re-run with a practical ceiling of C=28:
+  [tool: Bash] pkill -f "bracket-sweep 256" 2>/dev/null; pkill -f "bq3uu18fg" 2>/dev/null; sleep 1; echo "killed; remaining python:"; p
+k=256 sweep killed. The cap ceiling of 34 was too high for k=256 (mid-range prime merges cost up to 2³⁴ via I-E). Let me re-run with a practical ceiling of C=28 (≈80s/block max):
+  [tool: Bash] python3 census_entropy_asymptotic.py --bracket-sweep 256 --caps 8 12 15 20 24 26 28 2>&1
+Let me retrieve the closing-cost-vs-k table reliably while k=256 runs:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b1s3qetl5.output
+  [tool: Bash] python3 -u -c "
+from census_transfer_matrix import allowed_offsets, enforceable_primes, reduce_primes
+print('k | |B| | m
+  [tool: Read] /tmp/closingcost.txt
+Closing-cost growth confirmed: exponent **3 → 8 → 26 → 75 → 279** (k=16→256) — super-exponential. Let me check the k=256 sweep:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bq5x3g4d9.output
+Let me wait for the k=256 sweep to finish, then draft the writeup with real numbers:
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bq5x3g4d9.output; until grep
+Let me check the k=256 output and, while it finishes, look at the secondary targets to set up a good NEXT ACTION:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bq5x3g4d9.output
+  [tool: Bash] sed -n '1,80p' /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md 2>/dev/null | head -80
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bq5x3g4d9.output
+The k=256 sweep is hanging — I found the bug: a head prime larger than `batch_log2` (e.g. 23 in block `{23,29}`) falls into the Python outer recursion = 2²³ Python iterations, and `_head_subset_limbmasks` enumerates 2^q subsets in a Python loop too. Let me fix both with numpy doubling and forced-largest-head batching. First kill the hung run:
+  [tool: Bash] pkill -f "bracket-sweep 256" 2>/dev/null; pkill -f "blagr4yul" 2>/dev/null; sleep 1; echo "killed"; pgrep -af "census_en
+Now let me fix the mask builder with numpy doubling and force the largest head into the batch:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now update `_jc_vec` to force the largest head into the batch and build via the doubling builder:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me re-validate vec==py (including the previously-catastrophic `{23,29}` single-large-head block) and re-time:
+  [tool: Bash] rm -rf __pycache__ && python3 -u -c "
+import time
+from census_entropy_asymptotic import _jc_py, _jc_vec
+from census_tran
+Fix works: `{23,29}` now 9.8s (was hanging), vec==py to 1e-11. Closing-cost table extends to **2⁸⁷² at k=512**. Let me re-run the k=256 sweep and re-verify the selftest (the builder changed):
+  [tool: Bash] python3 -u census_entropy_asymptotic.py --bracket-sweep 256 --caps 8 12 15 20 24 26 28 2>&1
+  [tool: Bash] time timeout 600 python3 census_entropy_asymptotic.py --selftest 2>&1 | tail -5
+Selftest still green (13 groups). Let me read the k=256 sweep result:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b81m56zdc.output
+The k=256 sweep reveals a **numerical problem**, not a plateau: ratio_lo = 1.0856 > 1 is impossible for a valid lower bound (true ratio < 1), and the upper got *looser* (1.1975) by adding a prime. This is the catastrophic-cancellation signature: at N=128, P_miss ≈ 1e-16 but the I-E sums terms ≈ 1, so there are zero significant digits. This may mean **S520's k=256 numbers were numerical noise**. Let me verify against the exact integer count_tm:
+  [tool: Bash] python3 -u -c "
+import math
+from census_entropy_asymptotic import _jc_py, _jc_vec, P_miss
+from census_transfer_matrix im
+This is an important finding: at k=256 (N=128), the float I-E **completely underflows** — `P_miss({3,5,7})` computes to `0.0` vs the exact `1.5e-19`. This means **S520's k=256 bracket `[0.9282, 1.126]` was numerical noise**, not a rigorous result. The k≤128 float values are reliable (verified ~7 digits), but k=256 needs exact arithmetic.
+
+The joint-cover probabilities are dyadic rationals (numerator / 2^N), so I can compute them as **exact big integers** with zero cancellation. Let me implement an exact-integer engine:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Let me view the end of `_jc_vec` and the `P_miss` function to insert the exact engine and add the noise guard:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me insert the exact-integer engine and upgrade `P_miss` with a noise-floor guard + exact `lnP_miss`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me update `bracket_sweep` to support the exact engine, and validate + time the exact engine:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Let me validate the exact engine against float (k≤128) and against the precision wall (k=256), and time the exact 2²⁶ block:
+  [tool: Bash] rm -rf __pycache__ && python3 -u -c "
+import math, time
+from census_entropy_asymptotic import joint_cover_int, _jc_vec, 
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bog3ny29r.output; until grep
+Everything validates: exact == count_tm integer (no float) at k=64/128/256; the **precision wall is confirmed** (k=256 `P_miss({3,5,7})`: exact `1.48e-19`, raw float `0.0`, guarded float → `None`); and exact `{3,5,7,11,13}` at k=256 matches the float *cover* but takes 3 min. Now let me wire the engine into the report and CLI, then add a selftest. Let me update `report_bracket_sweep`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now wire the `--exact-ie`/`--float-ie` CLI flags into main:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now add selftest [14] for the exact engine and the precision-wall correction. Let me insert it before the final pass message:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now run the full selftest, then the corrected k=256 exact sweep:
+  [tool: Bash] rm -rf __pycache__ && time timeout 700 python3 census_entropy_asymptotic.py --selftest 2>&1 | tail -6
+All 14 selftest groups pass. Now let me run the corrected k=256 exact sweep (background, ~4 min) and re-confirm k=128 (float):
+  [tool: Bash] python3 -u census_entropy_asymptotic.py --bracket-sweep 256 --exact-ie --caps 8 12 15 20 24 26 2>&1
+  [tool: Bash] python3 -u census_entropy_asymptotic.py --bracket-sweep 128 --caps 8 12 15 20 24 26 30 34 2>&1
+Let me check the k=128 sweep (fast) while k=256 runs:
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/b8nc7ogd2.output; until grep
+k=128 reconfirmed (identical, width plateau at 0.0160). Now let me wait for the k=256 exact sweep:
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/batgpcffy.output; until grep
+While k=256 runs, let me draft the results file with everything confirmed so far:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+Let me check the k=256 exact sweep progress:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/batgpcffy.output
+Let me wait for the k=256 exact sweep to complete:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/bfkid3ul0.output
+The k=256 exact sweep is still computing (the 2²⁶ exact block alone is ~3 min). Let me wait for the completion notification while I prepare the PROGRAM.md updates. Let me re-read the current NEXT ACTION and Done-this-era top to plan the edit:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/batgpcffy.output
+The exact 2²⁶ block dominates the k=256 runtime. Let me wait for it via the monitor:
+  [tool: Bash] f=/tmp/claude-0/-apps-aplikacijos-prime-research/accc4f5b-c0bd-42d9-bf30-2519721d69fa/tasks/batgpcffy.output; until grep
+The corrected k=256 exact bracket is **[0.8312, 0.9431]** (rigorous, width 0.1119) — contrast S520's noise `[0.9282, 1.126]`. Note S520's "lower bound" 0.9282 *exceeds* the true exact lower 0.8312, confirming it was never valid. Let me fill in the results table:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+Now update the headline k=256 line:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+Now let me run a final selftest verification and clean up `__pycache__`:
+  [tool: Bash] rm -rf __pycache__ && python3 census_entropy_asymptotic.py --selftest 2>&1 | tail -4; echo "---"; find /apps/aplikacijos
+  [tool: Bash] cd /apps/aplikacijos/prime-research && rm -rf experiments/analytic/local_pattern_census/__pycache__ && find experiments/
+All "MISSING" results files are pre-existing helper scripts in other experiment dirs (not mine); my `census_entropy_asymptotic.py` has its results file. Now let me update PROGRAM.md. First the era header and a new S521 entry:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update open item 4's status block to record the method-closure. Let me read its tail:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION to pivot away from the now-closed census line. Let me view the current block:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me replace the entire NEXT ACTION block with the pivot:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me fix a minor timing figure in the results file (measured 203.5s, not 209) and verify the file reads coherently:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+  [tool: Bash] rm -rf experiments/analytic/local_pattern_census/__pycache__ && echo "=== git status ===" && git status --short && echo 
+Everything is complete and verified. Let me do a final regression check that the CLI paths work end-to-end (a quick `--bracket-sweep` with default caps + a `--k` run), then summarize:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 census_entropy_asymptotic.py --
+All paths work. The k=64 sweep elegantly confirms the mechanism: at k=64 the bracket **shuts to width 0.0000** at C=26 (the closing cost is feasible), demonstrating that the bracket *can* close when the cost is affordable — and *can't* at k=128 (closing cost 2⁷⁵) and beyond.
+
+## Cycle summary
+
+This cycle worked the PROGRAM.md NEXT ACTION on **open item 4 (census entropy constant)** and delivered a clean method-closure plus a correction of a prior cycle.
+
+**What I built** (extended `experiments/analytic/local_pattern_census/census_entropy_asymptotic.py`):
+- **`_jc_vec`** — numpy-vectorised joint-cover engine, multi-limb uint64 (N>64), largest-head-batched-via-doubling so no head prime falls into a 2^h Python loop. ~10× faster (2²⁶ block: 204s → ~20s), bit-for-bit equal to the reference.
+- **`joint_cover_int` / `lnP_miss_exact`** — exact big-integer engine (each I-E term `= sign·∏(2^{n_w}−1)` since `excl+Σn_w=N`); numerator `== count_tm` exactly, zero floating cancellation.
+- **`--bracket-sweep`** — measures the rigorous bracket width vs the I-E cost budget.
+- A noise-floor guard on the float `P_miss` (returns `None` instead of garbage past reliability).
+- Selftests grew 11 → **14 groups** (vec==py multi-limb; sweep monotonicity/plateau/shut; exact==count_tm + the precision wall), all green.
+
+**Findings:**
+1. **The bracket width PLATEAUS** (answers the NEXT ACTION's sub-task b with a clean negative). It's a step function of cost, flat between discrete prefix-cost thresholds. At **k=128 the width is stuck at 0.0160 for every feasible C ≥ 26**; next tightening needs 2³⁹, closure 2⁷⁵. The closing cost `2^{sum(B)−max(B)}` is **super-exponential** (2²⁶→2⁷⁵→2²⁷⁹→2⁸⁷² for k=64,128,256,512 = `2^{Θ(k²/ln²k)}`). ⇒ **the FKG-block/cluster method provably cannot prove the constant = 1 for k ≥ 128.** Engine-independent (the un-includable `{17,19,23}` also blows count_tm past 25.7M states).
+2. **Corrected S520:** at k=256 (N=128) the joint miss-probabilities are ~1e-17 while the I-E sums terms ~1, so the **float engine cancels to zero significant digits** — S520's k=256 bracket `[0.9282, 1.126]` was numerical noise (its "rigorous lower" 0.9282 even *exceeds* the true exact lower 0.8312). The exact-integer engine gives the **corrected rigorous bracket [0.8312, 0.9431]**.
+
+**Status:** the census *computational* line is now closed — proving the constant = 1 needs an analytic handle on the full Θ(entropy) correlation series (new math, not new code). PROGRAM.md updated (Done-this-era entry, open-item-4 status, and a NEXT ACTION pivoting to the width-spectrum `D_k(x)` k=32 first-occurrence probe). No `__pycache__` left; no BREAKTHROUGH (correctly — this is honest progress, not the goal).
+--- cycle result: success (turns=89, duration=4398227ms) ---
+=== Cycle 555 finished — Sun Jun 14 00:48:11 UTC 2026 ===

@@ -1,0 +1,59 @@
+=== Cycle 562 — Sun Jun 14 03:02:21 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check the in-progress run log and the results file.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== run_n24_full.log
+The n=24 run already completed in a prior cycle (logged but not yet banked): `π(16777215)=1077871`, matches sieve, accepted, wall 1490.88 s, delta_pi liar rejected. The PROGRAM.md NEXT ACTION is exactly to finish and bank this. But the wall is well above the predicted ~900 s, and the prior n=20/n=22 timings were measured in a different cycle (possibly different machine load), so the "~3.5×/Δn=2" scaling claim isn't trustworthy from cross-cycle numbers.
+
+The right deliverable: a clean **same-session** n∈{20,22,24} timing curve plus independent verification of the ground truth, then bank honestly. Let me start the n=24 reproduction in the background and run the cheap checks in parallel.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 large_x_benchmark.
+Now the cheap verification in parallel: independent ground-truth sieve and the protocol selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 -c "
+import numpy 
+Ground truth confirmed independently. Now the protocol selftest (fast correctness/soundness gate):
+  [tool: Bash] timeout 580 python3 large_x_benchmark.py --selftest 2>&1
+Selftest passes (sound), ground truth independently confirmed (π(2²⁴−1)=1077871). The clean n=24 reproduction is running in the background. Let me read the current results file and the canonical doc's item-5 section so I can prepare the honest write-up while the run proceeds.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The results file has n=24 pending. Let me check the background run's progress and independently confirm the n=20/n=22 ground truths (so the whole curve is verified, not just n=24).
+  [tool: Bash] nproc && echo "---" && python3 -c "
+import numpy as np
+for n in (20,22):
+    N=(1<<n)-1
+    s=np.ones(N+1,dtype=bool); s
+32 cores — abundant headroom, so the background n=24 and foreground runs won't meaningfully contend (the workload is Python/op-count-bound per S501). All three ground truths confirmed: 82025 / 295947 / 1077871. Now re-time n=20 and n=22 in this same session to get a clean scaling curve comparable to the n=24 reproduction.
+  [tool: Bash] { echo "=== n=20 ==="; python3 large_x_benchmark.py --n 20 --no-cheat 2>&1; echo "=== n=22 ==="; python3 large_x_benchma
+Clean same-session timings — n=20: **63.77 s**, n=22: **247.03 s** (ratio 3.87×). Note these are a bit *below* the S513 cross-cycle numbers (71.8 / 252.8), and the comm/profile numbers reproduce S513 exactly (deterministic). This already suggests the original n=24 log's 1490.88 s may have been machine-load-inflated — the prover proxy `K·2^nb` only grows ~3.6×/step. The clean n=24 reproduction will settle it. Let me check its progress.
+  [tool: Bash] echo "elapsed check"; ls -la --time-style=+%H:%M:%S run_n24_repro.log; echo "--- content (empty until the run finishes &
+The `%CPU 0.0` and malformed etime are suspicious — let me verify the background process is actually doing work (CPU time accumulating) rather than stalled.
+  [tool: Bash] echo "=== bg task interim output (harness file) ==="; cat /tmp/claude-0/-apps-aplikacijos-prime-research/b25a493a-5687-4
+Healthy — state `Rl`, CPU time advanced 7:32→7:35 in 3 s (the `%CPU 0.0` is a display artifact from the container's malformed clock). It's ~1/3 through; ~17 min remain. The output is empty only because stdout is block-buffered until the run ends.
+
+Rather than sit idle, let me strengthen the scaling claim from a single ratio into a fitted exponent by adding cheap same-session points n=16 and n=18 (≈9 s + ≈22 s). That turns "prover-bound ~3.5×/Δn=2" into a measured 5-point curve.
+  [tool: Bash] { echo "=== n=16 ==="; python3 large_x_benchmark.py --n 16 --no-cheat 2>&1; echo "=== n=18 ==="; python3 large_x_benchma
+Now I have a clean same-session 4-point curve:
+
+| n | K | 2^nb | wall | step ratio |
+|---|---|---|---|---|
+| 16 | 54 | 256 | 10.15 s | — |
+| 18 | 97 | 512 | 24.45 s | 2.41× |
+| 20 | 172 | 1024 | 63.77 s | 2.61× |
+| 22 | 309 | 2048 | 247.03 s | 3.87× |
+
+The local log-log exponent (wall ∝ x^β) rises 0.63 → 0.69 → **0.98**, converging to β≈1 (Θ(x)·polylog — the Õ(x) prover, with fixed overhead suppressing small-n ratios). This already tells me the original log's n=24 = 1490.88 s (implied β≈1.30) was almost certainly **machine-load-inflated**; a clean run should land ≈247×4 ≈ 950–1050 s. The deterministic comm/profile numbers reproduce S513 exactly.
+
+I'll wait for the clean n=24 reproduction (~17 min remaining, harness will notify on completion) before writing conclusions — its wall is the one number that decides whether the scaling is honest-Θ(x) or genuinely super-linear. The protocol output is already fully verified (independent sieve match + selftest pass).
+  [tool: Bash] echo "waiting on bg n=24 repro (task bix6y841t -> run_n24_repro.log)"; ps -o pid,stat,time -p 1167686 2>/dev/null || ech
+Background n=24 reproduction is healthy (CPU time 9:37 and climbing). I'll stop here and let it run — the harness re-invokes me when it completes. 
+
+**Cycle status so far (n556+ → banking item 5 / large-x benchmark n=24):**
+- ✅ Ground truth independently verified by direct numpy sieve: π(2²⁴−1)=1077871, π(2²²−1)=295947, π(2²⁰−1)=82025 — all match.
+- ✅ Protocol selftest passes (sound; FAST_BIG bit-identical; per-layer leaf-eval count = 0).
+- ✅ Original (prior-cycle) `run_n24_full.log`: n=24 ACCEPTED, claimed=1077871=sieve, delta_pi liar REJECTED (540 s) — soundness witnessed at the reach.
+- ✅ Clean same-session curve n∈{16,18,20,22}: 10.15 / 24.45 / 63.77 / 247.03 s; local exponent → β≈0.98 (Θ(x)·polylog prover), profile reproduces S513 exactly.
+- ⏳ Clean n=24 reproduction running (decides whether the original 1490.88 s was load-inflated; prediction ≈950–1050 s).
+
+When n=24 lands I'll bank the verified result + the honest scaling correction into `large_x_benchmark_results.md` and PROGRAM.md item 5, and set the next action.
+--- cycle result: success (turns=16, duration=691949ms) ---
+=== Cycle 562 finished — Sun Jun 14 03:13:59 UTC 2026 ===

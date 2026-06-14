@@ -211,22 +211,95 @@ def stacked_tables(witnesses, primes, nb, X, beta, tau, q, cheat=None,
     return tabs, Lk, Lv, Lr
 
 
+def build_stacked_streaming(primes, X, nb, beta, tau, q, dstart=1, cheat=None,
+                            cheat_layer=0):
+    """LIST-streaming reconstruction of `stacked_tables` (S526): BIT-IDENTICAL
+    output, but the K-witness LIST is NEVER held.  `stacked_tables` requires the
+    caller to materialize `[build_witness(x, p) for p in primes]` first (~1.4 GB
+    at n=24, the dominant removable peak-RSS term the S525 localization found);
+    this builds each witness, copies its (l*D .. l*D+D) slice into the integer
+    cube, and DROPS it -- so peak working set is ONE witness + the cube, not K.
+
+    Two cheap passes over `primes`: (1) the common Lv_max / Lr_max (MSB-zero-
+    padding each layer's shorter decomposition), (2) fill the integer cube.  The
+    cube itself is still Theta(x) (this removes the LIST, not the cube -- the
+    cube is not a pure accumulator, S526 item 2); the returned (tabs, Lk, Lv, Lr)
+    and every cheat injection match `stacked_tables` exactly, so the downstream
+    sum-check transcript is unchanged.  Verified == `stacked_tables` over q &
+    BIG_Q, honest and every cheat class (selftest 8; also
+    streaming_batched_sumcheck selftest 1)."""
+    K = len(primes)
+    Lk = _ceil_log2(K)
+    D = 1 << nb
+    N = (1 << Lk) * D
+    dt = _dt(q)
+
+    Lv = Lr = 1
+    for p in primes:                                   # pass 1: dimensions only
+        W = build_witness(X, p, nb, dstart=dstart, q=q)
+        Lv = max(Lv, W["Lv"]); Lr = max(Lr, W["Lr"])
+
+    u = np.zeros(N, dtype=np.int64); r = np.zeros(N, dtype=np.int64)
+    qd = np.zeros(N, dtype=np.int64); a = np.zeros(N, dtype=np.int64)
+    for li, p in enumerate(primes):                    # pass 2: stream slices in
+        W = build_witness(X, p, nb, dstart=dstart, q=q)
+        sl = slice(li * D, li * D + D)
+        u[sl] = W["u"]; r[sl] = W["r"]; qd[sl] = W["q"]; a[sl] = W["a"]
+        # W dropped at next iteration -- never K witnesses at once
+
+    if cheat == "u_consistent":
+        u[cheat_layer * D + 1] += 1
+    tabs = {"U": (u % q).astype(dt), "R": (r % q).astype(dt),
+            "Qv": (qd % q).astype(dt), "A": (a % q).astype(dt),
+            "ONE": np.ones(N, dtype=dt)}
+    for j in range(Lv):
+        tabs[f"Ub{j}"] = ((u >> (Lv - 1 - j)) & 1).astype(dt)
+    for j in range(Lr):
+        tabs[f"Rb{j}"] = ((r >> (Lr - 1 - j)) & 1).astype(dt)
+        tabs[f"Qb{j}"] = ((qd >> (Lr - 1 - j)) & 1).astype(dt)
+    idx = cheat_layer * D + 1
+    if cheat == "u_value":
+        tabs["U"] = tabs["U"].copy(); tabs["U"][idx] = (int(tabs["U"][idx]) + 1) % q
+    elif cheat == "r_value":
+        tabs["R"] = tabs["R"].copy(); tabs["R"][idx] = (int(tabs["R"][idx]) + 1) % q
+    elif cheat == "nonbit":
+        tabs["Ub0"] = tabs["Ub0"].copy(); tabs["Ub0"][cheat_layer * D] = 2
+    eqtau = eq_table(tau, q)
+    BE = np.zeros(N, dtype=dt); bp = 1
+    for li in range(K):
+        BE[li * D:(li + 1) * D] = fmul(eqtau, bp % q, q); bp = bp * (beta % q) % q
+    tabs["BETA_EQ"] = BE
+    return tabs, Lk, Lv, Lr
+
+
 # ----------------------------------------------------------------------
 # the batched zero-test
 # ----------------------------------------------------------------------
 
 def verify_constraints_batched(witnesses, primes, X, nb, rng, stats, q=Q,
-                               dstart=1, cheat=None, cheat_layer=0):
+                               dstart=1, cheat=None, cheat_layer=0, stream=False):
     """ONE degree-3 sum-check certifying ALL K layers' u_e = floor(X/a_e^l)
-    simultaneously.  Replaces K calls to verify_constraints.  Returns ok."""
-    K = len(witnesses)
+    simultaneously.  Replaces K calls to verify_constraints.  Returns ok.
+
+    stream=True (S526): build the stacked cube via build_stacked_streaming
+    (slice-by-slice from `primes`, dropping each witness) instead of consuming a
+    pre-built witness LIST -- `witnesses` may then be None.  BIT-IDENTICAL cube =>
+    identical transcript/verdict; the only difference is peak RSS (no K-witness
+    list held).  tau/alpha/beta are drawn BEFORE the cube either way, and the
+    cube builders draw no randomness, so the rng stream is unaffected."""
+    K = len(witnesses) if witnesses is not None else len(primes)
     tau = [int(rng.integers(0, q)) for _ in range(nb)]
     alpha = int(rng.integers(2, q))
     beta = int(rng.integers(2, q))
 
     t0 = time.perf_counter()
-    tabs, Lk, Lv, Lr = stacked_tables(witnesses, primes, nb, X, beta, tau, q,
-                                      cheat=cheat, cheat_layer=cheat_layer)
+    if stream:
+        tabs, Lk, Lv, Lr = build_stacked_streaming(
+            primes, X, nb, beta, tau, q, dstart=dstart,
+            cheat=cheat, cheat_layer=cheat_layer)
+    else:
+        tabs, Lk, Lv, Lr = stacked_tables(witnesses, primes, nb, X, beta, tau, q,
+                                          cheat=cheat, cheat_layer=cheat_layer)
     terms = build_terms(Lv, Lr, X, alpha, q)
     terms = [(coef, ["BETA_EQ" if nm == "EQ" else nm for nm in names])
              for coef, names in terms]
@@ -306,7 +379,8 @@ def ub_opening_claims(W, r_C, nb, q=Q):
     return out
 
 
-def verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q=Q):
+def verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q=Q,
+                               primes=None, X=None, dstart=1, stream=False):
     """Discharge ALL deferred per-layer Ub-bit-table openings in ONE degree-2
     sum-check against the SAME stacked Ub cube the trace zero-test commits.
 
@@ -316,8 +390,15 @@ def verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q=Q):
     layer_idx indexes `witnesses` / its stacked layer slice.
 
     Replaces the K*nb per-layer mle_eval openings (the last per-layer O(2^nb)
-    verifier term) with a one-time O(K(Lk+nb)) discharge.  Returns ok."""
-    K = len(witnesses)
+    verifier term) with a one-time O(K(Lk+nb)) discharge.  Returns ok.
+
+    stream=True (S526): build the committed-Ub C-table slice-by-slice from
+    `primes`/`X` (`witnesses` may be None), one witness at a time, instead of
+    indexing a held K-witness LIST.  The per-cell value C[l*D+e] =
+    sum_k gamma^k bit_{nb-1-k}(u_e^(l)) is accumulated in the SAME k-order with a
+    mod after each add, so C is BIT-IDENTICAL -> identical transcript/verdict; the
+    only difference is peak RSS (no K-witness list held)."""
+    K = len(witnesses) if witnesses is not None else len(primes)
     if not obligations:
         return True
     Lk = _ceil_log2(K)
@@ -345,14 +426,29 @@ def verify_ub_openings_batched(witnesses, nb, obligations, rng, stats, q=Q):
     for (li, r_C, ubs) in obligations:
         B[li * D:(li + 1) * D] = fmul(eq_table(r_C, q), pow(beta, li, q), q)
     C = np.zeros(N, dtype=dt)
-    gp = 1
-    for k in range(nb):
-        bitpos = nb - 1 - k                                  # bit of u_e for slot k
-        col = np.zeros(N, dtype=np.int64)
-        for li, W in enumerate(witnesses):
-            col[li * D:(li + 1) * D] = (W["u"] >> bitpos) & 1
-        C = (C + fmul(col.astype(dt), gp % q, q)) % q
-        gp = gp * gamma % q
+    if stream:                                  # build C one witness at a time
+        gammas, gp = [], 1
+        for k in range(nb):
+            gammas.append(gp % q); gp = gp * gamma % q
+        for li in range(K):
+            W = build_witness(X, primes[li], nb, dstart=dstart, q=q)
+            u = W["u"]
+            seg = np.zeros(D, dtype=dt)
+            for k in range(nb):                 # same k-order, mod after each add
+                bitpos = nb - 1 - k
+                seg = (seg + fmul(((u >> bitpos) & 1).astype(dt),
+                                  gammas[k], q)) % q
+            C[li * D:(li + 1) * D] = seg
+            del W                               # never K witnesses at once
+    else:
+        gp = 1
+        for k in range(nb):
+            bitpos = nb - 1 - k                              # bit of u_e for slot k
+            col = np.zeros(N, dtype=np.int64)
+            for li, W in enumerate(witnesses):
+                col[li * D:(li + 1) * D] = (W["u"] >> bitpos) & 1
+            C = (C + fmul(col.astype(dt), gp % q, q)) % q
+            gp = gp * gamma % q
     stats["t_prover"] += time.perf_counter() - t0
 
     ok, r_all, final, scal = sumcheck(claim, {"B": B, "C": C},
@@ -601,6 +697,67 @@ def selftest():
         assert ro == rf == True, (ro, rf)
     finally:
         _cpmt.FAST_BIG = saved
+
+    # 8. LIST-STREAMING (S526): the free, bit-identical peak-RSS win.  (a)
+    #    build_stacked_streaming == stacked_tables on EVERY table (honest + every
+    #    cheat class, q & BIG_Q) -- the cube is unchanged, only the K-witness list
+    #    is not held.  (b) verify_constraints_batched(stream=True) gives the SAME
+    #    accept/reject AND comm as stream=False at the SAME seed (=> identical
+    #    transcript), honest + every cheat.  (c) likewise for the Ub-openings
+    #    discharge, honest + a forge.  This is what run_chain(stream_witnesses=
+    #    True) lands; bit-identicality is why the n=24 artifact stays verbatim.
+    for q in (Q, BIG_Q):
+        for n in (8, 11, 13):
+            x = (1 << n) - 1
+            primes, nb, Ws = chain_trace_witnesses(x, q)
+            K = len(Ws)
+            cl = K // 2
+            beta = 7777
+            tau = [(i * 13 + 5) % q for i in range(nb)]
+            # (a) bit-identical cube, honest + every cheat
+            for ch in [None] + cheats:
+                tr, Lkr, Lvr, Lrr = stacked_tables(
+                    Ws, primes, nb, x, beta, tau, q, cheat=ch, cheat_layer=cl)
+                tg, Lkg, Lvg, Lrg = build_stacked_streaming(
+                    primes, x, nb, beta, tau, q, cheat=ch, cheat_layer=cl)
+                assert (Lkr, Lvr, Lrr) == (Lkg, Lvg, Lrg), (q, n, ch)
+                assert set(tr) == set(tg), (q, n, ch)
+                for nm in tr:
+                    assert np.array_equal(np.asarray(tr[nm]) % q,
+                                          np.asarray(tg[nm]) % q), (q, n, ch, nm)
+            # (b) verify_constraints_batched stream vs list: identical accept+comm
+            for ch in [None] + cheats:
+                cle = cl if ch is not None else 0
+                st_l = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+                st_s = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+                rl = verify_constraints_batched(
+                    Ws, primes, x, nb, np.random.default_rng(31), st_l, q,
+                    cheat=ch, cheat_layer=cle)
+                rs = verify_constraints_batched(
+                    None, primes, x, nb, np.random.default_rng(31), st_s, q,
+                    cheat=ch, cheat_layer=cle, stream=True)
+                assert rl == rs == (ch is None), (q, n, ch, rl, rs)
+                assert st_l["comm"] == st_s["comm"], (q, n, ch, "comm")
+            # (c) verify_ub_openings_batched stream vs list: identical accept+comm
+            obs = _obligations(Ws, nb, q, 11)
+            st_l = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+            st_s = {"t_prover": 0.0, "t_verifier": 0.0, "comm": 0}
+            rl = verify_ub_openings_batched(Ws, nb, obs,
+                                            np.random.default_rng(41), st_l, q)
+            rs = verify_ub_openings_batched(None, nb, obs,
+                                            np.random.default_rng(41), st_s, q,
+                                            primes=primes, X=x, stream=True)
+            assert rl == rs == True, (q, n, "ub honest", rl, rs)
+            assert st_l["comm"] == st_s["comm"], (q, n, "ub comm")
+            bad = _obligations(Ws, nb, q, 11, corrupt=(cl, nb // 2))
+            rl = verify_ub_openings_batched(Ws, nb, bad,
+                                            np.random.default_rng(42),
+                                            {"t_prover": 0., "t_verifier": 0., "comm": 0}, q)
+            rs = verify_ub_openings_batched(None, nb, bad,
+                                            np.random.default_rng(42),
+                                            {"t_prover": 0., "t_verifier": 0., "comm": 0}, q,
+                                            primes=primes, X=x, stream=True)
+            assert rl == rs == False, (q, n, "ub forge", rl, rs)
 
     print("selftest OK")
 

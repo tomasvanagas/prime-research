@@ -1,0 +1,186 @@
+=== Cycle 585 — Sun Jun 14 13:40:22 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -30
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== pgrep large_x_benc
+The reach (n=26) is genuinely running detached (PID 1592836, started 13:24Z, `run_n26.log` lacks DONE). Per the NEXT ACTION I must **not** start a second reach, and the op-count extension would contend (~10 GiB + CPU) with it. So I'll pick fresh, RAM-light, CPU-light ground that doesn't contend: **P8 (sparse-precision π — per-bit cost profile)**, which the NEXT ACTION names as a concrete next step. Let me first verify against the catalogues that this isn't already done.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== OPEN_POSITIVE_TARGETS P8 ==="
+grep -n -i "P8\|sparse.prec\|per-bit\|per bi
+  [tool: Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+The reach is running and must not be touched; the op-count extension would contend with it. P8 is the right fresh ground — RAM/CPU-light, won't contend. Let me study the existing explicit-formula machinery to reuse it (and avoid the li-branch-cut bug S518 fixed).
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== explicit_formula_witness dir ==="
+ls -la experiments/analytic/explicit_for
+Good — there's cached zeros data (up to 8000 zeros) and the corrected explicit-formula evaluator from S518. Let me read the key parts of that evaluator to reuse it correctly.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/explicit_formula_witness/explicit_formula_witness.py
+I have the full tested evaluator. Now I understand the landscape precisely:
+
+- **S518** measured the *x-domain* view: to settle π(x) **exactly** needs T ~ √x·polylog zeros (info dense across them).
+- **P8** asks the orthogonal *precision-domain* question: fix x, vary target precision k bits — is the **per-bit** cost sub-linear?
+
+The mechanism I expect: the oscillating tail is E(x,T) ∝ √x·log x / T, so resolving one more bit (halving E) **doubles** the zeros. The top ~50% of bits come free from R(x) (polylog); the bottom ~50% each cost ×2 — a *geometric*, super-linear per-bit cost, the opposite of P8's hoped sub-linear/diminishing cost. Let me build the measurement, reusing the tested evaluator, with a synthetic control that *would* detect a sub-linear regime if one existed.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+ls experiments/analytic/ | grep -i "sparse\|precision\|bit" || echo "(no existing sp
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+I spotted an indentation error in selftest case 7. Let me fix it.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+echo "=== syntax check ==="
+python3 -c "imp
+The synthetic `eta=1` reads slope 1.24 — because my synthetic grid baked in the `N~T log T` log-inflation (realistic, but it means the "known" slope isn't cleanly 1/eta). For the *control* I want a clean power law so the pipeline provably recovers 1/eta. Let me use `T=N` (unit grid) in the synthetic, and note the real-data count-slope carries the log-inflation separately.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+timeout 600 python3 sparse_precision_pi.py 
+The synthetic controls pass perfectly (eta=1→slope 1.000, eta=2→slope 0.482 — the method *does* detect a sub-linear regime). But real x=1e5 gives k0=11.71/14 bits free, not ~half: **R(x) is empirically far better than its √x worst-case bound at finite x**, so the hard "random zone" is only ~2-3 bits wide at accessible x. That's an honest finding, not a bug — but it means the robust real-data measurement must be the *continuous* envelope `E∝T^{-eta}` (thousands of points), not the sparse integer-bit slope. Let me look at actual numbers before finalizing tolerances.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+echo "=== quick real-data peek (no selftest
+The envelope decay is `E ∝ T^{-eta}` with eta≈0.6 (the L²/GUE tail), so the per-bit slope is `1/eta ≈ 1.6–2.1` — measured directly as **slope 1.53–2.12 with R²≈0.95**: each precision bit costs ~3–4× the zeros of the last. That's *more* strongly super-linear than my naive ×2, and the direct N(k) slope is far cleaner (R²≈0.95) than the noisy envelope-eta fit. Let me increase the window to smooth the envelope and add anchors to confirm the slope is robustly super-linear.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+echo "=== window=40, more anchors ==="
+time
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+sleep 90; cat /tmp/claude-0/-apps-aplikacijos-prime-research/54776ad7-6a71-409d-8488
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+sleep 150; cat /tmp/claude-0/-apps-aplikacijos-prime-research/54776ad7-6a71-409d-848
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/54776ad7-6a71-409d-8488-a46a59bbd611/tasks/b41nj399y.output
+The peek is still running (window=40 is slow). Let me check progress and the reach status while I wait.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach still alive?
+The window=40 peek is still running (slow). The window=16 data was already clean (slope R²≈0.95). Let me wait for the window=40 result to decide, with a longer sleep.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+sleep 220
+echo "=== window=40 peek output ==="
+cat /tmp/claude-0/-apps-aplikacijos-p
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/54776ad7-6a71-409d-8488-a46a59bbd611/tasks/b41nj399y.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/54776ad7-6a71-409d-8488-a46a59bbd611/tasks/bz94lr2r0.output
+I'll wait for the sleep timer to elapse, then check the window=40 result.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== peek running? ==="
+pgrep -f "X in \[30000" >/dev/null && echo "STILL RUNNI
+The window=40 peek is too slow (~15 min) and window=16 already gave clean slopes (R²≈0.95). Let me kill it and finalize with window=24 (a good balance) — the per-bit slope is the well-determined headline regardless of window.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+pkill -f "X in \[30000" 2>/dev/null; sleep 2
+pgrep -f "X in \[30000" >/dev/null && e
+Killed. Now let me correct the script's mechanism prose — the real envelope decays as `E ∝ T^{-eta}` with **eta≈0.5–0.6** (the L² zeta-zero tail), not eta=1, which makes the per-bit cost *slope ≈ 1/eta ≈ 1.5–2* (each bit costs ~3–4× the zeros) — even more strongly super-linear than my naive ×2. Let me fix the docstring, the eta helper, the verdict prints, and the selftest tolerances to match the measured reality.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+Now the `fit_envelope_eta` docstring and the verdict prints:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+Now the selftest cases 15-18 (to match measured reality) and the run_anchor_detail closing line:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+Now the selftest cases 15-18. Let me read the current block to edit precisely:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi.py
+Now run the full selftest:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+timeout 600 python3 sparse_precision_pi.py 
+All 19 pass. Now generate the canonical profile measurement (window=24, default anchors) and save to a log:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+timeout 1100 python3 sparse_precision_pi.py
+While the profile runs, let me check the reach status and wait for the profile.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+ps -o pid,etime,rss,cmd -p 1
+Reach is healthy (RSS ~11.2 GB, as expected for n=26's held cube). Let me wait for my profile run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+sleep 280; echo "=== profile running? ==="; pgrep -f "sparse_precision_pi.py --profi
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/profile_run.log
+Profile still running (Python buffers stdout through the pipe). Let me wait for completion notification.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+sleep 200; pgrep -f "sparse_precision_pi.py --profile" >/dev/null && echo "STILL RUN
+The profile completed. Let me read the results:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/profile_run.log
+Clean, consistent results. The headline holds robustly: **per-bit cost slope s = 1.5–2.5 at well-sampled anchors (R²≈0.95), every anchor ≥1** — each hard bit costs ~3–6× the zeros of the last (geometric/super-linear), the *opposite* of P8's sub-linear hope. Free fraction k0/B = 0.88→0.71 (declining with x toward the asymptotic ~0.5). Let me clean up and write the results file.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+# amortized per-hard-bit cost from the N(k)
+Now write the results file:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi_results.md
+Now update the catalogues. First, mark P8 closed in OPEN_POSITIVE_TARGETS.md:
+  [tool: Edit] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+Now add a CLOSED_PATHS row. Let me check the table header/format:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+head -8 status/CLOSED_PATHS.md
+echo "..."
+echo "=== last data row (for the | format 
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== last 3 lines of file ==="
+tail -3 status/CLOSED_PATHS.md | cut -c1-160
+ech
+The file's last row is 519 but max number is 532 (rows aren't strictly ordered). I'll append a new row numbered 533. Let me append at end of file:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+cat >> status/CLOSED_PATHS.md << 'ROW'
+| Sparse-precision π queries — compute the fi
+Now check the reach, then update PROGRAM.md:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+ps -o pid,rss,cmd -p 1592836
+Reach still running (RSS 11.3 GB) — n=26 harvest is for a later cycle; my P8 closure is this cycle's deliverable. Now update PROGRAM.md. First the SECONDARY LINES P8 reference:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION's "remaining open positive targets" note so the next cycle doesn't redo P8. Let me read the current NEXT ACTION tail:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "OR pivot to fresh adjacent\|adjacent positive-target shelf\|P8** (sparse\|P
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now verify everything is clean — re-run selftest (I edited prose/prints after the last run), exercise the `--anchor` path I edited, and run the cleanup checks:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi
+echo "=== selftest ==="
+timeout 300 python3
+Both paths work cleanly. Final cleanup checks:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== clean pycache from this session ==="
+find experiments/analytic/sparse_prec
+All clean. Let me do a final reach status check to report accurately, and confirm I didn't disturb it:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+ps -o pid,rss,cmd -p 1592836
+The reach is healthy and undisturbed. One honesty fix before I finish: I wrote the amortised cost "251→1292→941 (grows, does not fall)" but 1292→941 *does* dip (the 3·10⁵ point is GUE-inflated by an unlucky last bit). Let me correct that phrasing in all three files to be precise.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi_results.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "251" experiments/analytic/sparse_precision_pi/sparse_precision_pi_results.m
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/sparse_precision_pi/sparse_precision_pi_results.md
+Now the same fix in PROGRAM.md and CLOSED_PATHS.md:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "251" PROGRAM.md status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -o "amortised zeros/hard-bit 251→1292→941 (grows)" status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research; wc -l status/CLOSED_PATHS.md
+  [tool: Read] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+  [tool: Edit] /apps/aplikacijos/prime-research/status/CLOSED_PATHS.md
+All corrected. Final pycache sweep and a quick coherence check:
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+find experiments/analytic/sparse_precision_pi experiments/analytic/explicit_formula_
+Cycle complete. Summary of this cycle (S533):
+
+## What I did
+
+The recorded NEXT ACTION (harvest the **n=26 reach**) is blocked — it's still running detached (PID 1592836, RSS ~11.3 GB, no `DONE` yet) and must not be disturbed, and the op-count extension would contend with it for RAM/CPU. So I took the NEXT ACTION's named fresh-ground fallback: **P8 (sparse-precision π)** — RAM/CPU-light, non-contending.
+
+## Deliverable: P8 CLOSED-NEGATIVE with a measured mechanism
+
+Built `experiments/analytic/sparse_precision_pi/sparse_precision_pi.py` (19 selftests, all pass), **reusing verbatim** the tested S518 explicit-formula evaluator (so the CLOSED-row-31 branch-cut bug can't recur). It measures the **per-bit cost in the precision domain**: fix x, vary target precision k, count zeros to resolve the first k bits of π(x).
+
+**Verdict — P8's "strictly sub-linear per-bit cost" is REFUTED:**
+- **Per-bit cost slope s = 1.5–2.5** (R²≈0.95 at x=10⁵/3·10⁵/10⁶) — each hard bit costs **~3–6× the zeros of the last**: geometric/super-linear, the *opposite* of P8's hope.
+- **Mechanism:** error envelope `E ∝ T^{−eta}`, eta≈½ (the L² zeta-zero tail) ⇒ slope `1/eta > 1` (error decays slower than 1/T, so a bit costs more than a doubling of zeros).
+- **Free fraction k0/B = 0.88→0.71**, declining with x (R(x) beats its √x worst-case bound at finite x → ~½ only asymptotically = the "~50% of digits", precision-domain).
+- **s ≥ 1 is information-forced / kernel-independent** — a sub-linear slope would settle π(x) exactly in sub-√x zeros, contradicting S511/S518. A synthetic `E ∝ T^{−2}` control (slope 0.48) proves the method *would* detect a sub-linear regime if one existed.
+
+**Honest scope:** an adjacent NEGATIVE closure — the precision-domain re-derivation of the SMOOTH+RANDOM info barrier (a known wall from a new angle, *not* novelty; polylog π stays blocked).
+
+## Files updated
+- New: `sparse_precision_pi.py` + `_results.md` + `profile_run.log`
+- `OPEN_POSITIVE_TARGETS.md` (P8 → CLOSED-NEGATIVE), `status/CLOSED_PATHS.md` (row 533), `PROGRAM.md` (Done-this-era entry, SECONDARY LINES, NEXT-ACTION pivot note — the positive-target shelf is now bare except P9).
+- After this, a corrected an over-stated "grows" phrasing on the amortised-cost numbers across all three docs (the 3·10⁵ point is GUE-inflated). All selftests pass, no `__pycache__` left, the reach is healthy and undisturbed. No BREAKTHROUGH.md (no polylog π).
+
+The n=26 reach harvest remains the standing NEXT ACTION for whichever cycle finds `run_n26.log` showing `DONE`.
+--- cycle result: success (turns=72, duration=2361256ms) ---
+=== Cycle 585 finished — Sun Jun 14 14:19:44 UTC 2026 ===

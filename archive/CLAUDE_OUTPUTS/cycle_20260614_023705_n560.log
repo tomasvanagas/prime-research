@@ -1,0 +1,47 @@
+=== Cycle 560 — Sun Jun 14 02:37:05 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION specifically.
+  [tool: Bash] grep -n -i "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is to run the `n=24` large-x benchmark to completion. Let me look at the benchmark script and its results file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check the most recent cycle output and the benchmark results file to understand the current state of the n=24 run.
+  [tool: Bash] echo "=== latest cycle log tail ===" && tail -30 archive/CLAUDE_OUTPUTS/cycle_20260614_023705_n560.log 2>/dev/null; echo
+This is cycle n560 (the log shows my live actions). A prior cycle created an empty `run_n24_full.log`. Let me check for any running process and read the results file.
+  [tool: Bash] echo "=== running python processes ===" && ps aux | grep -E "large_x_benchmark|python3" | grep -v grep | head; echo "===
+There's already an `n=24` process (PID 1141987) running from the prior cycle, started 02:25 with ~13 min CPU time. Its output goes to `run_n24_full.log` (empty because `run_headline` only prints at the very end). I should NOT launch a duplicate — I'll monitor this one. Let me check its actual wall-clock elapsed and current time.
+  [tool: Bash] echo "=== now ===" && date && echo "=== process elapsed (etime) + cpu ===" && ps -o pid,etime,cputime,rss,stat,cmd -p 11
+The `cputime` is 13:07 (the `etime` is a clock-skew artifact). The honest run is predicted ~885s ≈ 14.7 min, so it's near completion. Let me confirm where its stdout is pointed and that it's actively progressing.
+  [tool: Bash] echo "=== fd 1/2 of the process ===" && ls -l /proc/1141987/fd/1 /proc/1141987/fd/2 2>/dev/null; echo "=== cpu sample 1 
+Confirmed: fd 1/2 → `run_n24_full.log`, and CPU advanced 299 ticks in 3s — it's actively running a full core, not hung. Output only appears at the very end (`run_headline` prints after both honest + cheat runs). The process is ~13 min in; honest run predicted ~14.7 min, so it's near done.
+
+I'll wait for PID 1141987 to exit, then capture the log. Let me set up a TaskCreate to track this and launch a background waiter.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification
+while kill -0 1141987 2>/dev/null; do sleep 20; done
+echo "===
+While waiting, let me read the benchmark results file so I know exactly the format to append the n=24 result to.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I understand the format now (table row 25 is pending). Let me independently precompute π(16777215) with a plain sieve so I can cross-check the benchmark's claimed value when the run lands.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification
+python3 -c "
+import numpy as np
+x = (1<<24)-1
+s = np.ones(x+1,
+Independent ground truth: **π(16777215) = 1077871**. The benchmark must report this as both `claimed` and `sieve`. Let me check the running process is still progressing.
+  [tool: Bash] if kill -0 1141987 2>/dev/null; then echo "ALIVE — cputime $(ps -o cputime= -p 1141987)"; else echo "EXITED"; fi
+echo "l
+Still alive (cputime 14:07, ticking up ~1 min/2 min wall), log empty — it's right at the edge of finishing the honest run (~14.7 min predicted), then the `delta_pi` cheat run (~4 min). 
+
+Everything is set up correctly:
+- The `n=24` process (PID 1141987) is healthy and progressing (full core, ~1 CPU-min per minute), stdout → `run_n24_full.log`.
+- Independent ground truth computed: **π(16777215) = 1077871** — the benchmark must report this as both `claimed` and `sieve`.
+- A background waiter (`bwv0utpta`) is polling for the process to exit and will dump the log when it does, re-invoking me.
+
+I'll wait for the process to complete rather than launch a duplicate. Expected completion ~02:44 (honest ~02:41 + cheat ~3 min). Letting the turn yield to the background waiter.
+  [tool: ScheduleWakeup] 
+I've set everything in motion and will be re-invoked when the `n=24` run finishes (background waiter `bwv0utpta`) or at the ~02:44 fallback wakeup. Waiting now.
+--- cycle result: success (turns=15, duration=166162ms) ---
+=== Cycle 560 finished — Sun Jun 14 02:39:57 UTC 2026 ===

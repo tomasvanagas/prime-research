@@ -1,0 +1,35 @@
+=== Cycle 558 — Sun Jun 14 02:12:08 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final section of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now I understand the current state. The NEXT ACTION is to run the large-x benchmark at n=24. Let me look at the benchmark script and its results file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check the results file and current cycle number.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The NEXT ACTION is clear: run the n=24 large-x benchmark to completion. This is a multi-cycle-feasible single item. Let me check the cycle number and verify the environment works before launching the long run.
+  [tool: Bash] cat .cycle 2>/dev/null; echo "---git log---"; git log --oneline -3
+This is cycle 558; the last PROGRAM.md entry was S523, so this is S524. Let me run the selftest first to confirm the environment works, then launch the long n=24 run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 300 python3 large_
+Selftest passes. Now let me launch the n=24 run in the background, capturing output to a log file. This is predicted to take ~900s honest plus the soundness check.
+  [tool: Bash] python3 -u large_x_benchmark.py --n 24 --seed 1 > run_n24_full.log 2>&1; echo "EXIT_CODE=$?"
+The n=24 run is going in the background. While it runs (~15-20 min predicted), let me do something genuinely useful: independently verify the ground-truth π(2²⁴−1) with a separate sieve, so the headline's `claimed == sieve` is cross-checked against an independent counter rather than only the script's own `sieve_pi`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np, time
+# Independent segmented-free numpy sieve of
+Independent confirmation: **π(2²⁴−1) = 1077871** (and the n=20/n=22 rows match: 82025, 295947). This is the ground truth the n=24 honest run must reproduce — now cross-checked against an independent numpy sieve, not just the script's own `sieve_pi`.
+
+Let me confirm the background run is alive (lightweight check — I'll avoid any heavy CPU work that would pollute the wall-clock measurement).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && ps aux | grep -c "[l]arge_
+The n=24 run is alive and computing (the log stays empty until completion — `run_headline` prints only after both the honest and the soundness runs finish). With 32 cores, my lightweight checks won't perturb the wall-clock.
+
+Status so far this cycle (S524):
+- **Selftest passes** — full config correct + sound at n≤12, FAST_BIG a bit-identical drop-in.
+- **Independent ground truth secured**: a from-scratch numpy sieve gives **π(2²⁴−1) = 1077871** (and reproduces the table's n=20 → 82025, n=22 → 295947). The honest n=24 run must reproduce 1077871 — now cross-checked against an *independent* counter, not just the script's own `sieve_pi`.
+- **n=24 honest + delta_pi soundness run launched** in the background (predicted ~885 s honest at the measured 3.5×/Δn=2 scaling, plus a faster short-circuiting liar run).
+
+I'll deliberately run no competing heavy CPU work so the recorded wall-clock stays clean. The harness re-invokes me when the background run completes; I'll then verify `claimed π(16777215) == 1077871`, confirm the liar is REJECTED, record the wall-clock + profile (per-layer leaf-eval count = 0, comm ≈ 95% comm_outer, base opens Θ(x^{1/4})), and bank it into `large_x_benchmark_results.md` and `PROGRAM.md`. Waiting for completion.
+--- cycle result: success (turns=11, duration=132132ms) ---
+=== Cycle 558 finished — Sun Jun 14 02:14:26 UTC 2026 ===

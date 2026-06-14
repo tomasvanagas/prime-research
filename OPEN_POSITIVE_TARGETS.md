@@ -682,20 +682,32 @@ M ≥ poly(log max x).
 
 **Budget:** 2-session arc.
 
-### P8 — Sparse-precision π queries (batched on precision, not x)
-**Problem:** compute the first k bits of π(x) for varying k. Single-k
-is fixed cost; batched on increasing k might amortise.
+### P8 — Sparse-precision π queries [CLOSED-NEGATIVE at S533]
 
-**Why partial-positive plausible:** R(x) at low-precision gives early
-bits cheaply; refining requires more zeros. Per-bit amortised cost
-might be sub-linear in total bits.
+**Status: CLOSED-NEGATIVE at S533**
+(`experiments/analytic/sparse_precision_pi/`). The per-bit cost of the
+Riemann explicit-formula π(x) evaluator is **GEOMETRIC / super-linear**,
+not sub-linear: measured per-bit slope `s = d log2 N(zeros)/d(bit) =
+1.5–2.5` (R²≈0.95, x=10⁵–10⁶) ⇒ each hard bit costs ~3–6× the zeros of
+the last. Mechanism: the error envelope `E ∝ T^{−eta}` with `eta ≈ ½`
+(the L² zeta-zero tail), so resolving one more bit needs the truncation
+height (and zero count) to grow by `2^{1/eta} ≈ 3–4×`. The top ~70–90%
+of bits are free (R(x), polylog; free fraction declines 0.88→0.71 over
+x=10⁴→10⁶ toward the asymptotic ~½), but the hard bits below carry a
+*growing* marginal cost, so precision-batching amortises only a constant
+factor. The `s ≥ 1` floor is **information-forced / kernel-independent**
+(a sub-linear slope would settle π(x) exactly in sub-√x zeros,
+contradicting the S511/S518 √x floor). A synthetic `E ∝ T^{−2}` control
+(slope 0.48) proves the method WOULD detect a sub-linear regime if one
+existed. A-grade target (strictly sub-linear per-bit cost) refuted; this
+is the precision-domain face of the SMOOTH+RANDOM info barrier, not a
+goal advance.
 
-**Concrete first step:** profile per-bit Galway evaluator at x = 10⁹
-for k ∈ {10, 20, 40, 80, 160} bits.
+**Original problem (for reference):** compute the first k bits of π(x)
+for varying k; batched on increasing k might amortise. *Outcome: no
+amortisation — the cost is geometric in k beyond the free zone.*
 
-**A-grade target:** strictly sub-linear per-bit cost.
-
-**Budget:** 2-session arc.
+**Budget:** 2-session arc. *(Spent: 1 cycle, S533.)*
 
 ---
 
@@ -717,7 +729,26 @@ for π(x). Identify whether any quantum amortisation argument applies.
 
 **Budget:** 3-session arc (heavy literature, possibly inconclusive).
 
-### P10 — Adaptive π queries
+### P10 — Adaptive π queries [CLOSED-NEGATIVE at S532]
+
+**Status: CLOSED-NEGATIVE at S532** (`experiments/analytic/adaptive_query_complexity/`).
+Adaptive π-querying gives **no asymptotic benefit** over the non-adaptive
+"analytic-predict + local-sieve" recipe (R⁻¹(n) then sieve a Θ(√x) window,
+Õ(√x), **zero queries**), in either query *cost* or — in the zone that
+matters — query *count*. Mechanism = the SMOOTH+RANDOM split: the **smooth
+far zone**, where interpolation beats binary (loglog vs log), is already
+*free* (Newton on R converges in 2–3 iters, flat across 4 orders of x); the
+**random √x hard zone** (measured width x^0.488, err/√x bounded with trend
+−0.007) carries **no interpolable signal** (within-window π residual stays
+at the √count≈x^{1/4} Poisson scale, no drop deg1→deg3), so interpolation
+gets no traction there (measured interp_q ≈ binary_q ≈ ½log₂x). Each
+hard-zone probe costs ~√x, so one window sieve dominates any adaptive
+strategy. This is the query-complexity face of the information barrier
+(S511/S518) and sharpens the guess-comparison geography (S491) and the
+CLOSED "Binary search + local sieve — problem relocated" row. Falsifiers
+F1–F4 all un-triggered. **A-grade NOT achieved** (no adaptive strategy beat
+Aggarwal); this is the predicted closure.
+
 **Problem:** π(x_1) computed first, then x_2 chosen adaptively as a
 function of π(x_1). Aggarwal binary-search is the simplest case.
 What about non-binary-search adaptive strategies?

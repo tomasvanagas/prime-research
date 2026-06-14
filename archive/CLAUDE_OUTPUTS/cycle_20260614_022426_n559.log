@@ -1,0 +1,51 @@
+=== Cycle 559 — Sun Jun 14 02:24:26 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "NEXT ACTION\|## NEXT\|NEXT:" PROGRAM.md | head -50
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: run the large-x benchmark at n=24 in the active verification line. Let me look at the benchmark script and the relevant files.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now let me check the results file and the existing run log to understand the n=24 status.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Let me check the existing n=24 run log and any background processes.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== run_n24_full.log ==
+The n=24 log is empty and no benchmark process is running — the previous launch didn't produce output. Let me first run the selftest to confirm the machinery is sound, then launch n=24.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+timeout 600 python3 large_x_b
+Selftest passes. Now let me launch the n=24 benchmark in the background (predicted ~900s honest + ~230s cheat). I'll capture full output to a log.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+rm -f run_n24_full.log
+nohup 
+The launcher returned immediately (the nohup'd python keeps running detached). Let me verify the benchmark process is actually running and check initial output.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+ps aux | grep "large_x_benchm
+  [tool: Bash] ps aux | grep large_x | grep -v grep
+echo "exit: $?"
+echo "--- any python3 large ---"
+pgrep -af large_x_benchmark
+echo "
+The process is running (pid 1141987, ~4GB RAM, accumulating CPU). Output is printed only at the end of the run, so the log stays empty until completion. Let me start a harness-tracked waiter that blocks until the benchmark finishes and then dumps the log — this gives me a clean completion notification.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+# Wait for the detached bench
+While the n=24 run proceeds (~15-20 min), let me independently compute the ground-truth π(16777215) with a separate sieve, so the benchmark's "match against `sieve_pi`" is cross-checked against an independent oracle rather than trusted on its own.
+  [tool: Bash] cd /tmp
+python3 -c "
+import numpy as np, time
+N = (1<<24) - 1   # 16777215
+t=time.time()
+sieve = np.ones(N+1, dtype=bool
+Independent ground truth confirmed: π(2²⁰−1)=82025 ✓ and π(2²²−1)=295947 ✓ match the prior headlines, and **π(2²⁴−1)=1077871** is the value the n=24 honest run must claim. This gives me an oracle independent of the benchmark's own `sieve_pi`.
+
+The n=24 run is executing (pid 1141987, ~4 GB RAM). `run_headline` prints only after both the honest and `delta_pi`-liar runs complete, so the log stays empty until then. The harness-tracked waiter (`bjrr443x8`) will notify me on completion. Waiting for the result.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/c4067e34-5353-49ce-81c2-73e587e187f1/tasks/bjrr443x8.output
+The run is in progress. I'll wait for the completion notification from the background waiter before recording results. Let me verify the process is still healthy in the meantime.
+  [tool: Bash] if kill -0 1141987 2>/dev/null; then
+  echo "benchmark RUNNING:"; ps -o pid,etime,%cpu,%mem,rss --no-headers -p 1141987
+
+The etime reading is glitched and %CPU shows 0.0 at that instant — let me confirm the process is actually accumulating CPU time (progressing) rather than stalled.
+  [tool: Bash] echo "sample 1:"; cat /proc/1141987/stat 2>/dev/null | awk '{print "utime+stime ticks:", $14+$15}'
+sleep 8
+echo "sample 
+Confirmed healthy: +800 CPU ticks over 8 s = 100% of one core, actively computing. The n=24 run is progressing normally and will take ~15-20 min (honest + `delta_pi` liar). I'll wait for the completion notification from the waiter task `bjrr443x8` before recording results.
+--- cycle result: success (turns=16, duration=152962ms) ---
+=== Cycle 559 finished — Sun Jun 14 02:27:05 UTC 2026 ===

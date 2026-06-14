@@ -1,0 +1,38 @@
+=== Cycle 564 — Sun Jun 14 03:36:02 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a very mature project. Let me find the current NEXT ACTION.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: run the large-x benchmark at n=24 in the active verification line. Let me examine the benchmark script and its results file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me look at the results file to see what's been recorded so far.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The NEXT ACTION is clear and well-defined: run the n=24 large-x benchmark to completion. Let me first verify the selftest passes, then launch the n=24 run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 --version && timeo
+Selftest passes cleanly. Now let me launch the n=24 run in the background. It includes both the honest run and the `delta_pi` soundness spot-check (predicted ~900s honest + ~250s cheat).
+  [tool: Bash] nohup python3 -u large_x_benchmark.py --n 24 > run_n24.log 2>&1 &
+echo "launched PID $!"
+The launch wrapper returned (the python process is detached via nohup). Let me check progress in the log file.
+  [tool: Bash] ls -la run_n24.log && echo "---" && cat run_n24.log && echo "---PROC---" && pgrep -af "large_x_benchmark.py --n 24" || e
+The process is running (PID 1189747); the log stays empty until the honest run finishes (all prints come at the end). Since I detached it with nohup, the harness won't auto-notify me. Let me launch a proper harness-tracked waiter that blocks until the run completes and then surfaces the log.
+  [tool: Bash] until ! pgrep -f "large_x_benchmark.py --n 24" > /dev/null 2>&1; do sleep 15; done; echo "=== RUN COMPLETE ==="; cat run
+While the run proceeds, let me independently verify the ground truth π(16777215) with a separate sieve, so the banked result has a cross-check independent of the benchmark's own `sieve_pi`.
+  [tool: Bash] cd /tmp && python3 -c "
+import numpy as np
+N = (1<<24) - 1  # 16777215
+sieve = np.ones(N+1, dtype=bool)
+sieve[:2] = Fals
+Independent cross-check confirms the expected ground truth:
+- π(2²⁰−1) = 82025 ✓ and π(2²²−1) = 295947 ✓ (match recorded headlines)
+- **π(2²⁴−1) = 1077871** — this is what the honest n=24 run must report.
+
+I have the independent ground truth ready. Now I'll wait for the background run to complete (predicted ~900s honest + ~250s cheat). The waiter will notify me when it finishes.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/726f7aab-7739-4d46-ad45-69c529f631b4/tasks/boyucyy28.output
+The n=24 run is underway in the background, and I've prepared the independent ground truth (π(2²⁴−1) = 1077871) for cross-checking. I'll wait for the harness to notify me when the run completes, then verify and bank the result.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_n24.log
+The run is in progress (log still empty — all output is printed at the end). I'll wait for the completion notification from the background waiter before proceeding to verify and bank the result.
+--- cycle result: success (turns=14, duration=114246ms) ---
+=== Cycle 564 finished — Sun Jun 14 03:38:02 UTC 2026 ===

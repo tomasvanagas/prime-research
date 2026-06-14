@@ -190,6 +190,49 @@ def _sum61(arr):
     return int(a[0])
 
 
+def scatter_fold61(idx, vals, nbuckets):
+    """out[b] = (sum_{i: idx[i]==b} vals[i]) mod (2^61-1), as a canonical uint64
+    array of length nbuckets -- the BIG_Q fast-path replacement for the object
+    scatter `np.add.at(acc(object), idx, vals); acc % q`.
+
+    vals: a uint64 array of reduced residues (< 2^61).  Each residue is split
+    into 31-bit limbs `v = hi*2^31 + lo` (lo < 2^31, hi < 2^30) and the two limb
+    streams are summed PER BUCKET exactly with a single sort + np.add.reduceat
+    (the fast C reduction, no Python-object loop, no object alloc).  The
+    BINDING overflow constraint is the LO limb: out_lo[b] = sum of (fill) values
+    each < 2^31 stays < 2^64 iff fill < 2^33 (the HI limb, < 2^30, only needs
+    fill < 2^34, so it is not the limit).  np.add.reduceat sums in uint64 and
+    WRAPS silently mod 2^64, so exceeding the bound returns a wrong residue with
+    no error -- hence the explicit guard below.  The callers' bucket fill is
+    bounded by the total summand count idx.size <= sqrt(x) = 2^(n/2), so this is
+    exact for n < 66 -- well past BIG_Q's n<~60 soundness ceiling.  The
+    recombination hi*2^31 + lo (mod p) is exact, so the result is BIT-IDENTICAL
+    to the object path `(exact integer sum) % q`.
+
+    A monotone non-decreasing idx (e.g. arange//p) still gets sorted here; the
+    argsort over a sqrt(x)-size array is cheap and keeps the helper general.
+    """
+    idx = np.ascontiguousarray(idx, dtype=np.int64)
+    vals = np.ascontiguousarray(vals, dtype=np.uint64)
+    # any bucket holds <= idx.size summands; idx.size < 2^33 => out_lo < 2^64
+    # (the binding LO-limb bound), so the uint64 reduceat never wraps.
+    assert idx.size < (1 << 33), "scatter_fold61: too many summands (n>=66); uint64 limb sum would wrap"
+    lo = vals & _M31                          # < 2^31
+    hi = vals >> _S31                          # < 2^30
+    out_lo = np.zeros(nbuckets, dtype=np.uint64)
+    out_hi = np.zeros(nbuckets, dtype=np.uint64)
+    if idx.size:
+        order = np.argsort(idx, kind="stable")
+        sidx = idx[order]
+        starts = np.concatenate(([0], np.nonzero(np.diff(sidx))[0] + 1))
+        bkts = sidx[starts]
+        out_lo[bkts] = np.add.reduceat(lo[order], starts)
+        out_hi[bkts] = np.add.reduceat(hi[order], starts)
+    rl = _reduce61(out_lo)                     # < 2^61
+    rh = _reduce61(out_hi)                     # < 2^61
+    return _reduce61(_mul61(rh, np.uint64(1 << 31)) + rl)
+
+
 # ----------------------------------------------------------------------
 # field-parameterised helpers (uint64 fast path for q <= 2^31-1; BIG_Q via the
 # Mersenne path above when FAST_BIG, else exact Python-int object arrays)
@@ -515,10 +558,10 @@ def honest_C(W, S_tab, rho, q):
 def build_omega(W, rho, q):
     eqr = eq_table(rho, q)
     if FAST_BIG and q == BIG_Q:
-        # < D summands each < q overflow uint64; accumulate exactly in object
-        acc = np.zeros(1 << W["Lv"], dtype=object)
-        np.add.at(acc, W["u"], eqr.astype(object))
-        return (acc % q).astype(np.uint64)
+        # < D summands each < q overflow a plain uint64 add; S525: the uint64
+        # segmented scatter-fold (limb-split + sort/reduceat) gives the SAME
+        # residues as the object path with no Python-int alloc.
+        return scatter_fold61(W["u"], eqr, 1 << W["Lv"])
     omega = np.zeros(1 << W["Lv"], dtype=_dt(q))
     np.add.at(omega, W["u"], eqr)            # < D summands each < q
     return omega % q
@@ -913,6 +956,41 @@ def selftest():
             assert (_mul61(aa, sc) ==
                     np.array([(int(x) * sc) % _P61 for x in aa],
                              dtype=np.uint64)).all()
+        # 8a'. scatter_fold61 (S525): the uint64 segmented scatter == the object
+        #      path `np.add.at(acc(object), idx, vals); acc % q`, BIT-IDENTICAL,
+        #      for random scatters, the monotone arange//p pattern (small_reduce),
+        #      the low-nb-bits pattern (verify_trace_region), heavy collisions
+        #      (one bucket), an empty input, and an unhit-bucket gap.
+        for _ in range(40):
+            nb = int(prng.integers(1, 9))
+            nbk = 1 << nb
+            sz = int(prng.integers(0, 5 * nbk + 1))
+            idx = prng.integers(0, nbk, size=sz, dtype=np.int64)
+            vals = prng.integers(0, _P61, size=sz, dtype=np.uint64)
+            ref = np.zeros(nbk, dtype=object)
+            np.add.at(ref, idx, vals.astype(object))
+            ref = (ref % _P61).astype(np.uint64)
+            got = scatter_fold61(idx, vals, nbk)
+            assert got.dtype == np.uint64 and (got < _P61).all()
+            assert (got == ref).all(), ("scatter rand", nb, sz)
+        # structured patterns + degenerate cases
+        for (idx, nbk) in [
+                (np.arange(64, dtype=np.int64) // 7, 1 << 4),       # arange//p
+                ((np.arange(50, dtype=np.int64) * 13) & 15, 1 << 4),  # low-bits
+                (np.zeros(300, dtype=np.int64), 8),                 # all collide
+                (np.array([], dtype=np.int64), 4),                  # empty
+                (np.array([0, 0, 3, 3, 3], dtype=np.int64), 5)]:    # gap buckets 1,2,4
+            vals = prng.integers(0, _P61, size=idx.size, dtype=np.uint64)
+            ref = np.zeros(nbk, dtype=object)
+            np.add.at(ref, idx, vals.astype(object))
+            ref = (ref % _P61).astype(np.uint64)
+            assert (scatter_fold61(idx, vals, nbk) == ref).all(), ("scatter struct", nbk)
+        # near-overflow: many residues at _P61-1 in one bucket (limb sums must
+        # stay exact); 1<<20 summands keeps hi-limb sum 2^20*2^30=2^50 < 2^64
+        big = np.full(1 << 20, _P61 - 1, dtype=np.uint64)
+        zidx = np.zeros(1 << 20, dtype=np.int64)
+        assert int(scatter_fold61(zidx, big, 2)[0]) == \
+            ((1 << 20) * (_P61 - 1)) % _P61, "scatter heavy-bucket overflow"
         # 8b. whole BIG_Q protocol: fast (uint64) == object reference, bit-identical
         cheats8 = ["u_consistent", "u_value", "r_value", "nonbit",
                    "wrong_C", "omega_route"]

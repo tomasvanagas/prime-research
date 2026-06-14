@@ -1,0 +1,100 @@
+=== Cycle 573 — Sun Jun 14 07:50:24 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "NEXT ACTION\|NEXT_ACTION" PROGRAM.md | head -40
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me read the key files for the NEXT ACTION — the batched-trace discharge that holds all K witnesses.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Let me look at how the chain calls these batched functions and builds the witness stack.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "verify_constraint
+Let me read the `run_chain` function in detail.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me look at the `sumcheck` implementation and `build_terms`/`constraint_eval` in the core module.
+  [tool: Bash] grep -n "^def sumcheck\|^def build_terms\|^def constraint_eval\|^def build_witness\|^def eq_table\|^def fmul\|^def _mul6
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me look at how `large_x_benchmark.py` measures memory and runs, to match conventions.
+  [tool: Bash] grep -n "mem\|rss\|RSS\|getrusage\|tracemalloc\|maxrss\|peak\|resource\|subprocess\|def main\|def run\|argparse\|add_arg
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Bash] grep -n "^def lagrange_eval\|^def _asum\|^def _dt\|def scatter_fold61\|DEFAULT_Q =\|BIG_Q =\|SMALL_Q =\|^FIELDS" compres
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+This is a substantial, well-understood task. Let me set up tracking and verify my understanding of the obstruction with a quick check before committing to the build.
+  [tool: Bash] python3 -c "
+import batched_trace as bt, numpy as np
+from math import isqrt
+# At n=24 what are the cube dims that drive 
+Confirmed the structure. Let me create a task list and build the experiment.
+  [tool: ToolSearch] 
+I'll proceed directly to building the experiment. Let me write the streaming sum-check file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+Now let me run the selftest to validate correctness.
+  [tool: Bash] timeout 600 python3 streaming_batched_sumcheck.py --selftest 2>&1 | tail -30
+The fmul counter only sees calls through `_cpmt.fmul`, but my hot loops use the directly-imported `fmul` (bypassing the monkeypatch) — so streamed work is undercounted. That's a measurement-instrumentation bug. Let me route my multiply calls through `_cpmt.fmul` so both the counter and the FAST_BIG toggle work, and fix the time-price assertion to use element-work (`total_w`), which is the true ~nb× cost (call count is ~K× because streamed calls are narrow).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Bash] timeout 900 python3 streaming_batched_sumcheck.py --selftest 2>&1 | tail -30
+Items 1-6 (all correctness) pass. The time-price assertion revealed my analysis was wrong: streamed element-work is *comparable* to (here even less than) stacked, because the round-poly fmul work telescopes to the same total AND the streamed e-phase **skips the padding layers** (K=18 real vs 2^Lk=32 padded) that the stacked cube folds. The real cost is in integer witness *rebuilds* and re-folding, which I must *measure*, not assume. Let me fix selftest-7 to a robust structural check and measure the true cost in the bench.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Bash] timeout 900 python3 streaming_batched_sumcheck.py --selftest 2>&1 | tail -20
+All correctness validated. Now let me measure the actual cost (wall + fmul work) and the memory.
+  [tool: Bash] timeout 900 python3 streaming_batched_sumcheck.py --bench --field big 2>&1 | tail -20
+The wall slowdown grows ~Θ(K)=Θ(√x), not Θ(nb) — because the streamed per-layer arrays are *narrow* (width 3.7–19) so the wall is **dispatch-bound on the call count**, exactly the S500/S501 op-count regime that batching (S502) was built to escape. Streaming *un-does* the batching's array-widening. Now let me confirm the space win is actually real with the memory probe.
+  [tool: Bash] timeout 1200 python3 streaming_batched_sumcheck.py --mem-probe 12,14,16,18 --field big 2>&1 | tail -30
+While that runs, let me check the progress.
+  [tool: Bash] sleep 60; cat /tmp/claude-0/-apps-aplikacijos-prime-research/a99d2d94-86c4-44ea-9114-f81cb26dcd4c/tasks/b0zjj0ya5.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/a99d2d94-86c4-44ea-9114-f81cb26dcd4c/tasks/b0zjj0ya5.output
+I'll wait for the memory probe to complete using a monitor loop.
+  [tool: Bash] until grep -q "growth per" /tmp/claude-0/-apps-aplikacijos-prime-research/a99d2d94-86c4-44ea-9114-f81cb26dcd4c/tasks/b0z
+The memory result is decisive and clean:
+- **Streamed: FLAT at 36 MB** (= numpy baseline) across all n — Õ(√x) space confirmed.
+- **Stacked: 37→39→49→91 MB**, baseline-subtracted working set growing ~4×/Δn=2 (Θ(x)).
+- **Wall cost: 8–17× slower** (tracks ~K=Θ(√x)), because narrow per-layer arrays are dispatch-bound.
+
+My docstring's cost estimate (Θ(n)) was too optimistic — the measurement shows Θ(√x)× wall. Let me correct the docstring to match the measured reality.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+Now let me re-run the selftest to confirm everything still passes after the docstring edits, and clean up any `__pycache__`.
+  [tool: Bash] timeout 900 python3 streaming_batched_sumcheck.py --selftest 2>&1 | tail -5 && echo "--- demo run ---" && timeout 120 py
+Now let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck_resul
+Now let me clean up `__pycache__` and verify no missing results files, then update PROGRAM.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null; echo "
+All MISSING files are pre-existing artifacts in unrelated directories — my new file has its `_results.md`. Now let me update PROGRAM.md. First the "Done this era" header and a new bullet:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update item 5's "Remaining lever" line and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "Remaining lever: stream\|run_s525_remeasure.log" PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the NEXT ACTION section:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me add a table row to the active-line protocol stack for consistency with the other measurement/probe steps:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me do a final clean verification run and remove any `__pycache__` created during testing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 900 python3 stream
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find . -type d -name __pycache__ -not -path "*/.git/*" 2>/dev/null | head; echo "
+  [tool: Bash] rm -rf experiments/constructions/p12_sumcheck_pi_verification/__pycache__ && find . -type d -name __pycache__ -not -path
+Cycle complete. Here's what this cycle (S526) delivered.
+
+## Summary
+
+I took the recorded NEXT ACTION — the S525 conjecture that the chain's batched discharges are "pure γ-RLC folds" that can stream the K-witness stack to Õ(√x) peak RSS **bit-identically and for free** — built it, tested it, and **corrected the premise** with measurements.
+
+**Built:** `experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py` (CLI-parameterised, `--selftest`/`--bench`/`--mem-probe`, 7 selftest groups) + `_results.md`.
+
+**Three findings:**
+
+1. **The K-witness LIST streams bit-identically for free.** `build_stacked_streaming` builds the cube slice-by-slice (materialize → copy → drop) and is table-for-table identical to `stacked_tables` (honest + all 4 cheats, over q & BIG_Q). Removes ~1.4 GB of the n=24 3.9 GB peak with no transcript change.
+
+2. **The stacked CUBE is *not* a pure γ-fold (the correction).** The sum-check round polynomials couple all K witnesses through the pointwise product, and each round's Fiat–Shamir challenge sums over all K — so a one-pass accumulator cannot produce them. The ~2.6 GB cube (the dominant term) doesn't stream for free.
+
+3. **A bind-e-first multi-pass streaming sum-check *does* reach Õ(√x) space, verdict-faithfully** (MLE value is order-independent → identical bound scalars/final check; honest accept + every single-layer cheat rejected over q & BIG_Q, K=1 edge, fast==object). **Measured:** streamed peak RSS **flat at 36 MB** vs stacked 37→91 MB (→Θ(x)). **But it costs Θ(√x)× more wall** (3.6→17× slower, mean array width crashing 341→19) — narrow per-layer arrays are dispatch-bound, **re-introducing exactly the S500/S501 op-count regime that batching (S502) was built to escape.**
+
+**Headline:** the batched discharge is a space-time tradeoff. Batching minimizes wall (wide arrays, Θ(x) space); streaming minimizes space (Õ(√x), Θ(√x)× wall). The Θ(x) held cube is **inherent** to the one-pass batched sum-check's wall efficiency, so paying √x× compute to shrink it makes the wall *worse* — the working-set wall is not removable for free. This corrects the S525 NEXT ACTION premise.
+
+I left the landed chain (incl. the n=24 artifact) untouched. PROGRAM.md updated (new "Done this era" bullet, item-5 resolution, step-19 table row, and a NEXT ACTION offering the one free win: porting `build_stacked_streaming` into `run_chain` to drop ~1.4 GB bit-identically). No `__pycache__` left. No BREAKTHROUGH — the polylog π(x) goal stays blocked.
+--- cycle result: success (turns=47, duration=1845639ms) ---
+=== Cycle 573 finished — Sun Jun 14 08:21:10 UTC 2026 ===

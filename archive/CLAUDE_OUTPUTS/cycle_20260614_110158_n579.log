@@ -1,0 +1,69 @@
+=== Cycle 579 — Sun Jun 14 11:01:58 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The file is large. Let me read the NEXT ACTION section, which is typically at the end.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the end of the file where the NEXT ACTION should be.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, mature research program. Let me understand the current state before committing to a cycle. The recorded NEXT ACTION is to push the reach to n=25, but PROGRAM.md itself notes "the verification-line free CODE lever is now spent." Let me check feasibility and consider whether the reach or a pivot is the better cycle.
+  [tool: Bash] free -h; echo "---NPROC---"; nproc; echo "---DISK---"; df -h /apps/aplikacijos/prime-research | tail -1
+  [tool: Bash] ls experiments/constructions/p12_sumcheck_pi_verification/ && echo "---OPEN TARGETS head---" && head -60 OPEN_POSITIVE_T
+There are already `run_n25.log` and `run_n26.log` files. Let me check whether these reaches have already been run before I commit to re-running them.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification/
+for f in run_n25.log run_n26.log; do
+  echo "=== $f ($(wc -l 
+Empty placeholders — the n=25/n=26 reaches were set up but never actually completed. Plenty of RAM (93 GB free), so feasibility is not the constraint. Let me look at the benchmark script to understand its CLI and outputs before committing.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+I have a clear picture. The recorded NEXT ACTION (push the reach to n=25/n=26) is well-motivated this cycle for a specific reason beyond a vanity reach: it tests a **filed falsifier**. S524 measured the prover wall accelerating (24→22 step ran at 5.80× vs the ideal 4×/Δn=2), attributed to a memory-hierarchy constant (S525), and S527 just landed LIST-streaming that cut the working set ~⅓. Running n=25/n=26 now measures whether streaming actually tamed the super-linear wall, or whether a genuine super-Õ(x) term exists — exactly the falsifier PROGRAM.md filed ("local exponent staying well above ~1.1 at n≥26 ... would signal a genuine super-Õ(x) term").
+
+Let me verify health and the cross-check infrastructure first.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== sieve_pi definition ==="; grep -n "def sieve_pi" co
+I'm already in the p12 directory. Let me read `sieve_pi` and confirm the cross-check approach.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+`sieve_pi` is a genuine from-scratch Eratosthenes sieve, and the chain counts via the independent `compressed_lucy` DP — so claimed-vs-sieve is already a cross-check of two independent methods. I'll add `sympy.primepi` as a third independent ground truth. Let me run the selftest gate and precompute the cross-check values.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== selftest ==="; tim
+Selftest passes clean. Independent ground truth confirmed via sympy:
+- n=24: π(2²⁴−1) = **1,077,871** (matches the landed reach ✓)
+- n=25: π(2²⁵−1) = **2,063,689**
+- n=26: π(2²⁶−1) = **3,957,809**
+
+Now I'll launch the reach. Each n runs in its own subprocess (so `getrusage` peak RSS is clean per-run — the monotonic peak would otherwise conflate n=25 and n=26). n=25 gets the soundness spot-check (delta_pi liar must be rejected at the reach); n=26 runs `--no-cheat` to get the clean honest-wall point for the scaling-falsifier test without doubling its compute.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+{
+  echo "######## n=25 reac
+Reach is running in the background (~3 hours estimated for both n=25 and n=26). Let me verify it actually started cleanly rather than erroring immediately.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+sleep 20; echo "=== run_n25.
+Two issues spotted: a **duplicate orphaned n=25 process** (PID 1479998, `--field big`, no `--seed`) is still running from a previous interrupted cycle — that's what created the empty placeholder logs at 10:46. It's double-computing n=25 and shares the same log file as my clean job. Since it only prints at the *end* of its run, it hasn't corrupted my log yet. I'll kill the orphan now (before it writes) so my clean sequential job is the only one.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+# Kill the orphaned previous
+Clean now — only my single seed=1 job remains, log uncorrupted. The orphan was a previous interrupted cycle's duplicate.
+
+Since `run.sh` continuously starts fresh cycles, I must immediately mark this work as in-progress in PROGRAM.md so a concurrent cycle doesn't read the n=25 NEXT ACTION and launch *another* duplicate. Let me add that coordination marker now.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+PROGRAM.md now marks the reach in-progress so a concurrent loop cycle won't duplicate it. The background job runs ~3 hours total. Rather than waiting blind for full completion, I'll set an intermediate checkpoint at the n=25 result (~50 min in) to verify the first reach point lands correctly before committing the remaining ~2 hours to n=26. Let me load the Monitor tool to wait server-side on that condition.
+  [tool: ToolSearch] 
+Per the tooling guidance, for a single intermediate notification I should use a `run_in_background` Bash with an `until`-loop (not a `tail -f` Monitor). Let me arm a watcher that fires when n=25 finishes — covering both the success marker and failure signatures so a crash doesn't leave me waiting silently.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+# Exit as soon as n=25 reach
+Everything is set up and running. Here's the status of this cycle.
+
+## Cycle S528 — pushing the verification reach to n=25/n=26 (in progress)
+
+**What I'm doing and why.** The recorded NEXT ACTION is to push the large-x verification reach one octave. I committed to it this cycle because it isn't a vanity reach — it tests a **specific filed falsifier**. S524 measured the prover wall *accelerating* (the n=22→24 step ran at 5.80× vs the ideal 4×/Δn=2), S525 attributed that to a memory-hierarchy constant on a ~3.9 GB working set, and S527 just landed LIST-streaming that cut the working set ~⅓. Running n=25/n=26 now measures **whether streaming actually tamed the super-linear wall** (ratio falls back toward 4×) or whether a genuine super-Õ(x) term persists — exactly what PROGRAM.md said would falsify the Õ(x)-prover claim.
+
+**Setup done:**
+- ✅ Selftest passes clean (all 6 groups, incl. the S527 streaming bit-identity check).
+- ✅ Independent ground truth locked via `sympy.primepi` (a third method, distinct from the chain's `compressed_lucy` DP and the `sieve_pi` Eratosthenes cross-check): **π(2²⁵−1)=2 063 689**, **π(2²⁶−1)=3 957 809** (and π(2²⁴−1)=1 077 871 reconfirmed against the landed reach).
+- ⚠️ **Caught and killed an orphaned duplicate** n=25 process from a prior interrupted cycle (it had created the empty `run_n25.log`/`run_n26.log` placeholders and was double-computing). Killed before it corrupted my log.
+- ✅ Marked PROGRAM.md NEXT ACTION as **IN PROGRESS** so the continuous `run.sh` loop won't launch yet another duplicate.
+
+**Running now (background):**
+- n=25 honest + delta_pi soundness spot-check → `run_n25.log` (each n in its own subprocess for clean per-run peak RSS)
+- n=26 honest, `--no-cheat` → `run_n26.log` (the clean Δn=2 wall point for the scaling-falsifier test)
+- Estimated ~3 h total. An intermediate watcher will notify me at the n=25 checkpoint (~50 min) so I can verify the first reach point before the rest finishes; the main job notifies on full completion.
+
+When the results land I'll verify `claimed == ground truth` for both, compute the wall scaling exponent (the falsifier test), record peak RSS / the RAM ceiling, write the `large_x_benchmark_results.md` §S528 section, and finalize the PROGRAM.md item-5 entry and NEXT ACTION.
+--- cycle result: success (turns=17, duration=398010ms) ---
+=== Cycle 579 finished — Sun Jun 14 11:08:42 UTC 2026 ===

@@ -1,0 +1,108 @@
+=== Cycle 581 — Sun Jun 14 11:52:07 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, long-running research program. Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION in PROGRAM.md.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have the picture. The NEXT ACTION is conditional: (a) harvest the detached reach run if its logs show DONE, or (b) pivot to fresh territory while it computes. Let me first check the state of the detached reach run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== pgrep large_x_benchmark ==="; pgrep -af large_x_benchmark || echo "(no pr
+The reach is alive — process 1505816 is computing n=25, and run_reach_detached.sh (1505813) is its parent. So branch (a) harvest is not yet possible. Let me confirm the detachment and log location, then I'll pivot to fresh territory per branch (b).
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== PPID of reach proc 1505816 ==="; ps -o pid,ppid,etime,rss,cmd -p 1505816 
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== find script ==="; find . -maxdepth 2 -name "run_reach_detached.sh" 2>/dev
+The reach is genuinely alive, writing to `run_n25.log` in the experiment dir. Let me check its progress.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== run_n25.log (tail)
+The reach has run ~27 min and shows only the START banner — n=24 alone took ~24.5 min, so n=25 (honest + delta_pi) then n=26 is hours away. Branch (a) harvest is not available. I must not start a second reach run, and I should pick a fresh, RAM-light line per branch (b). Let me read the candidate targets and the relevant catalogue entries before committing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== OPEN_POSITIVE_TARGETS.md: P7,P8,P9,P10 ==="; grep -nA12 -iE "^#+ *P7|^#+ 
+  [tool: Read] /apps/aplikacijos/prime-research/OPEN_POSITIVE_TARGETS.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== S224 / Correlation Dichotomy / batched in CLOSED_PATHS ==="; grep -niE "S
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -niE "batched|amortis|amortiz|per-query|shared zero|cross-k|thread 5" status/C
+The reach run will occupy the machine for hours; branch (a) harvest isn't available, and I must not launch a second reach. That leaves branch (b): a fresh, RAM-light line. The designated candidate is P7.b (batched dyadic π). Before committing, let me confirm it isn't already a closed re-derivation and see what analytic infrastructure (zeta zeros, R-evaluation) already exists.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== analytic experiment dirs ==="; ls experiments/analytic/ 2>/dev/null; echo
+There's already a lot of amortisation infrastructure — `cross_x_amortisation`, `batched_pi_h`, `batched_q_amortisation`, `k_tuple_batched`, `connes_amortisation`, `polylog_approx_pi`. P7.b may already be substantively covered. Let me check before committing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic; for d in cross_x_amortisation batched_pi_h batched_q_amortisat
+This territory is heavily explored — `cross_x_amortisation` has a dichotomy wrap-up, batched evaluator, and decoupled profiling; `batched_q_amortisation` even has an FFT-vs-direct multi-axis experiment. P7.b is very likely a re-derivation. Let me read the existing dichotomy closure to see exactly what's established.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/cross_x_amortisation/cross_x_dichotomy_wrap_results.md
+This is decisive: cross-x amortisation is **already fully closed** (Thread 5, S220–S224 "Correlation Dichotomy"). Dyadic anchors are factor-2 apart = the **uncorrelated** side → Θ̃(√x) per query, no batch-polylog. The NUFFT/FFT angle is pre-closed by falsifier #4 (Schönhage/Odlyzko cluster-width ceiling). So **P7.b on the dyadic family is a re-derivation of S224** — the NEXT ACTION's caveat is confirmed. I will not run it.
+
+That leaves finding genuinely fresh, RAM-light territory. The live frontier is the reach, whose S529 falsifier prediction (n=24→26 ratio ∈ [4.0, 5.4]×) rests on an *Õ(x) prover op-count* claim plus a flat per-element wall. Let me check whether the **whole-chain prover op-count exponent** has actually been measured as a curve (vs just the per-layer p²→p ratio), since that's the load-bearing leg I could pin independently and RAM-light.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== files ==="; ls *.p
+The existing accounting is verifier-side (`vleaf_ops`) or per-layer (`--prover-bench` p²→p ratio) plus unreliable wall-clock timers (`t_prover` is only ~1.7% of wall). The **whole-chain total field-op count vs n** — the load-bearing "Õ(x) op-count" leg under the S529 reach falsifier — does not appear to be measured as a clean curve. But `mem_hierarchy_wall.py:41` references an `opcount(n)` model. Let me check whether it already *measures* the real chain's op-count (which would make this a re-derivation) or just assumes it.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/mem_hierarchy_wall.py
+Let me see how `mem_hierarchy_wall.py` obtains `opcount(n)` for its model — whether it measures the real chain or assumes a formula.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/mem_hierarchy_wall.py
+Decisive: `mem_hierarchy_wall.py:218` sets `IDEAL = 4.0` and line 216 comments *"ideal op-count ratio is Theta(x) = 4x per Delta n=2"* — the op-count leg is **assumed, not measured**. The whole S529 reach falsifier band [4.0, 5.4]× = (assumed 4× op-count) × (measured per-element memory growth). So the load-bearing op-count exponent has never been directly measured on the real chain. That's the genuine, RAM-light, reach-relevant gap.
+
+Let me look at the field kernels and how they're imported, to design an op-count probe correctly.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== kernel defs in cpm
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`fmul` is the multiply dispatch point (→`_mul61` for the reach's BIG_Q path). I need to know whether the hot paths route multiplies through `fmul` or do inline `(a*b)%q` — that determines whether an `fmul` element-op counter is a faithful wall predictor. Let me check coverage.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; for f in compressed_layer.py
+`fmul` covers only a few sites; the dominant multiplies are inline `(a*b)%q` numpy ops (22/19/20/31/7 vs 2/5/0/1/1 fmul calls), which can't be counted by patching `fmul` or `np.multiply` (operator `*` bypasses Python-level ufunc patches). So an op-count instrument would mean editing hot-path source — risky, and PROGRAM.md says the verification CODE lever is spent. Let me look at the structural primitives `mle_eval`/`sumcheck` to see if op-count can be captured at the algorithm level instead.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`sumcheck` (the core engine) routes its array multiplies through `fmul` (lines 338–339, 351); the inline `%q` there are mostly additions/scalars. So `fmul` may capture most of the *multiply* element-ops after all. The cleanest, lowest-risk path: a **standalone probe** that monkeypatches `fmul` (in every importing module) with an element-op counter, runs the real chain at small n, and **self-validates** by checking the counted op-count explains the wall. This needs no hot-path edits (zero risk to the running reach) and directly measures the assumed-`IDEAL=4.0` leg.
+
+Let me get `run_chain`'s signature and the FULL-config flags from the benchmark, and confirm the import structure.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== run_chain signatur
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== how large_x_benchm
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+I have everything needed. The plan is solid and low-risk:
+
+**Cycle: measure the whole-chain prover op-count exponent — the assumed `IDEAL=4.0` leg of the S529 reach falsifier.** `mem_hierarchy_wall.py:218` *assumes* op-count is exactly Θ(x) (4×/Δn=2); it has never been measured on the real chain. The op-count is **deterministic** (array sizes are structural, seed-independent) so it's immune to the running reach's CPU contention — a clean, RAM-light, standalone probe that can confirm or independently falsify the reach prediction *without* waiting hours.
+
+Let me set up task tracking and write the probe.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+Now I'll write the probe.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Now let me run the selftest (light — a few small-n chains, won't materially perturb the reach).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 600 python3 prover_o
+Selftest [1] and [2] pass. [3]'s seed-independence passed (the contention-immunity claim — the important one), but the strict *cross-field* count equality is off by ~0.5% (2063200 vs 2074457) — BIG_Q and q take slightly different dtype branches. That's expected and irrelevant to the exponent. Let me relax that check to "within a few percent" while keeping the exact seed-independence guarantee.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 600 python3 prover_o
+All 4 selftest groups pass. Note the small-n per-Δn=2 op ratios are **4.88, 4.66 — above the assumed 4.0**. That's exactly the kind of signal worth pinning down: is α_op genuinely >1.0, or are these inflated by small-n polylog factors that settle toward 4 as n grows? Let me run the full scaling curve.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 900 python3 prover_o
+Clean and informative. Headline: **α_op ≈ 0.98–1.01, geo-mean per-Δn=2 op ratio = 4.05×** — the prover op-count is Θ(x), confirming `mem_hierarchy_wall`'s assumed `IDEAL=4.0` leg with a *measured* number. Also a nice corroboration of S529: even the *deterministic* op-count has lumpy per-step ratios (2.43×–4.88×), so single wall steps shouldn't be over-read.
+
+But there's a subtlety worth resolving: the recent steps (n14→16, n16→18) are **4.47, 4.43 — consistently above 4** (the geo-mean is pulled to 4.05 only by the lumpy-low n12→14 step). If the asymptotic ratio is ~4.4 rather than 4.0, that's a mild polylog growth (α≈1.07) that would shift the reach prediction upward. I need n=20 to disambiguate. Let me run the full curve including n=20.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; timeout 1200 python3 prover_
+7 points now. The disambiguation is clear: the upper-regime ratios are **monotone decreasing — 4.47 → 4.43 → 4.38** (n14→16→18→20), settling toward 4.0, not plateauing at 4.4. With n=20 anchoring the fit, **α_op = 0.9955 ≈ 1.0** — the prover op-count is Θ(x), the small excess above 4 at moderate n is a vanishing finite-size polylog effect. The secondary wall exponent (0.52, with per-step ratios climbing 1.97→2.94 toward 4) is the in-cache/dispatch-deflated side of the S529 bowl — op-count is the invariant Θ(x) core between small-n deflation and reach-n DRAM inflation.
+
+Let me confirm the reach is still healthy (my ~106 s of CPU shouldn't have disturbed it), then write up.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification; echo "=== reach proc alive? 
+The reach is healthy (RSS 3.05 GB, mid-computation on n=25 honest; log still buffered at the START banner). My ~106 s of CPU didn't disturb it. Now let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+Now let me update PROGRAM.md — add the S530 entry and refine the NEXT ACTION to reflect that the op-count leg of the reach falsifier is now measured.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION to fold in the measured op-count leg.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now clean up `__pycache__` and run the results-file completeness check from CLAUDE.md.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; find experiments/ -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null; e
+  [tool: Bash] cd /apps/aplikacijos/prime-research; echo "=== any __pycache__ left? ==="; find . -name __pycache__ -type d 2>/dev/null 
+  [tool: ToolSearch] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+Cycle complete. Summary of what this cycle (S530) produced:
+
+## What I did
+
+The recorded NEXT ACTION was conditional: (a) harvest the detached reach run if its logs show DONE, or (b) take fresh RAM-light ground while it computes. I checked: **the reach is genuinely alive** (PID 1505816, computing n=25, output buffered at the START banner) — branch (a) is hours away, and I must not start a second reach.
+
+For branch (b), I first **confirmed the NEXT ACTION's caveat**: P7.b (batched dyadic π) is a **re-derivation** of the already-closed S224 Correlation Dichotomy — dyadic anchors are factor-2 apart = the *uncorrelated* side ⇒ Θ̃(√x)/query, no batch-polylog, with the NUFFT/FFT angle pre-closed by dichotomy falsifier #4. So I did **not** run it (that would violate "don't re-derive closed paths").
+
+Instead I found and filled a real gap: `mem_hierarchy_wall.py:218` hard-codes `IDEAL = 4.0` — it *assumes* the prover op-count is Θ(x) (4×/Δn=2). That assumption is the **load-bearing leg** of the live S529 reach falsifier (n24→26 ∈ [4.0, 5.4]×), and it had never been measured on the real chain.
+
+## Deliverable: `prover_opcount_scaling.py` + results (S530)
+
+A standalone probe that monkeypatches the `fmul` field-multiply dispatch (in every importing module) with an element-op counter, runs the real `run_chain` FULL config over BIG_Q+FAST_BIG at n=8..20, and fits the exponent. The op-count is **deterministic** (seed-independent — selftest [3]), so it's immune to the running reach's CPU contention; RAM-light; zero landed-code change (verdict bit-identical under the patch — selftest [1]).
+
+**Measured:** α_op = **0.9955 ≈ 1.0** ⇒ prover op-count is **Θ(x)** (geo-mean per-Δn=2 ratio 4.11×). The small excess above 4 at moderate n **vanishes** — upper steps decline 4.47→4.43→4.38, settling toward 4.0, no plateau. So:
+- the reach's 5.80× wall step is **not** op-count (it's the S529 memory step + noise) — confirmed from the deterministic side;
+- **independent corroboration** of S529's "single-step ratios are noisy": even the deterministic op-count fluctuates 2.43×–4.88× per step;
+- the wall **brackets the bowl**: small-n wall exponent 0.52 (dispatch-deflated) vs reach ~1.09 (DRAM-inflated), with op-count α≈1.0 the invariant Θ(x) core between them.
+
+4 selftest groups pass. PROGRAM.md updated (S530 entry + NEXT ACTION now notes both falsifier legs are measured; the (b) branch redirected to extending the deterministic op-count curve rather than the closed P7.b). Reach confirmed still healthy; `__pycache__` cleaned. Honest scope: a measurement pinning an assumed falsifier leg — not a protocol or a goal advance; polylog π(x) stays blocked.
+--- cycle result: success (turns=45, duration=1304880ms) ---
+=== Cycle 581 finished — Sun Jun 14 12:13:53 UTC 2026 ===

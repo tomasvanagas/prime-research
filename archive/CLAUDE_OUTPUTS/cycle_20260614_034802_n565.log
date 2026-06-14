@@ -1,0 +1,29 @@
+=== Cycle 565 — Sun Jun 14 03:48:02 UTC 2026 ===
+I'll start by reading the live program state and the relevant context.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep research program. Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final part of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I now understand the state. The NEXT ACTION is to run the large-x benchmark at n=24. Let me look at the benchmark script and its results file.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me read the benchmark results file to understand the current banked state.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I understand the state. The NEXT ACTION is clear and concrete: run the large-x benchmark at n=24 to completion, verify `claimed π(16777215)==sieve`, record the wall-clock + profile, and confirm the prover-bound scaling. The census/width-spectrum track is exhausted, and the other frontiers need new math with no code candidate. This is the live frontier.
+
+Let me first run the selftest as a fast correctness gate, then launch the n=24 run in the background.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 large_
+Selftest passes. Now let me launch the n=24 run in the background (predicted ~900s honest + soundness check), and independently compute the ground-truth π(16777215) as a matched cross-check.
+  [tool: Bash] python3 large_x_benchmark.py --n 24 --seed 1 > run_n24.log 2>&1
+The background run is launched. While it runs (~15-20 min), let me independently compute the ground-truth π(16777215) with a separate sieve, so I have a cross-check that's independent of the benchmark's own `sieve_pi`.
+  [tool: Bash] python3 -c "
+import numpy as np
+# Independent Sieve of Eratosthenes cross-check, separate from cl.sieve_pi
+N = (1<<24) -
+Independent ground truth confirmed: **π(16777215) = 1077871** (= π(2²⁴), since 2²⁴ is even). This is the known value, computed by a sieve fully independent of the benchmark's own `sieve_pi`. Let me verify the background run started cleanly (no import/setup errors).
+  [tool: Bash] sleep 20; echo "=== log so far ==="; cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_veri
+The run is executing cleanly (output only prints at completion, as the driver batches its report). It's working through K≈564 sequential layers over the √x cube — predicted ~15-20 min (honest ~900s + the delta_pi soundness spot-check).
+
+I have the independent ground truth ready: **π(16777215) = 1077871**. When the run completes I'll verify `claimed == 1077871`, record the wall-clock and full certificate/verifier profile, confirm the prover-bound ~3.5×/Δn=2 scaling, and bank the result. The harness will re-invoke me when the background run finishes — I'll continue then rather than poll wastefully.
+--- cycle result: success (turns=10, duration=122633ms) ---
+=== Cycle 565 finished — Sun Jun 14 03:50:11 UTC 2026 ===

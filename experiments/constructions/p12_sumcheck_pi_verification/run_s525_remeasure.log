@@ -1,0 +1,56 @@
+===== S525 RE-MEASUREMENT (scatter_fold61 fast path) =====
+date: 2026-06-14T06:45:36Z  host: server237  cpus: 32  mem: 122GB
+
+### [1] memory-localization probe: FULL vs NOBATCH (fresh process each) ###
+=== memory-localization probe (FULL vs NOBATCH, fresh process each) ===
+  n     K   config   peak_MB  peak_GB   wall_s    claimed
+ 16    54     full        48     0.05      9.2       6542
+ 16    54  nobatch        43     0.04     34.9       6542
+ 18    97     full        92     0.09     24.4      23000
+ 18    97  nobatch        62     0.06     86.5      23000
+ 20   172     full       265     0.26     67.0      82025
+ 20   172  nobatch       138     0.13    197.5      82025
+
+### [2] scatter A/B at n=22: scatter_fold61 ON vs object OFF (honest only) ###
+--- n=22 ON (scatter_fold61) ---
+  HONEST: ACCEPTED; claimed pi(x) = 295947, sieve = 295947, match = True
+  wall = 256.29 s   (t_prover 8187 ms, t_verifier 1734.7 ms reported region)
+  peak RSS = 988 MB (0.96 GB, process-wide getrusage peak)
+  certificate: comm = 146637 field elems (~1145.6 KB @ 61-bit); comm_outer = 139899 (95% = the K sequential reductions, Theta(sqrt x))
+  verifier large-table ops: per-layer leaf = 0 (must be 0), one-time leaf = 12352, base-commit opens = 12352 (Theta(x^1/4))
+--- n=22 OFF (--no-scatter-fold, object np.add.at) ---
+  HONEST: REJECTED; claimed pi(x) = 295947, sieve = 295947, match = True
+  wall = 122.54 s   (t_prover 429 ms, t_verifier 2.4 ms reported region)
+  peak RSS = 988 MB (0.96 GB, process-wide getrusage peak)
+  certificate: comm = 234 field elems (~1.8 KB @ 61-bit); comm_outer = 0 (0% = the K sequential reductions, Theta(sqrt x))
+  verifier large-table ops: per-layer leaf = 0 (must be 0), one-time leaf = 0, base-commit opens = 0 (Theta(x^1/4))
+
+### [3] headline scaling re-measurement, scatter ON, honest only ###
+--- n=20 ---
+  HONEST: ACCEPTED; claimed pi(x) = 82025, sieve = 82025, match = True
+  wall = 67.75 s   (t_prover 3210 ms, t_verifier 762.0 ms reported region)
+  peak RSS = 265 MB (0.26 GB, process-wide getrusage peak)
+--- n=24 ---
+  HONEST: ACCEPTED; claimed pi(x) = 1077871, sieve = 1077871, match = True
+  wall = 1445.69 s   (t_prover 24507 ms, t_verifier 3892.6 ms reported region)
+  peak RSS = 3986 MB (3.89 GB, process-wide getrusage peak)
+
+===== DONE 2026-06-14T07:24:10Z =====
+--- n=22 OFF (--no-scatter-fold, ORIGINAL object np.add.at) ---
+  HONEST: ACCEPTED; claimed pi(x) = 295947, sieve = 295947, match = True
+  wall = 249.18 s   (t_prover 8025 ms, t_verifier 1703.8 ms reported region)
+  peak RSS = 988 MB (0.96 GB, process-wide getrusage peak)
+  certificate: comm = 146637 field elems (~1145.6 KB @ 61-bit); comm_outer = 139899 (95% = the K sequential reductions, Theta(sqrt x))
+  verifier large-table ops: per-layer leaf = 0 (must be 0), one-time leaf = 12352, base-commit opens = 12352 (Theta(x^1/4))
+===== ALL S525 RUNS DONE 2026-06-14T07:28:32Z =====
+
+----------------------------------------------------------------------
+NOTE (S525): the §[2] "n=22 OFF" line above shows HONEST: REJECTED / wall
+122.54 s -- that was the FIRST cut of the --no-scatter-fold toggle, which
+wrongly fell through to the _dt(q)=uint64 branch; over BIG_Q a plain uint64
+np.add.at OVERFLOWS before the % q fold, so the scatter residues were wrong
+and the chain correctly REJECTED (soundness working as intended). The bug
+was fixed (explicit object branch, guarded by benchmark selftest 5) and the
+CORRECT n=22 OFF object control is §[4]: HONEST: ACCEPTED, wall 249.18 s,
+comm 146637 (== ON), peak RSS 988 MB (== ON). Use §[4], not §[2], for the
+A/B. The fixed sweep is the basis for large_x_benchmark_results.md §S525.

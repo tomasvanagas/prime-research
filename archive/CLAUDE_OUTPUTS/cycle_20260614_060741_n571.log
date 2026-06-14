@@ -1,0 +1,106 @@
+=== Cycle 571 — Sun Jun 14 06:07:41 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large state document. Let me read the end where the current NEXT ACTION lives.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION specifically.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now I understand the current state. The NEXT ACTION is concrete: vectorise the two hot scatter-sums in `compressed_layer.py` (lines 423 and 726) onto the uint64 fast path for BIG_Q, assert bit-identical transcript, then re-measure prover scaling. Let me examine the relevant code.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The code already references `scatter_fold61` with an S525 comment — it seems this cycle's work may already be partially in progress (the file shows as modified in git status). Let me check the full state.
+  [tool: Bash] grep -n "scatter_fold61\|def scatter_fold\|S525" experiments/constructions/p12_sumcheck_pi_verification/compressed_layer
+  [tool: Bash] git diff --stat HEAD && echo "---LAST COMMIT---" && git log -1 --format="%H %ci %s"
+  [tool: Bash] cat .cycle; echo "---"; git show HEAD:.cycle 2>/dev/null
+  [tool: Bash] git diff HEAD -- experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py experiments/constructions/p1
+A previous (uncommitted) cycle has already implemented `scatter_fold61` and wired it into both call sites plus `build_omega`, with selftests. This is the S525 NEXT ACTION already in progress. Let me check the benchmark changes and whether the work is complete/verified.
+  [tool: Bash] git diff HEAD -- experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+The previous cycle also added a memory-localization probe (FULL vs NOBATCH, peak RSS). Let me read the results file diff to see what was actually concluded.
+  [tool: Bash] git diff HEAD -- experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Now I have the full picture. The working tree contains uncommitted work: S524's n=24 benchmark results (complete, in PROGRAM.md), plus a **partial S525**: `scatter_fold61` implemented + wired into both call sites and `build_omega`, plus a `--mem-probe` (FULL vs NOBATCH peak-RSS) added — but **not yet verified, not benchmarked, and PROGRAM.md's NEXT ACTION/Done sections don't reflect S525**. 
+
+My cycle = complete S525: verify the scatter-fold is bit-identical, run the memory probe, re-measure scaling, and write it up honestly. Let me first check the helper functions exist and run the selftest.
+  [tool: Bash] grep -n "_M31\|_S31\|_reduce61\b\|def _mul61\|def _reduce61\|FAST_BIG = \|^FAST_BIG" experiments/constructions/p12_sumch
+Let me verify the `_reduce61`/`_mul61` semantics to confirm the `scatter_fold61` recombination is correct.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+The implementation looks correct. One subtlety: the lo-limb sum bound is actually `fill < 2^33` (lo < 2^31), not `2^34` as the docstring's hi-limb bound states — so the true ceiling is n<66, not n<68. Still well past the n≲60 soundness ceiling, but I'll note the doc imprecision. Let me now run the verification gauntlet — the critical step the partial work hasn't recorded.
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification && timeout 580 python3 compressed_prover_mult_trace.py --selft
+  [tool: Bash] cd experiments/constructions/p12_sumcheck_pi_verification && timeout 590 python3 compressed_layer.py --selftest 2>&1 | t
+The working directory persisted. Let me use absolute paths.
+  [tool: Bash] timeout 595 python3 compressed_layer.py --selftest 2>&1 | tail -25
+The selftest is running in the background. Let me check the working directory and wait for it.
+  [tool: Bash] pwd
+While the chain selftest runs, let me check for any remaining object-dtype scatter sites that S525 might have missed.
+  [tool: Bash] grep -rn "dtype=object\|astype(object)\|np.add.at" *.py | grep -v selftest | grep -iv "def \|#"
+Let me check on the background chain selftest.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/b3h4hmj0r.output 2>/dev/nu
+Still running. Let me examine the other hot-path scatter sites (in the FULL config) to understand whether the fast path is "fully engaged" — this matters for interpreting the benchmark.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_wiring.py
+`batched_wiring.py:284` and the delegated-wiring scatters also accumulate in object dtype for BIG_Q — and `batch_trace` holds the full K-witness list. So the S524 attribution ("the working set is the line-423/726 `np.add.at`") may be incomplete; the held K-witness cube could be the real peak-RSS source. That's exactly what the `mem_probe` (FULL vs NOBATCH) was built to test. Let me check the selftest, then measure.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/b3h4hmj0r.output
+  [tool: Bash] sleep 1; cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/b3h4hmj0r.output 
+Still running. Let me look at how `batch_trace` holds the witness list, to be precise about the memory attribution.
+  [tool: Bash] grep -n "build_witness\|Ws\b\|Ws =\|for p in primes\|batch_trace\|def run_chain" compressed_layer.py | head -40
+Confirmed at line 1025: `Ws = [build_witness(...) for p in primes]` holds the **full K-layer witness list simultaneously** — a Θ(x·polylog) working set, exactly what `NOBATCH` removes. This is a strong candidate for the real peak-RSS source the S524 entry attributed to the per-layer `np.add.at`. Let me check available memory and the selftest status.
+  [tool: Bash] free -g; echo "---"; nproc; echo "--- selftest output ---"; cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-
+95 GB free, 32 cores — n=24 (and even n=26) fit comfortably; the 3.9 GB was a GC-pressure claim, not OOM. Let me wait for the selftest gate. Meanwhile, let me read the `small_reduce` scatter site context for an accurate writeup.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me poll the selftest gate.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/b3h4hmj0r.output 2>/dev/nu
+The bit-identical chain selftest passes. Now the benchmark selftest gate, then I'll launch measurements.
+  [tool: Bash] timeout 595 python3 large_x_benchmark.py --selftest 2>&1 | tail -15
+All gates pass. Before launching measurements, let me check the line-931 note that `batch_trace` is "the precondition for the fast-Mersenne path" — this affects whether NOBATCH is a fair comparison.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Key point: `FAST_BIG` is set globally (independent of `batch_trace`), so `NOBATCH` still uses the fast path — it just runs it on many small cubes (the S500 "not a net win" regime). For the **memory** question that's fine: NOBATCH skips the `Ws` held witness list (line 1025) and the batch_ub re-stack, so the FULL−NOBATCH peak-RSS gap isolates the held-cube contribution. Let me validate the probe at small n first.
+  [tool: Bash] timeout 590 python3 large_x_benchmark.py --mem-probe 16,18 2>&1 | tail -20
+  [tool: Bash] sleep 2; cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/bzzkbaajx.output 
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/bzzkbaajx.output 2>/dev/nu
+Let me wait for completion with a monitored loop.
+  [tool: Bash] while ps aux | grep -q "[l]arge_x_benchmark"; do sleep 5; done; echo "=== DONE ==="; cat /tmp/claude-0/-apps-aplikacijos
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/bzzkbaajx.output
+Decisive findings at n=16,18 (both with the new `scatter_fold61`):
+- **FULL peak RSS > NOBATCH** (49 vs 43 MB; 91 vs 62 MB) — the gap **grows** (6→29 MB), confirming the held `Ws` witness cube (batch_trace/batch_ub) adds the growing working set, not the per-layer scatter.
+- FULL is **3.6× faster** than NOBATCH (batching wins wall despite costing RSS — the S500 small-cube effect).
+- Both give correct π (6542, 23000).
+- Peak RSS scales only **~x^0.45** so far (49→91 MB over ×4 in x) — extrapolates to ~0.5 GB at n=24, **far below the S524-claimed 3.9 GB**, which was an *estimate* (peak_rss_mb didn't exist until this cycle added it).
+
+Critically: the selftests prove the scatter-fold transcript is **bit-identical** to the object path, so claimed/comm/verdict at n=24 are provably unchanged from S524 — the only measurable effect is **wall + peak RSS**. Let me run the full re-measurement (one more NOBATCH point at n=20, then FULL n=20/22/24) in a single sequential background job.
+  [tool: Bash] cat > /tmp/run_s525.sh <<'EOF'
+cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verificatio
+The job (~36 min) is running. The cleanest A/B for the wall is **S524's object-path walls (71.8/252.8/1467.3s) vs S525's scatter-fold walls** — same n, before/after — since the selftests prove everything else is bit-identical. Let me read the current results file fully so I can write a precise update, and reconsider the now-suspect "3.9 GB" framing.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I have full context now. The S524 walls (71.8/252.8/1467.3s) were measured on the **object path** (S524 ran with object scatters), so they're my "before." To complete a clean A/B for **peak RSS** (which S524 never measured — hence the unverified "3.9 GB"), I'll run the object path at n=20/22 after the main job by temporarily reverting just the two scatter files. Let me check the main job's progress.
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s525_remeasure.log 2>/de
+The mem-probe n=20 is running. While the ~36-min main job runs, let me prepare (not yet run) the object-path A/B script that will measure the object scatters' wall + peak RSS on this same machine, to test the unverified "3.9 GB" claim and give a clean before/after. Let me verify the git-stash-two-files approach is safe first.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git stash list; echo "--- files that would be reverted (diff vs HEAD exists): ---
+No existing stash; the approach is clean. Now let me wait for the main job. Let me check progress once, then await the completion notification.
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s525_remeasure.log 2>/de
+While the job runs, let me fix a real correctness-doc issue I spotted: the lo-limb sum bound is `fill < 2^33` (lo < 2^31), making the true safe ceiling **n < 66**, not the docstring's `n < 68` (which is the looser hi-limb bound). At n ≥ 66 the `reduceat` would silently wrap mod 2⁶⁴ and return a wrong residue. Let me make the doc precise and add a cheap explicit guard that turns that silent failure into a loud one.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now I should re-validate the edited module's selftest — but only **after** the benchmark finishes, to keep its wall-clock timing clean (no CPU contention). The assert is a no-op for all reachable n (fill ≪ 2³³), so the running job's results stay valid. Let me wait for the main job. I'll poll lightly while it runs.
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s525_remeasure.log 2>/de
+The mem-probe NOBATCH n=20 leg is slow (~4 min). I'll wait for the job-completion notification rather than poll-contend with the timing-sensitive benchmark. Let me await it.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/buz1kau42.output
+Output is redirected to the log file. I'll wait for the completion notification. Let me check back on the log periodically — first a patient wait, then read the log when the job signals done.
+  [tool: Bash] while ps aux | grep -q "[r]un_s525.sh\|[l]arge_x_benchmark"; do sleep 15; done; echo "=== JOB ENDED ==="; cat /apps/apli
+I've set a waiter that will print the full log when the job ends. Waiting for completion. Let me confirm I'm tracking the right tasks while I wait.
+  [tool: Bash] tail -3 /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s525_remeasure.log 2
+Still on the first leg. I'll wait for the completion notification now rather than continue polling.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/9b7bbbb2-6543-4cbc-b170-09463db8b44d/tasks/blhvom3iy.output
+I'll await the background job completion notification.
+  [tool: Bash] echo "waiting for background re-measurement job (buz1kau42) + waiter (blhvom3iy)"; date
+The re-measurement job is running (currently on the mem-probe n=20 leg; FULL n=22 and FULL n=24 follow — ~36 min total). I've set a waiter that will print the full log on completion. I'll continue when the results land.
+
+Summary of where this cycle stands:
+
+**Completed & verified:**
+- The S525 `scatter_fold61` (uint64-safe segmented scatter-fold replacing the object-dtype `np.add.at` at `compressed_layer.py:423/726` and `build_omega`) passes all gates: its own selftest (random + structured + heavy-bucket cases), the **bit-identical chain transcript** selftest (`compressed_layer.py` case 15, fast==object over q & BIG_Q), and the benchmark selftest.
+- Fixed a real latent issue: the safe ceiling is **n < 66** (lo-limb `fill < 2³³`), not the docstring's n<68; added a loud guard against the silent uint64 `reduceat` wrap at n≥66.
+
+**Early measurement (n=16,18, with `scatter_fold61`):**
+- FULL peak RSS = 49/91 MB, scaling only ~x^0.45 so far — extrapolates to ~0.5 GB at n=24, **well below the S524-claimed "3.9 GB"** (which was never actually measured; `peak_rss_mb` didn't exist until this cycle).
+- mem-probe: **FULL > NOBATCH** peak RSS with a **growing gap** (6→29 MB) → the dominant avoidable working set is the batched-discharge held witness cube (`Ws` list, line 1025), **not** the per-layer scatters the S524 entry blamed.
+
+**Still running / to do:** FULL walls at n=20/22/24 with the new path (vs S524's object-path 71.8/252.8/1467.3s) to re-measure the exponent; then a same-machine object-path A/B at n=20/22 to cleanly attribute wall+RSS to `scatter_fold61`; then write up (honestly correcting the "3.9 GB" / "object-scatter is the bottleneck" framing per whatever the data shows) and update PROGRAM.md.
+--- cycle result: success (turns=47, duration=1079378ms) ---
+=== Cycle 571 finished — Sun Jun 14 06:25:46 UTC 2026 ===

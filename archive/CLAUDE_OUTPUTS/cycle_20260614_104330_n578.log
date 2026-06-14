@@ -1,0 +1,80 @@
+=== Cycle 578 — Sun Jun 14 10:43:30 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION explicitly.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a mature, long-running research project. Let me understand the current state: the recorded NEXT ACTION is a reach push (run `large_x_benchmark.py --n 25/26`), which is a measurement bounded by host RAM. Let me check the hardware and the benchmark script before committing to a multi-hour run.
+  [tool: Bash] echo "=== MEMORY ==="; free -h; echo; echo "=== CPUS ==="; nproc; echo; echo "=== benchmark script head ==="; ls -la exp
+The host has 122 GB RAM (99 GB free) and 32 CPUs — so the reach is **wall-clock-bound, not RAM-bound**, contradicting the NEXT ACTION's premise that n=25 might exceed host RAM. That changes the calculus: I can push the reach further than the program expected. Let me read the benchmark script to understand its CLI and what it records.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+I now understand the setup. Key correction to the NEXT ACTION's premise: this host has **122 GB RAM (99 GB free)**, so the reach is **wall-clock-bound, not RAM-bound** — I can push further than the program expected. The reach push (open item 5) is the recorded NEXT ACTION and is a clean, concrete deliverable.
+
+My plan: extend the verified-exact frontier to n=25 and n=26 (x≈3.4×10⁷ and 6.7×10⁷), running in parallel since RAM is abundant; cross-check against known π values; refine the scaling fit; and correct the RAM-bound premise honestly.
+
+First, confirm the harness is healthy with the selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 large_
+Selftest passes. Now let me establish independent ground-truth π values with a from-scratch sieve (separate from the chain's internal `sieve_pi`), to cross-check the reach as the n=24 run was.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np, time
+def pi_sieve(x):
+    s = np.ones(x+1, dtype
+Independent cross-check confirmed (these are also the known literature values, and 2^n is even so π(2^n−1)=π(2^n)):
+- **π(2²⁵−1) = 2,063,689**
+- **π(2²⁶−1) = 3,957,809**
+
+Now I'll launch both reach runs in parallel (RAM is abundant — ~8 GB + ~15 GB ≪ 99 GB free, 32 cores). Each runs honest + a `delta_pi` soundness spot-check at its own reach. Let me set up tracking and launch.
+  [tool: ToolSearch] 
+Let me launch both reach runs in the background (parallel), each logging to a file.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && nohup python3 -u large_x_b
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && nohup python3 -u large_x_b
+The `nohup ... &` double-backgrounded — the wrapper shells exited immediately, so the harness won't notify me when the actual Python finishes. Let me check whether the detached Python processes are actually running, and the log files.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== python procs ==="; 
+Both Python processes are alive and detached (n=25 at ~5.0 GB RSS, n=26 at ~2.4 GB and climbing — well within 99 GB). The logs print only at completion. Since the harness isn't tracking the detached Python, I'll set up background waiters that fire when each process exits. Let me track this with tasks and launch a waiter for n=25 (the sooner one).
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+Both processes are alive and detached. Since they're not harness-tracked, I'll arm a persistent Monitor that emits a notification as each process exits (with its log), so I can land each result when ready.
+  [tool: Monitor] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+n25=1479998; n26=1480039; d25
+The Monitor linter rejected that command. Let me simplify it — drop the `sed`/pipe formatting and just emit completion markers; I'll Read the logs myself when notified.
+  [tool: Monitor] d25=0
+d26=0
+while [ "$d25" = 0 ] || [ "$d26" = 0 ]; do
+  if [ "$d25" = 0 ]; then kill -0 1479998 2>/dev/null || { echo "
+  [tool: Monitor] d25=0
+d26=0
+while [ "$d25" = 0 ] || [ "$d26" = 0 ]; do
+  if [ "$d25" = 0 ] && ! kill -0 1479998 2>/dev/null; then
+    ec
+Monitor's static analyzer is too strict for this. I'll use two simple background Bash waiters instead — each exits (and notifies me) when its process finishes.
+  [tool: Bash] while kill -0 1479998 2>/dev/null; do sleep 30; done; echo "n=25 process exited"
+  [tool: Bash] while kill -0 1480039 2>/dev/null; do sleep 30; done; echo "n=26 process exited"
+Two waiters are armed — I'll be notified as each process exits. While they run (~1–3 h), let me do the preparatory work: review the results file structure so I can append cleanly, and confirm the prior measured numbers I'll refit against.
+  [tool: Bash] wc -l large_x_benchmark_results.md && echo "=== section headers ===" && grep -n "^#\|^##\|^### \|S5[0-9][0-9]" large_x_b
+Let me read the existing scaling-law section so I can extend it consistently.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I realize a methodological issue: running n=25 and n=26 **concurrently** contends for memory bandwidth (both stream Θ(x) cubes), which would inflate both wall times and contaminate the scaling-law measurement. The reach correctness/soundness/profile/per-process-RSS are unaffected, but clean wall numbers matter for this project's honesty standard and for testing the Õ(x) falsifier. I'll switch to **sequential isolated** runs: kill n=26 now (both are only ~10 min in, still in early prover phase so n=25 is barely contended), let n=25 finish isolated, then run n=26 isolated.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+kill 1480039 1480038 2>/dev/n
+n=26 is killed; **n=25 continues isolated** (now at 5.66 GB RSS — confirming Θ(x) scaling from n=20's 185 MB, and that n=25 ≈ 5.7 GB ≪ 92 GB free, so RAM is comfortably not the bound). The prior 3-point wall series (71.8/252.8/1467.3 s at n=20/22/24) was measured by S524/S525 on this same loop host, so my isolated n=25 wall will append cleanly to it.
+
+I'll wait for the n=25 waiter to notify me. Let me mark progress. (I expect a spurious "n=26 exited" notification first since I killed that PID — that's the kill, not a completion.)
+  [tool: ToolSearch] 
+That n=26 waiter notification is the **kill I issued**, not a run completion (its log is empty) — expected. n=25 is still running isolated. Let me update task state and continue waiting for the n=25 waiter.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+n=25 is running isolated (PID 1479998). The waiter will re-invoke me when it finishes (~50–65 min expected, isolated). Nothing else is actionable until I have its numbers — I'll wait for the completion notification rather than poll.
+
+**Cycle status so far:**
+- Selftest passes; harness healthy.
+- Independent Eratosthenes cross-check computed: **π(2²⁵−1)=2,063,689**, **π(2²⁶−1)=3,957,809** (= known literature values).
+- **Key premise correction:** host has 122 GB RAM (92 GB free); n=25 peak ≈5.7 GB, n=26 ≈12 GB — the reach is **wall-clock-bound, not RAM-bound** (the NEXT ACTION assumed possible OOM at n=25).
+- n=25 running isolated; n=26 will run isolated afterward (killed the concurrent launch to keep wall measurements clean for the scaling-law refit).
+
+Waiting on n=25.
+--- cycle result: success (turns=27, duration=502448ms) ---
+=== Cycle 578 finished — Sun Jun 14 10:51:58 UTC 2026 ===

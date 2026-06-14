@@ -1,0 +1,156 @@
+=== Cycle 574 — Sun Jun 14 08:31:10 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me continue reading PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the NEXT ACTION at the end of PROGRAM.md.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: **option (a)** — land the free bit-identical LIST-streaming win on the real chain. Let me study the relevant code. I'll read the key files in parallel.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+Now let me read `batched_trace.py` to understand the structures I need to modify.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now let me look at how `compressed_layer.run_chain` calls these functions, to understand the integration point.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && grep -n "build_witness\|ve
+Let me look at the relevant section of `compressed_layer.py` around the `run_chain` integration (lines 1030-1095).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Let me read the core primitives in `compressed_prover_mult_trace.py` — `build_witness`, `fmul`, `sumcheck`, and field helpers.
+  [tool: Bash] grep -n "^def \|^FAST_BIG\|^DEFAULT_Q\|^BIG_Q\|^SMALL_Q\|^Q \|^FIELDS\|def build_witness\|def fmul\|def _dt\|def sumchec
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me read the field helpers (`_dt`, `fmul`, `sumcheck`, `build_terms`, `constraint_eval`).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me look at `large_x_benchmark.py` to understand the benchmark driver and how it invokes the chain.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check how `USE_SCATTER_FOLD` is defined and used (it's the precedent for a bit-identical opt-in optimization).
+  [tool: Bash] grep -n "USE_SCATTER_FOLD\|^def run_chain\|stream_witnesses\|scatter_fold" compressed_layer.py | head -40
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me read the full `run_chain` signature and docstring.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+I now have a complete understanding. Let me set up task tracking and implement.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+Let me first verify the baseline selftests pass before changing anything.
+  [tool: Bash] timeout 300 python3 batched_trace.py --selftest 2>&1 | tail -5 && echo "---streaming---" && timeout 300 python3 streamin
+Baseline green. Now let me implement. First, mark task 1 in progress and add `build_stacked_streaming` to `batched_trace.py`.
+  [tool: ToolSearch] 
+  [tool: TaskUpdate] 
+Now add `build_stacked_streaming` to `batched_trace.py`, right after `stacked_tables`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now modify `verify_constraints_batched` to support streaming:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now modify `verify_ub_openings_batched` to support streaming the C-table:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now let me add an A/B selftest (case 8) in `batched_trace.py` asserting the streaming verify paths are bit-identical to the non-streaming ones. Let me find the end of the selftest:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now add the A/B streaming selftest (case 8) before `print("selftest OK")`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now let me run the batched_trace selftest to validate the new streaming paths:
+  [tool: Bash] timeout 400 python3 batched_trace.py --selftest 2>&1 | tail -8
+Tasks 1 and 2 done. Now update `streaming_batched_sumcheck.py` to import `build_stacked_streaming` from `batched_trace` (single source of truth) and remove its local copy:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+Now remove the local `build_stacked_streaming` definition from the streaming module (it now lives in `batched_trace`):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+  [tool: Bash] timeout 400 python3 streaming_batched_sumcheck.py --selftest 2>&1 | tail -5
+Tasks 1 & 2 complete. Now task 3: thread `stream_witnesses` through `run_chain`.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+Now edit `run_chain`. First the signature and docstring:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now add a docstring paragraph for `stream_witnesses` (before the closing `Returns dict(...)` line):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now update the `batch_trace` and `batch_ub` invocation blocks in `run_chain`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now run the `compressed_layer` selftest to confirm the chain is bit-identical with the new default:
+  [tool: Bash] timeout 1200 python3 compressed_layer.py --selftest 2>&1 | tail -30
+While that runs, let me extend `large_x_benchmark.py` with the A/B control config and selftest. First add `FULL_NOSTREAM`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now update `mem_probe` and `--config` to support the stream A/B. Let me update the `mem_probe` config handling and `main`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now update the `--config` choices, the `--mem-one` handling, and add a `--stream-probe` flag in `main`:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now add an A/B selftest case (case 7) to `large_x_benchmark.py`'s `selftest`. Let me insert it before the final print:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check on the `compressed_layer` selftest that's running in the background:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bippwd6vi.output 2>/dev/nu
+  [tool: Bash] sleep 30; tail -30 /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bippwd6vi.o
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bippwd6vi.output
+While the chain selftest runs, let me syntax-check the edited files (cheap, no execution):
+  [tool: Bash] for f in batched_trace.py compressed_layer.py large_x_benchmark.py streaming_batched_sumcheck.py; do python3 -c "import 
+Let me look at the existing results files to know where to document the landing:
+  [tool: Bash] wc -l streaming_batched_sumcheck_results.md batched_trace_results.md large_x_benchmark_results.md 2>/dev/null; echo "---
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bippwd6vi.output
+The chain selftest is long-running. Let me wait for it efficiently with Monitor while it completes:
+  [tool: ToolSearch] 
+  [tool: Monitor] until grep -qE "selftest OK|Error|Traceback|assert|FAILED" /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-
+While the chain selftest runs, let me review the docs I'll update. Let me read the tail of `batched_trace_results.md` and the relevant part of `large_x_benchmark_results.md`:
+  [tool: Bash] echo "=== batched_trace_results.md (head) ==="; head -30 batched_trace_results.md; echo; echo "=== tail ==="; tail -20 b
+Let me check all callers of the two modified functions to ensure backward compatibility:
+  [tool: Bash] grep -rn "verify_constraints_batched\|verify_ub_openings_batched" --include="*.py" | grep -v "def verify_" | grep -v "ba
+Chain selftest passed (exit 0, "selftest OK") — bit-identical with `stream_witnesses=True` default. Now run the `large_x_benchmark` selftest (includes my new A/B case):
+  [tool: Bash] timeout 600 python3 large_x_benchmark.py --selftest 2>&1 | tail -12
+All selftests pass, including the new A/B (case 6) confirming `stream_witnesses` ON==OFF is bit-identical. Task 3 done. Now let me run the streaming A/B peak-RSS measurement to verify the win is real.
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+Now let me run the streaming A/B peak-RSS probe. Start with n=16,18,20,22 (fresh subprocesses, clean same-version A/B) in the background:
+  [tool: Bash] python3 large_x_benchmark.py --stream-probe 16,18,20,22 2>&1 | tee run_s527_stream_probe.log
+While the probe runs, let me update `batched_trace_results.md` with the streaming landing. Let me read the section before the falsifiers:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+I'll add an S527 streaming subsection. Let me insert it after the Ub-openings paragraph (after line 178), before the Selftest header:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+Now add selftest case 8 to the falsifier/selftest list. Let me find the end of the selftest enumeration:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+Now add a falsifier line at the end:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+Let me check the probe's progress:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bll094yc0.output
+While the probe runs, let me note the landing in `streaming_batched_sumcheck_results.md`. Let me read its "Scope" section:
+  [tool: Bash] grep -n "## \|landed\|LANDED\|does NOT modify\|ready, safe\|follow-on" streaming_batched_sumcheck_results.md
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck_resul
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck_resul
+Let me monitor the probe so I capture each A/B row as it lands:
+  [tool: Monitor] until [ ! -e /proc/$(pgrep -f "stream-probe" | head -1) ] 2>/dev/null && grep -q "full_nostream" /tmp/claude-0/-apps-apl
+Monitor filter rejected that form. I'll rely on the background-task completion notification. Meanwhile let me read the tail of `large_x_benchmark_results.md` to prepare its S527 section:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Let me check the probe's interim output:
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bll094yc0.output
+The probe output is block-buffered (won't flush until done); I'll get the completion notification. Let me verify no `__pycache__` was left and check the canonical doc for streaming references:
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name "__pycache__" -type d 2>/dev/null; echo "---grep canonica
+Let me check host memory to ensure the n=24 runs are safe, and check probe status:
+  [tool: Bash] free -g 2>/dev/null | head -2; echo "---probe lines so far---"; wc -l /apps/aplikacijos/prime-research/experiments/const
+Host has 99 GB free — both configs fit comfortably, so the wall reflects cache/bandwidth (no paging), and n=24 is safe. The probe output is block-buffered until exit. Let me set a clean monitor for its completion:
+  [tool: Monitor] until grep -q "full_nostream" /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/ru
+While the probe runs, let me review my full diff so far for correctness:
+  [tool: Bash] git diff --stat experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py experiments/constructions/p12_su
+The streaming module diff didn't show — let me verify it was saved correctly:
+  [tool: Bash] git diff --stat experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py; echo "---verify im
+  [tool: Bash] git status --short experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py experiments/cons
+Edits confirmed saved (the streaming module is untracked from S526, hence no diff). The implementation is complete and all three selftests pass bit-identically. Now I wait for the probe measurements. Let me draft the `large_x_benchmark_results.md` S527 section skeleton (insertion point) while waiting:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+Implementation and selftests are complete and bit-identical. Now I await the probe measurements before finalizing the large-x results and PROGRAM.md. Let me wait for the monitor to report the A/B numbers.
+
+I'll pause here for the probe to complete — the monitor will deliver the A/B table.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bll094yc0.output
+The probe is still running (output block-buffered until exit). All code is implemented and the three selftests pass with bit-identical verdicts. The remaining work (finalizing `large_x_benchmark_results.md` and `PROGRAM.md`) requires the measured A/B numbers, so I'll await the probe's completion notification rather than poll.
+
+Summary of what's landed so far this cycle:
+- **`batched_trace.py`**: added `build_stacked_streaming` (LIST-streaming stacked-cube builder); added `stream=` to `verify_constraints_batched` and `primes/X/dstart/stream=` to `verify_ub_openings_batched`; added A/B selftest case 8 (all pass).
+- **`compressed_layer.py`**: `run_chain` now takes `stream_witnesses=True` (default) — no longer materializes `Ws=[build_witness…]` when batching; passes `stream=True` to both batched discharges. Full chain selftest passes (bit-identical).
+- **`large_x_benchmark.py`**: added `FULL_NOSTREAM` A/B config, `--stream-probe`, and selftest case 6 asserting `stream` ON==OFF bit-identical (passes).
+- **`streaming_batched_sumcheck.py`**: now imports `build_stacked_streaming` from `batched_trace` (single source); selftest passes.
+- Docs updated in `batched_trace_results.md` and `streaming_batched_sumcheck_results.md`.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/eacc3f9d-9aaf-4750-ab2e-16b2327c854a/tasks/bg89wgvky.output
+I'll wait for the probe to finish and the monitor to deliver the A/B table. Implementation is complete and verified bit-identical; only the peak-RSS measurement and final write-ups remain.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log
+The probe is running with block-buffered output; I'll be re-invoked when it completes (either the background task `bll094yc0` or the monitor `bg89wgvky` will fire). Pausing here until the A/B measurements arrive.
+--- cycle result: success (turns=85, duration=1381177ms) ---
+=== Cycle 574 finished — Sun Jun 14 08:54:18 UTC 2026 ===

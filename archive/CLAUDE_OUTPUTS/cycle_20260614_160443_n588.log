@@ -1,0 +1,125 @@
+=== Cycle 588 — Sun Jun 14 16:04:43 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a long, detailed file. Let me read the rest to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION in the file.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | head -50
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the state of the detached reach run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== pgrep large_x_benc
+The n=26 reach is still running (PID 1592836, log shows only START banner from 13:24Z). Let me check its progress and resource usage.
+  [tool: Bash] echo "=== current time ==="
+date -u
+echo ""
+echo "=== process detail (n=26 reach) ==="
+ps -o pid,ppid,etime,rss,vsz,stat
+The n=26 reach is alive (~2h41m elapsed, RSS 4.9 GB) but its instantaneous %CPU read as 0.0, which is suspicious. The S534 note (15:26Z) said it was "finalizing through the base closes." It's now past the predicted wall band (~1.6–2.2 h). Let me verify it's actually making progress, not hung.
+  [tool: Bash] echo "=== /proc/1592836/stat CPU jiffies (utime stime in fields 14,15) ==="
+cat /proc/1592836/stat 2>/dev/null | awk '{p
+The reach is genuinely computing — ~100% of one core (single-threaded, as expected), properly setsid-detached (parent `run_reach_detached` has PPID=1, survives cycle boundaries). But two things stand out:
+
+1. **It's now at ~2h41m wall / ~2.68h CPU** — already past the S529 clean prediction band (~1.6–2.2 h).
+2. **It's kernel/allocation-bound, not compute-bound**: `stime=670073` jiffies (1.86h) vs `utime=296362` (0.82h) — system time is **2.26× user time**. For numerical code that's a strong signal the process is spending most of its time in kernel memory management (page faults / mmap churn on its ~12 GB working set), not arithmetic.
+
+This is a real, in-situ observation directly relevant to the live falsifier. S529's wall model has only two legs (op-count × cache/compute), and predicts n24→26 ∈ [4.0,5.4]×. But that model measured *compute* (user-time) per element only — it never measured **allocation/page-fault (kernel) overhead**, which is exactly what the live n=26 reach is dominated by. If the reach lands above 5.4×, the naive reading is "reopen super-Θ(x)" — but op-count is independently confirmed Θ(x) to n=24, so a high wall must be this allocation leg, not op-count.
+
+Let me sample the live reach's page-fault counters (zero contention — just reading /proc) and gather historical reach data before building a measurement.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+P=1592836
+echo "=== live rea
+This is the key finding: **the live n=26 reach is page-fault-bound** — 77% of recent CPU is kernel time, **~338K minor page-faults/sec**, ~3 billion cumulative faults, majflt=0 (no swap). The process is spending most of its time in kernel memory-management (allocating + first-touching large numpy arrays across K≈1028 layers), not arithmetic.
+
+This is **leg 3 of the reach wall that S529's model omits**. S529's `mem_hierarchy_wall.py` measured steady-state `_mul61` *compute* (user-time, the L1→DRAM bowl) over pre-allocated arrays and concluded the per-Δn memory factor is only ≤1.35×. It never measured **allocation/first-touch (kernel) overhead** — which is exactly what dominates the reach at its ~12 GB working set. If n=26 lands above the [4.0,5.4]× band, the naive reading is "reopen super-Θ(x)" — but op-count is independently confirmed Θ(x), so the excess must be this allocation leg.
+
+Let me check S529's probe and the results file to build a complementary measurement without duplicating.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== mem_hierarchy_wall
+Confirmed: S529's probe measures steady-state `_mul61` *compute* over pre-allocated rng arrays — it explicitly does **not** measure allocation/first-touch cost. My contribution is the complementary, missing leg: the **allocation/page-fault (kernel stime) overhead** that dominates the live reach. This is contention-safe (live observation via /proc + a small self-limiting micro-probe) and directly sharpens the live falsifier.
+
+Let me set up task tracking and build the measurement.
+  [tool: ToolSearch] 
+I'll skip task-tracking overhead — this is one coherent deliverable. Let me build the measurement script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/alloc_overhead_wall.py
+Now let me run the selftest.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+python3 alloc_overhead_wall.
+All 14 selftests pass. Now the real measurement — `--all` does a live reach sample, the micro-probe, then a second live sample to confirm the probe didn't materially contend the reach. I'll cap the probe at 128 MB to keep contention negligible against the running reach.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+python3 alloc_overhead_wall.
+The probe's **wall-clock numbers are sound and already tell the story** (fresh allocation ~12–14 ns/elem vs reused-buffer ~3 ns/elem compute floor → allocation adds ~9–11 ns/elem, a 3–4× penalty), and the contention check confirms the probe didn't perturb the reach. **But the /proc field parsing has an off-by-one bug**: `threads=0`, `RSS=26.8 TiB`, `utime=0s`, `stime_frac=1.000` everywhere are all wrong — I indexed `rest[(field-1)-3]` instead of `rest[field-3]`. The selftest didn't catch it because shifted fields are still non-negative/monotonic. Let me fix the indices and add a value-cross-check selftest.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/alloc_overhead_wall.py
+Now add a value-cross-check selftest that would have caught the offset bug (cross-check `utime` against `os.times()`, and `num_threads`/`rss` against sanity):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/alloc_overhead_wall.py
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+python3 alloc_overhead_wall.
+Fixed and the cross-check selftest now validates field offsets (`num_threads=32`, `rss=42.8 MiB` sane, utime tracks `os.times()`). Re-running the full measurement:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+python3 alloc_overhead_wall.
+The data is now clean and coherent. Headline findings:
+
+**Live n=26 reach (in-situ, zero contention):** 69.5% of CPU is kernel time (`stime` 7012s vs `utime` 3079s), 3.28×10⁵ minor faults/sec, **3.09 billion** cumulative minor faults, majflt=0 (no swap), 1.3 GiB/s of newly-faulted memory. **The reach is allocation/page-fault-bound, not compute-bound.**
+
+**Micro-probe (controlled):** reused-buffer op is a flat ~3 ns/elem and utime-dominated (`stime%`≈0) — exactly S529's compute bowl. Fresh-allocation op jumps to ~14 ns/elem above 256 KiB (the L2 boundary, where first-touch must fault real pages) and is **kernel/stime-dominated (0.69–0.83)** — matching the live reach's 0.695 fraction. Allocation adds ~10 ns/elem, a **~4× penalty over reused buffers**.
+
+**Contention check:** the probe perturbed the reach's fault rate by 2.6% (negligible).
+
+This is the **third wall leg S529's model omitted**. Let me write the results file.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/alloc_overhead_wall_results.md
+Now let me verify the reach is still running (so I correctly report it as not-yet-harvestable), clean up `__pycache__`, and confirm the results file pairing.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach still alive?
+The reach is still running (PID 1592836, no DONE, now ~2.85h, still 69.6% `stime`-dominated — my finding is stable over time). The "MISSING results" are all pre-existing helper scripts in *unrelated* experiment dirs (circuit_complexity, ml, …) — my new file is correctly paired. No `__pycache__` left in my dir. Now let me update PROGRAM.md.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION reach-status block to reflect S535's observation and the sharpened falsifier:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+grep -n "is the n24→26 ratio\|WELL above\|reopen super-Θ(x))?\|item-5 reach result" 
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me update the "BOTH legs" phrasing further down to reflect the three-leg model:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me do a final verification pass — confirm the reach is still alive (accurate reporting), no `__pycache__` from my runs, and the files are in place.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach still alive 
+All clean: reach still alive (correctly not harvested — I respected the no-second-reach constraint), artifacts present and paired, no `__pycache__`, 17 selftests pass.
+
+One memory refinement: the recalled memory `reach-wall-is-DRAM-plateau` (S529) frames the reach wall as an L3-crossover compute/cache step. My finding shows the *dominant* cost is actually kernel page-fault/allocation time (70%), not compute. Let me update that memory so future cycles get the corrected picture.
+  [tool: Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/reach-wall-is-DRAM-plateau.md
+  [tool: Bash] ls /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/ 2>/dev/null
+  [tool: Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/reach-wall-is-dram-plateau.md
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/reach-wall-is-dram-plateau.md
+Let me update the MEMORY.md index hook to reflect the refinement:
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+  [tool: Read] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+  [tool: Edit] /apps/aplikacijos/.claude/projects/-apps-aplikacijos-prime-research/memory/MEMORY.md
+The cycle is complete. Summary of what this cycle (S535) produced:
+
+## What I did
+
+The recorded NEXT ACTION — harvest the detached n=26 reach — was **not yet possible** (it's still running, ~2.85 h in, no DONE), and the constraints forbid starting a second reach. So I took **contention-safe fresh ground that directly serves the NEXT ACTION**: observing the live reach and sharpening its falsifier.
+
+## Finding (headline)
+
+**The live n=26 reach is page-fault/allocation-bound, not compute-bound.** Measured via `/proc` (zero contention):
+- **69.5% of its CPU is kernel time** (`stime` 7012s vs `utime` 3079s)
+- **3.1 billion cumulative minor page-faults**, ~3.3×10⁵/s, majflt=0 (no swap)
+- The unavoidable fault floor is ~3.1×10⁶ pages → **≈1000× of faults are re-allocations** of the same Θ(x) buffers across K≈1028 layers.
+
+This is a **third wall leg that S529's model omitted** — S529 measured steady-state `_mul61` over *pre-allocated* arrays (the compute/cache bowl) and never measured allocation/first-touch cost. A self-limiting micro-probe isolated it: reused-buffer op ~3 ns/elem (utime-dominated = S529's leg 2); fresh-allocation op ~14 ns/elem above the L2 boundary (**kernel-dominated 0.69–0.83, matching the reach's 0.695**), a ~4× penalty. The probe perturbed the reach by only +2.6% (clean falsifier point intact).
+
+## Why it matters
+
+It **sharpens the S529 falsifier the harvest cycle will apply**: a wall ratio >5.4× at n=26 does *not* reopen super-Θ(x) — the discriminator is `stime`/`utime`, and the reach is `stime`-dominated, so the excess is allocation overhead while op-count stays Θ(x) (confirmed to n=24). It also identifies a ~3.3× **removable** wall headroom (buffer reuse) — a constant-factor implementation win, deliberately not implemented (would break artifact reproducibility).
+
+## Deliverables
+- `alloc_overhead_wall.py` (17 selftests incl. a field-offset cross-check that caught an off-by-one /proc parse bug) + `alloc_overhead_wall_results.md` + `alloc_overhead_run.log`
+- PROGRAM.md updated (S535 Done-this-era entry; reach status + sharpened falsifier in NEXT ACTION)
+- Memory `reach-wall-is-dram-plateau` corrected (the wall is predominantly kernel page-faults, not compute/cache)
+
+**Honest scope:** an in-cycle measurement refining a known wall — not a goal advance. polylog π(x) stays blocked. No BREAKTHROUGH.md (correctly).
+--- cycle result: success (turns=36, duration=797244ms) ---
+=== Cycle 588 finished — Sun Jun 14 16:18:02 UTC 2026 ===

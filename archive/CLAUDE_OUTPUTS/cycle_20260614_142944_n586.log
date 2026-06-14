@@ -1,0 +1,220 @@
+=== Cycle 586 — Sun Jun 14 14:29:44 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, particularly the NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the NEXT ACTION section.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the current state of the detached reach — whether n=26 is still running or done.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== pgrep large_x_benc
+The n=26 reach is still running detached. Let me check how long it's been going and confirm it's properly detached.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== n=26 process detai
+The n=26 reach has been running ~1h05m (started 13:24:47Z, now 14:30Z), using 11.5 GB RSS, properly detached. Per the S529 prediction (n24→26 ratio ∈ [4.0,5.4]× of n=24's 1467s = [5868,7922]s), it should finish roughly 15:02–15:36Z — so ~30–65 min out. I must not start a second reach or contend CPU with it (the whole point is a *clean* contention-free n=26 wall).
+
+Let me verify the reach is truly detached (survives cycle boundaries) and understand the experiment layout for a fresh, CPU-light contribution.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== chain of parents f
+The reach (run_reach_detached.sh, PPID=1) is genuinely detached and survives cycle boundaries. Key observation: **load average is only 1.60 on 32 cores** — the reach is essentially single-threaded and RAM-bandwidth-bound, not core-bound. So the n=25 "contention inflation" was DRAM-bandwidth contention from two Θ(x) working sets, not CPU. That means a **small-working-set** (cache-resident) experiment won't contend with the reach, but I must avoid any second Θ(x) computation (no n≥20 chain).
+
+Let me set up a lightweight background monitor to catch the reach when it lands, then find a genuinely fresh, RAM-light contribution. First, let me check whether the protocol's **soundness error / required field size for large x** has been characterized — a real honesty gap in the "Õ(√x)" claim.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== grep soundness-error / field-size-scaling across experiments ==="
+grep -ri
+The integer-range *correctness* face is closed (CLOSED row 498: need q > X, hence n≤60 at BIG_Q=2⁶¹−1). But row 498 explicitly notes "the larger element count only shrinks Schwartz-Zippel error, **orthogonal** to the integer-range hole" — meaning the **soundness-error budget** (cumulative Schwartz–Zippel over the whole √x-layer chain) and the resulting **field-size requirement vs x** have *not* been characterized. That's a real, RAM-light gap with direct bearing on "what does verifying p(10^100) actually need."
+
+This is a good fresh, cache-resident contribution that won't contend with the DRAM-bound reach. Let me understand the protocol's challenge/check structure to instrument it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== files & sizes ==="
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== run_chain full sig
+The protocol has a rich cheat-class taxonomy (`delta_pi`, `wrong_C`, `small_C`, `G`, `split`, `u`, `waff`, `waff_forge`, `small_*`, `carry`, plus `corrupt_layer`) and takes a numpy `rng` for challenges + a field `q`. So an empirical soundness audit is directly feasible: fix a cheat, sweep `q`, run many seeds, count false-accepts → measure the actual soundness error and confirm it tracks ~deg/q. Let me find exactly how a random challenge is drawn.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== rng usage (challen
+Key detail: challenges are drawn as `rng.integers(0, q)` from the field parameter `q`, and there's a rich cheat taxonomy — so I can measure the **empirical false-accept rate** of each cheat at small primes `q` and confirm it tracks ~deg/q (Schwartz–Zippel), then compose to the chain's total soundness budget. Let me first size the cost: time a single chain/layer run and confirm honest-accept at a small prime field just above X.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 120 python3 -c "
+imp
+Two key facts: honest chain accepts at a small prime `q` just above X (q=257 for n=8 — so correctness needs q>X, not q>X²), and a full n=8 chain run is ~157ms. For a feasible empirical Schwartz–Zippel audit I need a faster atomic check. Let me check the standalone multiply-trace primitive's API/timing and `run_two_sided_layer`, and confirm I can count soundness-consuming challenge draws.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== multiply-trace pub
+`run_two_sided_layer` is ~27ms (6× faster than the chain) — usable for a layer-level composition check. The atomic `run_primitive` (multiply-trace, cheats `u_consistent/u_value/r_value/nonbit`) should be fastest for the clean 1/q law. Let me time it and confirm its accept API.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 90 python3 -c "
+impo
+`run_primitive` is ~10ms/call — it rebuilds the witness every call, which dominates. For a clean many-seed Schwartz–Zippel measurement I should build the witness once and re-run only the challenge-dependent verification. Let me read `run_primitive` to find that separation.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`run_primitive` builds the witness (expensive, ~10ms) then calls `verify_constraints`/`verify_lookup` with the rng. For a fast many-seed Schwartz–Zippel law I'll build+corrupt the witness once and re-run only the verify with fresh rng. Let me confirm `verify_constraints` is re-runnable on a prebuilt witness.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`verify_constraints` draws all its challenges from the passed rng and only reads `W["tabs"]` (local copy) — so I can build+corrupt the witness once and re-run verify with fresh rng cheaply. That gives a fast, clean atomic Schwartz–Zippel law. Let me check the max sum-check degree across the protocol (for the d_max factor in the budget), then build the experiment.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== sumcheck(...) degr
+Let me check how `prover_opcount_scaling.py` monkeypatches across modules (to reuse that pattern for counting challenges/degrees), and confirm how `sumcheck` is imported.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== how modules import
+I have everything I need. The structure is clear:
+- **Correctness** needs q > X (n=8: q=257>255 accepts) → log₂q > n. (Closed face, row 498.)
+- **Soundness** (Schwartz–Zippel): each round binds a degree-d identity, false-accept ≤ d/q; over R(x) rounds, total ≤ B(x)/q with B = Σ degrees. → log₂q > λ + log₂B(x).
+
+I'll measure R(x), B(x), d_max (deterministic), the empirical per-round 1/q law (build witness once, re-verify with fresh rng), chain composition (no amplification), and derive the two log₂q curves + crossover + p(10^100) requirement. Let me write the experiment.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Now let me run the selftest to validate the design.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 300 python3 soundnes
+  [tool: Bash] sleep 45; cat /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bv4fc1ddv.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bv4fc1ddv.output
+The selftest is still running. Let me wait for it properly with a Monitor-style until-loop.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+out=/tmp/claude-0/-apps-apli
+Selftests [1]–[7] pass, and [6] is a clean Schwartz–Zippel confirmation: `rate·q = 3.8` constant across the q-doubling (slope −1, exactly as predicted). [8] failed informatively: `cheat='u'` at n=8 false-accepts 100% — meaning at this tiny n the 'u' corruption lands in a **masked/padding region** (the S493 band mask zeroes it out), so the verified value is unchanged and acceptance is *correct*, not a soundness break. I need to pick cheats that genuinely produce a false statement. Let me diagnose which cheats are actually rejected at BIG_Q (= produce false statements) at n=8.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 150 python3 -c "
+imp
+Only `delta_pi` produces a false statement through `run_chain` at small n — the per-layer cheats (`u`, `waff`, `wrong_C`, ...) are layer-level (tested via `run_two_sided_layer`), and `run_chain` only injects `delta_pi` and `corrupt_layer`. So the chain-composition test should use those two. Let me measure `delta_pi`'s false-accept vs q (does it track 1/q?) and check `corrupt_layer`.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 280 python3 -c "
+imp
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bjnvl2apo.output
+until gre
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bjnvl2apo.output
+The diagnostic is oversized (7200 runs). Let me stop it and run a leaner version.
+  [tool: Bash] pkill -f "soundness_field_size as S" 2>/dev/null; sleep 1
+cd /apps/aplikacijos/prime-research/experiments/constructions/
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 200 python3 -c "
+imp
+Clear, informative results:
+- **`delta_pi`** (lies about π(x) by +1) → false-accept = **0** at *all* q. Lying about the output value directly is caught **deterministically** at the final base equality — no Schwartz–Zippel chance, no field-size dependence.
+- **`corrupt_layer`** (self-consistent internal liar) → false-accept tracks **1/q** cleanly (rate·q ≈ 3.4 constant) and stays **≤ B/q** (union bound holds, no amplification). This is the cheat class that actually sets the soundness/field-size requirement.
+
+This is a nice structural finding (two soundness regimes). Let me fix `sz_chain`/selftest [8] to use `corrupt_layer` for the Schwartz–Zippel composition and record `delta_pi` as the deterministic-catch case.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Now fix selftest [8]:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Let me re-run the full selftest (this includes the slower chain-composition Monte Carlo) in the background.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 500 python3 soundnes
+While that runs, let me check the reach status (it's been ~1h20m now).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach process ==="
+Reach still running (~1h31m, RSS now 6.07 GB — likely in a later phase). Predicted finish 15:02–15:36Z. Let me wait for the selftest to finish.
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/brktzkyh9.output
+until gre
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/brktzkyh9.output
+The `tail -40` buffers until completion, so I'll get full output on notification. Let me wait for it.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/broy8ypou.output
+Both background waits are running. Let me wait for the selftest completion notification rather than poll repeatedly.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+# clean any stray pycache wh
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/brktzkyh9.output
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/brktzkyh9.output
+until gre
+[8] now passes (corrupt_layer within B/q & drops with q; delta_pi deterministic). [9] fails informatively: the single-power fit gives **α=0.267**, below my 0.30 floor. This is exactly the **S511/S515 PNT 1/ln x deflation** — B is dominated by K=π(√x) layers, and π(√x)=Θ(√x/log x), so the *number of layers itself* carries a 1/log x that deflates the finite-n power. Extrapolating with the deflated α would badly *underestimate* B at x=10^100 — wrong. The honest fix: anchor the extrapolation on the **exact π(√x) backbone × a measured polylog factor c_BK=B/K**, not a small-n power fit. Let me rewrite the extrapolation accordingly.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Now update the `run_budget` table to show B/K (the polylog factor) and selftest [9]:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Let me quickly validate the new extrapolation logic standalone before the full (slow) selftest:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 120 python3 -c "
+imp
+Beautiful — the numbers are clean and reveal something even better than I expected:
+- **K = layers = π(√x)** exactly (6,11,18,31,54 = π(15),π(31),π(63),π(127),π(255)).
+- **c_BK = B/K ≈ 15.35·n − 36** grows ~linearly in n (= log x).
+- So **B = K·c_BK ~ (√x/log x)·(log x) = Θ(√x)** — the 1/log x in the prime count *cancels* the log x in c_BK. Single-power α=0.548 ≈ 0.5 confirms it.
+- **dmax = n−2** (the B2 lookup degree, O(log x)).
+- Extrapolation: at n=332, q_sound≈272 bits, q_corr≈333 bits → **correctness binds**; crossover at n≈209 (x≈10^63).
+
+My selftest [9] assertion `alpha_simple < 0.5` is wrong (it's ~0.56, the honest √x reading). Let me fix it to a √x band.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Let me refine the module docstring headline to reflect the cleaner B=Θ(√x) result (polylogs cancel):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py
+Now let me re-run the full selftest in the background (it includes the slow chain Monte Carlo):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 500 python3 soundnes
+While the selftest runs, let me check the reach status.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+ps -o pid,etime,rss,stat,cmd
+Reach ~1h38m in, at the early edge of the predicted finish window (15:02–15:36Z). Let me wait for the selftest to finish, then capture the measurement runs.
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bwc1k8rby.output
+until gre
+  [tool: Bash] cat /tmp/sound_selftest2.log
+All 9 selftests pass. Now let me capture the full measurement output for the results file (background, ~12 min for the chain Monte Carlo):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 1100 python3 soundne
+While the capture runs (~12 min), let me draft the results file with the validated numbers.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size_results.md
+Let me check the capture run progress and the reach status.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== capture log so far
+Capture still running (Python buffers stdout to file until flush/exit). Reach still going (~1h48m). Let me wait for the capture to complete.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+until grep -qE "EXIT=" sound
+Let me check whether the reach has finished (it's at the predicted finish window).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+pgrep -f "large_x_benchmark.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size_run.log
+Let me wait for the capture run to complete.
+  [tool: Bash] f=/apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size_run.log
+u
+Capture complete — all numbers confirm the draft. One honesty issue: the atomic SZ slopes at n=10 are noisier than my draft claims (−1.13 to −1.93), because the high-q points have only 1–4 accepts/6000 (Poisson-noise-dominated). The clean 1/q law is at high-count points (n=8 selftest: rate·q≈3.8 const; n=10 low-q: rate·q≈4.5–9 bounded). Let me correct section (B) of the results file to report this honestly.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size_results.md
+The results file is solid. Let me check the reach — it may have finished.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+pgrep -f "large_x_benchmark.
+Reach still running (~2h, RSS dropping = finalizing). My experiment deliverable is complete. Let me update PROGRAM.md now (recording the soundness/field-size measurement), then do a bounded wait for the reach. First, let me view the table insertion point.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me add a new row to the protocol table for this cycle's work (step 21):
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add a "Done this era" entry. Let me view the top of that section:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me check the reach one more time before finalizing the NEXT ACTION:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+pgrep -f "large_x_benchmark.
+Reach is clearly finalizing (RSS dropping 11.5→3.1 GB through the final layers/base). My measurement work has finished, so the reach now has the machine to itself (clean wall). It's at the upper edge of the predicted window. Let me do a bounded wait to catch the DONE marker so I can harvest it this cycle.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+until grep -q "DONE" run_n26
+The monitor is backgrounded and will notify me when the reach finishes. Meanwhile, let me update the NEXT ACTION status block to reflect this cycle's check. Let me find it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research; grep -n "REACH: n=25 DONE\|## NEXT ACTION\|fresh ground while the reach\|OR pivot t
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me update the "fresh ground" guidance to note S534 spent the soundness-measurement option:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check the reach monitor output.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bwb6oinz1.output
+While the reach monitor runs, let me do the cleanup checks (results file present, no __pycache__):
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== missing _results.md check ==="
+find experiments/ -path "*/.lake" -prune -o
+Cleanup complete; all files in order. My cycle's deliverable — the soundness-budget / field-size measurement (`soundness_field_size.py` + results, 9 selftests passing, full capture logged) — is done and PROGRAM.md is updated to record it (step 21 + "Done this era" entry).
+
+The detached n=26 reach is in its final phase (RSS falling 11.5→3.1 GB through the base closes, ~2h in, at the upper edge of the predicted 15:02–15:36Z window). I've left it untouched and now have a background monitor (`bwb6oinz1`) watching `run_n26.log` for the DONE marker so I can harvest it this cycle if it lands shortly. Let me wait for that monitor to fire.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/bfb33441-7c3d-448e-9b9e-4804fdc6a0ad/tasks/bwb6oinz1.output
+This is a clean stopping point for the cycle's primary work. Here's the summary.
+
+## Cycle S534 — summary
+
+**Deliverable: the soundness-budget / field-size requirement of the π(x) verification chain — measured.**
+
+The detached n=26 reach was still running (~2h in, finalizing), and since contending CPU/DRAM would spoil its clean-wall measurement, I took fresh **RAM-light, cache-resident** ground (n≤16) — the axis CLOSED row 498 flagged as "orthogonal to the integer-range hole" but never quantified.
+
+`experiments/constructions/p12_sumcheck_pi_verification/soundness_field_size.py` (9 selftests passing) + `_results.md` + `_run.log`. Findings:
+
+- **Soundness degree budget B(x) = Θ(√x).** Deterministic instrumentation (counting rng + per-module `sumcheck` degree-tally on the *real* `run_chain`, both field-independent) gives `B = K·c_BK` with **K = π(√x) layers exactly** and **c_BK = B/K ≈ 15.35·n − 36** (polylog). The prime-count's 1/log x *cancels* the per-layer log x → **B = Θ(√x)** (single-power α=0.548); `d_max = n−2`.
+- **Per-round Schwartz–Zippel measured:** deg-3 trace zero-test false-accepts at **rate·q ≈ 3.8 constant** (slope −1); chain self-consistent liar (`corrupt_layer`) stays **≤ B/q always — no amplification**; output-value lie (`delta_pi`) caught **deterministically** (0/800 at any q). First empirical chain-soundness audit at non-negligible error.
+- **Which axis binds:** soundness needs `log₂q > λ + n/2 − log₂n + polylog`; correctness needs `log₂q > n + ~1` (q > X). **Crossover at n ≈ 209 (x ≈ 10^63 = 2λ).** At **p(10^100) (n=332): q_correctness ≈ 333 bits > q_soundness ≈ 272 bits → CORRECTNESS BINDS.** This sharpens the "Õ(√x) verifier" honesty: field elements are Θ(log x)-bit (correctness-forced), so the Õ polylog concretely carries ~n^{1+ε} field-op bits, λ-independent for x ≳ 10^63.
+
+**Honest scope:** an adjacent verification-line *measurement* of a known √x wall on a new (field-soundness) face — **not** a goal advance; polylog π(x) stays blocked. 4 pre-registered falsifiers F1–F4 all un-triggered.
+
+PROGRAM.md updated (step 21 + Done-this-era entry + reach status: n=26 untouched, still running). `__pycache__` cleaned.
+
+**Pending:** a background monitor (`bwb6oinz1`) is watching `run_n26.log` for the DONE marker; if the reach lands while this session is alive, I'll harvest it (verify π(2²⁶−1)=3 957 809, run the S529 wall-ratio falsifier test, write the item-5 result). Otherwise the next cycle harvests it per the NEXT ACTION — the reach is safely setsid-detached (PPID=1) and PROGRAM.md is consistent for that handoff.
+--- cycle result: success (turns=76, duration=4151603ms) ---
+=== Cycle 586 finished — Sun Jun 14 15:39:02 UTC 2026 ===

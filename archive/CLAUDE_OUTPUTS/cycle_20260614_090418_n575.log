@@ -1,0 +1,113 @@
+=== Cycle 575 — Sun Jun 14 09:04:18 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, mature program. Let me read the rest to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: **(a) Land the free bit-identical LIST-streaming win on the real chain.** Port `build_stacked_streaming` into the batched-trace verifiers and thread it through `run_chain` so it stops materializing all K witnesses at once. Bit-identical, so all artifacts stay verbatim.
+
+Let me read the relevant code.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+The comment at lines 117-120 references "S527" landing `build_stacked_streaming` into `run_chain` with `stream_witnesses=True`. But PROGRAM.md's NEXT ACTION is still the S526 one recommending exactly that. Let me check the actual state — whether this was already partially landed or not.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== build_stacked_strea
+It appears a cycle (labeled S527 in code comments) already landed the streaming change — `build_stacked_streaming` exists, `run_chain` has `stream_witnesses=True`, and `verify_constraints_batched`/`verify_ub_openings_batched` have `stream=` params. But PROGRAM.md was NOT updated (still shows the S526 NEXT ACTION). This is a half-finished mid-build state. My job: verify the landing is correct and complete, run selftests, do the A/B peak-RSS measurement, and finalize PROGRAM.md.
+
+Let me examine the actual landed code carefully.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+The streaming functions look correct and carefully designed for bit-identical output. Let me examine how `run_chain` wires `stream_witnesses`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The wiring is complete and correct. Now let me check what selftests exist to validate this, then run them. Let me look at the relevant selftest sections.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== batched_trace selft
+Let me read the batched_trace selftest 8 fully, then run all the selftests to establish the current state.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Selftest 8 is comprehensive at the verifier-primitive level. Now let me run the three selftests to confirm the current state is green before I do anything.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== streaming_batched_s
+Both green. Now the compressed_layer selftest, which is the end-to-end one. Let me check its structure first and whether it has a chain-level stream A/B.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer se
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer se
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+grep -n "# 2[3-9]\|# 3[0-9]\|
+compressed_layer's selftest goes to case 24 — there is **no chain-level A/B for `stream_witnesses`**, which the NEXT ACTION explicitly called for ("assert it via the existing selftests + an A/B comm/claimed check"). The batched_trace selftest 8 covers the verifier primitives in isolation, but not the end-to-end chain bit-identicality.
+
+First let me confirm the full compressed_layer selftest passes (it now runs the streaming path by default everywhere — the strongest existing evidence the landing is sound). Let me create a task list and run it.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== compressed_layer --
+While that runs, let me read the tail of the selftest (cases 23-24) to see where and how to add the chain-level A/B (case 25).
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me check the running selftest's progress.
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bf4qpnetw.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bf4qpnetw.output
+While the baseline selftest runs, let me check `large_x_benchmark.py` — it's the driver for the reach runs and may already report peak RSS and have a stream toggle I can use for the A/B measurement.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== large_x_benchmark.p
+The S527 cycle was thorough — it also added `FULL_NOSTREAM`, a `--stream-probe`, and selftest case 7 (the chain-level A/B) to `large_x_benchmark.py`. So the chain-level A/B IS covered, just in a different file. Let me check what measurements were recorded in the results files and whether the work is committed.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== git log: are batche
+The results file has no S527 section yet, and the changes are uncommitted (in-progress). My deliverable: finalize the LIST-streaming landing — verify selftests, run the actual peak-RSS A/B measurement, record it, and update PROGRAM.md. Let me read the measurement harness and selftest case 7 in large_x_benchmark.py.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+The S527 landing is complete and well-tested — including the `--stream-probe` measurement harness. Everything is in place but not yet verified-run nor recorded. Let me set up tasks and check on the running selftest.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bf4qpnetw.output
+The compressed_layer selftest is still running. Let me launch the large_x_benchmark selftest concurrently (both are CPU-bound correctness checks; I'll run the memory probe alone afterward so RSS isn't polluted).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+timeout 580 python3 large_x_b
+Both selftests running. Let me understand the full scope of uncommitted changes while they run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== diffstat of uncommitted experiment changes vs HEAD ==="
+git diff --stat HE
+The compressed_layer selftest completed (exit 0). Let me confirm the output and check the large_x_benchmark one.
+  [tool: Bash] echo "=== compressed_layer selftest result ==="; tail -3 /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42
+compressed_layer green. Let me check the large_x_benchmark selftest.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/blh0onck1.output
+The large_x_benchmark selftest is still running. Meanwhile, S527 already wrote +200 lines to large_x_benchmark_results.md. Let me see what's documented there — whether the measurement is real or a placeholder.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== headings in large_x
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "=== batched_trace_resul
+Now I have the full picture. The S527 cycle documented everything in `batched_trace_results.md` **except the actual peak-RSS measurement** — it points to a `--stream-probe` table in `large_x_benchmark_results.md` that doesn't exist yet. That measurement (and the PROGRAM.md update) is the remaining deliverable. Let me read the existing S527 section to align wording.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+The large_x_benchmark selftest completed (exit 0). Let me confirm and then run the actual peak-RSS A/B measurement — the one missing deliverable.
+  [tool: Bash] echo "=== large_x_benchmark selftest result ==="; tail -12 /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-
+All four selftests pass, confirming the landing is bit-identical end-to-end. Now the one missing deliverable: the actual peak-RSS A/B measurement. Let me run the `--stream-probe` (FULL vs FULL_NOSTREAM, fresh subprocess each) over a range of n to show the gap = the removed K-witness list, and that it grows ~Θ(x).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification
+echo "start: $(date +%H:%M:%S
+While the probe runs (~11 min), let me prepare the results-file edit. Let me read the end of large_x_benchmark_results.md to place the new section well.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The S525 section already teed up this exact lever ("stream/checkpoint the K-witness stack ... dropping the prover working set from Θ(x) toward Õ(√x)"). I'll insert the S527 measurement section right there. Let me check the probe's progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bzigru2ma.output
+Let me set up a task list to track the finalization work while the probe runs.
+  [tool: ToolSearch] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskCreate] 
+  [tool: TaskUpdate] 
+  [tool: TaskUpdate] 
+While the probe runs, let me verify there are no leftover `__pycache__` dirs to clean and double-check the diff to `compressed_layer.py` is exactly the streaming integration (no unintended changes).
+  [tool: Bash] cd /apps/aplikacijos/prime-research
+echo "=== compressed_layer.py uncommitted diff (full, it's small: +52) ==="
+git diff
+The diff is clean — purely the streaming integration. Let me check the probe progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bzigru2ma.output
+The probe's first subprocess is still running. Let me confirm the `run_chain` signature for accurate PROGRAM.md wording while I wait.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The probe runs each config in a fresh subprocess (correct RSS methodology). Let me wait for it to complete — checking the output.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bzigru2ma.output
+The probe prints rows only when the parent flushes at exit (subprocess output is captured, not streamed). I'll wait for the completion notification. Let me prepare the exact PROGRAM.md "Done this era" insertion text in the meantime by re-reading the precise insertion anchor.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have the insertion anchors. Now I'll wait for the probe to finish. Let me check its output (it should be near done or complete).
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bzigru2ma.output
+The probe is still running (it flushes output only at completion). All four selftests are green, confirming the S527 LIST-streaming landing is bit-identical and sound. I'll wait for the peak-RSS A/B measurement to finish, then record it and update PROGRAM.md.
+
+Let me wait for the completion notification rather than polling further.
+  [tool: Monitor] until grep -q "end:" /tmp/claude-0/-apps-aplikacijos-prime-research/abb71654-31fc-42c6-b73d-0e779d3a6574/tasks/bzigru2ma
+I'll wait for the Monitor event. The remaining work (recording the measurement, updating PROGRAM.md) depends on the probe output, so I'll hold until it lands.
+--- cycle result: success (turns=49, duration=807483ms) ---
+=== Cycle 575 finished — Sun Jun 14 09:17:51 UTC 2026 ===

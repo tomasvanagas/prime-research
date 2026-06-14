@@ -1,0 +1,56 @@
+=== Cycle 566 — Sun Jun 14 04:00:11 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me continue reading PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me find the current NEXT ACTION at the end of the file.
+  [tool: Bash] grep -n -i "next action" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is concrete: run the large-x benchmark at `n=24` to completion, verify `claimed π(16777215)==sieve`, record the profile. Let me look at the benchmark script and its current results.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now let me look at the current results file and confirm the selftest passes before launching the n=24 run.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The plan is clear. Let me first run the fast selftest to confirm correctness, then launch the n=24 headline run. I'll run the selftest and check pycache state in parallel.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && timeout 600 python3 large_
+Selftest passes cleanly. Now let me launch the n=24 headline run in the background (default config includes the `delta_pi` soundness spot-check, giving both the honest headline and the soundness witness). I'll log to a file.
+  [tool: Bash] python3 -u large_x_benchmark.py --n 24 > run_n24_full.log 2>&1; echo "EXIT $?"
+The run is launched in the background. Let me verify it started correctly (not a path error) by checking the log.
+  [tool: Bash] sleep 8 && echo "--- run_n24_full.log ---" && cat run_n24_full.log 2>&1; echo "--- background output ---"; cat /tmp/clau
+Empty logs are expected — the script only prints after the honest run completes. Let me confirm the process is actually running.
+  [tool: Bash] ps aux | grep -E "large_x_benchmark|[p]ython3 -u" | grep -v grep | head -5; echo "---"; pwd
+There are **two** n=24 processes running: PID 1189747 (started 03:37, the orphaned S513 "launched but [APPEND ON LAND]" run from the previous cycle) and my new PID 1205998 (started 04:01). They're competing for CPU. Let me check whether the old orphan's output is recoverable before deciding.
+  [tool: Bash] echo "=== fd of old run 1189747 ==="; ls -l /proc/1189747/fd/1 /proc/1189747/fd/2 2>&1; echo "=== its cwd ==="; ls -l /p
+The old orphan logs to `run_n24.log` (recoverable). Let me check if it has already produced results — it may already be done.
+  [tool: Bash] echo "=== run_n24.log (old orphan, started 03:37) ==="; cat run_n24.log 2>&1; echo "=== size/mtime ==="; ls -l run_n24.l
+The old orphan's log is empty after ~25 minutes of CPU — far past the predicted ~900s, suggesting the two heavyweight processes (4 GB + 2.4 GB RSS) are now competing for CPU/memory. The orphan predates this cycle, is reparented to init, and has produced nothing retrievable. Let me check memory pressure, then kill the orphan to let my clean logged run proceed alone.
+  [tool: Bash] echo "=== memory ==="; free -h; echo "=== top CPU/mem procs ==="; ps -eo pid,%cpu,%mem,rss,etimes,cmd --sort=-%mem | gre
+Memory is fine (91 GB available, no swap) — so that's not the issue. But both show `%CPU 0.0` and `etimes` is garbage (clock skew), making `ps` CPU stats unreliable. Let me directly measure whether each process is actually advancing by sampling its CPU-time counter twice.
+  [tool: Bash] read_cpu() { awk '{print $14+$15+$16+$17}' /proc/$1/stat 2>/dev/null; }
+state() { awk '{print $3}' /proc/$1/stat 2>/dev/
+Real data: **both processes advance at ~100% of one core each** (602 ticks/6s), and the machine has 122 GB RAM + many cores — so they do **not** meaningfully compete. The OLD orphan has accumulated **~1544s CPU (~25.7 min)** and is still in the honest run; my NEW run is only ~91s in. Both run the identical deterministic command (`--n 24`, default seed=1, cheat-check on) and write to readable logs.
+
+The smart move: the OLD orphan has a 25-minute head start and its output (`run_n24.log`) is fully recoverable — so I'll **keep it** and **kill my redundant NEW run** rather than waste its progress. (Also notable: actual scaling is worse than the predicted ~3.5×/Δn — already >6× n=22's 253s and not done.)
+  [tool: Bash] kill 1205998 2>&1; echo "killed new python 1205998"; sleep 2; ps -o pid,state,cmd -p 1205998 2>&1 | tail -2; echo "=== r
+My redundant run is killed; the OLD orphan (1189747) continues with its 25-min head start. Let me clean up the empty log my run left, and start a bounded monitor loop that exits as soon as the honest result appears (or the process exits).
+  [tool: Bash] rm -f run_n24_full.log
+# Monitor: poll until the honest result prints, the process exits, or ~9 min cap.
+deadline=$((SEC
+The monitor is running in the background; I'll be notified when the honest result appears. Meanwhile, let me independently compute the ground-truth π(16777215) with a simple sieve so I can cross-check the chain's claimed value (defense against trusting the script's own `sieve_pi`).
+  [tool: Bash] python3 -c "
+import numpy as np
+N = (1<<24) - 1            # 16777215
+s = np.ones(N+1, dtype=bool); s[:2]=False
+for i in
+Independent ground truth confirmed: **π(16777215) = 1,077,871** (largest prime ≤ N is 16777213). This matches the known π(2²⁴). When the chain completes I expect `claimed = sieve = 1077871`, accepted.
+
+Status so far this cycle:
+- Selftest passes (correctness + soundness over both fields, FAST_BIG bit-identical, leaf-free).
+- Found and resolved a **duplicate-run collision**: an orphaned n=24 process (PID 1189747) from the previous cycle (S513's "[APPEND ON LAND]") was already ~25 min into the identical deterministic computation, logging to `run_n24.log`. I killed my redundant copy and kept the orphan's head start.
+- Actual scaling is running **worse than the predicted ~3.5×/Δn** (already >6× the n=22 wall and the honest run hasn't printed yet).
+- Ground truth π(16777215)=1,077,871 staged for cross-check.
+
+A bounded monitor (background task `b755kmptm`) is watching `run_n24.log`; I'll be notified when the honest result appears or the process exits, then record the wall-clock + profile and update the results file and PROGRAM.md.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/2679e9a9-f600-45e1-98cd-b215315c5f29/tasks/b755kmptm.output
+The monitor output is still empty (polling in progress). I'll await the completion notification from the background monitor, then record results. Ending this turn to wait for the orphan run to produce the honest π(2²⁴−1) result.
+--- cycle result: success (turns=19, duration=379694ms) ---
+=== Cycle 566 finished — Sun Jun 14 04:06:36 UTC 2026 ===

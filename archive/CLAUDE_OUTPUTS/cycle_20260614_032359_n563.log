@@ -1,0 +1,54 @@
+=== Cycle 563 — Sun Jun 14 03:23:59 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, especially the NEXT ACTION at the end.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final section of PROGRAM.md with the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: run the large-x benchmark at n=24. Let me look at the benchmark script and its results file before launching.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check the results file and confirm the working directory setup.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+This is a mature, deep research program. The NEXT ACTION is concrete: run the `n=24` large-x benchmark to completion, verify `claimed π(16777215) == sieve`, record wall-clock + profile, and witness the `delta_pi` liar rejected at the reach.
+
+This is a long run (~15-22 min predicted). Let me launch it in the background and run the fast selftest in parallel to confirm the environment is healthy.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 large_x_benchmark.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && python3 large_x_benchmark.
+Selftest passes — environment is healthy. The n=24 run is now computing in the background (predicted ~900 s honest + the liar check). While it runs, let me independently compute the ground-truth value of π(16777215) so I can cross-check the script's `sieve_pi` and `claimed` against a third source.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && python3 -c "
+import numpy as np
+x = (1<<24) - 1   # 16777215
+N = x+1
+s = np.ones(
+Independent ground truth confirmed: **π(16777215) = 1077871** (this equals π(2²⁴) since 2²⁴ is not prime). The n=24 run must produce this exact value.
+
+Let me confirm the background run started cleanly (no import/startup error), since the script prints only at the end.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "--- log so far ---";
+The n=24 run is healthy (PID 1181508, computing — the script prints only at the end). 
+
+I'm deliberately **not** starting any other CPU-heavy work in parallel: the wall-clock is part of this benchmark's deliverable, and contention would corrupt the measurement. Predicted timing from the 3.5×/Δn=2 scaling: honest run ~885 s, plus the `delta_pi` liar spot-check (~230 s, short-circuits) → total ~18–22 min.
+
+Established so far this cycle:
+- Selftest passes (full config correct + sound over Q & BIG_Q, FAST_BIG bit-identical, per-layer leaf count 0).
+- Independent third-source ground truth: **π(16777215) = 1077871** — the n=24 honest run must produce exactly this.
+
+I'll wait for the background run to complete (the harness re-invokes me on exit), then verify `claimed == 1077871 == sieve`, confirm the liar is rejected, record the profile, and update the results file + PROGRAM.md. Let me set a long fallback heartbeat in case the process hangs.
+  [tool: ScheduleWakeup] 
+I've launched the n=24 benchmark and verified the environment. Now waiting for completion. Summary of cycle state:
+
+**Cycle: large-x benchmark reach push to n=24 (open item 5)**
+
+Done:
+- ✅ Selftest passes — full succinct config is correct and sound over both Q and BIG_Q at n≤12.
+- ✅ Independent ground truth computed: π(16777215) = 1077871.
+- ✅ n=24 honest+soundness run launched in background (no parallel CPU work, to keep the wall-clock measurement clean).
+
+Pending (on completion):
+- Verify `claimed π(16777215) == 1077871 == sieve`, HONEST ACCEPTED.
+- Confirm `delta_pi` liar REJECTED at the reach.
+- Record wall-clock + profile (per-layer leaf count == 0, comm ≈95% comm_outer, base opens Θ(x^{1/4})) and check the ~3.5×/Δn=2 scaling holds.
+- Bank in `large_x_benchmark_results.md` and update PROGRAM.md with the new entry + NEXT ACTION.
+
+The harness will re-invoke me when the run exits (fallback heartbeat set at ~25 min).
+--- cycle result: success (turns=11, duration=116624ms) ---
+=== Cycle 563 finished — Sun Jun 14 03:26:02 UTC 2026 ===

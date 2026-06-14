@@ -100,10 +100,17 @@ from compressed_prover_mult_trace import (DEFAULT_Q as Q, BIG_Q, SMALL_Q,
                                           eq_table, eq_point, mle_eval, sumcheck,
                                           build_witness, verify_constraints,
                                           forge_alias, rematerialize, fmul,
-                                          fast_big)
+                                          fast_big, scatter_fold61)
 from lucy_dp_verification import ge_const_eval, w_div_eval
 from lucy_dp_delegated_wiring import inner_verify_div, inner_chain_vectors
 import leaf_open as _lo
+
+# S525 measurement control: when False, the two per-layer outer-reduction
+# scatter-sums fall back to the object-dtype np.add.at even on the FAST_BIG
+# path -- letting the benchmark isolate JUST the scatter representation (uint64
+# scatter_fold61 vs object boxing) while keeping FAST_BIG on for everything
+# else.  Default True (the fast path); the bench `--no-scatter-fold` flips it.
+USE_SCATTER_FOLD = True
 
 
 # ----------------------------------------------------------------------
@@ -418,7 +425,14 @@ def verify_trace_region(W, S_small, r_v, claimed, lo, hi, nb, rng, stats, q=Q,
     weight = (eqr * Tband) % q
     mask = (1 << nb) - 1
     vlow = (W["u"] & mask).astype(np.int64)                 # low nb bits of u_e
-    if fast_big(q):                                         # < D summands overflow u64
+    if fast_big(q) and USE_SCATTER_FOLD:   # < D summands per bucket overflow u64
+        # S525: uint64-safe segmented scatter-fold (limb-split + sort/reduceat),
+        # replacing the object-dtype np.add.at -- bit-identical residues, no
+        # Python-int alloc / GC.
+        omega = scatter_fold61(vlow, weight, 1 << nb)
+    elif fast_big(q):            # A/B control (USE_SCATTER_FOLD=False): the
+        # ORIGINAL S524 object scatter -- object dtype is REQUIRED here because a
+        # plain uint64 add.at over BIG_Q residues overflows before the % q fold.
         acc = np.zeros(1 << nb, dtype=object)
         np.add.at(acc, vlow, weight.astype(object))
         omega = (acc % q).astype(np.uint64)
@@ -721,7 +735,10 @@ def small_reduce(x, p, sp, nb, S_prev_small, z, C, rng, stats, cheat=None,
     # ---- phase B: g1 = sum_u W(r_v,u) S(u),  W(v,u)=[u=floor(v/p)] ----
     t0 = time.perf_counter()
     eqrv = eq_table(r_v, q)
-    if fast_big(q):                                         # < p summands overflow u64
+    if fast_big(q) and USE_SCATTER_FOLD:   # < p summands per bucket overflow u64
+        # S525: uint64-safe segmented scatter-fold (see verify_trace_region).
+        Wt = scatter_fold61(arange // p, eqrv, Dml)
+    elif fast_big(q):            # A/B control: the ORIGINAL S524 object scatter
         acc = np.zeros(Dml, dtype=object)
         np.add.at(acc, arange // p, eqrv.astype(object))
         Wt = (acc % q).astype(np.uint64)
@@ -897,7 +914,8 @@ def run_two_sided_layer(x, layer, rng, cheat=None, delegate=False,
 
 def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
               structured=False, q=Q, batch_trace=False, batch_wiring=False,
-              pcs=False, batch_ub=False, commit_base=False, commit_code="rs"):
+              pcs=False, batch_ub=False, commit_base=False, commit_code="rs",
+              stream_witnesses=True):
     """Chain all K layers from S_K^large(e=0)=pi(x) down to S_0 (opened on
     both sides). cheat='delta_pi' lies about pi(x); corrupt_layer=i0 is a
     self-consistent liar. delegate routes BOTH wirings (small division,
@@ -982,6 +1000,18 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
     codeword length N<=q -- the demo constraint that forced large runs onto BIG_Q)
     or "expander" (Brakedown-style linear-time code, field-size-free, no N<=q
     requirement; same sub-sqrt-x verifier).  Verdict identical either way.
+
+    stream_witnesses (S527, default True; batch_trace/batch_ub only): build the
+    stacked K-witness trace cube SLICE-BY-SLICE (batched_trace.build_stacked_
+    streaming / the streamed Ub C-table) instead of first materializing
+    Ws = [build_witness(x, p) for p in primes].  The S525 localization found that
+    held LIST is ~1.4 GB of the n=24 prover's ~3.9 GB peak RSS; streaming drops it
+    while leaving the Theta(x) stacked cube (S526 showed the cube is NOT a pure
+    accumulator, so it cannot stream for free).  BIT-IDENTICAL transcript (same
+    cube => same sum-check => same challenges/verdict), so this is a verbatim
+    drop-in -- the n=24 artifact is reproduced exactly, only with lower peak RSS.
+    stream_witnesses=False is the A/B control (builds the list) for the peak-RSS
+    measurement; default True lands the free win, like USE_SCATTER_FOLD.
     Returns dict(accepted, claimed, layers, ...)."""
     if batch_wiring and not delegate:
         raise ValueError("batch_wiring requires delegate=True")
@@ -1021,9 +1051,13 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
 
     if batch_trace:                       # one batched zero-test for all K layers
         import batched_trace as _bt
-        Ws = [build_witness(x, p, nb, dstart=1, q=q) for p in primes]
+        # stream_witnesses (S527): build the stacked cube slice-by-slice (Ws never
+        # held) -- bit-identical, drops the ~1.4 GB K-witness list (S525/S526).
+        Ws = None if stream_witnesses else \
+            [build_witness(x, p, nb, dstart=1, q=q) for p in primes]
         _c0 = stats["comm"]
-        if not _bt.verify_constraints_batched(Ws, primes, x, nb, rng, stats, q):
+        if not _bt.verify_constraints_batched(Ws, primes, x, nb, rng, stats, q,
+                                              stream=stream_witnesses):
             return fail()
         stats["comm_bt"] += stats["comm"] - _c0
 
@@ -1069,9 +1103,11 @@ def run_chain(x, rng, cheat=None, corrupt_layer=None, delegate=False,
         stats["comm_bw"] += stats["comm"] - _c0
 
     if batch_ub and ub_defer:              # ONE batched opening for all K*nb Ub leaves
-        import batched_trace as _bt        # (Ws built above under batch_trace)
+        import batched_trace as _bt        # (Ws above is None under stream_witnesses)
         _c0 = stats["comm"]
-        if not _bt.verify_ub_openings_batched(Ws, nb, ub_defer, rng, stats, q):
+        if not _bt.verify_ub_openings_batched(Ws, nb, ub_defer, rng, stats, q,
+                                              primes=primes, X=x,
+                                              stream=stream_witnesses):
             return fail()
         stats["comm_ub"] += stats["comm"] - _c0
 
@@ -1769,6 +1805,42 @@ def selftest():
                              corrupt_layer=i0, commit_base=True,
                              commit_code="expander", **full)["accepted"], \
             (n, "expander liar", i0)
+
+    # 25. LIST-STREAMING (S527): stream_witnesses=True (the default) builds the
+    #     stacked K-witness trace cube slice-by-slice (batched_trace.build_stacked_
+    #     streaming / the streamed Ub C-table) instead of first materializing
+    #     Ws = [build_witness(x, p) for p in primes] (~1.4 GB of the n=24 peak RSS,
+    #     S525).  The cube is BIT-IDENTICAL => the whole certificate is a verbatim
+    #     drop-in: same claimed pi, same comm (and its comm_bt/comm_ub split), same
+    #     accept/reject -- so every landed artifact (incl. n=24) reproduces exactly,
+    #     only with lower peak RSS.  A/B at the SAME seed over q AND BIG_Q with the
+    #     FULL batched config; the delta_pi liar is still rejected under streaming.
+    full_s = dict(delegate=True, structured=True, pcs=True,
+                  batch_trace=True, batch_ub=True, batch_wiring=True)
+    for n in (8, 10, 12):
+        x = (1 << n) - 1
+        truth = sieve_pi(x)
+        K = len(compressed_lucy(x)[0])
+        for qf in (Q, BIG_Q):
+            on = run_chain(x, np.random.default_rng(5), q=qf,
+                           stream_witnesses=True, **full_s)
+            off = run_chain(x, np.random.default_rng(5), q=qf,
+                            stream_witnesses=False, **full_s)
+            assert on["accepted"] and on["claimed"] == truth, (n, qf, "stream")
+            assert off["accepted"] and off["claimed"] == truth, (n, qf, "nostream")
+            # verbatim drop-in: claimed + comm (and the batched-discharge split)
+            for key in ("claimed", "comm", "comm_bt", "comm_ub",
+                        "comm_outer", "accepted"):
+                assert on[key] == off[key], (n, qf, "stream != nostream", key,
+                                             on[key], off[key])
+        # the streamed cube still catches a liar (delta_pi + self-consistent)
+        assert all(not run_chain(x, np.random.default_rng(600 + t),
+                                 cheat="delta_pi", stream_witnesses=True,
+                                 **full_s)["accepted"] for t in range(3)), (n,)
+        i0 = max(1, K // 2)
+        assert not run_chain(x, np.random.default_rng(900 + i0),
+                             corrupt_layer=i0, stream_witnesses=True,
+                             **full_s)["accepted"], (n, "stream liar", i0)
 
     print("selftest OK")
 

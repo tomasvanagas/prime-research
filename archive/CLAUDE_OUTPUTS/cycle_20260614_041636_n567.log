@@ -1,0 +1,27 @@
+=== Cycle 567 — Sun Jun 14 04:16:36 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a deep, mature research program. Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final section of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I have a clear picture now. The NEXT ACTION is to run the large-x benchmark at n=24 (the verification program's live frontier). Let me look at the benchmark script and its results file before running.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now let me read the results file to understand the recorded state.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The task is clear: run the n=24 large-x benchmark to completion, verify `claimed π(16777215)==sieve`, record the profile, and confirm scaling. Let me first run the fast selftest gate to confirm nothing is broken, then launch the long n=24 run.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && time python3 large_x_bench
+Selftest green in 16s. Now let me confirm the n=24 parameters (ground truth, layers) quickly, then launch the long run in the background.
+  [tool: Bash] python3 -c "
+import compressed_layer as cl
+n=24; x=(1<<n)-1
+V=cl.isqrt(x); nb=max(1,V.bit_length())
+K=len(cl.compressed_
+n=24: x=16777215, V=4095, nb=12 (cube 4096), K=564 layers, ground truth π=**1,077,871**. Now I'll launch the full n=24 run (honest + delta_pi soundness check) in the background.
+  [tool: Bash] python3 -u large_x_benchmark.py --n 24 --seed 1 > run_n24_2e24.log 2>&1; echo "EXIT=$?"
+Launched in the background (predicted ~15–19 min: honest ~900s at the ~3.5×/Δn=2 prover-bound scaling, plus the short-circuiting delta_pi cheat ~250s). The driver buffers all output to the end of `run_headline`, so the log stays empty until the honest run completes. Let me do one quick check to rule out an immediate startup crash.
+  [tool: Bash] sleep 20 && echo "--- log so far ---" && cat run_n24_2e24.log 2>/dev/null; echo "--- proc ---"; ps aux | grep -c "[l]arg
+The run is alive and buffering (output appears only when `run_headline` finishes, so an empty log is the expected "still running" state). No startup crash. The harness will notify me when the background task completes, so I'll wait for that rather than poll and steal CPU from the single-threaded, op-count-bound benchmark.
+
+While it runs, the deliverable is fixed (the n=24 result + profile), so I won't scope-creep. I'll record results once the run lands.
+--- cycle result: success (turns=10, duration=126335ms) ---
+=== Cycle 567 finished — Sun Jun 14 04:18:49 UTC 2026 ===

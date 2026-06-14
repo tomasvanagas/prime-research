@@ -1,0 +1,50 @@
+== soundness budget of run_chain (default config, field BIG_Q) ==
+  n            x  K=layers   R(chal)  rounds  B(budget)  dmax      B/K  accept
+  8          255         6       206     160        530     6     88.3    True
+ 10         1023        11       472     375       1282     7    116.5    True
+ 12         4095        18       922     744       2632     8    146.2    True
+ 14        16383        31      1844    1505       5512     9    177.8    True
+ 16        65535        54      3654    3008      11406    10    211.2    True
+  B(x) 2-term fit: alpha=0.362 (power of x), delta=+1.49 (polylog), rms=0.0297;  single-power alpha=0.548
+  R(x) 2-term fit: alpha=0.343  => R,B ~ x^0.36 * polylog  (sqrt(x) <=> alpha=0.5)
+
+== atomic Schwartz-Zippel: deg-3 trace zero-test, n=10, 6000 seeds/q ==
+  cheat=u_value      X=1023 m=5
+     q=    1031  accept_rate=0.00433 (26/6000)  rate*q=4.47
+     q=    2053  accept_rate=0.00300 (18/6000)  rate*q=6.16
+     q=    4093  accept_rate=0.00033 (2/6000)  rate*q=1.36
+     q=    8191  accept_rate=0.00067 (4/6000)  rate*q=5.46
+     => log(rate) vs log(q) slope = -1.13  (Schwartz-Zippel predicts -1)
+  cheat=u_consistent X=1023 m=5
+     q=    1031  accept_rate=0.00433 (26/6000)  rate*q=4.47
+     q=    2053  accept_rate=0.00300 (18/6000)  rate*q=6.16
+     q=    4093  accept_rate=0.00033 (2/6000)  rate*q=1.36
+     q=    8191  accept_rate=0.00017 (1/6000)  rate*q=1.37
+     => log(rate) vs log(q) slope = -1.73  (Schwartz-Zippel predicts -1)
+  cheat=r_value      X=1023 m=5
+     q=    1031  accept_rate=0.00600 (36/6000)  rate*q=6.19
+     q=    2053  accept_rate=0.00450 (27/6000)  rate*q=9.24
+     q=    4093  accept_rate=0.00033 (2/6000)  rate*q=1.36
+     q=    8191  accept_rate=0.00017 (1/6000)  rate*q=1.37
+     => log(rate) vs log(q) slope = -1.93  (Schwartz-Zippel predicts -1)
+
+== chain composition: real run_chain false-accept, n=8, 800 seeds/q ==
+  delta_pi (output-value lie):   B=530
+     q=     257  false_accept=0.00000 (0/800)  rate*q=0.00  union B/q=2.0623  within_bound=True
+     q=    1021  false_accept=0.00000 (0/800)  rate*q=0.00  union B/q=0.5191  within_bound=True
+     q=    4091  false_accept=0.00000 (0/800)  rate*q=0.00  union B/q=0.1296  within_bound=True
+  corrupt_layer=1 (self-consistent internal lie):   B=530
+     q=     257  false_accept=0.00875 (7/800)  rate*q=2.25  union B/q=2.0623  within_bound=True
+     q=    1021  false_accept=0.00375 (3/800)  rate*q=3.83  union B/q=0.5191  within_bound=True
+     q=    4091  false_accept=0.00250 (2/800)  rate*q=10.23  union B/q=0.1296  within_bound=True
+
+== field-size extrapolation (lambda=100 bits) ==
+  small-n single-power fit of B: alpha=0.548 (DEFLATED < 0.5 by the pi(sqrt x)=Theta(sqrt x/log x) 1/log x; S511/S515 PNT discount) -- NOT used for extrapolation
+  structural: B = c_BK * K, K=pi(sqrt x) exact; c_BK = 15.35*n -36.2 (polylog, ~linear in log x); c_BK(target)=5064
+  measured correctness slack over X: ~1.00 bits (min honest log2 q - n)
+  soundness curve:   log2 q > 100 + log2 K(x) + log2 c_BK ~ 100 + n/2 - log2 n + polylog
+  correctness curve: log2 q > n + 1.0
+  CROSSOVER at n ~ 209  (x ~ 10^63)
+  at p(10^100): n=332, log2 K(sqrt x)=159, log2 B=172;  q_soundness ~ 272 bits, q_correctness ~ 333 bits => CORRECTNESS BINDS
+
+EXIT=0

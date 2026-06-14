@@ -1,0 +1,139 @@
+=== Cycle 570 — Sun Jun 14 05:31:12 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest, especially the NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large file. Let me find the current NEXT ACTION.
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | head -50
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+I now understand the NEXT ACTION clearly. Let me look at the relevant code in `compressed_layer.py` around the two hot scatter-sums.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && ls -la && wc -l compressed
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me look at the second hot scatter-sum around line 726.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me find the field-arithmetic helpers (`fast_big`, `_dt`, `fmul`, `_sum61`, `_mul61`, `_asum`).
+  [tool: Bash] grep -n "^def \|^BIG_Q\|^Q \|^Q=\|FAST_BIG\|def fast_big\|def _dt\|def fmul\|def _asum\|def _sum61\|def _mul61\|def _add
+Let me look at the imports and the field helpers, which appear to come from `compressed_prove_mult_trace`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me look at the field-arithmetic helpers in `compressed_prover_mult_trace.py` — `fmul`, `_asum`, `fast_big`, `_dt`, and the Mersenne-61 fold primitives.
+  [tool: Bash] grep -n "FAST_BIG\|def fast_big\|def _dt\|def fmul\|def _asum\|def _mul61\|def _sum61\|def _add61\|MASK61\|def _reduce61
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me check all `np.add.at` and object-dtype scatter spots in `compressed_layer.py`, and look at the existing fast==object selftest.
+  [tool: Bash] grep -n "np.add.at\|dtype=object\|astype(object)\|\.astype(np.uint64)" compressed_layer.py
+Exactly the two spots named. Now let me look at the existing FAST_BIG selftest in `compressed_layer.py`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Both target spots confirmed. Now I'll implement the fix. Let me add a vectorized uint64 scatter-fold helper to `compressed_prover_mult_trace.py` (home of the Mersenne primitives), right after `_sum61`.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now wire it into `compressed_layer.py`'s imports and the two scatter sites. First the import:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now the two scatter sites:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now let me add a focused unit selftest for `scatter_fold61` in `compressed_prover_mult_trace.py`. Let me find where `_mul61`/`_sum61` are tested.
+  [tool: Bash] grep -n "_mul61\|_sum61\|_reduce61\|def selftest\|FAST_BIG = True\|FAST_BIG = saved" compressed_prover_mult_trace.py | s
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+I'll add a focused unit test for `scatter_fold61` after the 8a primitives block:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Now let me run the `compressed_prover_mult_trace.py` selftest to validate the new helper:
+  [tool: Bash] timeout 600 python3 compressed_prover_mult_trace.py --selftest 2>&1 | tail -30
+The unit tests pass. Now the `compressed_layer.py` selftest, which includes case 17 (fast==object bit-identical chain over BIG_Q):
+  [tool: Bash] timeout 1200 python3 compressed_layer.py --selftest 2>&1 | tail -30
+While that runs, let me look at the benchmark driver to plan the re-measurement.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me check the `compressed_layer.py` selftest result:
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/b2ph0xnbx.output 2>&1 | ta
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/b2ph0xnbx.output
+  [tool: Bash] ls -la /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/b2ph0xnbx.output; echo 
+The selftest only prints at the end. Let me wait for it and read the existing benchmark results meanwhile.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The selftest is still running. Let me wait for completion.
+  [tool: Bash] until [ -s /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/b2ph0xnbx.output ];
+Both selftests pass. Now the benchmark driver's own selftest (its case 3 is the dedicated FAST_BIG ON==OFF bit-identical check exercising the new scatter path):
+  [tool: Bash] timeout 600 python3 large_x_benchmark.py --selftest 2>&1 | tail -10
+All correctness and bit-identicalness gates pass. Now the empirical re-measurement. Let me run n=20 first (honest + soundness) to validate the new path at a real reach and get a baseline:
+  [tool: Bash] timeout 900 python3 large_x_benchmark.py --n 20 2>&1 | tee run_n20_s525.log
+n=20: claimed=82025 ✓, accepted, delta_pi REJECTED, wall 65.5s (was 71.8s — at n=20 the working set is small so the object scatter wasn't yet the bottleneck; as expected). Now n=22 (honest only, for the scaling series):
+  [tool: Bash] timeout 900 python3 large_x_benchmark.py --n 22 --no-cheat 2>&1 | tee run_n22_s525.log
+n=22: claimed=295947 ✓, **comm=146637 with split exactly matching the recorded values** (comm_base=4224, comm_bt=80, comm_bw=2373, comm_ub=61) — structurally bit-identical at the reach. Wall 254.6s ≈ prior 252.8s (n=22 working set wasn't the 3.9 GB problem). 
+
+Now the decisive test — n=24, where the object scatter caused the 3.9 GB working set. Running honest + soundness in the background:
+  [tool: Bash] /usr/bin/time -v python3 large_x_benchmark.py --n 24 2>&1 | tee run_n24_s525.log
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/br4ms0upl.output
+`/usr/bin/time` isn't available. Let me run n=24 in the background and poll its peak RSS from `/proc` separately:
+  [tool: Bash] python3 large_x_benchmark.py --n 24 > run_n24_s525.log 2>&1 &
+echo "PID=$!"
+  [tool: Bash] PID=1276989
+PEAK=0
+while kill -0 $PID 2>/dev/null; do
+  RSS=$(awk '/VmRSS/{print $2}' /proc/$PID/status 2>/dev/null)
+  i
+While n=24 runs, let me confirm there are no other object-dtype large-array allocations on the FAST_BIG chain path across the imported modules:
+  [tool: Bash] grep -n "dtype=object\|astype(object)" compressed_layer.py compressed_prover_mult_trace.py lucy_dp_delegated_wiring.py l
+Let me check the scatter at `compressed_prover_mult_trace.py:555` — it's on a `2^Lv`-size table (Lv = bits(x/p), potentially large):
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`build_omega` (line 551) is the same object-scatter pattern, but it builds a `2^Lv ≈ x`-size table and is only used by the **standalone step-1 primitive demo** (`run_primitive`), not the compressed chain (`compressed_layer` does not import it). It's not on the n=24 benchmark hot path. Still, it's the identical kernel and `scatter_fold61` is a clean drop-in guarded by the existing fast==object selftest (case 8b) — I'll apply it there too for consistency:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+Let me re-run the `compressed_prover_mult_trace.py` selftest to confirm `build_omega`'s fast==object check (case 8b) still passes:
+  [tool: Bash] timeout 600 python3 compressed_prover_mult_trace.py --selftest 2>&1 | tail -5
+Now let me check progress on the n=24 run:
+  [tool: Bash] cat run_n24_s525.log 2>/dev/null; echo "=== poller so far ==="; cat /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d
+While n=24 runs, let me reconsider the memory attribution. The two scatter accumulators I fixed are `2^nb ≈ √x`-size object arrays (at n=24, 4096 elements ≈ 100 KB each) — small individually. Let me verify `D` (the summand count) is really √x-size and understand where the claimed 3.9 GB comes from:
+  [tool: Bash] grep -n "def build_witness\|W\[.D.\]\|\"D\"\|'D'\|D = \|D=" compressed_prover_mult_trace.py | head -20
+  [tool: Bash] grep -n "build_witness\|, m,\|m =\|m=\| W = \|W=build" compressed_layer.py | head -20
+`build_witness(x, p, nb, ...)` uses `m=nb`, so `D = 2^nb ≈ √x` — the two object scatter accumulators are only `√x ≈ 4096`-element arrays (~100 KB each), built per-layer. That's small individually. Let me get an early read on the running process's actual RSS to sanity-check the 3.9 GB attribution:
+  [tool: Bash] PID=1276989
+if kill -0 $PID 2>/dev/null; then
+  echo "still running"; awk '/VmRSS|VmHWM/{print $1, $2/1048576 " GB"}' /p
+**Important finding:** the running n=24 process (with my object-scatter fix) still peaks at **3.89 GB** — identical to S524's reported working set. So the two object scatters I removed were **not** the source of the 3.9 GB; S524 mis-attributed it. My fix is a correct bit-identical cleanup but the memory hypothesis is wrong. Let me check available RAM, then localize the real source while n=24 finishes:
+  [tool: Bash] free -g | head -2; echo "---n24 still running?---"; PID=1276989; kill -0 $PID 2>/dev/null && echo "yes, RSS now: $(awk '
+95 GB free, so RAM isn't the constraint — but the 3.9 GB peak persisting with my fix confirms the object scatters weren't the source. I must not run CPU-heavy jobs in parallel (would corrupt the n=24 wall measurement). Let me read `run_chain` (CPU-light) to form a hypothesis about the real memory source while n=24 finishes:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+Now I have a strong hypothesis. The real memory driver is at **line 1025**: `Ws = [build_witness(x, p, nb, ...) for p in primes]` builds and **retains all K witnesses simultaneously** (held until `batch_ub` at line 1075), and `verify_constraints_batched` stacks them into one `K × 2^nb × Lv` cube ≈ **Θ(x·polylog)** and folds it via sum-check (BIG_Q uint64 temporaries). That's the Θ(x) memory — the batched-discharge prover cubes, **not** the per-layer object scatters.
+
+Let me add reproducible peak-RSS reporting to the driver (via `resource.getrusage`, which captures OS-level RSS including numpy buffers) so this is measured, not guessed:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now let me add a reproducible memory-localization probe to the driver. It runs the FULL config vs a no-batched-discharge config in **separate subprocesses** (since `ru_maxrss` is a process-wide monotonic peak) to empirically pin the Θ(x) memory source. Let me view the current `main`:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+I'll add a reproducible memory-localization probe. First, parameterize `run_headline` with a config and add a peak-only path; then add the probe orchestration:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Now add the probe orchestration and CLI. Let me update `main` and add a `mem_probe` function:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me syntax-check the modified driver without running the heavy chain (to keep the n=24 wall measurement clean):
+  [tool: Bash] python3 -m py_compile large_x_benchmark.py && echo "OK: driver compiles"; python3 -c "import ast,sys; ast.parse(open('co
+Let me check the n=24 run progress (the poller will capture peak RSS and the final output):
+  [tool: Bash] cat run_n24_s525.log 2>/dev/null; echo "=== status ==="; PID=1276989; kill -0 $PID 2>/dev/null && echo "running, RSS: $(
+Still running — RSS has dropped to 1.95 GB (past the early `verify_constraints_batched` phase, now in the per-layer loop). This is consistent: the **3.9 GB peak is allocated up front by the batched-trace stacked cube (lines 1023–1029), before the layer loop**. Let me wait for it to finish.
+  [tool: Bash] until [ ! -d /proc/1276989 ]; do sleep 15; done; echo "=== n=24 process exited ==="; echo "--- benchmark output ---"; ca
+Both pollers are watching the n=24 process. I'll wait for the completion notification. Let me verify there are no stray `__pycache__` dirs to clean later and check git status meanwhile (CPU-light):
+  [tool: Bash] cd /apps/aplikacijos/prime-research && find experiments/ -name __pycache__ -type d 2>/dev/null | head; echo "--- new unt
+There's a `__pycache__` to clean at the end. Now I'll wait for the n=24 completion notification before proceeding to the memory probe and writeup.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/bxhcjoa3x.output
+Let me check the elapsed time to estimate how much longer n=24 needs:
+  [tool: Bash] PID=1276989; if [ -d /proc/$PID ]; then echo "running"; ps -o pid,etime,rss,vsz -p $PID; else echo "exited"; fi
+The clock in this environment is unreliable (garbage `etime`), so I'll rely on the poller. RSS is now 1.55 GB — in the per-layer loop or cheat phase. The process peaked at 3.9 GB during the early batched-trace setup. I'll wait for the completion notification before running the memory probe (to keep the n=24 wall clean).
+
+Let me wait for the n=24 process to finish.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/bxhcjoa3x.output
+I've completed the core implementation and validation; I'm now waiting on the n=24 wall-clock measurement to finish before running the memory-localization probe and writing up results. Let me summarize current state while the n=24 run completes in the background:
+
+**Done so far this cycle:**
+- Implemented `scatter_fold61` (uint64 limb-split + sort/`reduceat`) in `compressed_prover_mult_trace.py`, replacing the 3 object-dtype `np.add.at` scatter-folds on the FAST_BIG path (the 2 named per-layer outer-reduction sites + `build_omega`).
+- Bit-identical confirmed: focused unit selftest (40 random + structured + heavy-overflow cases) passes; `compressed_layer.py` selftest (incl. case 17 fast==object chain) passes; `large_x_benchmark.py` selftest (case 3 FAST_BIG ON==OFF) passes.
+- Re-measured: **n=20 = 65.5 s** (was 71.8), **n=22 = 254.6 s** (was 252.8, comm=146637 bit-identical to recorded) — both essentially unchanged.
+- **Key empirical finding:** with the object scatters removed, the n=24 process **still peaks at 3.9 GB** — so S524's attribution of the 3.9 GB working set to those `np.add.at` scatters is **wrong**. RSS profile shows the 3.9 GB is allocated up front by the batched-trace stacked cube (`Ws` list + `verify_constraints_batched`, Θ(x·polylog)), before the layer loop.
+
+I'll wait for n=24 to finish to capture its wall, then run the FULL-vs-NOBATCH memory probe to confirm the corrected attribution.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/46c5d2bb-756b-4800-9d03-9cfa9868c1fa/tasks/bxhcjoa3x.output
+I'll stop polling and wait for the background completion notification, which will re-invoke me with the n=24 result.
+  [tool: Bash] echo "Waiting for n=24 (PID 1276989) to finish. Pollers: bxhcjoa3x will print wall+peak on exit."
+I'll await the n=24 completion notification before continuing with the memory probe and writeup.
+--- cycle result: success (turns=67, duration=1582505ms) ---
+=== Cycle 570 finished — Sun Jun 14 05:57:41 UTC 2026 ===

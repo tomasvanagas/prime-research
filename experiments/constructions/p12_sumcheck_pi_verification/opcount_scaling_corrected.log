@@ -1,0 +1,54 @@
+=== prover op-count scaling  (field=big, FULL succinct config) ===
+  n            x     K  nb        mul_ops       sum_ops    scat_ops    mul/x    wall_s  mulW%  pi(x)?
+  8          255     6   4         425110        112472         176  1667.10     0.726    off      OK
+ 10         1023    11   5        2074457        546140         672  2027.82     1.422    off      OK
+ 12         4095    18   6        9673318       2543740        2240  2362.23     2.801    off      OK
+ 14        16383    31   7       23492482       6054726        7808  1433.95     4.708    off      OK
+ 16        65535    54   8      105029523      27057082       27392  1602.65    10.338    off      OK
+ 18       262143    97   9      465458097     119807096       98816  1775.59    23.055    off      OK
+ 20      1048575   172  10     2040403997     525295418      351232  1945.88    67.340    off      OK
+ 22      4194303   309  11     8882635340      (inject)    (inject)  2117.79        --    inj     INJ
+ 24     16777215   564  12    38448499833      (inject)    (inject)  2291.71        --    inj     INJ
+
+Single-power fit  (op_count ~ x^alpha = 2^(alpha*n); per-Delta-n=2 ratio = 2^(2*alpha)) -- WINDOW-SENSITIVE, see 2-term fit below:
+  multiply element-ops : alpha = 1.0150  (per-Dn=2 ratio 4.084x,  max|resid|=0.382 log2)
+  mult + add ops       : alpha = 0.9947  (per-Dn=2 ratio 3.971x,  max|resid|=0.378 log2) [measured rows]
+  wall-clock (2ndary)  : alpha = 0.5273  (per-Dn=2 ratio 2.077x,  max|resid|=0.376 log2) [measured rows]
+
+Per-step multiply-op ratios mul_ops(n+2)/mul_ops(n)  (IDEAL Theta(x) = 4.000x):
+  n= 8 -> 10 : 4.8798x
+  n=10 -> 12 : 4.6631x
+  n=12 -> 14 : 2.4286x
+  n=14 -> 16 : 4.4708x
+  n=16 -> 18 : 4.4317x
+  n=18 -> 20 : 4.3836x
+  n=20 -> 22 : 4.3534x
+  n=22 -> 24 : 4.3285x
+  geo-mean per-Delta-n=2 op ratio = 4.1644x  (IDEAL 4.000x; mem_hierarchy_wall's assumed leg)
+
+2-term fit  mul ~ x^a * (log2 x)^d  over the trailing monotone-declining
+band (past the low-n discrete nb/K lump) -- the separation a single-power
+fit over a short window CANNOT do (S512 sharpP_probe lesson):
+  stable band n=14..24 (6 pts):
+    single-power  : alpha = 1.0674  (ratio 4.392x, maxres 0.021)  <- inflated
+    power+polylog : alpha = 1.0116  polylog d = +0.721  (maxres 0.0012)
+    forced alpha=1: mul ~ x*(log2 x)^0.870  (maxres 0.0045) -- predicted vs observed per-Dn=2 ratio:
+        n=14->16: pred 4.4930x   obs 4.4708x
+        n=16->18: pred 4.4318x   obs 4.4317x
+        n=18->20: pred 4.3842x   obs 4.3836x
+        n=20->22: pred 4.3460x   obs 4.3534x
+        n=22->24: pred 4.3147x   obs 4.3285x
+
+READING:
+  Theta(x) . polylog = Otilde(x).  The 2-term fit over the stable band
+  (n=14..24) gives alpha = 1.012 ~ 1.0 with a POSITIVE polylog
+  exponent d = +0.721; the forced-alpha=1 model mul ~ x*(log2 x)^0.87
+  predicts every per-step ratio to sub-percent.  The per-step ratios
+  DECLINE monotonically (4.471x -> 4.329x) toward
+  4.0 -- the fingerprint of a polylog-dressed LINEAR term, NOT a super-
+  linear power (a pure x^a has a CONSTANT ratio).  The single-power alpha
+  reads up to ~1.07 on the high-n window purely from the (log x)^0.9
+  dressing -- the exact artifact S512's 2-term fit defeats.  CONFIRMS
+  mem_hierarchy_wall's IDEAL=4.0 op-count leg out to n=24 (x~1.7e+07).
+  fmul share of wall: --wall-timing OFF (S530 measured ~78%); the
+  op-count above is exact and timing-independent.

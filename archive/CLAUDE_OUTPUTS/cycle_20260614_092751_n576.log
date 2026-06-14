@@ -1,0 +1,108 @@
+=== Cycle 576 — Sun Jun 14 09:27:51 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a large state document. Let me read the rest to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final portion to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: option (a) — land the free bit-identical LIST-streaming win on the real chain. Let me read the relevant files.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && wc -l streaming_batched_su
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/streaming_batched_sumcheck.py
+The streaming file mentions S527 already landed `build_stacked_streaming` in `run_chain` with `stream_witnesses=True`. Let me check the actual current state — this may be a partially-completed prior cycle.
+  [tool: Bash] echo "=== batched_trace.py symbols ===" && grep -n "def build_stacked_streaming\|def stacked_tables\|def verify_constrai
+It appears a prior cycle (S527) already implemented `build_stacked_streaming` and `stream_witnesses=True` in `run_chain`. Let me understand the exact current state — whether this is complete and working, or partial. Let me check git history and run the selftests.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git log --oneline -8 && echo "=== files modified (names only) ===" && git diff --
+The working tree has S527 code changes (in `batched_trace.py`, `compressed_layer.py`) but committed PROGRAM.md has no S527 — a prior cycle landed the code but didn't finish (no PROGRAM.md update, possibly no re-measurement). Let me examine exactly what was changed and verify it works.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && git diff --stat && echo "=== .cycle ===" && cat .cycle 2>/dev/null | head -5
+PROGRAM.md has 368 lines of accumulated uncommitted changes (commits are periodic). The prior cycle landed S527 code + results but PROGRAM.md still shows S526 as last done with S527 as NEXT ACTION. Let me check whether the S527 work is actually complete by examining the results files and running selftests.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification && echo "=== S527 in batched_
+S527 is documented in `batched_trace_results.md` (with selftest case 8) but **not** in `large_x_benchmark_results.md` and **not** in PROGRAM.md. The prior cycle landed the code + the primitive-level docs/selftest but stopped before the chain-level peak-RSS re-measurement and the PROGRAM.md update. Let me first verify the landed code is sound by running the selftests.
+  [tool: Bash] echo "=== batched_trace selftest ===" && timeout 600 python3 batched_trace.py --selftest 2>&1 | tail -5
+  [tool: Bash] echo "=== streaming_batched_sumcheck selftest ===" && timeout 600 python3 streaming_batched_sumcheck.py --selftest 2>&1 
+  [tool: Bash] echo "=== compressed_layer selftest (may take a few min) ===" && timeout 900 python3 compressed_layer.py --selftest 2>&1
+While that runs, let me examine the actual S527 code changes to understand exactly what was landed and what verification remains.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now let me look at the `verify_ub_openings_batched` stream path and the `run_chain` integration.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace.py
+Now the `run_chain` integration in compressed_layer.py.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_layer.py
+The S527 code integration is complete and well-formed with `stream_witnesses=True` as default. Let me check whether there's a chain-level A/B selftest for `stream_witnesses` and what measurement infrastructure exists in `large_x_benchmark.py`.
+  [tool: Bash] echo "=== stream_witnesses A/B in compressed_layer selftest ===" && grep -n "stream_witnesses\|stream=" compressed_layer
+The prior cycle built the full measurement infrastructure too (`FULL_NOSTREAM` config, selftest case 7 for chain-level A/B bit-identity, `--stream-probe`) but never **ran** the peak-RSS A/B measurement or documented it. That's the missing empirical deliverable — the falsifiable claim that LIST-streaming actually drops peak RSS bit-identically. Let me read the measurement code.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+Let me read the `mem_probe` / stream-probe handling and selftest case 7.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark.py
+The S527 infrastructure is fully in place (`--stream-probe`, `FULL_NOSTREAM`, selftest case 7). The prior cycle just never **ran** the chain-level peak-RSS A/B measurement or documented it. That's the missing empirical deliverable. Let me check the background selftest and start the measurement.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bozl1q10t.output 2>/dev/nu
+The compressed_layer selftest is still running. Let me review the existing S527 documentation in `batched_trace_results.md` while it completes, so I understand what's been claimed and what the chain-level measurement needs to add.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/batched_trace_results.md
+The doc explicitly references a `--stream-probe` table in `large_x_benchmark_results.md` that **doesn't exist yet**, and the falsifier ("peak RSS NOT dropping under streaming") demands the A/B actually be run. That's my cycle's deliverable. Let me wait for the compressed_layer selftest, then run the measurement.
+  [tool: Bash] for i in $(seq 1 60); do if grep -q "selftest\|PASS\|Error\|assert\|Trace" /tmp/claude-0/-apps-aplikacijos-prime-researc
+All three selftests pass (batched_trace, streaming_batched_sumcheck, compressed_layer). Now let me run the `large_x_benchmark` selftest (which includes the chain-level A/B bit-identity, case 7), then launch the peak-RSS measurement.
+  [tool: Bash] timeout 400 python3 large_x_benchmark.py --selftest 2>&1 | tail -10
+All selftests pass — the S527 code is sound, including chain-level A/B bit-identity over Q & BIG_Q. Now the empirical deliverable: run the `--stream-probe` peak-RSS A/B measurement. Let me launch it in the background (it prints rows incrementally as each n completes).
+  [tool: Bash] python3 large_x_benchmark.py --stream-probe 18,20,22,24 --seed 1 2>&1 | tee run_s527_stream_probe.log
+The measurement is running in the background. While it runs, let me review the `large_x_benchmark_results.md` structure to know where to add the S527 stream-probe section.
+  [tool: Bash] grep -n "^## \|^# \|^### " large_x_benchmark_results.md | head -50
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+The S525 section ends by naming exactly this lever ("stream/checkpoint the K-witness stack"). The S525 n=24 FULL peak was 3986 MB *with* the held list. Post-S527 the default streams, so I expect FULL (stream) ≈ 2.6 GB vs FULL_NOSTREAM ≈ 4.0 GB — a clean ~1.4 GB drop. Let me check measurement progress.
+  [tool: Bash] sleep 75; cat /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bu39b9vqj.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bu39b9vqj.output
+The measurement is running (rows print incrementally). Let me check the host's memory while I wait, and prepare documentation.
+  [tool: Bash] free -g 2>/dev/null | head -2; echo "---nproc---"; nproc
+Host has 122 GB RAM (99 free) and 32 cores — n=26 would fit memory-wise but is a ~1.6h run; I'll keep this cycle focused on the n=18–24 confirmation. The measurement runs in the background and will notify on completion. Let me poll its progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bu39b9vqj.output
+Let me read the results file's headline and scaling sections to match the documentation format while the measurement runs.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/large_x_benchmark_results.md
+I have the full picture. The S525 n=24 FULL peak was 3986 MB (pre-S527, list held); post-S527 FULL streams, so I expect FULL≈2.6 GB vs FULL_NOSTREAM≈4.0 GB. Let me check the measurement progress.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bu39b9vqj.output
+The output is empty — Python buffers stdout when piped to `tee`, so I won't see incremental rows. Let me kill it and re-run unbuffered so I can monitor the trend as each n lands.
+  [tool: Bash] pkill -f "stream-probe" 2>/dev/null; sleep 1; echo "killed"; ps aux | grep -c "[l]arge_x_benchmark"
+  [tool: Bash] pkill -9 -f "large_x_benchmark" 2>/dev/null; sleep 1; ps aux | grep "[l]arge_x_benchmark" | wc -l; echo "remaining procs
+Cleaned up. Let me re-launch unbuffered so I can monitor incrementally.
+  [tool: Bash] python3 -u large_x_benchmark.py --stream-probe 18,20,22,24 --seed 1 > run_s527_stream_probe.log 2>&1
+Now it's unbuffered. Let me verify the header landed, then prepare documentation while it runs.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/blrx9kjcq.output
+Header landed. Let me set up a background monitor that notifies me when the n=18/20/22 trend rows have landed (so I don't poll blindly), with a generous timeout.
+  [tool: Bash] log=/apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log; u
+While the measurement runs, let me verify a key subtlety: streaming rebuilds witnesses rather than holding them, so it may trade peak-RSS for extra `build_witness` calls (wall cost). Let me check how many rebuilds each path does.
+  [tool: Bash] grep -n "def build_witness" compressed_prover_mult_trace.py
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/compressed_prover_mult_trace.py
+`build_witness` builds the full ~40-table set each call, and streaming does ~3K such calls vs the list path's K — so streaming may trade peak-RSS for extra wall. The measurement reports wall for both, so I'll characterize this honestly. Let me peek at the log.
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log 2>
+n=18 landed cleanly:
+- **FULL (stream): 70 MB**, wall 24.0s, claimed 23000 ✓
+- **FULL_NOSTREAM: 91 MB**, wall 24.1s, claimed 23000 ✓
+
+Three confirmations at once: peak RSS drops 91→70 MB (the held list ≈21 MB), wall is **identical** (24.0 vs 24.1s — the witness rebuilds are negligible vs the Θ(x·polylog) sum-check, so the win is free on *both* transcript and wall), and `claimed` is bit-identical. FULL_NOSTREAM=91 MB also matches S525's old-default 92 MB — a clean consistency check. Let me wait for the remaining rows.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bxv9q9g86.output
+The monitor is still waiting. n=18 confirms the claim already (drop + free wall + bit-identity). Let me wait for n=20/22 to establish the Θ(x) growth trend. While waiting, let me prepare the PROGRAM.md "Done this era" entry structure by re-reading its exact header.
+  [tool: Bash] grep -n "## Done this era\|## NEXT ACTION\|## Honest scope\|## SECONDARY" /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log 2>
+n=20 FULL (stream) = 185 MB, wall 68.9s (≈ S525's 67.8s — wall stays free), claimed 82025 ✓. S525's old default at n=20 was 265 MB, so the drop is ~80 MB — about 4× the n=18 drop of 21 MB, confirming the Θ(x) list growth. Let me wait for the full trend (the monitor fires at n=22) and n=24.
+
+I'll wait for the monitor's notification rather than polling. Let me prepare the canonical doc check in the meantime — does the protocol-stack doc reference peak RSS / the held cube?
+  [tool: Bash] grep -rn "peak RSS\|peak_rss\|held cube\|K-witness\|stream_witnesses\|LIST-stream\|working set" /apps/aplikacijos/prime-
+The canonical doc has no memory/streaming references, so no update needed there — S527 is purely an implementation/measurement detail. 
+
+The measurement is progressing well and confirming the prediction. I have two background tasks running: the measurement itself (`blrx9kjcq`, completes after n=24) and a monitor (`bxv9q9g86`, fires when the n=18/20/22 trend lands). I'll await those notifications and write the documentation once the data is in. Let me check the trend monitor's status.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bxv9q9g86.output
+The monitor fired showing through n=20. n=20 FULL_NOSTREAM = **266 MB** (matches S525's old default of 265 MB exactly — strong consistency), wall 70.4s, claimed 82025 ✓. So the n=20 drop is 266→185 = **81 MB**, vs n=18's 21 MB — a 3.9× growth confirming Θ(x). Let me read the live log for n=22.
+  [tool: Bash] cat /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log 2>
+The monitor fired a bit early (n=22 still running). I have a clean 2-point trend already (drops 21→81 MB, 3.9× = Θ(x); wall and `claimed` identical). The main measurement task will notify me when n=24 completes. Let me set a robust monitor for the n=22 row so I have a 3-point checkpoint, while the full run continues toward n=24.
+  [tool: Bash] log=/apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/run_s527_stream_probe.log; u
+I have a solid 2-point trend confirming the claim. Two monitors are running (n=22 checkpoint, and the main task for n=24). Let me await those. Meanwhile, let me note one important consequence to document: the headline reach table and S525 scaling table report peak RSS measured **pre-S527** (non-stream default), so post-S527 the default `--n 24` now gives the lower streaming peak. I'll cross-reference that.
+
+Let me check the n=22 monitor status.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bcumymdoy.output
+Both monitors are running. I have a clean 2-point trend that already confirms the S527 claim (peak-RSS drop of 21→81 MB scaling ~4×/Δn=2 = Θ(x), with identical wall and `claimed` — bit-identical and wall-free). I'll await the n=22 checkpoint and the n=24 reach, then write the documentation once the full 4-point measurement is in.
+
+Awaiting background-task notifications (n=22 monitor `bcumymdoy`, full run `blrx9kjcq` completing after n=24).
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/05e0a0ca-3306-488b-9dd7-77a7077c7b95/tasks/bcumymdoy.output
+I'll stop polling and let the background tasks notify me. The n=22 checkpoint (`bcumymdoy`) will land in a few minutes, and the full run (`blrx9kjcq`) completes after the n=24 reach (~45 min). Once the 4-point measurement is in, I'll write up the `--stream-probe` results section and update PROGRAM.md.
+
+Current state of the cycle (S527 completion + empirical confirmation):
+- ✅ Verified the prior cycle's S527 code is sound — all four selftests pass (`batched_trace`, `streaming_batched_sumcheck`, `compressed_layer`, `large_x_benchmark`), including the chain-level A/B bit-identity (case 6/7) over Q & BIG_Q.
+- ✅ Measured (n=18, n=20): peak RSS drops **91→70 MB** and **266→185 MB** (held-list ≈ 21 → 81 MB, ~3.9×/Δn=2 = Θ(x)); wall identical (24.0/24.1s, 68.9/70.4s — the witness rebuilds are negligible); `claimed` bit-identical. FULL_NOSTREAM n=20 = 266 MB matches S525's old-default 265 MB exactly (consistency check).
+- ⏳ Awaiting n=22, n=24 to confirm the ~1.4 GB drop at the reach, then documenting + PROGRAM.md update.
+--- cycle result: success (turns=49, duration=989975ms) ---
+=== Cycle 576 finished — Sun Jun 14 09:44:27 UTC 2026 ===

@@ -1,0 +1,121 @@
+=== Cycle 556 — Sun Jun 14 00:58:11 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/.cycle
+Let me read the rest of PROGRAM.md to find the current NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The current NEXT ACTION is clear: the width-spectrum `D_k(x)` census at k=32 — the first-occurrence probe of the 189 dense constellations still unrealized at x=2²⁶. Let me look at the existing infrastructure.
+  [tool: Bash] ls -la experiments/analytic/local_pattern_census/ && echo "---CYCLE---" && cat .cycle
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census.py
+Let me read the existing results files to understand the current state of D_k(x) at k=32.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census_results.md
+This is a clean, well-scoped task. Let me verify the current state and environment before building.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 -c "
+import local_pattern_censu
+Confirmed: A_32=3573, D_32(2²⁶)=3385, 189 missing (23 wt-6, 115 wt-7, 47 wt-8, 4 wt-9). Now let me build the first-occurrence search script with a segmented sieve and an HL prediction baseline.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence.py
+Now let me run the selftest:
+  [tool: Bash] time python3 dk_first_occurrence.py --selftest
+Selftest 9 used an inadmissible weight-8 set (covers all residues mod 5). Let me fix it to pull real admissible patterns from the enumeration.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence.py
+  [tool: Bash] time python3 dk_first_occurrence.py --selftest
+All 10 selftests pass. Note the HL prediction already says weight-9 first occurrences sit near ~10¹¹ (≈2³⁶·⁷) — well beyond reach. Let me validate the HL normalization against real occurrence counts (cheap, at 2²⁴), then launch the extended search.
+  [tool: Bash] time python3 dk_first_occurrence.py --k 32 --xmax $((1<<24)) --validate-hl 2>&1 | tail -40
+The HL validation is informative: at **weight 6 obs/pred = 1.10** — a clean validation of the aligned singular series (nearly all wt-6 patterns realized, so no survivorship bias, and exact≈constellation at that density). Lower weights show ratio<1 (exact pattern ⊂ constellation) and weights 7-8 show ratio>1 (survivorship bias — only upward-fluctuating dense ones realized this early). 
+
+But my falsification flag (x* < xmax/4) is statistically mis-calibrated — it flags the normal Poisson tail. The sound trigger is the **expected count** N_S(xmax): a missing pattern is only "overdue" if its mean count is large (P(0 occurrences)=e^{−N} tiny). Let me fix the reporting.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence.py
+Let me re-verify selftest still passes and gauge runtime at 2²⁸:
+  [tool: Bash] python3 dk_first_occurrence.py --selftest 2>&1 | tail -3
+echo "=== 2^28 run (timed) ==="
+time python3 dk_first_occurrenc
+Excellent — 2²⁸ runs in 2s and missing dropped 189→82. Two weight-6 patterns are flagged as statistically overdue (N≥5); pushing x further should resolve whether they're genuine anomalies or just the extreme tail. The sieve is fast, so let me push hard. Let me run to 2³² and capture the full curve:
+  [tool: Bash] time python3 dk_first_occurrence.py --k 32 --xmax $((1<<32)) --baseline $((1<<26)) > run_k32_2e32.log 2>&1; echo "EXIT $
+The full curve reproduces every prior checkpoint exactly (2¹⁶=1093, 2²⁴=3213, 2²⁶=3385) and pushes to **D₃₂(2³²)=3568, only 6 missing**. Let me see the tail:
+  [tool: Bash] tail -40 run_k32_2e32.log
+At 2³², only **6 patterns remain** (1 wt-7, 2 wt-8, 3 wt-9) and the two weight-6 patterns flagged at 2²⁸ have now appeared — confirming the falsification check is self-correcting (they were just the tail). One weight-7 pattern `[3,9,13,15,19,25,27]` is now flagged (N=6.86) — the interesting case to resolve. Let me launch a deeper run in the background to realize the remaining patterns:
+  [tool: Bash] time python3 dk_first_occurrence.py --k 32 --xmax $((1<<36)) --baseline $((1<<32)) > run_k32_2e36.log 2>&1; echo "EXIT $
+While the deep run proceeds, let me get a clean HL count validation at 2³⁰ (where weights 5-7 are well-populated, removing survivorship bias) to nail the singular-series normalization:
+  [tool: Bash] python3 dk_first_occurrence.py --k 32 --xmax $((1<<30)) --validate-hl 2>&1 | sed -n '/HL count validation/,/normalizatio
+At 2³⁰ the validation is even cleaner: **weight-6 obs/pred = 0.980** (28842 observed vs 29435 predicted — within 2%), converging to 1 as x grows. The monotone ratio crossing 1 near w=6–7 cleanly separates the exact-vs-constellation gap (low w) from survivorship bias (high w). Let me check the deep run's progress:
+  [tool: Bash] sleep 30; grep -E "x=2\^3[0-9]" run_k32_2e36.log 2>/dev/null | tail -8; echo "--- still missing (if done) ---"; grep -A2
+  [tool: Bash] grep -E "x=2\^3[0-9]" run_k32_2e36.log 2>/dev/null | tail -8
+It's at 2³³ (missing=4) and climbing. The job will notify me when done (~10 min). Let me draft the results file with the confirmed data while it runs:
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Let me check on the deep run's progress:
+  [tool: Bash] grep -E "x=2\^3[4-9]" run_k32_2e36.log 2>/dev/null | tail -6; echo "EXIT-CHECK:"; grep -c "still MISSING" run_k32_2e36.l
+At 2³⁴, missing=3. Let me verify no `__pycache__` was created and the deep run is still alive while it finishes:
+  [tool: Bash] find /apps/aplikacijos/prime-research/experiments -name __pycache__ -type d 2>/dev/null; echo "---procs---"; ps aux | gr
+A `__pycache__` appeared (from my earlier import test) — I'll clean it at the end. The deep run is at 2³⁴; let me block until it completes:
+  [tool: Bash] until grep -q "still MISSING" run_k32_2e36.log 2>/dev/null; do sleep 5; done; echo "=== DONE ==="; grep -E "x=2\^3[4-9]"
+**Down to 1 missing at 2³⁶** — a single weight-9 pattern (the densest possible at k=32, HL x*≈1.1×10¹¹). Let me see the full tail and confirm the weight-7 anomaly resolved:
+  [tool: Bash] tail -35 run_k32_2e36.log
+Complete picture at 2³⁶: deficit **189→1**, the last missing pattern is a single weight-9 constellation (HL N=1.44, P(0)=24% — not overdue). The weight-7 "anomaly" `[3,9,13,15,19,25,27]` resolved — it appeared at x≈4.75×10⁹ (N(occ)=7.35), consistent with being the extreme straggler over ~300 weight-7 patterns. Let me launch one more doubling to try for full saturation, while I finalize the docs:
+  [tool: Bash] time python3 dk_first_occurrence.py --k 32 --xmax $((1<<37)) --baseline $((1<<36)) > run_k32_2e37.log 2>&1; echo "EXIT $
+Now let me finalize the results doc with the deep-run data. First update the headline table to include the deeper reach:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Now fill in the deep-run section and update the falsification/scope sections:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Let me check the 2³⁷ run progress:
+  [tool: Bash] grep -E "x=2\^3[5-9]" run_k32_2e37.log 2>/dev/null | tail -4; echo "done?"; grep -q "still MISSING" run_k32_2e37.log 2>/
+The 2³⁶ deliverable is complete (deficit→1). The 2³⁷ run could give full saturation (D₃₂=3574, the capstone matching k=8,16). Let me block on it to decide the final headline:
+  [tool: Bash] until grep -q "still MISSING" run_k32_2e37.log 2>/dev/null; do sleep 10; done; echo "=== DONE ==="; grep -E "x=2\^3[6-9]
+The wait-loop got auto-backgrounded. Let me check the 2³⁷ run directly:
+  [tool: Bash] grep -E "x=2\^3[5-9]" run_k32_2e37.log 2>/dev/null | tail -4; echo "done?"; grep -q "still MISSING" run_k32_2e37.log && 
+The 2³⁷ run is in its final (largest) segment. Let me update PROGRAM.md with the S522 entry while it finishes. First the era header and the new Done entry:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the SECONDARY LINES note and the NEXT ACTION:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check the 2³⁷ run again:
+  [tool: Bash] grep -E "x=2\^37" run_k32_2e37.log 2>/dev/null; grep -q "still MISSING" run_k32_2e37.log && { echo "DONE:"; grep -A1 "st
+While the 2³⁷ run finishes its final segment, let me set the NEXT ACTION. Let me view the current block:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+The 2³⁷ run completed. Let me see the result:
+  [tool: Bash] grep -E "x=2\^37" run_k32_2e37.log; echo "---"; grep -A1 "still MISSING" run_k32_2e37.log | head -2; echo "--- new finds
+**Full saturation achieved.** At 2³⁷, D₃₂ = **3574 = A₃₂+1, missing = 0** — the saturation law `D_k(x)→A_k+1` is now confirmed at k=32, matching k=8 (14) and k=16 (107). The final weight-9 pattern `[1,5,7,11,17,19,25,29,31]` appeared at x≈8.31×10¹⁰ (HL x*=3.86×10¹⁰, N(occ)=1.63 — right on the HL schedule). Let me update both docs to the stronger result:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Now update the falsification and scope sections in the results doc:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Let me update the remaining sections referencing the unresolved flag and the run files. Let me read the current middle section:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence_results.md
+Now update PROGRAM.md to reflect full saturation. The Done entry, SECONDARY LINES, and NEXT ACTION header:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now the SECONDARY LINES note and the NEXT ACTION header:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me run a final selftest to confirm the script is clean, and clean up `__pycache__`:
+  [tool: Bash] python3 dk_first_occurrence.py --selftest 2>&1 | tail -4
+echo "=== smoke test report path (2^28, 2s) ==="
+python3 dk_fir
+Everything is clean. Let me update the saturation table in the canonical census results doc to record the now-confirmed k=32 saturation, and verify final file state:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census_results.md
+  [tool: Bash] cd /apps/aplikacijos/prime-research && echo "=== new/modified files ===" && git status --short experiments/analytic/loca
+The cycle is complete. All deliverables are in place, selftest passes, no `__pycache__`, every `.py` has its `_results.md`, and PROGRAM.md is updated. This is a secondary census measurement (not the polylog π(x) goal), so correctly no `BREAKTHROUGH.md`.
+
+## Cycle summary (S522)
+
+**Did the recorded NEXT ACTION:** the width-spectrum `D_k(x)` census first-occurrence probe at k=32 — hunting down the 189 dense admissible constellations that were unrealized at the prior reach 2²⁶.
+
+**Built** `experiments/analytic/local_pattern_census/dk_first_occurrence.py` (one CLI script, `--selftest` with 10 groups): a constant-memory **segmented sieve** that extends the aligned-window census far past 2²⁶, the **Hardy–Littlewood aligned singular series** for the linear forms `km+oᵢ`, and a statistically-grounded **falsification monitor** (flags a missing pattern only if its HL mean count `N_S(x) ≥ 5`, i.e. `P(0 occ) = e⁻ᴺ < 0.7%` — not the naive `x* < x`).
+
+**Result — FULL SATURATION:** pushing from 2²⁶ to **2³⁷ (x ≈ 1.4×10¹¹)** drove the deficit **189 → 0**, so **D₃₂ = A₃₂ + 1 = 3574**. k=32 now joins k=8 (14) and k=16 (107) as a confirmed instance of the law `D_k(x) → A_k + 1`. The curve reproduced every prior checkpoint *exactly* (2¹⁶=1093, 2²⁴=3213, 2²⁶=3385 — the segmented sieve is bit-equivalent to the full sieve, asserted in selftest). The last admissible pattern to appear was the densest possible (weight-9) constellation `[1,5,7,11,17,19,25,29,31]` at x ≈ 8.3×10¹⁰, on the HL schedule (`N(occ)=1.63`).
+
+**Validation & honesty:**
+- The aligned singular series is **validated to 2% at weight 6** (obs/pred = 0.980 at 2³⁰, no survivorship bias there); the obs/pred ratio rising monotonically through 1 cleanly separates the exact-vs-constellation gap (low weight) from survivorship bias (high weight).
+- The one flagged "anomaly" (weight-7 `[3,9,13,15,19,25,27]`, `N=6.86` at 2³²) **resolved as the expected max-order-statistic lag** — it appeared at `N(occ)=7.35`, a ~17% event over ~300 weight-7 patterns, not an HL over-prediction. **Every flag the monitor ever raised subsequently appeared — self-correcting.** No falsifier observed.
+
+**NEXT ACTION set:** the sliding-window census variant `D_k^slide(x)` (unaligned windows → classical narrowest-tuple admissibility), the last named width-spectrum follow-on, with the active verification line's large-x benchmark as a noted alternative.
+--- cycle result: success (turns=59, duration=2165736ms) ---
+=== Cycle 556 finished — Sun Jun 14 01:34:18 UTC 2026 ===

@@ -1,0 +1,59 @@
+=== P10 adaptive query complexity : measure (xmax=20000000) ===
+sieved 1270607 primes up to 20000000 (pi(20000000)=1270607)
+
+M1/M2  predictor R^{-1}(n): Newton iters + landing window
+        n         p(n)        R^-1(n) iters        |err| err/sqrt(pn)
+      199         1217         1217.2     2          0.2       0.0071
+      302         1997         1989.7     3          7.3       0.1631
+      457         3229         3221.7     3          7.3       0.1278
+      692         5197         5198.5     3          1.5       0.0201
+     1047         8363         8348.5     3         14.5       0.1584
+     1586        13367        13379.9     3         12.9       0.1112
+     2401        21391        21362.6     3         28.4       0.1943
+     3635        33941        34015.4     3         74.4       0.4037
+     5503        54013        54023.4     3         10.4       0.0446
+     8331        85607        85603.9     3          3.1       0.0106
+    12613       135409       135369.5     3         39.5       0.1073
+    19094       213557       213632.3     3         75.3       0.1630
+    28906       336419       336558.8     3        139.8       0.2410
+    43759       529121       529342.5     3        221.5       0.3044
+    66245       831091       831319.9     3        228.9       0.2511
+   100285      1303597      1303747.9     3        150.9       0.1322
+   151817      2041631      2042026.6     3        395.6       0.2768
+   229828      3194393      3194529.0     3        136.0       0.0761
+   347926      4990753      4991934.4     3       1181.4       0.5288
+   526707      7793063      7792486.8     3        576.2       0.2064
+   797355     12151679     12152336.5     3        657.5       0.1886
+  1207076     18933469     18934167.3     3        698.3       0.1605
+
+M1: Newton iters  min/mean/max = 2/2.95/3  (O(log log x): ~constant across 22 scales)
+M2: window |p(n)-R^-1(n)| over 240 n in 8 scale-bins:
+    RMS|err| ~ x^0.488   (predict 0.50 == sqrt(x) hard zone)
+    err/sqrt(p(n)): median/mean/max = 0.145/0.178/0.721  (guess_oracle S491: 0.13/-/0.53)
+    trend of err/sqrt(x) vs x: slope -0.007  (~0 == ratio BOUNDED -> window is Theta(sqrt x), F2 not triggered)
+
+M3  within-window pi structure (window = +-1.0*sqrt(p(n))):
+        n         p(n)     count sqrt(cnt)  rms_deg1  rms_deg3 rms/sqrtN
+     1586        13367        23       4.8      0.70      0.65     0.135
+    12613       135409        69       8.3      1.40      0.96     0.115
+   100285      1303597       161      12.7      2.31      1.48     0.117
+   797355     12151679       422      20.5      4.55      2.45     0.119
+  -> rms stays at the sqrt(count) Poisson scale and does NOT drop from deg1->deg3:
+     no smooth signal to interpolate (F3 not triggered).
+
+M3 corollary  COUNT-metric adaptive search inside the sqrt(x) window (exact pi):
+        n         p(n)  win=2sqrt  binary_q  interp_q
+     1586        13367        230         8         9
+    12613       135409        734        10         9
+   100285      1303597       2282        12        13
+   797355     12151679       6970        13        13
+  -> INSIDE the random window interp_q ~ binary_q ~ (1/2)log2(x): interpolation gets NO traction
+     (no smooth signal), so even the COUNT advantage evaporates here.  And each probe is a
+     hard-zone pi-eval (~sqrt x); sieving the window once (ZERO adaptive queries) costs the same
+     ~sqrt(x) and answers all -> cost-optimal p(n) is the NON-adaptive predict+sieve.  Adaptivity
+     gives no COST gain and no COUNT gain in the hard zone (F4 not triggered).
+
+CLOSURE: P10 -- adaptive pi-querying does not beat the non-adaptive analytic-predict + local-sieve recipe.
+  smooth/far zone (Newton, O(log log x)) is free & non-adaptive;
+  random/hard zone has width Theta(sqrt x) and no interpolable signal; reading it (one
+  sieve) dominates any adaptive query strategy.  SMOOTH+RANDOM is the adaptivity boundary.

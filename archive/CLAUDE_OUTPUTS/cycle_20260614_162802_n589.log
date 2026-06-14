@@ -1,0 +1,79 @@
+=== Cycle 589 — Sun Jun 14 16:28:02 UTC 2026 ===
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Bash] grep -n "NEXT ACTION" PROGRAM.md | tail -20
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION centers on the detached n=26 reach. Let me check its current status first.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== pgrep large_x_benc
+The n=26 reach (PID 1592836) is still running — log has only the START banner, no DONE. Per the contract I must NOT start a second reach. Let me observe its live state (pure reads).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+PID=1592836
+echo "=== uptime
+The reach is ~3.06 h in (start 13:24:47Z, now 16:28:32Z, wall ≈ 11025 s), **already past S529's predicted band [5.9, 7.9] ks and still running**. Critically: utime=3325.68 s, stime=7695.63 s → **stime fraction 0.698** (confirms S535's 0.695), 3.4 billion minor faults, majflt=0, VmHWM 11.4 GiB. The current RSS (4.1 GiB) is below VmHWM, so the peak-memory phase has passed.
+
+This is the falsifier-critical situation S535 anticipated: the raw wall test would trigger (>5.4×), but the discriminator is stime/utime. Let me read the op-count model and the live-observation tooling so I can resolve it from the **utime side** — the angle S535 left open (n=24's utime split was lost on exit).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== files ==="
+ls -la 
+Let me get the exact measured op-count numbers so I can extrapolate to n=26.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling_results.m
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== n=22, n=24 op-coun
+Now I have the op-count data. Key numbers: n=24 mul_ops = 3.84e10, model `mul ~ x·(log₂x)^0.87` → predicted n=26 ≈ 1.65e11 (ratio 4.29×). Live reach utime = 3325.68 s.
+
+The open question S535 left: **n=24's utime/stime split was lost on exit**, so the clean utime-ratio test couldn't be done. But I can resolve it differently — measure the chain's *user-ns-per-op* baseline at small RAM-light n (known op-counts), then predict utime(n=26) and check against the live 3325 s. If consistent, the wall excess is entirely stime (allocation), and Θ(x) op-count holds. Let me reuse S535's tested /proc parser.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== alloc_overhead_wal
+S535 already has tested `/proc` parsing and a `--live` mode. Let me first capture the perishable windowed split using the existing tool (zero contention), then build my fresh utime-side cross-check.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 60 python3 alloc_ove
+Live reach confirmed: windowed stime fraction **0.746**, cumulative **0.699**, 3.5e9 cumulative minor faults, majflt=0, fault traffic 1.4 GiB/s, state R (actively running). This is the perishable data captured.
+
+Now let me read how the op-count monkeypatch and `run_chain` are invoked so I can reuse them for the utime baseline.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== prover_opcount_sca
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/prover_opcount_scaling.py
+Let me check `_mul61`/`fmul` so I can build the DRAM per-op utime micro-bench, and confirm `os.times()` captures the work (single-process numpy).
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+grep -nE "def _mul61|def fmu
+I have everything I need. The cross-check: utime is **CPU time → contention-robust** (the reach steals wall-clock, not CPU-seconds), so I can measure the chain's utime baseline at small RAM-light n right now despite the reach, then test whether the live reach utime (3375 s) is consistent with Θ(x) op-count — resolving the falsifier from the utime side that S535 left open (n=24's split was lost on exit).
+
+Let me build the script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+Now let me run the selftest first to validate the script before the real measurements.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 300 python3 reach_ut
+Selftest passes — and the synthetic-case logic already shows the structure. Now the real measurements. The reach is **not yet done**, so its current utime (3375 s) is a *lower bound* on final utime(26) — I'll keep that caveat explicit. Let me measure the real chain utime baseline (contention-robust CPU time) and the DRAM per-op factor.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 400 python3 reach_ut
+Key finding already visible: **per-op utime is monotonically DECLINING** (193→95→47→27.5 ns/op as n grows) — per-call overhead amortizes over wider arrays. The reach's realized per-op = 3375e9/1.648e11 = **20.5 ns/op**, *below* n=20's 27.5 — squarely on the declining trend, the opposite of a super-linear term. But I have a bug (the ratio loop uses Δn=4 spacing) and the predict logic should center on this per-op trend. Let me fix both, and handle the partial-live caveat properly.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+Now let me rework `predict_and_compare` to center on the per-op-utime trend (robust, contention-free) and honestly handle the partial-live caveat (reach still running → utime is a lower bound on final).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+Now wire `reach_done` detection into `main` (check the reach log for DONE) and pass it to predict.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/reach_utime_crosscheck.py
+Now let me re-run the selftest to confirm the refactor is clean, then run the DRAM-factor measurement.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== SELFTEST ==="
+time
+Selftest passes with clean logic. Now the DRAM per-op utime factor (F4 saturation check):
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+timeout 200 python3 reach_ut
+DRAM factor: per-element `_mul61` utime **saturates at ~24 ns (1.9× over L1), last step 0.95× → F4 NOT triggered** (bounded cache constant). Now the canonical integrated run. I'll add a **DRAM-resident n=22 anchor** (677 MB, definitely past L3 like the reach) to strengthen the trend, and capture a fresh live snapshot. Running `--all` to one log:
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "reach status before ru
+Running in background (n=22 takes a few min). Let me check the reach status and the running output while I wait.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+echo "=== reach still alive?
+Reach is actively progressing (utime 3375→3582 s, stime_frac steady 0.701, still running). Let me wait for the baseline run to finish.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+# wait loop for the backgrou
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+sleep 90; echo "=== log so f
+The `tee` buffers until completion. Let me read the live task output file directly.
+  [tool: Bash] cat /tmp/claude-0/-apps-aplikacijos-prime-research/bb530291-11e8-4403-ad39-005f1d7edf77/tasks/b0d533ub8.output 2>/dev/nu
+Baseline still running (n=22 is the long pole). Python block-buffers when piped. Let me wait for completion — I'll poll the reach and the n=22 progress.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/constructions/p12_sumcheck_pi_verification/
+sleep 180
+echo "=== task out

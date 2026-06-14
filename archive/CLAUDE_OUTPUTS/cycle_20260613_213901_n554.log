@@ -1,0 +1,207 @@
+=== Cycle 554 — Sat Jun 13 21:39:01 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+This is a very mature research program. Let me read the rest of PROGRAM.md, especially the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: estimate the census entropy constant for A_k via a generating-function / cluster-expansion approach on the active-prime-reduced problem (open item 4). Let me understand the existing census work first.
+  [tool: Bash] ls experiments/analytic/local_pattern_census/ && echo "---CYCLE---" && cat .cycle 2>/dev/null | head -20
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix_results.md
+Now let me look at the exact counter code I can reuse and the conjecture details.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_transfer_matrix.py
+I now understand the structure precisely. Let me look at the conjecture data and the DFS counter's exact values, then check the canonical results file briefly.
+  [tool: Bash] sed -n '1,60p' experiments/analytic/local_pattern_census/local_pattern_census_results.md 2>/dev/null | head -70
+I have a complete understanding. The NEXT ACTION is to estimate the census entropy constant via a generating-function / cluster-expansion approach on the active-prime-reduced problem, validated against exact A_k.
+
+My plan: A_k = 2^N·P[admissible] exactly (each offset included w.p. ½), where admissible = ∩_{q∈B(k)} "miss a class mod q". The mean-field (independent primes) gives a **rigorous FKG lower bound** A_k ≥ 2^N·Π_q p_q. The corrections are a **cluster expansion** (Möbius/cumulant) over subsets of the active primes, where each cluster term needs only `count_tm` on a small subset — feasible at k=128 where the full count is not. Let me build it.
+  [tool: Bash] python3 -c "
+import sys; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from census_transfer_matrix impo
+Mean-field confirmed as a rigorous lower bound (always below exact), but the gap grows (2.7 nats at k=64) — correlations matter. Now let me prototype the cluster expansion to see if it converges.
+  [tool: Bash] python3 -c "
+import sys; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from census_transfer_matrix impo
+Beautiful — the cluster expansion converges rapidly with **alternating, geometrically-decreasing errors** (k=64: −2.70, +0.59, −0.11, +0.01, each ~5× smaller). The r=2 and r=3 truncations bracket the true value. Now the critical test: is this feasible at k=128, where the full count (~10¹¹ states) is not?
+  [tool: Bash] timeout 300 python3 -c "
+import sys, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from census_tr
+  [tool: Bash] sleep 30; cat /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bjmz8hkna.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bjmz8hkna.output
+Let me wait for that feasibility check with a proper poll loop.
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bjmz8hkna.output
+i=0; unti
+While that polls, let me write the full experiment script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+The triple test timed out. Let me check partial output and find which subsets are feasible.
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bjmz8hkna.output
+  [tool: Bash] timeout 120 python3 -u -c "
+import sys, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from census
+Aborts are fast with a tight cap. Let me see the actual state-space sizes and timing for the heavier small-prime triples with a higher cap.
+  [tool: Bash] timeout 200 python3 -u -c "
+import sys, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from census
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bgghvkajq.output
+i=0; unti
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bgghvkajq.output
+A timeout-free, exact route: instead of the transfer matrix, the joint cover probability has a **nested inclusion-exclusion** form costing only `2^(two smallest primes) × (largest)` — feasible for the dominant small-prime clusters even at k=128. Let me verify it against `count_tm`.
+  [tool: Bash] timeout 120 python3 -u -c "
+import sys, math, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from 
+  [tool: Bash] timeout 150 python3 -u -c "
+import sys, math, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from 
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bvlkhru0j.output
+i=0; unti
+Found the bug — the nested I-E was missing the `2^{-(#forced-excluded offsets)}` factor. Let me fix and re-validate.
+  [tool: Bash] timeout 150 python3 -u -c "
+import sys, math, time; sys.path.insert(0,'experiments/analytic/local_pattern_census')
+from 
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b9awx5syw.output
+i=0; unti
+The nested I-E now matches `count_tm` **exactly** (reldiff 0) and is fast. This is the engine — it scales to k=128/256 for the dominant small-prime clusters where the full transfer matrix dies. Let me rewrite the script around it with a bitmask-recursion implementation and a cost cap.
+  [tool: Bash] python3 -c "print('bit_count' in dir(int))"
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now let me run the selftest.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 300 python3 -u census_entropy_asymptotic.py --selftest 2>&1; ech
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b0rozrwa5.output
+i=0; unti
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b0rozrwa5.output
+Selftest [1],[2] pass. But [3]/[6]/[7] at k=64 compute the full-B I-E (2²⁶ leaves) — too slow. Let me fix: use `count_tm` for the Möbius-identity reference (feasible for all subsets at k≤64), and cap convergence checks at r=3 (where all clusters are cheap).
+  [tool: Bash] cd experiments/analytic/local_pattern_census && pkill -f census_entropy 2>/dev/null; echo killed
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 240 python3 -u census_entropy_asymptotic.py --selftest 2>&1 | te
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b9cgox61q.output
+i=0; unti
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b9cgox61q.output
+[1]–[8] pass. Let me wait for [9] and the final result.
+  [tool: Bash] out=/tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b9cgox61q.output
+i=0; unti
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bp06rp373.output
+  [tool: Read] /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b9cgox61q.output
+[9] is slow because the rigorous upper bound runs `count_tm` on the **full** B(128) first (a slow abort). Let me fix: search prefixes in increasing order and stop at the first abort (nested → all larger also abort).
+  [tool: Bash] cd experiments/analytic/local_pattern_census && pkill -f "census_entropy_asymptotic.py --selftest" 2>/dev/null; sleep 1;
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Also make `exact` reuse the upper-bound search (if full B is feasible, exact = that count) instead of a separate slow full-B abort.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 240 python3 -u census_entropy_asymptotic.py --selftest > /tmp/st
+  [tool: Bash] i=0; until grep -q "EXIT=" /tmp/st2.out 2>/dev/null; do sleep 3; i=$((i+1)); [ $i -gt 70 ] && { echo TIMEOUT; break; }; 
+  [tool: Read] /tmp/st2.out
+While the selftest runs, let me reason about the structure of what I'll report. Let me wait for the completion notification and read the result.
+  [tool: Read] /tmp/st2.out
+  [tool: Bash] until grep -q "EXIT=" /tmp/st2.out 2>/dev/null; do sleep 5; done; cat /tmp/st2.out
+All 9 selftest groups pass. Now the headline run — the validation table over k=8…64 plus the k=128/256 estimates.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 500 python3 -u census_entropy_asymptotic.py --scan 8 256 --rmax 
+  [tool: Bash] until grep -q "EXIT=" /tmp/scan.out 2>/dev/null; do sleep 5; done; cat /tmp/scan.out
+Validation is excellent: **r=4 reproduces exact k=64 to 0.001 nats** (14.273 vs 14.274), and the ratios match exactly (0.667→0.928). The scan timed out entering k=128 (slower clusters + count_tm upper bound). Let me run k=128 and k=256 individually with timing.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 400 python3 -u census_entropy_asymptotic.py --k 128 --rmax 4 --c
+  [tool: Bash] until grep -q "EXIT=" /tmp/k128.out 2>/dev/null; do sleep 5; done; cat /tmp/k128.out
+k=128 gives a cluster estimate ratio ≈0.926 (r≤4) inside a rigorous bracket [0.605, 0.946], but **78 clusters were skipped** over the cost cap — I must verify those skipped (large-prime) clusters are negligible. Let me measure the cluster contributions as a function of the cost cap to confirm convergence.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 400 python3 -u -c "
+import math, time
+from itertools import comb
+  [tool: Bash] until grep -q "EXIT=" /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/b5sbb25u
+The cap-sensitivity reveals the honest truth: at k=128 the cluster sum keeps moving as the cap rises (correlations are strong, many triples matter), and completing the series is infeasible. But this points to a **much better, rigorous approach**: by FKG, *any* partition of the primes into blocks gives a lower bound `A_k ≥ 2^N·Π_blocks P[miss within block]`, and a single block gives an upper bound — both computed exactly via the fast I-E engine, capturing the strong small-prime correlations directly. Let me restructure around this rigorous bracket.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now update `estimate()` to compute the block bounds:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now update the reporting functions to show the new bounds:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now update `report_scan` and add a selftest for the block bounds:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now add a selftest for the FKG block bounds (bracket validity and monotonicity):
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 240 python3 -u census_entropy_asymptotic.py --selftest > /tmp/st
+  [tool: Bash] until grep -q "EXIT=" /tmp/st3.out 2>/dev/null; do sleep 4; done; cat /tmp/st3.out
+All 11 selftest groups pass. Now the full scan including k=128 and k=256, with the rigorous bracket (which scales) and cluster estimates where feasible:
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 580 python3 -u census_entropy_asymptotic.py --scan 8 256 --rmax 
+  [tool: Bash] until grep -q "EXIT=" /tmp/scan2.out 2>/dev/null; do sleep 8; done; cat /tmp/scan2.out
+The rigorous bracket is the clean, scalable result: at **k=64 it brackets exact** (0.9236 ≤ 0.9276 ≤ 0.9276), and at k=128 gives ratio ∈ [0.889, 0.941] (cluster estimate 0.926), climbing toward 1. The scan timed out on k=256's clusters (14 primes). Let me get k=256 with bounds + pair-clusters only (fast).
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 400 python3 -u census_entropy_asymptotic.py --k 256 --rmax 2 --c
+While k=256 runs, let me launch a one-off higher-cap (2²⁶) computation at k=128 to tighten the bracket with the bigger block {3,5,7,11,13}.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 560 python3 -u -c "
+import math, time
+import census_entropy_asym
+  [tool: Read] /tmp/k256.out
+k=256 gives a rigorous lower bound ratio **0.928** (climbing trend continues), but the upper bound degrades to 1.126 because a single feasible block covers only 4 of the 14 active primes — an honest limitation. The mean-field is now very poor (0.394), confirming correlations dominate the entropy. Let me check the k=128 tightening run.
+  [tool: Bash] until grep -q "EXIT=" /tmp/claude-0/-apps-aplikacijos-prime-research/92a36fe8-7d4a-4a43-a235-e1e9f70a1200/tasks/bxewvw6i
+Tightened k=128 bracket: **ratio ∈ [0.9243, 0.9403]** (width 0.016), cluster estimate 0.926 sits right inside — a tight rigorous pin. This is fully reproducible via the script (`--cost-cap 27` auto-packs the block {3,5,7,11,13}). Let me confirm the script reproduces it, and meanwhile write up the results.
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 400 python3 -u census_entropy_asymptotic.py --k 128 --cost-cap 2
+Let me write the results file while the confirmation run finishes.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+  [tool: Read] /tmp/k128tight.out
+The confirmation run is still computing the 2²⁶ block. Let me wait for it, then verify and clean up.
+  [tool: Bash] until grep -q "EXIT=" /tmp/k128tight.out 2>/dev/null; do sleep 10; done; cat /tmp/k128tight.out
+The confirmation timed out because `estimate()` computes the expensive 2²⁶ block **twice** (once for the upper bound, once inside the lower bound). Let me add memoization so each joint-cover is computed once — this also speeds up the cluster sums (shared subsets).
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now thread the memo through `block_lower_bound` and `estimate`:
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic.py
+Now re-run the selftest (to ensure memoization didn't break anything) and the k=128 confirmation:
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 200 python3 -u census_entropy_asymptotic.py --selftest > /tmp/st
+  [tool: Bash] until grep -q "EXIT=" /tmp/st4.out 2>/dev/null; do sleep 5; done; tail -4 /tmp/st4.out
+Selftest still passes. Now confirm the script reproduces the tightened k=128 bracket (now with memoization, the 2²⁶ block is computed once):
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 400 python3 -u census_entropy_asymptotic.py --k 128 --cost-cap 2
+The confirmation runs (~235s). Meanwhile let me clean up `__pycache__` and update PROGRAM.md.
+  [tool: Bash] find experiments/analytic/local_pattern_census -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; find . -name __p
+Now update PROGRAM.md. First the open item 4 entry:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry at the top of that list and update the NEXT ACTION:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION at the end. Let me read the current one:
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me check the k=128 confirmation run completed and reproduces the bracket:
+  [tool: Bash] until grep -q "EXIT=" /tmp/k128c.out 2>/dev/null; do sleep 10; done; cat /tmp/k128c.out
+The script reproduces the tightened k=128 bracket [0.9243, 0.9403] exactly. I need to fix one inconsistency in the results table — the k=64 LOWER row. Let me correct it.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+I need to verify the exact cluster-convergence numbers in the results file. Let me regenerate the authoritative k=64 sequence with the committed script (full cost cap so no clusters are skipped):
+  [tool: Bash] cd experiments/analytic/local_pattern_census && timeout 500 python3 -u census_entropy_asymptotic.py --k 64 --rmax 5 --co
+While that runs, let me fix the incorrect "0.001" claim in the validation section (the true r=4 error is ~0.012, not 0.001). Let me wait for the authoritative numbers first.
+  [tool: Bash] until grep -q "EXIT=" /tmp/k64full.out 2>/dev/null; do sleep 10; done; cat /tmp/k64full.out
+Authoritative numbers confirmed — the r=4 error is **+0.012** (not 0.001 as I wrote). Let me correct the validation section.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+Let me do a final review of the results file and clean up any regenerated `__pycache__`:
+  [tool: Bash] find . -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; echo "pycache cleaned"
+# verify every .py has its _resul
+Let me do a final coherence read of the results file:
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/census_entropy_asymptotic_results.md
+All checks pass. Let me verify no stray processes and give a final status confirmation.
+  [tool: Bash] pgrep -f census_entropy 2>/dev/null && echo "still running" || echo "no stray procs"
+find . -name __pycache__ -type d 2>
+A stray process is still running — let me check and clean it up.
+  [tool: Bash] ps -o pid,etime,args -p 1018121 2>/dev/null || echo "gone"; pkill -f census_entropy_asymptotic 2>/dev/null; sleep 1; pgr
+  [tool: Bash] pgrep -f census_entropy >/dev/null 2>&1 && echo "STILL RUNNING" || echo "all clean"; find /apps/aplikacijos/prime-resear
+  [tool: Bash] pgrep -af census_entropy 2>/dev/null; echo "---"; pgrep -af "python3 -u census" 2>/dev/null; echo "end"
+All clean — the "still running" match was the `pgrep` matching its own command line; no actual Python process remains, and zero `__pycache__` dirs. The cycle is complete.
+
+## Cycle summary (S520)
+
+**Did the S519 NEXT ACTION on open item 4** — estimated the census entropy *constant* (`A_k = e^{(1+o(1))π(k)}`, i.e. `ln A_k/(k/ln k) → 1`) without exact counting, via a cluster expansion validated against exact `A_k`.
+
+**New artifact:** `experiments/analytic/local_pattern_census/census_entropy_asymptotic.py` (+`_results.md`), 11 selftest groups, all green.
+
+**The method (exact reformulation):** `A_k = 2^N·P[admissible]` with offsets i.i.d. p=½ (exact, since every subset has probability `2^{−N}`). The "miss a class mod q" events are *decreasing* ⇒ FKG-positively-associated, which gives:
+- **Mean field** `2^N∏_q p_q` = a rigorous **lower bound**;
+- **Cluster expansion** (Möbius) for the corrections, each term a joint-cover probability from a **nested inclusion-exclusion** whose cost is `2^{sumS−maxS}` — *k-independent*, and validated bit-for-bit against S519's transfer matrix. This is what survives past k=64, where `count_tm` on the full active set is Θ(A_k)-dead;
+- **FKG block bracket**: any partition → lower bound, any single block → upper bound.
+
+**Results:**
+- **Validated exact at k≤64**: truncation errors alternate (odd under, even over) and shrink ≈5×/order; r=4 within 0.012 of exact; the bracket contains exact (k=64: [0.9236, 0.9276] ∋ 0.9276).
+- **k=128 (the headline): ratio ∈ [0.9243, 0.9403] rigorous**, cluster estimate 0.926 inside. Reproduce with `--k 128 --cost-cap 27 --rmax 1`.
+- **k=256: ratio ≥ 0.9282 rigorous** (upper bound loose — a single feasible block holds only 4 of the 14 active primes).
+- The ratio climbs `0.667→0.808→0.886→0.928→≈0.93`, consistent with →1.
+
+**Key structural finding (honest):** the constant's approach to 1 is **correlation-driven** — the independent-prime (mean-field) ratio *declines* (0.75→0.61→0.39 over k=64,128,256), so CRT overlaps supply a *growing* fraction of the entropy (≈19%→35%→57%). The conjecture's →1 lives entirely in the corrections, not the leading term.
+
+**What stays open / NEXT ACTION:** `=1` is **not** proved — the bracket doesn't close to a point as |B|→∞ (the rigorous upper bound degrades) and the cluster series has Θ(entropy)-sized terms. The new NEXT ACTION proposes vectorising the I-E engine to tighten the k=128/256 bracket, or measuring whether the bracket width plateaus (which would cleanly close the *method*).
+
+PROGRAM.md updated (open item 4, the S520 done-entry, and the NEXT ACTION). No BREAKTHROUGH — this is structural progress on an adjacent census problem, not the prime-counting goal.
+--- cycle result: success (turns=97, duration=6344777ms) ---
+=== Cycle 554 finished — Sat Jun 13 23:24:47 UTC 2026 ===

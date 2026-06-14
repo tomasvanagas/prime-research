@@ -37,7 +37,14 @@ k-tuple conjecture every admissible S occurs as an *exact* pattern
 |---|---|---|---|---|---|
 | 8 | 13 | ≤ 3 | < 2¹⁶ | **14 = 13+1** | [0,8): {2,3,5,7} |
 | 16 | 106 | ≤ 5 | 2¹⁸ | **107 = 106+1** | [0,16): {2,...,13} |
-| 32 | 3573 | ≤ 9 | > 2²⁶ (converging) | 3385 at 2²⁶ | [0,32): {2,...,31} |
+| 32 | 3573 | ≤ 9 | 2³⁷ (S522) | **3574 = 3573+1** | [0,32): {2,...,31} |
+
+(**k=32 saturation CONFIRMED, S522**: `dk_first_occurrence.py` drove the
+deficit 189→0 from 2²⁶ to 2³⁷ via a segmented sieve; the last admissible
+pattern — the densest weight-9 constellation `[1,5,7,11,17,19,25,29,31]`
+— first occurred at x≈8.3×10¹⁰, and the whole deficit at every reach was
+exactly the Hardy–Littlewood dense tail (aligned singular series
+validated to 2% at weight 6). See `dk_first_occurrence_results.md`.)
 
 - **k = 16: all 106 admissible patterns realized by x = 262144**,
   including all six weight-5 constellations; D₁₆ then constant through

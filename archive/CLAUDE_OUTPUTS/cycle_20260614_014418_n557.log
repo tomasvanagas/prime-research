@@ -1,0 +1,106 @@
+=== Cycle 557 — Sun Jun 14 01:44:18 UTC 2026 ===
+I'll start by reading the live program state.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the rest of PROGRAM.md, particularly the NEXT ACTION section.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me read the final section of PROGRAM.md, which should contain the NEXT ACTION.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+The NEXT ACTION is clear: build the sliding-window census variant `D_k^slide(x)`. Let me first explore the existing census infrastructure to match conventions and reuse code.
+  [tool: Bash] ls -la experiments/analytic/local_pattern_census/
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_first_occurrence.py
+Now let me look at the original census script and its results to understand the aligned definitions and what's already established.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/local_pattern_census.py
+I now understand the task and existing infrastructure well. The NEXT ACTION is to build the **sliding-window census** `D_k^slide(x)`: windows `[n, n+k)` over all residues, with classical (Hardy–Littlewood) admissibility instead of the mod-k-aligned condition.
+
+Let me write a quick exploratory probe first to confirm my understanding of the sliding admissibility counts before committing to the full script.
+  [tool: Bash] cd /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census && python3 -c "
+import numpy as np
+def pri
+The probe confirms a clean structural fact: `A_k^slide = 2·A_k^aligned − 1` exactly (25, 211, 7145 for k=8,16,32), with even-offset and odd-offset admissible counts *equal* (13/13, 106/106, 3573/3573) — the odd part is the aligned set, the even part its mirror under the reflection `o↦k−1−o`. Max weight stays 9 = ρ*(32). Now let me build the full census script.
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+Let me clean up the leftover dead code in the `census` function's loop body.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+Let me fix a messy assertion in selftest case 1.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+  [tool: Bash] time python3 dk_sliding_census.py --selftest 2>&1
+  [tool: Bash] python3 -c "
+import dk_sliding_census as m
+k,x=8,1<<14
+direct=m._direct_sliding(k,x)
+r=m.census(k,x,seg_size=32)
+seen=se
+Found it: positions 0 and 1 (not prime, but not marked by the sieve since they have no prime factor) are only handled in the `lo==0` segment, but the power-of-two boundaries create a segment starting at `lo=1`, so position 1 leaks through as "prime". Let me fix it to mask 0 and 1 wherever they fall.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+  [tool: Bash] time python3 dk_sliding_census.py --selftest 2>&1
+Low weights floor at the search lower bound (they occur immediately, `N_S(8)≥1`), so the strict-increase assertion is too strong. Let me weaken it to non-decreasing overall + strictly increasing for the non-floored higher weights.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+  [tool: Bash] time python3 dk_sliding_census.py --selftest 2>&1
+All 11 selftests pass. Now let me run the actual census at k=8 and k=16 (full saturation cross-check) and k=32 (approach curve).
+  [tool: Bash] python3 dk_sliding_census.py --k 8 --xmax $((1<<20)) --validate-hl 2>&1 | tail -50
+k=8 fully saturates: `D_8^slide = 25 + 4 = 29`. The 4 exceptional patterns are exactly the small-n windows over {2,3,5,7}. HL validation w=2 obs/pred=1.007 (clean). Now k=16 and k=32.
+  [tool: Bash] python3 dk_sliding_census.py --k 16 --xmax $((1<<22)) 2>&1 | head -45
+The header has an off-by-one: `parity_split` excludes the empty set, so even-only=105 and odd-only=105, and aligned (with empty) = 106. The decomposition is `A_slide = 105(even-only) + 105(odd-only) + 1(empty) = 211`, and `A_aligned = 106`. Let me fix the report wording.
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+k=16 saturates by 2^12: `D_16^slide = 211 + 6 = 217`. Now the k=32 approach curve — let me run to 2^28 and time it.
+  [tool: Bash] time python3 dk_sliding_census.py --k 32 --xmax $((1<<28)) --seg $((1<<25)) 2>&1 | head -60
+k=32 sliding **fully saturates by 2^27**: `D_32^slide = 7145 + 8 = 7153` — ~1000× smaller x than the aligned census (2^37) because sliding samples 32× more windows and reaches both parity families. Let me capture the full report tail and save a run log.
+  [tool: Bash] python3 dk_sliding_census.py --k 32 --xmax $((1<<28)) --seg $((1<<25)) > run_slide_k32_2e28.log 2>&1; echo "exit $?"; ta
+Full saturation at k=32 by `n<2^27`: `D_32^slide = 7145 + 8 = 7153`. The 8 exceptional patterns are exactly the small-n windows (n=0..7) over the small-prime cluster, and notably the densest weight-9 admissible constellations get realized *immediately* at n≈10 by that same dense small-prime cluster. Let me get the HL count validation for k=32 at a moderate x.
+  [tool: Bash] python3 dk_sliding_census.py --k 32 --xmax $((1<<22)) --seg $((1<<22)) --validate-hl 2>&1 | tail -16
+Clean HL validation: w=6 obs/pred = 0.994 at k=32 (matching the aligned census's 0.980). Low-w drifts below 1 (HL counts the ≥S superset vs exact patterns), high-w overshoots from the small-prime-cluster early realizations.
+
+Let me note an emergent structural fact: `E_k^slide = 4, 6, 8` for k=8,16,32 — exceptional windows at n=0..q* where q*=3,5,7 (the largest prime whose residues the small-prime cluster covers within length k), so `E_k^slide = q*(k)+1`. Let me lock the E-values into the selftest as a regression.
+  [tool: Read] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+  [tool: Edit] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census.py
+  [tool: Bash] time python3 dk_sliding_census.py --selftest 2>&1
+All pass. Let me verify which prime each k=32 exceptional pattern covers (to characterize E precisely), then clean pycache and write the results doc.
+  [tool: Bash] python3 -c "
+import dk_sliding_census as m
+r=m.census(32,1<<16,seg_size=1<<15)
+exc=sorted(set(r['first'])-r['adm_codes']
+Precise characterization confirmed: the exceptional windows cover mod {2,3,5,7} (n=0..2, the full small-prime window) down to mod {7} alone (n=6,7), with the last at n=q*=7. So `E_k^slide = q*(k)+1` with q*=3,5,7 for k=8,16,32. Let me clean pycache and write the results doc.
+  [tool: Bash] rm -rf __pycache__ && echo cleaned
+  [tool: Write] /apps/aplikacijos/prime-research/experiments/analytic/local_pattern_census/dk_sliding_census_results.md
+All artifacts are in place and selftests pass. Now let me update PROGRAM.md: the SECONDARY LINES entry, a "Done this era" entry, and the NEXT ACTION.
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now add the "Done this era" entry at the top of that list:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now update the NEXT ACTION section:
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Let me verify the tail of PROGRAM.md doesn't now have a duplicated "Other open frontiers" block.
+  [tool: Bash] cd /apps/aplikacijos/prime-research && grep -n "Other open frontiers" PROGRAM.md
+There's now a duplicate. Let me view and remove the trailing one.
+  [tool: Read] /apps/aplikacijos/prime-research/PROGRAM.md
+  [tool: Edit] /apps/aplikacijos/prime-research/PROGRAM.md
+Now let me run the final cleanup checks from CLAUDE.md: confirm selftest passes, every new `.py` has a `_results.md`, and no `__pycache__` remains.
+  [tool: Bash] python3 experiments/analytic/local_pattern_census/dk_sliding_census.py --selftest 2>&1 | tail -3
+echo "--- results check
+The only MISSING results files are pre-existing helper scripts from earlier eras in unrelated directories — my new `dk_sliding_census.py` has its `dk_sliding_census_results.md` (not in the list). Pycache is clean and selftests pass.
+
+Let me confirm the run log is saved and do a final git status check.
+  [tool: Bash] ls -la experiments/analytic/local_pattern_census/dk_sliding_census* experiments/analytic/local_pattern_census/run_slide_
+All artifacts are in place. The cycle is complete.
+
+## Summary
+
+This cycle answered the recorded NEXT ACTION verbatim: built the **sliding-window census** `D_k^slide(x)`, the last named width-spectrum follow-on.
+
+**New file:** `experiments/analytic/local_pattern_census/dk_sliding_census.py` (+ `_results.md`, run log), 11 selftest groups, all passing.
+
+**What it establishes (all measured, selftest-locked):**
+
+1. **Parity-doubling identity** `A_k^slide = 2·A_k^aligned − 1 = 25, 211, 7145` (k=8,16,32). Unaligned windows `[n,n+k)` drop the aligned `q|k` condition → classical Hardy–Littlewood admissibility. The `q=2` clause forces every admissible offset set all-even or all-odd; the **odd-offset family is exactly the aligned admissible set**, the **even-offset family its mirror under `o↦k−1−o`** — an affine bijection mod every prime, hence an admissibility automorphism. They share only ∅.
+
+2. **Densest weight = ρ*(k) = 9 at k=32, parity-symmetric** — sliding reaches no denser tuple than aligned (same H()=W(B(k)) geometry from S519).
+
+3. **Full saturation `D_32^slide = 7145 + 8 = 7153` by n < 2²⁷** — ≈1000× earlier in x than the aligned 2³⁷, because sliding samples 32× more windows *and* the densest 9-tuples are realized immediately at n≈10 by the small-prime cluster (`[10,42) = {11,…,41}`).
+
+4. **Exceptional set `E_k^slide = q*(k)+1 = 4,6,8`** — windows n=0..q* (q*=3,5,7, the largest prime whose residues the cluster covers within length k), vs aligned's E=1.
+
+5. **Classical singular series validated**: obs/pred=0.994 at weight 6 (matching aligned's 0.980); twin constant `𝔖({0,2})=1.3204=2C₂` falls out.
+
+6. **Base case** (the requested cross-check): `--aligned` restricts to n≡0 mod k and reproduces the aligned realized set bit-for-bit.
+
+**Honest scope:** this is a finite-x census measurement in the width-spectrum secondary track — *not* progress on the polylog π(x) goal. The new content is the `2·A_aligned−1` identity and the ρ*(k)-cap. The width-spectrum census track is now fully closed (aligned + sliding, k≤32, both saturated and HL-consistent). PROGRAM.md updated; **NEXT ACTION** points back to the active verification line (item 5's large-x benchmark n=24 run). No BREAKTHROUGH.md — correctly, since nothing here touches the actual goal.
+--- cycle result: success (turns=37, duration=1069776ms) ---
+=== Cycle 557 finished — Sun Jun 14 02:02:08 UTC 2026 ===

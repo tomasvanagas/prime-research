@@ -177,6 +177,38 @@ a modest, flat `~1.1–1.2×` — vectorised numpy makes the √x-size `mle_eval
 to the Python-loop recomputes, so the asymptotic improvement is in op-count, not
 measured wall-clock at reachable `n`).
 
+## LIST-streaming the K-witness stack (S527) — the free, bit-identical peak-RSS win
+
+The S525 localization found the n=24 prover's ~3.9 GB peak RSS is **two** Θ(x)
+terms: the held K-witness **LIST** `Ws = [build_witness(x, pₗ) for pₗ]` (~1.4 GB)
+plus the stacked **CUBE** the sum-check folds (~2.6 GB). S526 proved the cube is
+**not** a pure accumulator (the sum-check round polys couple all K witnesses
+through the pointwise product), so it cannot stream to Õ(√x) for free — but the
+**LIST can**, bit-identically.
+
+`build_stacked_streaming(primes, X, nb, beta, tau, q, …)` rebuilds the exact
+cube of `stacked_tables` **without ever holding the list**: two cheap passes over
+`primes` — (1) the common `Lv_max`/`Lr_max`, (2) materialize each witness, copy
+its `[l·D, l·D+D)` slice into the integer cube, and **drop it** — so the peak
+working set is *one* witness + the cube, not K + the cube. Both batched
+discharges now take a `stream=` switch: `verify_constraints_batched(stream=True)`
+routes through `build_stacked_streaming`; `verify_ub_openings_batched(stream=True,
+primes=…, X=…)` builds the committed-Ub `C`-table one witness at a time
+(`C[l·D+e] = Σ_k γ^k bit_{nb−1−k}(u_e^{(l)})`, same k-order + mod-after-add ⇒
+identical cells). `run_chain(stream_witnesses=True)`, the **default**, no longer
+materializes `Ws`; `stream_witnesses=False` is the A/B control (builds the list).
+
+**Bit-identical**: same cube ⇒ same sum-check ⇒ same challenges/verdict, so this
+is a verbatim drop-in (the n=24 artifact reproduces *exactly*, only with lower
+peak RSS — like `USE_SCATTER_FOLD`, the win is default-on). Validated by selftest
+8 (cube == `stacked_tables` on every table, honest + every cheat, over Q & BIG_Q;
+`verify_constraints_batched` / `verify_ub_openings_batched` stream==list on
+accept **and** `comm`) and `large_x_benchmark.py` selftest 6 (full-config
+`claimed/comm/comm_bt/comm_ub/accepted` bit-identical ON vs OFF over Q & BIG_Q).
+The peak-RSS win is the `--stream-probe` table in `large_x_benchmark_results.md`.
+This is the **only** free part of the S526 space-time frontier; the ~2.6 GB cube
+stays (streaming it costs Θ(√x)× wall, S526).
+
 ## Selftest (`--selftest`)
 
 1. **Structural** — `Lk = ⌈log₂K⌉`, one sum-check of `Lk+nb` rounds,
@@ -198,6 +230,13 @@ measured wall-clock at reachable `n`).
    (`verify_ub_openings_each`); (c) rejects ANY single forged `(layer,bit)` opening
    4/4 (first/middle/last layer × first/middle/last bit) — over Q and BIG_Q;
    `comm = 1 + 3(Lk+nb)`; plus the K=1 edge (Lk=0) and fast==object bit-identity.
+8. **LIST-streaming bit-identity (S527)** — over Q & BIG_Q, n ∈ {8,11,13}: (a)
+   `build_stacked_streaming` == `stacked_tables` on EVERY table, honest + every
+   cheat class; (b) `verify_constraints_batched(stream=True, witnesses=None)`
+   gives identical accept AND `comm` to `stream=False` at the same seed (honest +
+   every cheat); (c) `verify_ub_openings_batched(stream=True)` identical accept +
+   `comm` to the list path (honest + a forge). This is the bit-identicality that
+   makes `run_chain(stream_witnesses=True)` a verbatim drop-in.
 
 ## What would falsify this
 
@@ -213,3 +252,9 @@ measured wall-clock at reachable `n`).
 - (S506) `verify_ub_openings_batched` disagreeing with the per-layer inline
   `mle_eval` ground truth, accepting a forged Ub opening, or `run_chain(batch_ub=True)`
   not driving `ub_leaf_v` to 0 / changing the chain verdict vs `batch_ub=False`.
+- (S527) `build_stacked_streaming` differing from `stacked_tables` on any table;
+  `stream=True` changing accept/`comm` vs `stream=False`; or
+  `run_chain(stream_witnesses=True)` changing `claimed/comm/accepted` vs `False`
+  (selftest 8 here, `large_x_benchmark` selftest 6). The peak RSS NOT dropping
+  under streaming (the `--stream-probe` A/B) — the win is space-only, no
+  transcript/verdict change.
